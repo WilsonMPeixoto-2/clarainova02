@@ -36,10 +36,10 @@ const HeroSection = () => {
       {/* Split grid layout */}
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 min-h-screen">
         {/* Text side - cols 1-5 */}
-        <div className="lg:col-span-5 flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-24 lg:py-0 relative">
-          {/* Strong dark scrim behind text */}
+        <div className="lg:col-span-5 flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-24 lg:py-0 relative z-10">
+          {/* Strong dark scrim behind text - desktop only (mobile uses full-image overlay) */}
           <div
-            className="absolute inset-0 z-0"
+            className="absolute inset-0 z-0 hidden lg:block"
             style={{
               background: "linear-gradient(to right, hsl(220 20% 4% / 0.95), hsl(220 20% 4% / 0.85))",
             }}
@@ -90,11 +90,18 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Image side - cols 6-12 */}
-        <div className="lg:col-span-7 relative hidden lg:block">
-          {/* Gradient mask from left */}
+      {/* Image side - background on mobile, grid col on desktop */}
+        <div className="absolute inset-0 lg:relative lg:col-span-7 z-0 lg:z-auto">
+          {/* Gradient mask - stronger on mobile for text readability */}
           <div
             className="absolute inset-0 z-10"
+            style={{
+              background: "linear-gradient(to bottom, hsl(220 20% 4% / 0.7) 0%, hsl(220 20% 4% / 0.5) 40%, hsl(220 20% 4% / 0.3) 100%)",
+            }}
+          />
+          {/* Desktop-only directional mask */}
+          <div
+            className="absolute inset-0 z-10 hidden lg:block"
             style={{
               background: "linear-gradient(to right, hsl(220 20% 4% / 0.85) 0%, hsl(220 20% 4% / 0.3) 25%, transparent 50%)",
             }}
