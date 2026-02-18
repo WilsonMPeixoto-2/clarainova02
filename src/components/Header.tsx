@@ -27,7 +27,7 @@ const Header = () => {
             CLARA
           </span>
           <span className="text-muted-foreground text-sm hidden sm:inline">
-            Inteligência para o Contribuinte
+            Inteligência Administrativa
           </span>
         </div>
 
