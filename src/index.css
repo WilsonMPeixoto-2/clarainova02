@@ -112,6 +112,15 @@
   }
 }
 
+/* Defensive: hide heavy layers on mobile BEFORE JS runs */
+@media (max-width: 899px) {
+  .hero-aurora-layer,
+  .hero-particles-layer,
+  .hero-energy-glow {
+    display: none !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

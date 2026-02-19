@@ -61,7 +61,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen overflow-hidden noise-overlay">
+    <section ref={sectionRef} className="relative min-h-svh overflow-hidden noise-overlay">
       {/* Background image with parallax (no parallax on mobile) */}
       <motion.div
         className="absolute inset-0 z-0"
@@ -93,7 +93,7 @@ const HeroSection = () => {
       <HeroDebugOverlay />
 
       {/* Content — Split Hero grid */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-24 md:pt-28 pb-16 md:pb-24 min-h-screen flex items-center">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-24 md:pt-28 pb-16 md:pb-24 flex items-center">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center w-full">
           {/* COLUMN A: Copy inside glass card */}
           <motion.div
