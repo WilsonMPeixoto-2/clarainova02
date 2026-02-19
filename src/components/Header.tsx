@@ -37,8 +37,8 @@ const Header = () => {
 
         {/* Center nav */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground tracking-wide uppercase">
-          <a href="#privacidade" className="hover:text-foreground transition-colors">Privacidade</a>
-          <a href="#termos" className="hover:text-foreground transition-colors">Termos</a>
+          <a href="/privacidade" className="hover:text-foreground transition-colors">Privacidade</a>
+          <a href="/termos" className="hover:text-foreground transition-colors">Termos</a>
           <a href="#contato" className="hover:text-foreground transition-colors">Contato</a>
         </nav>
 

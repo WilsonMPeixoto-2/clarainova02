@@ -178,7 +178,7 @@ const HeroSection = () => {
 
               <motion.p variants={itemVariants} className="text-xs text-muted-foreground max-w-[44ch]">
                 Ao usar nossos serviços, você concorda com nossa{" "}
-                <a href="#privacidade" className="text-primary hover:underline font-medium transition-colors">
+                <a href="/privacidade" className="text-primary hover:underline font-medium transition-colors">
                   Política de Privacidade
                 </a>
               </motion.p>
