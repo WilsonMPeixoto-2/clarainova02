@@ -54,60 +54,66 @@
     --font-display: 'Space Grotesk', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-    /* ===== LAYOUT CONTRACT: Clara Safe Frame ===== */
-    --clara-pos-x: 50%;
-    --clara-pos-y: 15%;
+    /* ===== LAYOUT CONTRACT v2 ===== */
+    --hero-card-w: min(92vw, 520px);
+    --hero-card-ml: 0;
+    --clara-pos: 50% 15%;
     --clara-scale: 1;
-    --clara-overlay-end: 0.2;
+    --hero-overlay-opacity: 0.85;
   }
 
-  /* Breakpoint: >=1440 */
+  /* >=1440px — tela grande, card à esquerda, Clara respira à direita */
   @media (min-width: 1440px) {
     :root {
-      --clara-pos-x: 78%;
-      --clara-pos-y: 28%;
-      --clara-scale: 0.95;
-      --clara-overlay-end: 0.15;
+      --hero-card-w: clamp(420px, 34vw, 560px);
+      --hero-card-ml: clamp(40px, 4vw, 80px);
+      --clara-pos: 72% 30%;
+      --clara-scale: 1;
+      --hero-overlay-opacity: 0.88;
     }
   }
 
-  /* Breakpoint: 1280–1439 */
+  /* 1280–1439 */
   @media (min-width: 1280px) and (max-width: 1439px) {
     :root {
-      --clara-pos-x: 76%;
-      --clara-pos-y: 30%;
-      --clara-scale: 0.95;
-      --clara-overlay-end: 0.18;
+      --hero-card-w: clamp(400px, 36vw, 520px);
+      --hero-card-ml: clamp(32px, 3vw, 64px);
+      --clara-pos: 70% 30%;
+      --clara-scale: 1;
+      --hero-overlay-opacity: 0.88;
     }
   }
 
-  /* Breakpoint: 1024–1279 */
+  /* 1024–1279 */
   @media (min-width: 1024px) and (max-width: 1279px) {
     :root {
-      --clara-pos-x: 74%;
-      --clara-pos-y: 32%;
-      --clara-scale: 0.98;
-      --clara-overlay-end: 0.2;
+      --hero-card-w: clamp(380px, 40vw, 480px);
+      --hero-card-ml: clamp(24px, 2.5vw, 48px);
+      --clara-pos: 68% 32%;
+      --clara-scale: 1;
+      --hero-overlay-opacity: 0.90;
     }
   }
 
-  /* Breakpoint: 900–1023 (limbo crítico) */
+  /* 900–1023 — breakpoint crítico */
   @media (min-width: 900px) and (max-width: 1023px) {
     :root {
-      --clara-pos-x: 72%;
-      --clara-pos-y: 34%;
+      --hero-card-w: clamp(340px, 44vw, 440px);
+      --hero-card-ml: clamp(16px, 2vw, 32px);
+      --clara-pos: 72% 34%;
       --clara-scale: 1;
-      --clara-overlay-end: 0.22;
+      --hero-overlay-opacity: 0.92;
     }
   }
 
-  /* Breakpoint: <900 (mobile) */
+  /* <900 — mobile */
   @media (max-width: 899px) {
     :root {
-      --clara-pos-x: 50%;
-      --clara-pos-y: 15%;
+      --hero-card-w: min(92vw, 520px);
+      --hero-card-ml: auto;
+      --clara-pos: 50% 20%;
       --clara-scale: 1;
-      --clara-overlay-end: 0;
+      --hero-overlay-opacity: 0;
     }
   }
 }
@@ -139,13 +145,20 @@
   }
 }
 
-/* ===== LAYOUT CONTRACT: Hero Image Safe Frame ===== */
+/* ===== LAYOUT CONTRACT v2: Hero Image + Card ===== */
 
 .hero-clara-img {
-  object-position: var(--clara-pos-x) var(--clara-pos-y);
+  object-position: var(--clara-pos);
   transform: scale(var(--clara-scale));
   transform-origin: center center;
-  will-change: transform;
+  will-change: auto;
+}
+
+/* Card — width and position controlled by contract */
+.hero-copy-column {
+  width: var(--hero-card-w);
+  margin-left: var(--hero-card-ml);
+  max-width: none;
 }
 
 /* Directional overlay: dark left (text) → transparent right (face) */
@@ -154,15 +167,15 @@
   inset: 0;
 }
 
-/* Desktop directional overlay */
+/* Desktop directional overlay — controlled by variable */
 @media (min-width: 900px) {
   .hero-overlay-directional {
     background: linear-gradient(
       to right,
-      hsl(222 35% 7% / 0.92) 0%,
-      hsl(222 35% 7% / 0.70) 35%,
-      hsl(222 35% 7% / 0.35) 55%,
-      hsl(222 35% 7% / var(--clara-overlay-end)) 75%,
+      hsl(222 35% 7% / var(--hero-overlay-opacity)) 0%,
+      hsl(222 35% 7% / calc(var(--hero-overlay-opacity) - 0.2)) 30%,
+      hsl(222 35% 7% / 0.25) 55%,
+      hsl(222 35% 7% / 0.08) 75%,
       transparent 100%
     );
   }
@@ -179,20 +192,6 @@
       hsl(222 35% 7% / 0.9) 100%
     );
   }
-}
-
-/* Hero copy column — anchored left with controlled max-width */
-.hero-copy-column {
-  max-width: 620px;
-  padding-left: clamp(0px, 2vw, 48px);
-}
-
-@media (min-width: 1024px) and (max-width: 1279px) {
-  .hero-copy-column { max-width: 540px; }
-}
-
-@media (min-width: 900px) and (max-width: 1023px) {
-  .hero-copy-column { max-width: 480px; }
 }
 
 /* ===== ENERGY GLOW (subtle shimmer over art side) ===== */
@@ -401,22 +400,52 @@
   border: 1px solid hsl(220 25% 22% / 0.5);
 }
 
-/* Hero glass card — semi-transparent container matching production */
+/* Hero glass card — anti-wall: mask fades right edge */
 .hero-glass-card {
-  background: hsl(222 35% 7% / 0.50);
-  backdrop-filter: blur(20px);
-  border: 1px solid hsl(220 25% 22% / 0.35);
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  backdrop-filter: none;
+  border: none;
   border-radius: 1rem;
   padding: 2.5rem 2.5rem;
 }
+
+/* Pseudo-element: background + blur with mask (anti-wall) */
+.hero-glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: hsl(222 35% 7% / 0.50);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsl(220 25% 22% / 0.25);
+  border-radius: inherit;
+  -webkit-mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
+  mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
+  z-index: -1;
+}
+
+/* Card content above pseudo-element */
+.hero-glass-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 @media (min-width: 1024px) {
   .hero-glass-card {
     padding: 2.75rem 3rem;
   }
 }
+
+/* Mobile: no mask, full-width solid card */
 @media (max-width: 899px) {
-  .hero-glass-card {
+  .hero-glass-card::before {
+    -webkit-mask-image: none;
+    mask-image: none;
     background: hsl(222 35% 7% / 0.60);
+  }
+  .hero-glass-card {
     padding: 1.5rem 1.25rem;
     border-radius: 0.75rem;
   }
