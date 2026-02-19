@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
  */
 const HeroDebugOverlay = () => {
   const [active, setActive] = useState(false);
-  const [info, setInfo] = useState({ bp: "", posX: "", posY: "", scale: "" });
+  const [info, setInfo] = useState({ bp: "", pos: "", scale: "", cardW: "" });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -25,9 +25,9 @@ const HeroDebugOverlay = () => {
 
       setInfo({
         bp,
-        posX: cs.getPropertyValue("--clara-pos-x").trim(),
-        posY: cs.getPropertyValue("--clara-pos-y").trim(),
+        pos: cs.getPropertyValue("--clara-pos").trim(),
         scale: cs.getPropertyValue("--clara-scale").trim(),
+        cardW: cs.getPropertyValue("--hero-card-w").trim(),
       });
     };
 
@@ -73,9 +73,9 @@ const HeroDebugOverlay = () => {
       <div className="absolute top-4 right-4 bg-black/80 text-white font-mono text-xs p-3 rounded-lg border border-white/20 pointer-events-auto space-y-1">
         <div className="text-yellow-400 font-bold mb-1">DEBUG LAYOUT</div>
         <div>Breakpoint: <span className="text-green-400">{info.bp}</span></div>
-        <div>--clara-pos-x: <span className="text-blue-400">{info.posX}</span></div>
-        <div>--clara-pos-y: <span className="text-blue-400">{info.posY}</span></div>
+        <div>--clara-pos: <span className="text-blue-400">{info.pos}</span></div>
         <div>--clara-scale: <span className="text-blue-400">{info.scale}</span></div>
+        <div>--hero-card-w: <span className="text-blue-400">{info.cardW}</span></div>
         <div>Window: <span className="text-blue-400">{typeof window !== 'undefined' ? window.innerWidth : 0}px</span></div>
       </div>
     </div>
