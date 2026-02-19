@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -53,6 +53,62 @@
 
     --font-display: 'Space Grotesk', system-ui, sans-serif;
     --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    /* ===== LAYOUT CONTRACT: Clara Safe Frame ===== */
+    --clara-pos-x: 50%;
+    --clara-pos-y: 15%;
+    --clara-scale: 1;
+    --clara-overlay-end: 0.2;
+  }
+
+  /* Breakpoint: >=1440 */
+  @media (min-width: 1440px) {
+    :root {
+      --clara-pos-x: 74%;
+      --clara-pos-y: 32%;
+      --clara-scale: 1;
+      --clara-overlay-end: 0.18;
+    }
+  }
+
+  /* Breakpoint: 1280–1439 */
+  @media (min-width: 1280px) and (max-width: 1439px) {
+    :root {
+      --clara-pos-x: 72%;
+      --clara-pos-y: 34%;
+      --clara-scale: 1;
+      --clara-overlay-end: 0.2;
+    }
+  }
+
+  /* Breakpoint: 1024–1279 */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    :root {
+      --clara-pos-x: 70%;
+      --clara-pos-y: 35%;
+      --clara-scale: 1.02;
+      --clara-overlay-end: 0.22;
+    }
+  }
+
+  /* Breakpoint: 900–1023 (limbo crítico) */
+  @media (min-width: 900px) and (max-width: 1023px) {
+    :root {
+      --clara-pos-x: 68%;
+      --clara-pos-y: 38%;
+      --clara-scale: 1.05;
+      --clara-overlay-end: 0.25;
+    }
+  }
+
+  /* Breakpoint: <900 (mobile) */
+  @media (max-width: 899px) {
+    :root {
+      --clara-pos-x: 50%;
+      --clara-pos-y: 15%;
+      --clara-scale: 1;
+      --clara-overlay-end: 0;
+    }
   }
 }
 
@@ -71,6 +127,106 @@
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
+  }
+}
+
+/* ===== LAYOUT CONTRACT: Hero Image Safe Frame ===== */
+
+.hero-clara-img {
+  object-position: var(--clara-pos-x) var(--clara-pos-y);
+  transform: scale(var(--clara-scale));
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Directional overlay: dark left (text) → transparent right (face) */
+.hero-overlay-directional {
+  position: absolute;
+  inset: 0;
+}
+
+/* Desktop directional overlay */
+@media (min-width: 900px) {
+  .hero-overlay-directional {
+    background: linear-gradient(
+      to right,
+      hsl(220 20% 4% / 0.92) 0%,
+      hsl(220 20% 4% / 0.70) 35%,
+      hsl(220 20% 4% / 0.35) 55%,
+      hsl(220 20% 4% / var(--clara-overlay-end)) 75%,
+      transparent 100%
+    );
+  }
+}
+
+/* Mobile overlay: vertical gradient */
+@media (max-width: 899px) {
+  .hero-overlay-directional {
+    background: linear-gradient(
+      to bottom,
+      hsl(220 20% 4% / 0.55) 0%,
+      hsl(220 20% 4% / 0.35) 30%,
+      hsl(220 20% 4% / 0.65) 65%,
+      hsl(220 20% 4% / 0.9) 100%
+    );
+  }
+}
+
+/* Hero copy column — anchored left with controlled max-width */
+.hero-copy-column {
+  max-width: 620px;
+  padding-left: clamp(0px, 2vw, 48px);
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .hero-copy-column { max-width: 540px; }
+}
+
+@media (min-width: 900px) and (max-width: 1023px) {
+  .hero-copy-column { max-width: 480px; }
+}
+
+/* ===== ENERGY GLOW (subtle shimmer over art side) ===== */
+
+.hero-energy-glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 60% 80% at 70% 40%,
+    hsl(42 78% 55% / 0.06) 0%,
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+  animation: energy-shimmer 28s ease-in-out infinite;
+}
+
+@media (max-width: 899px) {
+  .hero-energy-glow {
+    width: 100%;
+    opacity: 0.5;
+    animation-duration: 36s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-energy-glow {
+    animation: none;
+  }
+}
+
+@keyframes energy-shimmer {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.03) translateY(-8px);
   }
 }
 
@@ -130,10 +286,16 @@
 
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 20px hsl(42 78% 55% / 0.15);
+    box-shadow:
+      0 0 15px hsl(var(--gold) / 0.15),
+      0 0 30px hsl(var(--gold) / 0.08),
+      0 0 60px hsl(var(--gold) / 0.04);
   }
   50% {
-    box-shadow: 0 0 35px hsl(42 78% 55% / 0.3);
+    box-shadow:
+      0 0 20px hsl(var(--gold) / 0.25),
+      0 0 45px hsl(var(--gold) / 0.15),
+      0 0 80px hsl(var(--gold) / 0.08);
   }
 }
 
@@ -196,6 +358,9 @@
   }
   .glow-pulse {
     animation: none !important;
+  }
+  .hero-clara-img {
+    transform: none !important;
   }
 }
 
