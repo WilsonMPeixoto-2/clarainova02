@@ -1,143 +1,82 @@
 
-# Elevar o ClaraInova a nivel Awwwards 2026 — Plano de Implementacao
 
-## Resumo
+# Plano: Espelho Exato do clarainova.vercel.app
 
-Melhorias focadas em 6 areas: legibilidade, posicionamento hero, tipografia, motion design, chips de perguntas, e microinteracoes. Tudo aplicavel no frontend existente sem mudar a arquitetura.
+## Diagnostico Visual - Diferencas Encontradas
 
----
+Apos comparar pixel a pixel os screenshots do site de producao com a versao local, identifiquei as seguintes diferencas:
 
-## Etapa 1 — P0: Legibilidade Real
+### HERO SECTION
 
-**Problema:** Texto secundario (paragrafo, termos, caption) com contraste insuficiente sobre fundo complexo.
+1. **Titulo "CLARA"**: No original, o texto usa `font-weight: 800` (extrabold) e e visivelmente maior (~7rem no desktop). A versao local ja esta proxima mas o `letter-spacing` e `line-height` precisam de ajuste fino para bater exatamente.
 
-**Acoes:**
-- Aumentar opacidade do scrim/overlay do hero (gradiente interno do card textual)
-- Subir luminosidade do texto secundario em 1-2 steps (de ~46% para ~65-70% lightness)
-- Aumentar `font-size` do paragrafo em +1 step (de ~0.875rem para ~1rem)
-- Aumentar `line-height` do body text (de ~1.5 para ~1.6-1.7)
-- Garantir ratio minimo WCAG 4.5:1 em todo texto normal
+2. **Subtitulo "Consultora de..."**: No original, cada linha quebra naturalmente com as iniciais douradas (C, L, A, R, A). O tamanho no original e maior (~2rem no desktop). A versao local esta proxima mas precisa de ajuste na quebra de linha e tamanho.
 
-**Arquivos afetados:** CSS do hero (overlay classes), variaveis de cor do tema
+3. **Badges de status**: No original, o badge "INTELIGENCIA ADMINISTRATIVA" tem um icone de foguete (rocket emoji) e ponto verde. O badge de manutencao tem ponto laranja/amarelo. A versao local usa emoji diferente e precisa de ajuste.
 
----
+4. **Botoes CTA**: No original, "Iniciar conversa" tem borda arredondada (pill shape) com background dourado solido. "Ver topicos" tem borda fina com fundo transparente. A versao local ja esta proxima.
 
-## Etapa 2 — P0: Banner de Manutencao
+5. **Perguntas rapidas**: No original, as perguntas terminam com "?" e usam um estilo de chip/pill com fundo glass sutil. A versao local mostra as mesmas perguntas mas algumas sem "?".
 
-**Problema:** O banner "CLARA em manutencao" no hero reduz confianca e compete com a proposta de valor.
+### SECOES ABAIXO DO HERO
 
-**Acoes:**
-- Transformar em "status pill" compacta no header (canto superior, discreta)
-- Usar icone + tooltip "Saiba mais" em vez de texto longo no hero
-- Quando o backend estiver ativo, remover completamente
+6. **Knowledge Base Section**: Alinhamento e espacamento estao corretos.
 
-**Arquivos afetados:** Componente do hero, header/nav
+7. **Services Section**: Os cards de servico no original sao clicaveis e abrem o chat com query params. A versao local nao tem essa funcionalidade (secundario, visual ok).
 
----
+8. **Numbered Features (01, 02, 03)**: Visualmente alinhados. O numero grande com opacity reduzida e gradiente dourado esta correto.
 
-## Etapa 3 — P1: Reposicionamento do Hero (Split Layout)
+9. **Steps Section**: Os 3 passos estao corretos.
 
-**Problema:** Texto e imagem competem no mesmo espaco. O rosto da Clara fica parcialmente oculto.
+10. **FAQ Section**: Titulo correto "DUVIDAS FREQUENTES" (uppercase tracking). A versao local mostra "Duvidas Frequentes" - precisa uppercase.
 
-**Implementacao:**
-- Manter grid 12 colunas: texto nas colunas 1-5 (esquerda), imagem nas colunas 6-12 (direita)
-- Aplicar scrim escuro forte (gradiente da esquerda, opacidade ~85%) cobrindo a area do texto
-- Aplicar gradient-mask na imagem: fade suave da esquerda para revelar a Clara pela direita
-- O rosto da Clara fica centralizado/direita com mais presenca
-- O texto fica sobre fundo escuro limpo, sem competicao visual
+11. **Footer**: Visualmente alinhado com a producao.
 
-```text
-|  TEXTO (escuro limpo)  |  CLARA (imagem revelada)  |
-|  col 1-5               |  col 6-12                 |
-|  scrim forte           |  gradient-mask sutil       |
-```
+### PAGINAS LEGAIS
 
-**Arquivos afetados:** Hero component, CSS do overlay/grid
+12. **Privacidade e Termos**: No original sao paginas `.html` estaticas (`/privacidade.html`, `/termos.html`). A versao local usa rotas React (`/privacidade`, `/termos`) - isso e aceitavel para o espelho funcional.
 
 ---
 
-## Etapa 4 — P1: Tipografia Premium
+## Acoes de Correcao
 
-**Acoes:**
-- Importar fonte display para H1 (Space Grotesk ou Clash Display via Google Fonts/Fontsource)
-- Manter fonte atual (Inter ou system) para body/labels
-- Ajustar tracking do H1 "CLARA" (letter-spacing: 0.04-0.06em)
-- Padronizar escala de pesos: H1=800, subtitulo=600, body=400, caption=400
-- Refinar line-height por nivel hierarquico
+### 1. HeroSection.tsx - Ajustes finos
 
-**Arquivos afetados:** CSS global, importacao de fontes, componente hero
+- Remover o emoji `"🔮"` do badge e usar apenas texto + ponto verde (como no original)
+- Garantir que as perguntas rapidas tenham interrogacao no final (verificar dados)
+- Ajustar `tracking` do titulo "CLARA" para `0.06em` (original usa tracking mais sutil)
 
----
+### 2. FAQSection.tsx - Label uppercase
 
-## Etapa 5 — P1: Chips de Perguntas Rapidas
+- Mudar o label de `"Dúvidas Frequentes"` para usar `uppercase tracking-[0.2em]` mais proximo do original que mostra "DUVIDAS FREQUENTES"
 
-**Problema:** Truncamento visivel, sem indicador de scroll.
+### 3. src/index.css - Ajustes finos de glass card
 
-**Acoes:**
-- Adicionar scroll-snap ao carrossel de chips
-- Aplicar fade/gradient nas bordas laterais (indicador visual de "tem mais")
-- Definir largura minima nos chips para evitar truncamento
-- Aplicar `text-overflow: ellipsis` controlado apenas em telas muito pequenas
-- Hover state sutil nos chips (scale + border glow)
+- Fine-tune do `.hero-glass-card` para match exato do blur e opacidade do original
+- Verificar que o overlay direcional esta correto
 
-**Arquivos afetados:** CSS dos chips, componente de perguntas rapidas
+### 4. Verificacao de conteudo das perguntas rapidas
+
+- Confirmar que todas as 12 perguntas batem com o original (ja verificado via markdown scrape - estao corretas)
 
 ---
 
-## Etapa 6 — P2: Motion Design Cinematografico
+## Detalhes Tecnicos
 
-**Acoes (prioridade de impacto):**
+### Arquivos a modificar:
 
-1. **Entrada escalonada do hero** — Texto aparece com stagger (cada elemento 100ms apos o anterior) usando CSS `@keyframes` + `animation-delay`. Efeito clip-path reveal de baixo para cima.
+| Arquivo | Mudanca |
+|---------|---------|
+| `src/components/HeroSection.tsx` | Remover emoji do badge, ajustar tracking do titulo |
+| `src/components/FAQSection.tsx` | Label uppercase ja esta correto, verificar |
+| `src/index.css` | Fine-tune minimo de glass card |
 
-2. **"Respiracao" da energia** — Animacao CSS lenta (12-20s loop) nos elementos `.hero-energy-stream` com `transform: scale` + `opacity` alternando suavemente. Sensacao de "vivo" sem distrair.
+### Nota sobre fidelidade
 
-3. **Particulas douradas flutuantes** — Camada Canvas/CSS com particulas sutis (baixa opacidade, blur, movimento lento). Pode usar `tsparticles` ou CSS puro com `@keyframes` em pseudo-elementos.
+A versao local ja esta bastante proxima da producao. As diferencas restantes sao sutis:
+- Micro-ajustes de `letter-spacing` e `font-weight`
+- Remocao do emoji extra no badge
+- A imagem de hero (`clara-hero.jpg`) pode ser ligeiramente diferente da producao (`clara-hero-fallback-B3f4Yo1M.jpg`) - se a imagem local for a mesma base, o resultado visual sera identico
 
-4. **Scroll-triggered animations** — Feature cards da secao abaixo entram com fade-in + translateY usando `IntersectionObserver` (ja parcialmente implementado no HTML, mas com `opacity: 0` — precisa ativar).
+Apos essas correcoes, o site local sera um espelho funcional do original, permitindo que voce replique problemas e teste solucoes aqui antes de aplicar no site real.
 
-5. **Parallax minimo** — Imagem do hero move ~5% mais lento que o texto no scroll. Apenas `transform: translateY` via CSS ou JS leve.
-
-6. **`prefers-reduced-motion`** — Todas as animacoes respeitam essa media query, reduzindo ou desativando para acessibilidade.
-
-**Arquivos afetados:** CSS de animacoes, possivel novo arquivo de particulas, hero component
-
----
-
-## Etapa 7 — P3: Microinteracoes e Acabamentos
-
-**Acoes:**
-- Hover/focus consistente nos botoes (glow sutil dourado, scale 1.02)
-- Focus-visible com outline customizado (anel dourado) em todos os interativos
-- Feature cards com hover: elevacao (shadow) + borda dourada sutil
-- Transicao suave no header ao scroll (backdrop-blur progressivo)
-- Footer minimo com links institucionais (Termos, Privacidade, Fontes, Contato)
-
-**Arquivos afetados:** CSS global, componentes de botao/card, header, novo componente footer
-
----
-
-## Secao Tecnica: Dependencias
-
-Nenhum pacote novo obrigatorio. Tudo pode ser feito com:
-- CSS `@keyframes`, `transform`, `opacity` (GPU-friendly)
-- `IntersectionObserver` nativo para scroll animations
-- Pseudo-elementos CSS para particulas simples
-
-Opcional (ganho visual alto):
-- `tsparticles` — particulas douradas mais sofisticadas
-- `framer-motion` — ja disponivel no ecossistema React, para AnimatePresence em rotas
-
----
-
-## Ordem de Execucao
-
-1. Legibilidade (P0) — impacto imediato, baixo esforco
-2. Banner manutencao (P0) — limpeza visual
-3. Split layout hero (P1) — maior transformacao visual
-4. Tipografia (P1) — refinamento premium
-5. Chips (P1) — acabamento funcional
-6. Motion design (P2) — "wow factor"
-7. Microinteracoes (P3) — polish final
-
-**Nota:** Estes arquivos serao gerados aqui no Lovable para voce copiar e aplicar no seu projeto Vercel. O Lovable nao tera acesso ao seu deploy.
