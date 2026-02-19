@@ -69,7 +69,7 @@ export default {
       },
       fontFamily: {
         display: ['Space Grotesk', 'system-ui', 'sans-serif'],
-        body: ['system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        body: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
