@@ -142,17 +142,27 @@
   100% { background-position: 200% 0; }
 }
 
-/* Hero stagger classes */
-.hero-stagger-1 { animation: hero-stagger-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
-.hero-stagger-2 { animation: hero-stagger-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both; }
-.hero-stagger-3 { animation: hero-stagger-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }
-.hero-stagger-4 { animation: hero-stagger-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both; }
-.hero-stagger-5 { animation: hero-stagger-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both; }
-
-.energy-breathe {
-  animation: energy-breathe 16s ease-in-out infinite;
+/* Hero stagger classes — kept as fallback, motion.js handles primary animation */
+.hero-stagger-1, .hero-stagger-2, .hero-stagger-3,
+.hero-stagger-4, .hero-stagger-5 {
+  /* No-op: framer-motion now drives hero entrance */
 }
 
+/* Feature cards: visible by default, hidden only when JS is active */
+.feature-card {
+  /* Cards visible by default — no content disappears if JS fails */
+}
+.js-enabled .feature-card {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+.js-enabled .feature-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Legacy fade-up (kept for backwards compat) */
 .fade-up-observe {
   opacity: 0;
   transform: translateY(30px);
@@ -214,15 +224,17 @@
   border: 1px solid hsl(42 78% 55% / 0.1);
 }
 
-/* Chip scroll container */
-.chips-scroll {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
-.chips-scroll::-webkit-scrollbar {
+.scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-.chips-scroll > * {
-  scroll-snap-align: start;
+
+/* Scroll snap utility */
+.scroll-snap-x-mandatory {
+  scroll-snap-type: x mandatory;
 }

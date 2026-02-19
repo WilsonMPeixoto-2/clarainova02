@@ -23,18 +23,25 @@ const FeaturesSection = () => {
   const cardsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Mark JS as enabled so cards get initial hidden state via CSS
+    document.body.classList.add("js-enabled");
+
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.15, rootMargin: "0px 0px -50px 0px" }
     );
 
-    const cards = cardsRef.current?.querySelectorAll(".fade-up-observe");
+    const cards = cardsRef.current?.querySelectorAll(".feature-card");
     cards?.forEach((card) => observer.observe(card));
 
     return () => observer.disconnect();
@@ -56,8 +63,8 @@ const FeaturesSection = () => {
           {features.map((feature, i) => (
             <div
               key={i}
-              className="fade-up-observe glass-card rounded-xl p-6 group hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300"
-              style={{ transitionDelay: `${i * 80}ms` }}
+              className="feature-card glass-card rounded-xl p-6 group hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300"
+              style={{ transitionDelay: `${i * 100}ms` }}
             >
               <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 group-hover:bg-primary/15 group-hover:border-primary/30 transition-all duration-300">
                 <feature.icon className="w-7 h-7 text-primary" strokeWidth={1.5} />
