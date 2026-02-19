@@ -8,14 +8,15 @@ const GoldParticles = () => {
     if (prefersReduced || !containerRef.current) return;
 
     const container = containerRef.current;
-    const particleCount = 20;
+    const particleCount = 40;
 
     for (let i = 0; i < particleCount; i++) {
       const particle = document.createElement("div");
-      const size = Math.random() * 4 + 2;
+      const size = Math.random() * 6 + 2;
       const left = Math.random() * 100;
-      const delay = Math.random() * 15;
-      const duration = Math.random() * 10 + 12;
+      const delay = Math.random() * 12;
+      const duration = Math.random() * 8 + 10;
+      const opacity = size > 5 ? 0.9 : 0.7;
 
       particle.style.cssText = `
         position: absolute;
@@ -24,8 +25,8 @@ const GoldParticles = () => {
         left: ${left}%;
         bottom: -10px;
         border-radius: 50%;
-        background: radial-gradient(circle, hsl(42 78% 55% / 0.8), hsl(42 90% 65% / 0.3));
-        filter: blur(${size > 4 ? 2 : 1}px);
+        background: radial-gradient(circle, hsl(42 78% 55% / ${opacity}), hsl(42 90% 65% / 0.4));
+        filter: blur(${size > 5 ? 2 : size > 3 ? 1 : 0}px);
         animation: particle-float ${duration}s linear ${delay}s infinite;
         pointer-events: none;
       `;

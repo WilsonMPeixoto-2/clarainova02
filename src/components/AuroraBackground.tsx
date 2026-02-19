@@ -59,19 +59,19 @@ const FRAGMENT_SHADER = `
     vec3 color = mix(gold1, gold2, smoothstep(-0.3, 0.5, n1));
     color = mix(color, gold3, smoothstep(-0.2, 0.6, n2) * 0.5);
 
-    // Shape the aurora beams
-    float beam1 = smoothstep(0.2, 0.8, 1.0 - abs(uv.y - 0.3 + n1 * 0.15)) * 0.4;
-    float beam2 = smoothstep(0.3, 0.9, 1.0 - abs(uv.y - 0.7 + n2 * 0.2)) * 0.3;
-    float beam3 = smoothstep(0.1, 0.7, 1.0 - abs(uv.x - 0.2 + n3 * 0.1)) * 0.2;
+    // Shape the aurora beams — more dramatic
+    float beam1 = smoothstep(0.15, 0.75, 1.0 - abs(uv.y - 0.3 + n1 * 0.2)) * 0.55;
+    float beam2 = smoothstep(0.2, 0.85, 1.0 - abs(uv.y - 0.7 + n2 * 0.25)) * 0.45;
+    float beam3 = smoothstep(0.1, 0.65, 1.0 - abs(uv.x - 0.3 + n3 * 0.15)) * 0.35;
 
-    float intensity = (beam1 + beam2 + beam3) * (0.6 + n3 * 0.2);
+    float intensity = (beam1 + beam2 + beam3) * (0.7 + n3 * 0.25);
 
     // Edge fade for seamless blending
     float edgeFade = smoothstep(0.0, 0.3, uv.x) * smoothstep(1.0, 0.7, uv.x)
                    * smoothstep(0.0, 0.2, uv.y) * smoothstep(1.0, 0.8, uv.y);
 
-    // Final opacity — subtle but alive
-    float alpha = intensity * edgeFade * 0.18;
+    // Final opacity — visible and alive
+    float alpha = intensity * edgeFade * 0.45;
 
     gl_FragColor = vec4(color, alpha);
   }

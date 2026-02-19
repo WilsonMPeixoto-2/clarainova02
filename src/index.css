@@ -192,17 +192,16 @@
   position: absolute;
   top: 0;
   right: 0;
-  width: 55%;
+  width: 60%;
   height: 100%;
   pointer-events: none;
   z-index: 1;
-  background: radial-gradient(
-    ellipse 60% 80% at 70% 40%,
-    hsl(42 78% 55% / 0.06) 0%,
-    transparent 70%
-  );
+  background:
+    radial-gradient(ellipse 50% 70% at 65% 35%, hsl(42 78% 55% / 0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 50% at 75% 55%, hsl(42 90% 65% / 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 90% at 55% 40%, hsl(42 50% 35% / 0.08) 0%, transparent 80%);
   mix-blend-mode: screen;
-  animation: energy-shimmer 28s ease-in-out infinite;
+  animation: energy-shimmer 20s ease-in-out infinite;
 }
 
 @media (max-width: 899px) {
@@ -221,12 +220,16 @@
 
 @keyframes energy-shimmer {
   0%, 100% {
-    opacity: 0.6;
-    transform: scale(1) translateY(0);
+    opacity: 0.7;
+    transform: scale(1) translateY(0) rotate(0deg);
   }
-  50% {
+  33% {
     opacity: 1;
-    transform: scale(1.03) translateY(-8px);
+    transform: scale(1.06) translateY(-12px) rotate(0.5deg);
+  }
+  66% {
+    opacity: 0.85;
+    transform: scale(1.02) translateY(-4px) rotate(-0.3deg);
   }
 }
 
