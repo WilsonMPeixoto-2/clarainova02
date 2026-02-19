@@ -110,9 +110,8 @@ const HeroSection = () => {
               {/* Status badges */}
               <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
-                  <span className="w-2 h-2 rounded-full bg-primary/80" />
-                  <span>🔮</span>
-                  INTELIGÊNCIA ADMINISTRATIVA
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  🚀 INTELIGÊNCIA ADMINISTRATIVA
                 </span>
               </motion.div>
 
@@ -125,7 +124,7 @@ const HeroSection = () => {
 
               {/* CLARA - letter by letter */}
               <motion.h1
-                className="font-display font-extrabold tracking-[0.08em] text-6xl sm:text-7xl lg:text-8xl leading-[1] text-gradient-gold"
+                className="font-display font-extrabold tracking-[0.06em] text-6xl sm:text-7xl lg:text-8xl leading-[1] text-gradient-gold"
                 variants={itemVariants}
               >
                 CLARA
