@@ -3,6 +3,8 @@ import { motion, useScroll, useTransform, useReducedMotion } from "motion/react"
 import claraHero from "@/assets/clara-hero.jpg";
 import GoldParticles from "@/components/GoldParticles";
 import AuroraBackground from "@/components/AuroraBackground";
+import HeroDebugOverlay from "@/components/HeroDebugOverlay";
+import { useMagneticCursor } from "@/hooks/useMagneticCursor";
 
 const quickQuestions = [
   "Como anexar documentos no SEI-Rio?",
@@ -55,6 +57,8 @@ const letterVariants = {
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion();
+  const btnPrimaryRef = useMagneticCursor<HTMLButtonElement>();
+  const btnSecondaryRef = useMagneticCursor<HTMLButtonElement>();
 
   // Parallax: image moves slower than scroll
   const { scrollYProgress } = useScroll({
@@ -66,7 +70,7 @@ const HeroSection = () => {
 
   return (
     <section ref={sectionRef} className="relative min-h-screen overflow-hidden noise-overlay">
-      {/* Background image with parallax */}
+      {/* Background image with parallax + Layout Contract safe frame */}
       <motion.div
         className="absolute inset-0 z-0"
         style={{ y: shouldReduceMotion ? 0 : bgY }}
@@ -74,25 +78,17 @@ const HeroSection = () => {
         <img
           src={claraHero}
           alt=""
-          className="w-full h-full object-cover"
+          className="hero-clara-img w-full h-full object-cover"
           fetchPriority="high"
           aria-hidden="true"
         />
-        {/* Overlay - mobile */}
-        <div
-          className="absolute inset-0 md:hidden"
-          style={{
-            background: "linear-gradient(to bottom, hsl(220 20% 4% / 0.6) 0%, hsl(220 20% 4% / 0.4) 30%, hsl(220 20% 4% / 0.7) 70%, hsl(220 20% 4% / 0.9) 100%)",
-          }}
-        />
-        {/* Overlay - desktop */}
-        <div
-          className="absolute inset-0 hidden md:block"
-          style={{
-            background: "linear-gradient(to right, hsl(220 20% 4% / 0.85) 0%, hsl(220 20% 4% / 0.6) 35%, hsl(220 20% 4% / 0.2) 60%, transparent 80%)",
-          }}
-        />
+
+        {/* Directional overlay — dark on left (text), transparent on right (face) */}
+        <div className="absolute inset-0 hero-overlay-directional" />
       </motion.div>
+
+      {/* Energy glow layer over art side */}
+      <div className="hero-energy-glow" aria-hidden="true" />
 
       {/* Aurora with parallax */}
       <motion.div style={{ y: shouldReduceMotion ? 0 : auroraY }} className="absolute inset-0">
@@ -101,12 +97,15 @@ const HeroSection = () => {
 
       <GoldParticles />
 
-      {/* Content */}
+      {/* Debug overlay (?debugLayout=1) */}
+      <HeroDebugOverlay />
+
+      {/* Content — Split Hero grid */}
       <div className="relative z-10 container mx-auto px-6 pt-24 md:pt-28 pb-16 md:pb-24 min-h-screen flex items-center">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center w-full">
-          {/* Text side */}
+          {/* COLUMN A: Copy (anchored left) */}
           <motion.div
-            className="md:col-span-7 space-y-6 md:space-y-8"
+            className="md:col-span-7 hero-copy-column space-y-6 md:space-y-8"
             variants={shouldReduceMotion ? undefined : containerVariants}
             initial={shouldReduceMotion ? undefined : "hidden"}
             animate="visible"
@@ -120,7 +119,7 @@ const HeroSection = () => {
 
             {/* CLARA - letter by letter */}
             <motion.h1
-              className="font-display font-bold tracking-[0.05em] text-5xl sm:text-6xl lg:text-7xl leading-[1.1]"
+              className="font-display font-extrabold tracking-[0.05em] text-5xl sm:text-6xl lg:text-7xl leading-[1.1]"
               variants={itemVariants}
             >
               {CLARA_LETTERS.map((letter, i) => (
@@ -155,11 +154,17 @@ const HeroSection = () => {
             </motion.p>
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-2">
-              <button className="magnetic-btn px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-base hover:scale-[1.02] transition-all glow-pulse flex items-center justify-center gap-2">
+              <button
+                ref={btnPrimaryRef}
+                className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-base transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
                 Iniciar conversa
               </button>
-              <button className="magnetic-btn px-6 py-3 rounded-lg border border-border text-foreground font-medium text-base hover:bg-surface-elevated hover:border-gold/30 transition-all flex items-center justify-center gap-2">
+              <button
+                ref={btnSecondaryRef}
+                className="px-6 py-3 rounded-lg border border-border text-foreground font-medium text-base hover:bg-surface-elevated hover:border-gold/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
                 Ver tópicos
               </button>
@@ -194,8 +199,8 @@ const HeroSection = () => {
             </motion.div>
           </motion.div>
 
-          {/* Empty right side */}
-          <div className="hidden md:block md:col-span-5" />
+          {/* COLUMN B: Art space (empty — image is background with safe frame) */}
+          <div className="hidden md:block md:col-span-5" aria-hidden="true" />
         </div>
       </div>
 
