@@ -92,12 +92,11 @@ const HeroSection = () => {
 
       <HeroDebugOverlay />
 
-      {/* Content — Split Hero grid */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-24 md:pt-28 pb-16 md:pb-24 flex items-center">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center w-full">
-          {/* COLUMN A: Copy inside glass card */}
+      {/* Content — card flutuante, sem grid */}
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-24 md:pt-28 pb-16 md:pb-24 min-h-[inherit] flex items-center">
+        <div className="w-full">
           <motion.div
-            className="md:col-span-7 hero-copy-column"
+            className="hero-copy-column"
             variants={shouldReduceMotion ? undefined : containerVariants}
             initial={shouldReduceMotion ? undefined : "hidden"}
             animate="visible"
@@ -169,13 +168,13 @@ const HeroSection = () => {
                 </a>
               </motion.p>
 
-              {/* Quick questions — horizontal carousel on mobile, vertical stack on desktop */}
+              {/* Quick questions */}
               <motion.div variants={itemVariants}>
                 <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
                   Perguntas rápidas
                 </p>
 
-                {/* Mobile: horizontal carousel with arrows */}
+                {/* Mobile: horizontal carousel */}
                 <div className="md:hidden relative">
                   <div
                     ref={chipsRef}
@@ -190,7 +189,6 @@ const HeroSection = () => {
                       </button>
                     ))}
                   </div>
-                  {/* Carousel arrows */}
                   <button
                     onClick={() => scrollChips("left")}
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground z-10"
@@ -221,9 +219,6 @@ const HeroSection = () => {
               </motion.div>
             </div>
           </motion.div>
-
-          {/* COLUMN B: Art space */}
-          <div className="hidden md:block md:col-span-5" aria-hidden="true" />
         </div>
       </div>
 
