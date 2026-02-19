@@ -1,5 +1,6 @@
 import claraHero from "@/assets/clara-hero.jpg";
 import GoldParticles from "@/components/GoldParticles";
+import AuroraBackground from "@/components/AuroraBackground";
 
 const quickQuestions = [
   "Como anexar documentos no SEI-Rio?",
@@ -44,22 +45,8 @@ const HeroSection = () => {
         />
       </div>
 
-      {/* Energy streams */}
-      <div className="absolute inset-0 z-[1]" aria-hidden="true">
-        <div
-          className="energy-breathe absolute top-1/4 -left-32 w-[600px] h-[600px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, hsl(42 78% 55% / 0.08), transparent 70%)",
-          }}
-        />
-        <div
-          className="energy-breathe absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, hsl(42 90% 65% / 0.06), transparent 70%)",
-            animationDelay: "8s",
-          }}
-        />
-      </div>
+      {/* WebGL Aurora light beams */}
+      <AuroraBackground />
 
       <GoldParticles />
 
