@@ -125,24 +125,15 @@ const HeroSection = () => {
 
               {/* CLARA - letter by letter */}
               <motion.h1
-                className="font-display font-extrabold tracking-[0.05em] text-5xl sm:text-6xl lg:text-7xl leading-[1.1]"
+                className="font-display font-extrabold tracking-[0.08em] text-6xl sm:text-7xl lg:text-8xl leading-[1] text-gradient-gold"
                 variants={itemVariants}
               >
-                {CLARA_LETTERS.map((letter, i) => (
-                  <motion.span
-                    key={i}
-                    custom={i}
-                    variants={letterVariants}
-                    className="inline-block text-gradient-gold"
-                  >
-                    {letter}
-                  </motion.span>
-                ))}
+                CLARA
               </motion.h1>
 
               <motion.p
                 variants={itemVariants}
-                className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-foreground leading-snug"
+                className="font-display text-2xl sm:text-3xl lg:text-[2.5rem] font-semibold text-foreground leading-[1.25]"
               >
                 <span className="text-primary">C</span>onsultora de{" "}
                 <span className="text-primary">L</span>egislação e{" "}
@@ -188,19 +179,15 @@ const HeroSection = () => {
                 <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
                   Perguntas rápidas
                 </p>
-                <div className="relative">
-                  <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background/80 to-transparent z-10 md:hidden" />
-                  <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent z-10 md:hidden" />
-                  <div className="flex gap-2 overflow-x-auto scroll-snap-x-mandatory scrollbar-hide md:overflow-visible md:flex-wrap md:max-w-[600px]">
-                    {quickQuestions.map((q, i) => (
-                      <button
-                        key={i}
-                        className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium glass-card text-muted-foreground hover:text-foreground hover:border-gold/40 hover:scale-[1.03] transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-col gap-2 max-w-[520px]">
+                  {quickQuestions.map((q, i) => (
+                    <button
+                      key={i}
+                      className="w-fit px-4 py-2 rounded-full text-sm font-medium glass-card text-muted-foreground hover:text-foreground hover:border-gold/40 hover:scale-[1.02] transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                    >
+                      {q}
+                    </button>
+                  ))}
                 </div>
               </motion.div>
             </div>

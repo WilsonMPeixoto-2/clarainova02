@@ -394,20 +394,20 @@
 
 /* Hero glass card — semi-transparent container matching production */
 .hero-glass-card {
-  background: hsl(222 35% 7% / 0.55);
-  backdrop-filter: blur(16px);
-  border: 1px solid hsl(220 25% 22% / 0.6);
+  background: hsl(222 35% 7% / 0.50);
+  backdrop-filter: blur(20px);
+  border: 1px solid hsl(220 25% 22% / 0.35);
   border-radius: 1rem;
-  padding: 2rem 2.25rem;
+  padding: 2.5rem 2.5rem;
 }
 @media (min-width: 1024px) {
   .hero-glass-card {
-    padding: 2.5rem 2.75rem;
+    padding: 2.75rem 3rem;
   }
 }
 @media (max-width: 899px) {
   .hero-glass-card {
-    background: hsl(222 35% 7% / 0.65);
+    background: hsl(222 35% 7% / 0.60);
     padding: 1.5rem 1.25rem;
     border-radius: 0.75rem;
   }
