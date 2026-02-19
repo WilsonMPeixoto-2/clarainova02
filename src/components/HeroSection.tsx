@@ -60,7 +60,6 @@ const HeroSection = () => {
   const btnPrimaryRef = useMagneticCursor<HTMLButtonElement>();
   const btnSecondaryRef = useMagneticCursor<HTMLButtonElement>();
 
-  // Parallax: image moves slower than scroll
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
@@ -82,12 +81,10 @@ const HeroSection = () => {
           fetchPriority="high"
           aria-hidden="true"
         />
-
-        {/* Directional overlay — dark on left (text), transparent on right (face) */}
         <div className="absolute inset-0 hero-overlay-directional" />
       </motion.div>
 
-      {/* Energy glow layer over art side */}
+      {/* Energy glow layer */}
       <div className="hero-energy-glow" aria-hidden="true" />
 
       {/* Aurora with parallax */}
@@ -96,110 +93,120 @@ const HeroSection = () => {
       </motion.div>
 
       <GoldParticles />
-
-      {/* Debug overlay (?debugLayout=1) */}
       <HeroDebugOverlay />
 
       {/* Content — Split Hero grid */}
-      <div className="relative z-10 container mx-auto px-6 pt-24 md:pt-28 pb-16 md:pb-24 min-h-screen flex items-center">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-24 md:pt-28 pb-16 md:pb-24 min-h-screen flex items-center">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center w-full">
-          {/* COLUMN A: Copy (anchored left) */}
+          {/* COLUMN A: Copy inside glass card */}
           <motion.div
-            className="md:col-span-7 hero-copy-column space-y-6 md:space-y-8"
+            className="md:col-span-7 hero-copy-column"
             variants={shouldReduceMotion ? undefined : containerVariants}
             initial={shouldReduceMotion ? undefined : "hidden"}
             animate="visible"
           >
-            <motion.p
-              variants={itemVariants}
-              className="text-xs font-medium text-muted-foreground uppercase tracking-wider"
-            >
-              Perguntas frequentes
-            </motion.p>
+            {/* Glass card container matching production */}
+            <div className="hero-glass-card space-y-5 md:space-y-6">
+              {/* Status badges */}
+              <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
+                  <span className="w-2 h-2 rounded-full bg-primary/80" />
+                  <span>🔮</span>
+                  INTELIGÊNCIA ADMINISTRATIVA
+                </span>
+              </motion.div>
 
-            {/* CLARA - letter by letter */}
-            <motion.h1
-              className="font-display font-extrabold tracking-[0.05em] text-5xl sm:text-6xl lg:text-7xl leading-[1.1]"
-              variants={itemVariants}
-            >
-              {CLARA_LETTERS.map((letter, i) => (
-                <motion.span
-                  key={i}
-                  custom={i}
-                  variants={letterVariants}
-                  className="inline-block text-gradient-gold"
+              <motion.div variants={itemVariants}>
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-border bg-surface/60 text-muted-foreground">
+                  <span className="w-2 h-2 rounded-full bg-accent" />
+                  CLARA em manutenção e atualização. Volta em breve.
+                </span>
+              </motion.div>
+
+              {/* CLARA - letter by letter */}
+              <motion.h1
+                className="font-display font-extrabold tracking-[0.05em] text-5xl sm:text-6xl lg:text-7xl leading-[1.1]"
+                variants={itemVariants}
+              >
+                {CLARA_LETTERS.map((letter, i) => (
+                  <motion.span
+                    key={i}
+                    custom={i}
+                    variants={letterVariants}
+                    className="inline-block text-gradient-gold"
+                  >
+                    {letter}
+                  </motion.span>
+                ))}
+              </motion.h1>
+
+              <motion.p
+                variants={itemVariants}
+                className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-foreground leading-snug"
+              >
+                <span className="text-primary">C</span>onsultora de{" "}
+                <span className="text-primary">L</span>egislação e{" "}
+                <span className="text-primary">A</span>poio a{" "}
+                <span className="text-primary">R</span>otinas{" "}
+                <span className="text-primary">A</span>dministrativas
+              </motion.p>
+
+              <motion.p
+                variants={itemVariants}
+                className="text-base sm:text-lg text-muted-foreground max-w-[42ch]"
+                style={{ lineHeight: "1.7" }}
+              >
+                Sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais.
+              </motion.p>
+
+              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-2">
+                <button
+                  ref={btnPrimaryRef}
+                  className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-base transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
                 >
-                  {letter}
-                </motion.span>
-              ))}
-            </motion.h1>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                  Iniciar conversa
+                </button>
+                <button
+                  ref={btnSecondaryRef}
+                  className="px-6 py-3 rounded-full border border-border text-foreground font-medium text-base hover:bg-surface-elevated hover:border-gold/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+                  Ver tópicos
+                </button>
+              </motion.div>
 
-            <motion.p
-              variants={itemVariants}
-              className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-foreground leading-snug"
-            >
-              <span className="text-primary">C</span>onsultora de{" "}
-              <span className="text-primary">L</span>egislação e{" "}
-              <span className="text-primary">A</span>poio a{" "}
-              <span className="text-primary">R</span>otinas{" "}
-              <span className="text-primary">A</span>dministrativas
-            </motion.p>
+              <motion.p variants={itemVariants} className="text-xs text-muted-foreground max-w-[44ch]">
+                Ao usar nossos serviços, você concorda com nossa{" "}
+                <a href="#privacidade" className="text-primary hover:underline font-medium transition-colors">
+                  Política de Privacidade
+                </a>
+              </motion.p>
 
-            <motion.p
-              variants={itemVariants}
-              className="text-base sm:text-lg text-muted-foreground max-w-[42ch]"
-              style={{ lineHeight: "1.7" }}
-            >
-              Sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais.
-            </motion.p>
-
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-2">
-              <button
-                ref={btnPrimaryRef}
-                className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-base transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
-                Iniciar conversa
-              </button>
-              <button
-                ref={btnSecondaryRef}
-                className="px-6 py-3 rounded-lg border border-border text-foreground font-medium text-base hover:bg-surface-elevated hover:border-gold/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
-                Ver tópicos
-              </button>
-            </motion.div>
-
-            <motion.p variants={itemVariants} className="text-xs text-muted-foreground max-w-[44ch]">
-              Ao usar nossos serviços, você concorda com nossa{" "}
-              <a href="#privacidade" className="text-primary hover:underline font-medium transition-colors">
-                Política de Privacidade
-              </a>
-            </motion.p>
-
-            {/* Quick questions chips */}
-            <motion.div variants={itemVariants}>
-              <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
-                Perguntas rápidas
-              </p>
-              <div className="relative">
-                <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 md:hidden" />
-                <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent z-10 md:hidden" />
-                <div className="flex gap-2 overflow-x-auto scroll-snap-x-mandatory scrollbar-hide md:overflow-visible md:flex-wrap md:max-w-[600px]">
-                  {quickQuestions.map((q, i) => (
-                    <button
-                      key={i}
-                      className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium glass-card text-muted-foreground hover:text-foreground hover:border-gold/40 hover:scale-[1.03] transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
-                    >
-                      {q}
-                    </button>
-                  ))}
+              {/* Quick questions chips */}
+              <motion.div variants={itemVariants}>
+                <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
+                  Perguntas rápidas
+                </p>
+                <div className="relative">
+                  <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background/80 to-transparent z-10 md:hidden" />
+                  <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/80 to-transparent z-10 md:hidden" />
+                  <div className="flex gap-2 overflow-x-auto scroll-snap-x-mandatory scrollbar-hide md:overflow-visible md:flex-wrap md:max-w-[600px]">
+                    {quickQuestions.map((q, i) => (
+                      <button
+                        key={i}
+                        className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium glass-card text-muted-foreground hover:text-foreground hover:border-gold/40 hover:scale-[1.03] transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </motion.div>
 
-          {/* COLUMN B: Art space (empty — image is background with safe frame) */}
+          {/* COLUMN B: Art space */}
           <div className="hidden md:block md:col-span-5" aria-hidden="true" />
         </div>
       </div>
