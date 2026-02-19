@@ -392,6 +392,27 @@
   border: 1px solid hsl(42 78% 55% / 0.1);
 }
 
+/* Hero glass card — semi-transparent container matching production */
+.hero-glass-card {
+  background: hsl(220 20% 4% / 0.55);
+  backdrop-filter: blur(16px);
+  border: 1px solid hsl(220 15% 18% / 0.6);
+  border-radius: 1rem;
+  padding: 2rem 2.25rem;
+}
+@media (min-width: 1024px) {
+  .hero-glass-card {
+    padding: 2.5rem 2.75rem;
+  }
+}
+@media (max-width: 899px) {
+  .hero-glass-card {
+    background: hsl(220 20% 4% / 0.65);
+    padding: 1.5rem 1.25rem;
+    border-radius: 0.75rem;
+  }
+}
+
 /* Scrollbar hide utility */
 .scrollbar-hide {
   -ms-overflow-style: none;
