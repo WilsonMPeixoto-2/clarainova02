@@ -33,7 +33,7 @@ const FAQSection = () => {
     <section className="relative py-24 px-6">
       <div className="max-w-3xl mx-auto">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3 text-center">
-          Dúvidas Frequentes
+          DÚVIDAS FREQUENTES
         </p>
         <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4 text-center">
           Clareza operacional com confiança
