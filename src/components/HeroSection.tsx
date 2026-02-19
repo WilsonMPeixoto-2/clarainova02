@@ -5,6 +5,7 @@ import GoldParticles from "@/components/GoldParticles";
 import AuroraBackground from "@/components/AuroraBackground";
 import HeroDebugOverlay from "@/components/HeroDebugOverlay";
 import { useMagneticCursor } from "@/hooks/useMagneticCursor";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const quickQuestions = [
   "Como anexar documentos no SEI-Rio?",
@@ -20,8 +21,6 @@ const quickQuestions = [
   "Como configurar notificações de prazos?",
   "Onde encontro modelos oficiais no sistema?",
 ];
-
-const CLARA_LETTERS = ["C", "L", "A", "R", "A"];
 
 const containerVariants = {
   hidden: {},
@@ -40,25 +39,13 @@ const itemVariants = {
   },
 };
 
-const letterVariants = {
-  hidden: { opacity: 0, y: 20, filter: "blur(2px)" },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: {
-      duration: 0.5,
-      delay: i * 0.08,
-      ease: [0.16, 1, 0.3, 1] as const,
-    },
-  }),
-};
-
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion();
+  const isMobile = useIsMobile();
   const btnPrimaryRef = useMagneticCursor<HTMLButtonElement>();
   const btnSecondaryRef = useMagneticCursor<HTMLButtonElement>();
+  const chipsRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -67,12 +54,18 @@ const HeroSection = () => {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0px", "24px"]);
   const auroraY = useTransform(scrollYProgress, [0, 1], ["0px", "16px"]);
 
+  const scrollChips = (dir: "left" | "right") => {
+    if (!chipsRef.current) return;
+    const amount = dir === "left" ? -200 : 200;
+    chipsRef.current.scrollBy({ left: amount, behavior: "smooth" });
+  };
+
   return (
     <section ref={sectionRef} className="relative min-h-screen overflow-hidden noise-overlay">
-      {/* Background image with parallax + Layout Contract safe frame */}
+      {/* Background image with parallax (no parallax on mobile) */}
       <motion.div
         className="absolute inset-0 z-0"
-        style={{ y: shouldReduceMotion ? 0 : bgY }}
+        style={{ y: shouldReduceMotion || isMobile ? 0 : bgY }}
       >
         <img
           src={claraHero}
@@ -84,15 +77,19 @@ const HeroSection = () => {
         <div className="absolute inset-0 hero-overlay-directional" />
       </motion.div>
 
-      {/* Energy glow layer */}
-      <div className="hero-energy-glow" aria-hidden="true" />
+      {/* Energy glow layer — desktop only */}
+      {!isMobile && <div className="hero-energy-glow" aria-hidden="true" />}
 
-      {/* Aurora with parallax */}
-      <motion.div style={{ y: shouldReduceMotion ? 0 : auroraY }} className="absolute inset-0">
-        <AuroraBackground />
-      </motion.div>
+      {/* Aurora — desktop only */}
+      {!isMobile && (
+        <motion.div style={{ y: shouldReduceMotion ? 0 : auroraY }} className="absolute inset-0">
+          <AuroraBackground />
+        </motion.div>
+      )}
 
-      <GoldParticles />
+      {/* Gold particles — desktop only */}
+      {!isMobile && <GoldParticles />}
+
       <HeroDebugOverlay />
 
       {/* Content — Split Hero grid */}
@@ -105,7 +102,6 @@ const HeroSection = () => {
             initial={shouldReduceMotion ? undefined : "hidden"}
             animate="visible"
           >
-            {/* Glass card container matching production */}
             <div className="hero-glass-card space-y-5 md:space-y-6">
               {/* Status badges */}
               <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
@@ -122,7 +118,7 @@ const HeroSection = () => {
                 </span>
               </motion.div>
 
-              {/* CLARA - letter by letter */}
+              {/* CLARA title */}
               <motion.h1
                 className="font-display font-extrabold tracking-[0.06em] text-6xl sm:text-7xl lg:text-8xl leading-[1] text-gradient-gold"
                 variants={itemVariants}
@@ -173,12 +169,46 @@ const HeroSection = () => {
                 </a>
               </motion.p>
 
-              {/* Quick questions chips */}
+              {/* Quick questions — horizontal carousel on mobile, vertical stack on desktop */}
               <motion.div variants={itemVariants}>
                 <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
                   Perguntas rápidas
                 </p>
-                <div className="flex flex-col gap-2 max-w-[520px]">
+
+                {/* Mobile: horizontal carousel with arrows */}
+                <div className="md:hidden relative">
+                  <div
+                    ref={chipsRef}
+                    className="flex gap-2 overflow-x-auto scrollbar-hide scroll-snap-x-mandatory pb-1"
+                  >
+                    {quickQuestions.map((q, i) => (
+                      <button
+                        key={i}
+                        className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium glass-card text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Carousel arrows */}
+                  <button
+                    onClick={() => scrollChips("left")}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground z-10"
+                    aria-label="Anterior"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={() => scrollChips("right")}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground z-10"
+                    aria-label="Próximo"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                {/* Desktop: vertical stack */}
+                <div className="hidden md:flex flex-col gap-2 max-w-[520px]">
                   {quickQuestions.map((q, i) => (
                     <button
                       key={i}

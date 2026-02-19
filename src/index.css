@@ -64,40 +64,40 @@
   /* Breakpoint: >=1440 */
   @media (min-width: 1440px) {
     :root {
-      --clara-pos-x: 74%;
-      --clara-pos-y: 32%;
-      --clara-scale: 1;
-      --clara-overlay-end: 0.18;
+      --clara-pos-x: 78%;
+      --clara-pos-y: 28%;
+      --clara-scale: 0.95;
+      --clara-overlay-end: 0.15;
     }
   }
 
   /* Breakpoint: 1280–1439 */
   @media (min-width: 1280px) and (max-width: 1439px) {
     :root {
-      --clara-pos-x: 72%;
-      --clara-pos-y: 34%;
-      --clara-scale: 1;
-      --clara-overlay-end: 0.2;
+      --clara-pos-x: 76%;
+      --clara-pos-y: 30%;
+      --clara-scale: 0.95;
+      --clara-overlay-end: 0.18;
     }
   }
 
   /* Breakpoint: 1024–1279 */
   @media (min-width: 1024px) and (max-width: 1279px) {
     :root {
-      --clara-pos-x: 70%;
-      --clara-pos-y: 35%;
-      --clara-scale: 1.02;
-      --clara-overlay-end: 0.22;
+      --clara-pos-x: 74%;
+      --clara-pos-y: 32%;
+      --clara-scale: 0.98;
+      --clara-overlay-end: 0.2;
     }
   }
 
   /* Breakpoint: 900–1023 (limbo crítico) */
   @media (min-width: 900px) and (max-width: 1023px) {
     :root {
-      --clara-pos-x: 68%;
-      --clara-pos-y: 38%;
-      --clara-scale: 1.05;
-      --clara-overlay-end: 0.25;
+      --clara-pos-x: 72%;
+      --clara-pos-y: 34%;
+      --clara-scale: 1;
+      --clara-overlay-end: 0.22;
     }
   }
 
