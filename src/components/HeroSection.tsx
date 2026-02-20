@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import claraHero from "@/assets/clara-hero.jpg";
 import GoldParticles from "@/components/GoldParticles";
@@ -39,6 +39,8 @@ const itemVariants = {
   },
 };
 
+const DESKTOP_INITIAL_COUNT = 5;
+
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion();
@@ -46,6 +48,7 @@ const HeroSection = () => {
   const btnPrimaryRef = useMagneticCursor<HTMLButtonElement>();
   const btnSecondaryRef = useMagneticCursor<HTMLButtonElement>();
   const chipsRef = useRef<HTMLDivElement>(null);
+  const [showAllQuestions, setShowAllQuestions] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -97,7 +100,7 @@ const HeroSection = () => {
       <HeroDebugOverlay />
 
       {/* Content — card flutuante, sem grid */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-24 md:pt-28 pb-16 md:pb-24 min-h-[inherit] flex items-center">
+      <div className="relative z-20 mx-auto w-full max-w-[1400px] px-6 lg:px-10 pt-24 md:pt-28 pb-16 md:pb-24 min-h-[inherit] flex items-center">
         <div className="w-full">
           <motion.div
             className="hero-copy-column"
@@ -209,9 +212,9 @@ const HeroSection = () => {
                   </button>
                 </div>
 
-                {/* Desktop: vertical stack */}
+                {/* Desktop: vertical stack with "Ver mais" */}
                 <div className="hidden md:flex flex-col gap-2 max-w-[520px]">
-                  {quickQuestions.map((q, i) => (
+                  {(showAllQuestions ? quickQuestions : quickQuestions.slice(0, DESKTOP_INITIAL_COUNT)).map((q, i) => (
                     <button
                       key={i}
                       className="w-fit px-4 py-2 rounded-full text-sm font-medium glass-card text-muted-foreground hover:text-foreground hover:border-gold/40 hover:scale-[1.02] transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
@@ -219,6 +222,14 @@ const HeroSection = () => {
                       {q}
                     </button>
                   ))}
+                  {!showAllQuestions && quickQuestions.length > DESKTOP_INITIAL_COUNT && (
+                    <button
+                      onClick={() => setShowAllQuestions(true)}
+                      className="w-fit px-4 py-2 rounded-full text-sm font-medium border border-primary/30 text-primary hover:bg-primary/10 transition-all"
+                    >
+                      Ver mais perguntas ({quickQuestions.length - DESKTOP_INITIAL_COUNT})
+                    </button>
+                  )}
                 </div>
               </motion.div>
             </div>
