@@ -126,7 +126,7 @@ const HeroSection = () => {
 
               {/* CLARA title */}
               <motion.h1
-                className="font-display font-extrabold tracking-[0.06em] text-5xl sm:text-6xl lg:text-7xl leading-[1] text-gradient-gold"
+                className="font-display font-extrabold tracking-[0.06em] text-4xl sm:text-5xl lg:text-5xl leading-[1] text-gradient-gold"
                 variants={itemVariants}
               >
                 CLARA
@@ -134,7 +134,7 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="font-display text-xl sm:text-2xl lg:text-[2rem] font-semibold text-foreground leading-[1.25]"
+                className="font-display text-lg sm:text-xl lg:text-2xl font-semibold text-foreground leading-[1.3]"
               >
                 <span className="text-primary">C</span>onsultora de{" "}
                 <span className="text-primary">L</span>egislação e{" "}
@@ -145,7 +145,7 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="text-sm sm:text-base text-muted-foreground max-w-[40ch]"
+                className="text-xs sm:text-sm text-muted-foreground max-w-[38ch]"
                 style={{ lineHeight: "1.7" }}
               >
                 Sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais.
@@ -154,16 +154,16 @@ const HeroSection = () => {
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 pt-1">
                 <button
                   ref={btnPrimaryRef}
-                  className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-base transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+                  className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-semibold text-sm transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
                   Iniciar conversa
                 </button>
                 <button
                   ref={btnSecondaryRef}
-                  className="px-6 py-3 rounded-full border border-border text-foreground font-medium text-base hover:bg-surface-elevated hover:border-gold/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  className="px-5 py-2.5 rounded-full border border-border text-foreground font-medium text-sm hover:bg-surface-elevated hover:border-gold/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
                   Ver tópicos
                 </button>
               </motion.div>
