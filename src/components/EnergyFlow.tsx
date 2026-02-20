@@ -1,254 +1,219 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 /**
- * EnergyFlow — energia viva que flui ao longo do cabelo e corpo da Clara.
+ * EnergyFlow — WebGL flow-field shader.
  *
- * Técnica: Canvas 2D com partículas que percorrem curvas bezier cúbicas.
- * Cada "fio" de energia é definido por pontos de controle aproximando
- * o traçado do cabelo/silhueta da Clara na imagem.
+ * Cria correntes de energia viva que envolvem o corpo da Clara como veias
+ * de luz/eletricidade. Técnica: curl noise → streamlines → ribbons.
  *
- * As partículas fluem continuamente ao longo dos fios com:
- * - velocidade variável (acelera/desacelera organicamente)
- * - opacidade que pulsa (nascem, atingem pico, morrem)
- * - tamanho variável ao longo do caminho
- * - glow dourado via shadowBlur
+ * Camadas do shader:
+ *   1. Flow field via curl de snoise → ribbons finos que fluem organicamente
+ *   2. Segunda camada de ribbons em escala/velocidade diferente → profundidade
+ *   3. Noise de alta frequência → faíscas/micro-detalhe
+ *   4. Máscara de posição → concentra o efeito onde Clara está
+ *   5. Vignette de borda → dissolução natural
  */
 
-interface Strand {
-  // Curva bezier cúbica: P0, P1(ctrl), P2(ctrl), P3
-  // Coordenadas em % do canvas (0-1)
-  p0: [number, number];
-  p1: [number, number];
-  p2: [number, number];
-  p3: [number, number];
-  particleCount: number;
-  color: string;
-  speed: number; // base speed
-}
+const VERT = `
+  attribute vec2 a_position;
+  void main() {
+    gl_Position = vec4(a_position, 0.0, 1.0);
+  }
+`;
 
-// Fios de energia aproximando o cabelo e silhueta da Clara
-// A imagem mostra clara com cabelo dark, com energia dourada/elétrica
-// Clara ocupa ~55-85% horizontal, ~0-85% vertical
-const STRANDS: Strand[] = [
-  // Cabelo principal — topo, fluindo para direita
-  {
-    p0: [0.58, 0.02],
-    p1: [0.62, 0.12],
-    p2: [0.68, 0.22],
-    p3: [0.72, 0.38],
-    particleCount: 7,
-    color: "hsl(42, 90%, 72%)",
-    speed: 0.18,
-  },
-  // Fio lateral direito — cascata
-  {
-    p0: [0.72, 0.05],
-    p1: [0.78, 0.18],
-    p2: [0.75, 0.35],
-    p3: [0.70, 0.52],
-    particleCount: 8,
-    color: "hsl(38, 78%, 62%)",
-    speed: 0.14,
-  },
-  // Fio centro-esquerdo do cabelo
-  {
-    p0: [0.60, 0.08],
-    p1: [0.58, 0.20],
-    p2: [0.62, 0.35],
-    p3: [0.65, 0.50],
-    particleCount: 6,
-    color: "hsl(45, 95%, 78%)",
-    speed: 0.22,
-  },
-  // Energia no ombro/corpo
-  {
-    p0: [0.70, 0.45],
-    p1: [0.68, 0.55],
-    p2: [0.65, 0.65],
-    p3: [0.62, 0.78],
-    particleCount: 5,
-    color: "hsl(38, 65%, 58%)",
-    speed: 0.12,
-  },
-  // Fio de energia solto — voando
-  {
-    p0: [0.65, 0.10],
-    p1: [0.80, 0.08],
-    p2: [0.85, 0.25],
-    p3: [0.78, 0.42],
-    particleCount: 6,
-    color: "hsl(42, 88%, 70%)",
-    speed: 0.20,
-  },
-  // Fio ondulado longo — cabelo lateral
-  {
-    p0: [0.75, 0.12],
-    p1: [0.82, 0.28],
-    p2: [0.78, 0.45],
-    p3: [0.72, 0.60],
-    particleCount: 7,
-    color: "hsl(38, 70%, 60%)",
-    speed: 0.16,
-  },
-  // Energia ascendente — do corpo ao topo
-  {
-    p0: [0.66, 0.55],
-    p1: [0.70, 0.38],
-    p2: [0.74, 0.22],
-    p3: [0.68, 0.06],
-    particleCount: 5,
-    color: "hsl(50, 100%, 80%)",
-    speed: 0.25,
-  },
-  // Fio fino — detalhe energético
-  {
-    p0: [0.62, 0.25],
-    p1: [0.55, 0.35],
-    p2: [0.58, 0.48],
-    p3: [0.64, 0.58],
-    particleCount: 4,
-    color: "hsl(38, 60%, 55%)",
-    speed: 0.13,
-  },
-];
+const FRAG = `
+  precision highp float;
+  uniform float u_time;
+  uniform vec2  u_resolution;
 
-// Calcula ponto na curva bezier cúbica para t ∈ [0, 1]
-function bezier(
-  p0: [number, number],
-  p1: [number, number],
-  p2: [number, number],
-  p3: [number, number],
-  t: number
-): [number, number] {
-  const mt = 1 - t;
-  const mt2 = mt * mt;
-  const mt3 = mt2 * mt;
-  const t2 = t * t;
-  const t3 = t2 * t;
-  return [
-    mt3 * p0[0] + 3 * mt2 * t * p1[0] + 3 * mt * t2 * p2[0] + t3 * p3[0],
-    mt3 * p0[1] + 3 * mt2 * t * p1[1] + 3 * mt * t2 * p2[1] + t3 * p3[1],
-  ];
-}
+  /* ── Simplex noise ── */
+  vec3 mod289(vec3 x) { return x - floor(x*(1./289.))*289.; }
+  vec2 mod289(vec2 x) { return x - floor(x*(1./289.))*289.; }
+  vec3 permute(vec3 x) { return mod289(((x*34.)+1.)*x); }
 
-interface Particle {
-  t: number;           // posição na curva [0, 1]
-  strandIdx: number;
-  speed: number;       // velocidade individual
-  life: number;        // [0, 1] — ciclo de vida
-  size: number;        // raio da partícula
-  trailLength: number; // comprimento do rastro em nº de amostras
-}
+  float snoise(vec2 v) {
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                       -0.577350269189626, 0.024390243902439);
+    vec2 i  = floor(v + dot(v, C.yy));
+    vec2 x0 = v - i + dot(i, C.xx);
+    vec2 i1  = (x0.x > x0.y) ? vec2(1.,0.) : vec2(0.,1.);
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod289(i);
+    vec3 p = permute(permute(i.y+vec3(0.,i1.y,1.))+i.x+vec3(0.,i1.x,1.));
+    vec3 m = max(.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.);
+    m = m*m; m = m*m;
+    vec3 x2 = 2.*fract(p*C.www)-1.;
+    vec3 h  = abs(x2)-.5;
+    vec3 ox = floor(x2+.5);
+    vec3 a0 = x2-ox;
+    m *= 1.79284291400159 - 0.85373472095314*(a0*a0+h*h);
+    vec3 g;
+    g.x  = a0.x*x0.x + h.x*x0.y;
+    g.yz = a0.yz*x12.xz + h.yz*x12.yw;
+    return 130.*dot(m,g);
+  }
+
+  /* ── Curl noise → campo de fluxo ── */
+  vec2 curl(vec2 p, float t) {
+    float e = 0.008;
+    float n0 = snoise(p + vec2(0.,  e) + vec2(t*0.18, 0.));
+    float n1 = snoise(p + vec2(0., -e) + vec2(t*0.18, 0.));
+    float n2 = snoise(p + vec2( e,  0.) + vec2(0., t*0.12));
+    float n3 = snoise(p + vec2(-e,  0.) + vec2(0., t*0.12));
+    return vec2((n0-n1)/(2.*e), -(n2-n3)/(2.*e));
+  }
+
+  /* ── Ribbon: fração cíclica de ângulo → feixe fino ── */
+  float ribbon(vec2 flow, float phase, float thickness) {
+    float angle = atan(flow.y, flow.x);
+    float r = fract(angle * 2.2 + phase);
+    return pow(smoothstep(0.,thickness,r)*smoothstep(1.,1.-thickness,r), 1.8);
+  }
+
+  void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution;
+    float t  = u_time * 0.55;
+
+    /* ── Máscara de posição: onde Clara está ── */
+    /* Clara ocupa aproximadamente 50-90% em X, 0-90% em Y              */
+    /* A máscara é mais densa no centro do corpo (~65-78% X, 20-70% Y)  */
+    float mX = smoothstep(0.38, 0.60, uv.x) * smoothstep(1.00, 0.72, uv.x);
+    float mY = smoothstep(0.00, 0.12, uv.y) * smoothstep(1.00, 0.08, uv.y);
+    float bodyMask = mX * mY;
+    bodyMask = pow(bodyMask, 0.55); /* abre mais a máscara */
+
+    if (bodyMask < 0.01) {
+      gl_FragColor = vec4(0.);
+      return;
+    }
+
+    /* ── Camada 1: flow ribbons largos (cabelo / contorno) ── */
+    vec2 p1   = uv * 2.8 + vec2(0., t * 0.30);
+    vec2 f1   = curl(p1, t);
+    float r1  = ribbon(f1, t * 0.25, 0.14);
+
+    /* ── Camada 2: flow ribbons finos rápidos (energia elétrica) ── */
+    vec2 p2   = uv * 5.5 + vec2(t * 0.15, t * 0.55);
+    vec2 f2   = curl(p2, t * 1.4);
+    float r2  = ribbon(f2, -t * 0.40, 0.09);
+
+    /* ── Camada 3: micro-faíscas (noise de alta freq) ── */
+    float spark = snoise(uv * 14. + vec2(t*0.9, -t*0.6));
+    spark = smoothstep(0.72, 1.0, spark);
+
+    /* ── Combinação de camadas ── */
+    float energy = r1 * 0.75 + r2 * 0.55 + spark * 0.30;
+    energy = clamp(energy, 0., 1.);
+
+    /* ── Pulsação temporal ── */
+    float pulse = 0.82 + 0.18 * sin(t * 1.8 + uv.y * 3.0);
+    energy *= pulse;
+
+    /* ── Paleta de cores: dourado → branco elétrico ── */
+    vec3 goldDeep  = vec3(0.72, 0.48, 0.08);   /* âmbar profundo     */
+    vec3 gold      = vec3(0.92, 0.72, 0.22);   /* dourado principal  */
+    vec3 goldBright= vec3(1.00, 0.92, 0.60);   /* dourado brilhante  */
+    vec3 white     = vec3(1.00, 0.98, 0.95);   /* branco elétrico    */
+
+    vec3 col = goldDeep;
+    col = mix(col, gold,      smoothstep(0.15, 0.45, energy));
+    col = mix(col, goldBright,smoothstep(0.45, 0.72, energy));
+    col = mix(col, white,     smoothstep(0.72, 1.00, energy));
+
+    /* ── Alpha: energy × bodyMask + glow halo ── */
+    float halo = pow(energy, 0.6) * 0.18;  /* glow difuso          */
+    float core = pow(energy, 1.4) * 0.80;  /* núcleo nítido        */
+    float alpha = (core + halo) * bodyMask;
+    alpha = clamp(alpha, 0., 1.);
+
+    gl_FragColor = vec4(col, alpha);
+  }
+`;
 
 const EnergyFlow = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
-  const particlesRef = useRef<Particle[]>([]);
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const glRef      = useRef<WebGLRenderingContext | null>(null);
+  const progRef    = useRef<WebGLProgram | null>(null);
+  const rafRef     = useRef<number>(0);
+  const startRef   = useRef(0);
+
+  const initGL = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return false;
+
+    const gl = canvas.getContext("webgl", {
+      alpha: true,
+      premultipliedAlpha: false,
+      antialias: false,
+      preserveDrawingBuffer: false,
+    });
+    if (!gl) return false;
+
+    const compile = (type: number, src: string) => {
+      const s = gl.createShader(type)!;
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+        console.warn("EnergyFlow shader error:", gl.getShaderInfoLog(s));
+      }
+      return s;
+    };
+
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      console.warn("EnergyFlow link error:", gl.getProgramInfoLog(prog));
+      return false;
+    }
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER,
+      new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+
+    const pos = gl.getAttribLocation(prog, "a_position");
+    gl.enableVertexAttribArray(pos);
+    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    glRef.current  = gl;
+    progRef.current = prog;
+    return true;
+  }, []);
 
   useEffect(() => {
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+    if (!initGL()) return;
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Inicializa partículas distribuídas pelos fios
-    const particles: Particle[] = [];
-    STRANDS.forEach((strand, si) => {
-      for (let i = 0; i < strand.particleCount; i++) {
-        particles.push({
-          t: Math.random(), // posição inicial aleatória
-          strandIdx: si,
-          speed: strand.speed * (0.7 + Math.random() * 0.6),
-          life: Math.random(),
-          size: 1.5 + Math.random() * 2.5,
-          trailLength: 8 + Math.floor(Math.random() * 12),
-        });
-      }
-    });
-    particlesRef.current = particles;
+    const gl     = glRef.current!;
+    const prog   = progRef.current!;
+    const canvas = canvasRef.current!;
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio, 2);
-      canvas.width = canvas.clientWidth * dpr;
+      const dpr = Math.min(window.devicePixelRatio, 1.5);
+      canvas.width  = canvas.clientWidth  * dpr;
       canvas.height = canvas.clientHeight * dpr;
-      ctx.scale(dpr, dpr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
     };
     resize();
     window.addEventListener("resize", resize);
+    startRef.current = performance.now();
 
-    let lastTime = 0;
-
-    const render = (now: number) => {
-      const dt = Math.min((now - lastTime) / 1000, 0.05); // delta em segundos, cap 50ms
-      lastTime = now;
-
-      const W = canvas.clientWidth;
-      const H = canvas.clientHeight;
-
-      ctx.clearRect(0, 0, W, H);
-
-      particles.forEach((p) => {
-        const strand = STRANDS[p.strandIdx];
-
-        // Avança posição
-        p.t += p.speed * dt;
-        p.life += dt * 0.6;
-
-        // Loop: quando chega ao fim, reinicia no início com novo t aleatório
-        if (p.t > 1) {
-          p.t = Math.random() * 0.15; // reaparecer no início da curva
-          p.life = 0;
-        }
-
-        // Opacidade baseada no ciclo de vida e posição no fio
-        const lifeFade = Math.sin(p.life * Math.PI * 0.5); // 0→1→fade
-        const trailFade = p.t < 0.1 ? p.t / 0.1 : p.t > 0.85 ? (1 - p.t) / 0.15 : 1;
-        const alpha = lifeFade * trailFade;
-
-        if (alpha <= 0.01) return;
-
-        // Posição atual
-        const [cx, cy] = bezier(strand.p0, strand.p1, strand.p2, strand.p3, p.t);
-
-        // Desenha rastro (trail)
-        const trailSteps = p.trailLength;
-        for (let j = trailSteps; j >= 0; j--) {
-          const trailT = Math.max(0, p.t - (j / trailSteps) * 0.06);
-          const [tx, ty] = bezier(strand.p0, strand.p1, strand.p2, strand.p3, trailT);
-          const trailAlpha = alpha * (1 - j / trailSteps) * 0.6;
-          const trailSize = p.size * (1 - j / trailSteps) * 0.8;
-
-          ctx.beginPath();
-          ctx.arc(tx * W, ty * H, Math.max(0.3, trailSize), 0, Math.PI * 2);
-          ctx.fillStyle = strand.color.replace(")", ` / ${trailAlpha})`).replace("hsl(", "hsla(").replace("hsla(", "hsl(");
-          ctx.fill();
-        }
-
-        // Desenha partícula principal com glow
-        ctx.save();
-        ctx.shadowColor = strand.color;
-        ctx.shadowBlur = 8 + p.size * 3;
-        ctx.globalAlpha = alpha;
-
-        // Núcleo brilhante (branco/dourado claro)
-        ctx.beginPath();
-        ctx.arc(cx * W, cy * H, p.size * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = `hsl(50 100% 95%)`;
-        ctx.fill();
-
-        // Halo dourado ao redor
-        ctx.shadowBlur = 16 + p.size * 5;
-        ctx.beginPath();
-        ctx.arc(cx * W, cy * H, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = strand.color;
-        ctx.fill();
-
-        ctx.restore();
-      });
-
+    const render = () => {
+      const t = (performance.now() - startRef.current) / 1000;
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(prog);
+      gl.uniform1f(gl.getUniformLocation(prog, "u_time"), t);
+      gl.uniform2f(gl.getUniformLocation(prog, "u_resolution"), canvas.width, canvas.height);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       rafRef.current = requestAnimationFrame(render);
     };
 
@@ -258,7 +223,7 @@ const EnergyFlow = () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
     };
-  }, []);
+  }, [initGL]);
 
   return (
     <canvas
