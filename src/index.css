@@ -428,13 +428,9 @@
   position: relative;
   overflow: hidden;
   background: transparent;
-  border: 1px solid hsl(var(--gold) / 0.35);
+  border: none;
   border-radius: 1rem;
   padding: 2.25rem 2.25rem;
-  box-shadow:
-    0 0 20px hsl(var(--gold) / 0.08),
-    0 0 60px hsl(var(--gold) / 0.04),
-    inset 0 0 30px hsl(var(--gold) / 0.03);
 }
 
 /* Pseudo-element: background only (no blur by default) */
@@ -442,7 +438,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: hsl(var(--card) / 0.65);
+  background: var(--hero-card-bg);
+  border: 1px solid var(--hero-card-border);
   border-radius: inherit;
   z-index: 0;
 }
