@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform, useReducedMotion } from "motion/react"
 import claraHero from "@/assets/clara-hero.jpg";
 import GoldParticles from "@/components/GoldParticles";
 import AuroraBackground from "@/components/AuroraBackground";
+import LightRays from "@/components/LightRays";
 import HeroDebugOverlay from "@/components/HeroDebugOverlay";
 import { useMagneticCursor } from "@/hooks/useMagneticCursor";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -93,6 +94,9 @@ const HeroSection = () => {
           <AuroraBackground />
         </motion.div>
       )}
+
+      {/* Light rays — desktop only */}
+      {!isMobile && <LightRays />}
 
       {/* Gold particles — desktop only */}
       {!isMobile && <GoldParticles />}
