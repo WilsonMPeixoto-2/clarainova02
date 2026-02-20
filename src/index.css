@@ -64,10 +64,16 @@
     --clara-scale: 1;
     --hero-overlay-opacity: 0.85;
 
-    /* Token-based hero colors */
+    /* Token-based hero colors — derived from existing design tokens */
     --hero-card-bg: hsl(var(--card) / 0.52);
     --hero-card-border: hsl(var(--border) / 0.22);
     --hero-overlay-base: var(--background);
+
+    /* Overlay gradient stops — derived from --background token */
+    --hero-overlay-base-1: hsl(var(--background) / var(--hero-overlay-opacity));
+    --hero-overlay-base-2: hsl(var(--background) / calc(var(--hero-overlay-opacity) - 0.2));
+    --hero-overlay-base-3: hsl(var(--background) / 0.25);
+    --hero-overlay-base-4: hsl(var(--background) / 0.08);
   }
 
   @media (min-width: 1440px) {
@@ -184,15 +190,15 @@
   inset: 0;
 }
 
-/* Desktop directional overlay — token-based */
+/* Desktop directional overlay — using pre-computed token stops */
 @media (min-width: 900px) {
-  .hero-overlay-directional {
+  .clara-hero .hero-overlay-directional {
     background: linear-gradient(
       to right,
-      hsl(var(--hero-overlay-base) / var(--hero-overlay-opacity)) 0%,
-      hsl(var(--hero-overlay-base) / calc(var(--hero-overlay-opacity) - 0.2)) 30%,
-      hsl(var(--hero-overlay-base) / 0.25) 55%,
-      hsl(var(--hero-overlay-base) / 0.08) 75%,
+      var(--hero-overlay-base-1) 0%,
+      var(--hero-overlay-base-2) 30%,
+      var(--hero-overlay-base-3) 55%,
+      var(--hero-overlay-base-4) 75%,
       transparent 100%
     );
   }
@@ -200,7 +206,7 @@
 
 /* Mobile overlay: vertical gradient — token-based */
 @media (max-width: 899px) {
-  .hero-overlay-directional {
+  .clara-hero .hero-overlay-directional {
     background: linear-gradient(
       to bottom,
       hsl(var(--hero-overlay-base) / 0.55) 0%,
@@ -417,58 +423,65 @@
   border: 1px solid hsl(var(--border) / 0.5);
 }
 
-/* Hero glass card — base (works without mask) */
-.hero-glass-card {
+/* Hero glass card — base (works without mask or blur) */
+.clara-hero .hero-glass-card {
   position: relative;
   overflow: hidden;
   background: transparent;
-  backdrop-filter: none;
   border: none;
   border-radius: 1rem;
-  padding: 2.5rem 2.5rem;
+  padding: 2.25rem 2.25rem;
 }
 
-/* Pseudo-element: background + blur */
-.hero-glass-card::before {
+/* Pseudo-element: background only (no blur by default) */
+.clara-hero .hero-glass-card::before {
   content: '';
   position: absolute;
   inset: 0;
   background: var(--hero-card-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--hero-card-border);
   border-radius: inherit;
-  z-index: -1;
+  z-index: 0;
+}
+
+/* Blur only if supported */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .clara-hero .hero-glass-card::before {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
 }
 
 /* Enhancement: dissolve right edge — only if mask is supported */
 @supports ((-webkit-mask-image: linear-gradient(#000, transparent)) or (mask-image: linear-gradient(#000, transparent))) {
-  .hero-glass-card::before {
+  .clara-hero .hero-glass-card::before {
     -webkit-mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
     mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
   }
 }
 
 /* Card content above pseudo-element */
-.hero-glass-card > * {
+.clara-hero .hero-glass-card > * {
   position: relative;
   z-index: 1;
 }
 
 @media (min-width: 1024px) {
-  .hero-glass-card {
+  .clara-hero .hero-glass-card {
     padding: 2.75rem 3rem;
   }
 }
 
-/* Mobile: no mask, full-width solid card */
+/* Mobile: no mask, solid card using token, reduced blur */
 @media (max-width: 899px) {
-  .hero-glass-card::before {
+  .clara-hero .hero-glass-card::before {
     -webkit-mask-image: none;
     mask-image: none;
-    background: hsl(var(--card) / 0.60);
+    background: var(--hero-card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
-  .hero-glass-card {
+  .clara-hero .hero-glass-card {
     padding: 1.5rem 1.25rem;
     border-radius: 0.75rem;
   }
