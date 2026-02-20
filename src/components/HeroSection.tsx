@@ -61,21 +61,25 @@ const HeroSection = () => {
   };
 
   return (
-    <section ref={sectionRef} className="relative min-h-svh overflow-hidden noise-overlay">
-      {/* Background image with parallax (no parallax on mobile) */}
-      <motion.div
-        className="absolute inset-0 z-0"
-        style={{ y: shouldReduceMotion || isMobile ? 0 : bgY }}
-      >
-        <img
-          src={claraHero}
-          alt=""
-          className="hero-clara-img w-full h-full object-cover"
-          fetchPriority="high"
-          aria-hidden="true"
-        />
-        <div className="absolute inset-0 hero-overlay-directional" />
-      </motion.div>
+    <section ref={sectionRef} className="clara-hero relative min-h-svh overflow-hidden noise-overlay">
+      {/* Background: parallax wrapper → scale wrapper → image */}
+      <div className="absolute inset-0 z-0">
+        <motion.div
+          className="hero-bg-parallax"
+          style={{ y: shouldReduceMotion || isMobile ? 0 : bgY }}
+        >
+          <div className="hero-bg-scale">
+            <img
+              src={claraHero}
+              alt=""
+              className="hero-clara-img w-full h-full object-cover"
+              fetchPriority="high"
+              aria-hidden="true"
+            />
+          </div>
+        </motion.div>
+        <div className="absolute inset-0 hero-overlay-directional z-[10]" />
+      </div>
 
       {/* Energy glow layer — desktop only */}
       {!isMobile && <div className="hero-energy-glow" aria-hidden="true" />}
