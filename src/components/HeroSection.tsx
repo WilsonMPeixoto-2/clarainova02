@@ -108,7 +108,7 @@ const HeroSection = () => {
             initial={shouldReduceMotion ? undefined : "hidden"}
             animate="visible"
           >
-            <div className="hero-glass-card space-y-5 md:space-y-6">
+            <div className="hero-glass-card space-y-3 md:space-y-4">
               {/* Status badges */}
               <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
@@ -126,7 +126,7 @@ const HeroSection = () => {
 
               {/* CLARA title */}
               <motion.h1
-                className="font-display font-extrabold tracking-[0.06em] text-6xl sm:text-7xl lg:text-8xl leading-[1] text-gradient-gold"
+                className="font-display font-extrabold tracking-[0.06em] text-5xl sm:text-6xl lg:text-7xl leading-[1] text-gradient-gold"
                 variants={itemVariants}
               >
                 CLARA
@@ -134,7 +134,7 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="font-display text-2xl sm:text-3xl lg:text-[2.5rem] font-semibold text-foreground leading-[1.25]"
+                className="font-display text-xl sm:text-2xl lg:text-[2rem] font-semibold text-foreground leading-[1.25]"
               >
                 <span className="text-primary">C</span>onsultora de{" "}
                 <span className="text-primary">L</span>egislação e{" "}
@@ -145,13 +145,13 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="text-base sm:text-lg text-muted-foreground max-w-[42ch]"
+                className="text-sm sm:text-base text-muted-foreground max-w-[40ch]"
                 style={{ lineHeight: "1.7" }}
               >
                 Sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais.
               </motion.p>
 
-              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-2">
+              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 pt-1">
                 <button
                   ref={btnPrimaryRef}
                   className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-base transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
