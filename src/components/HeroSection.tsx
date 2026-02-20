@@ -100,7 +100,7 @@ const HeroSection = () => {
       <HeroDebugOverlay />
 
       {/* Content — card flutuante, sem grid */}
-      <div className="relative z-20 mx-auto w-full max-w-[1400px] px-6 lg:px-10 pt-24 md:pt-28 pb-16 md:pb-24 min-h-[inherit] flex items-center">
+      <div className="relative z-20 w-full px-8 lg:px-16 pt-24 md:pt-28 pb-16 md:pb-24 min-h-[inherit] flex items-center">
         <div className="w-full">
           <motion.div
             className="hero-copy-column"
