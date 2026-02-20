@@ -1,17 +1,13 @@
 import { useEffect, useRef, useCallback } from "react";
 
 /**
- * EnergyFlow — WebGL flow-field shader.
+ * EnergyFlow — Plasma/Fluid WebGL shader.
  *
- * Cria correntes de energia viva que envolvem o corpo da Clara como veias
- * de luz/eletricidade. Técnica: curl noise → streamlines → ribbons.
+ * Recria o efeito do vídeo Veo: fluido dourado luminoso que envolve o corpo
+ * da Clara como plasma vivo. Técnica: domain warping recursivo sobre simplex
+ * noise → cria filamentos orgânicos que fluem e se dobram como fogo líquido.
  *
- * Camadas do shader:
- *   1. Flow field via curl de snoise → ribbons finos que fluem organicamente
- *   2. Segunda camada de ribbons em escala/velocidade diferente → profundidade
- *   3. Noise de alta frequência → faíscas/micro-detalhe
- *   4. Máscara de posição → concentra o efeito onde Clara está
- *   5. Vignette de borda → dissolução natural
+ * Inspirado em "Warped Noise" (Inigo Quilez) + fire shader clássico.
  */
 
 const VERT = `
@@ -26,117 +22,161 @@ const FRAG = `
   uniform float u_time;
   uniform vec2  u_resolution;
 
-  /* ── Simplex noise ── */
-  vec3 mod289(vec3 x) { return x - floor(x*(1./289.))*289.; }
-  vec2 mod289(vec2 x) { return x - floor(x*(1./289.))*289.; }
-  vec3 permute(vec3 x) { return mod289(((x*34.)+1.)*x); }
+  /* ══════════════════════════════════════════════
+     SIMPLEX NOISE 2D
+  ══════════════════════════════════════════════ */
+  vec3 mod289v3(vec3 x){return x-floor(x*(1./289.))*289.;}
+  vec2 mod289v2(vec2 x){return x-floor(x*(1./289.))*289.;}
+  vec3 permute3(vec3 x){return mod289v3(((x*34.)+1.)*x);}
 
-  float snoise(vec2 v) {
-    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
-                       -0.577350269189626, 0.024390243902439);
-    vec2 i  = floor(v + dot(v, C.yy));
-    vec2 x0 = v - i + dot(i, C.xx);
-    vec2 i1  = (x0.x > x0.y) ? vec2(1.,0.) : vec2(0.,1.);
-    vec4 x12 = x0.xyxy + C.xxzz;
-    x12.xy -= i1;
-    i = mod289(i);
-    vec3 p = permute(permute(i.y+vec3(0.,i1.y,1.))+i.x+vec3(0.,i1.x,1.));
-    vec3 m = max(.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.);
-    m = m*m; m = m*m;
-    vec3 x2 = 2.*fract(p*C.www)-1.;
-    vec3 h  = abs(x2)-.5;
-    vec3 ox = floor(x2+.5);
-    vec3 a0 = x2-ox;
-    m *= 1.79284291400159 - 0.85373472095314*(a0*a0+h*h);
+  float snoise(vec2 v){
+    const vec4 C=vec4(.211324865405187,.366025403784439,-.577350269189626,.024390243902439);
+    vec2 i=floor(v+dot(v,C.yy));
+    vec2 x0=v-i+dot(i,C.xx);
+    vec2 i1=(x0.x>x0.y)?vec2(1.,0.):vec2(0.,1.);
+    vec4 x12=x0.xyxy+C.xxzz;
+    x12.xy-=i1;
+    i=mod289v2(i);
+    vec3 p=permute3(permute3(i.y+vec3(0.,i1.y,1.))+i.x+vec3(0.,i1.x,1.));
+    vec3 m=max(.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.);
+    m=m*m;m=m*m;
+    vec3 x2=2.*fract(p*C.www)-1.;
+    vec3 h=abs(x2)-.5;
+    vec3 ox=floor(x2+.5);
+    vec3 a0=x2-ox;
+    m*=1.79284291400159-.85373472095314*(a0*a0+h*h);
     vec3 g;
-    g.x  = a0.x*x0.x + h.x*x0.y;
-    g.yz = a0.yz*x12.xz + h.yz*x12.yw;
+    g.x=a0.x*x0.x+h.x*x0.y;
+    g.yz=a0.yz*x12.xz+h.yz*x12.yw;
     return 130.*dot(m,g);
   }
 
-  /* ── Curl noise → campo de fluxo ── */
-  vec2 curl(vec2 p, float t) {
-    float e = 0.008;
-    float n0 = snoise(p + vec2(0.,  e) + vec2(t*0.18, 0.));
-    float n1 = snoise(p + vec2(0., -e) + vec2(t*0.18, 0.));
-    float n2 = snoise(p + vec2( e,  0.) + vec2(0., t*0.12));
-    float n3 = snoise(p + vec2(-e,  0.) + vec2(0., t*0.12));
-    return vec2((n0-n1)/(2.*e), -(n2-n3)/(2.*e));
-  }
-
-  /* ── Ribbon: fração cíclica de ângulo → feixe fino ── */
-  float ribbon(vec2 flow, float phase, float thickness) {
-    float angle = atan(flow.y, flow.x);
-    float r = fract(angle * 2.2 + phase);
-    return pow(smoothstep(0.,thickness,r)*smoothstep(1.,1.-thickness,r), 1.8);
-  }
-
-  void main() {
-    vec2 uv = gl_FragCoord.xy / u_resolution;
-    float t  = u_time * 0.55;
-
-    /* ── Máscara de posição: onde Clara está ── */
-    /* Clara ocupa aproximadamente 50-90% em X, 0-90% em Y              */
-    /* A máscara é mais densa no centro do corpo (~65-78% X, 20-70% Y)  */
-    float mX = smoothstep(0.38, 0.60, uv.x) * smoothstep(1.00, 0.72, uv.x);
-    float mY = smoothstep(0.00, 0.12, uv.y) * smoothstep(1.00, 0.08, uv.y);
-    float bodyMask = mX * mY;
-    bodyMask = pow(bodyMask, 0.55); /* abre mais a máscara */
-
-    if (bodyMask < 0.01) {
-      gl_FragColor = vec4(0.);
-      return;
+  /* ══════════════════════════════════════════════
+     DOMAIN WARPING — o coração do efeito plasma
+     Warp recursivo: o noise é amostrado em coordenadas
+     que já foram distorcidas por outra camada de noise.
+     Resultado: filamentos orgânicos como fogo líquido.
+  ══════════════════════════════════════════════ */
+  float fbm(vec2 p, float t){
+    float v=0.;
+    float amp=0.55;
+    float freq=1.;
+    for(int i=0;i<5;i++){
+      v+=amp*snoise(p*freq+vec2(t*0.18,-t*0.12));
+      amp*=0.50;
+      freq*=2.05;
+      p=p*1.2+vec2(0.3,0.7); /* deslocamento entre oitavas */
     }
+    return v;
+  }
 
-    /* ── Camada 1: flow ribbons largos (cabelo / contorno) ── */
-    vec2 p1   = uv * 2.8 + vec2(0., t * 0.30);
-    vec2 f1   = curl(p1, t);
-    float r1  = ribbon(f1, t * 0.25, 0.14);
+  float warpedNoise(vec2 p, float t){
+    /* 1ª distorção */
+    vec2 q=vec2(
+      fbm(p + vec2(0.00, 0.00), t),
+      fbm(p + vec2(5.20, 1.30), t+0.5)
+    );
+    /* 2ª distorção — alimenta q de volta */
+    vec2 r=vec2(
+      fbm(p + 3.8*q + vec2(1.70, 9.20), t*0.8),
+      fbm(p + 3.8*q + vec2(8.30, 2.80), t*0.8+0.3)
+    );
+    /* Valor final */
+    return fbm(p + 4.5*r, t*0.6);
+  }
 
-    /* ── Camada 2: flow ribbons finos rápidos (energia elétrica) ── */
-    vec2 p2   = uv * 5.5 + vec2(t * 0.15, t * 0.55);
-    vec2 f2   = curl(p2, t * 1.4);
-    float r2  = ribbon(f2, -t * 0.40, 0.09);
+  /* ══════════════════════════════════════════════
+     PALETA FOGO DOURADO
+     0.0 = escuro/fundo, 1.0 = branco elétrico
+  ══════════════════════════════════════════════ */
+  vec3 firePalette(float t){
+    t=clamp(t,0.,1.);
+    vec3 c0=vec3(0.05,0.02,0.00);  /* preto/marrom */
+    vec3 c1=vec3(0.55,0.18,0.00);  /* laranja escuro */
+    vec3 c2=vec3(0.88,0.52,0.05);  /* âmbar */
+    vec3 c3=vec3(0.98,0.80,0.25);  /* dourado */
+    vec3 c4=vec3(1.00,0.97,0.75);  /* branco dourado */
+    vec3 c5=vec3(1.00,1.00,1.00);  /* branco puro — núcleo */
 
-    /* ── Camada 3: micro-faíscas (noise de alta freq) ── */
-    float spark = snoise(uv * 14. + vec2(t*0.9, -t*0.6));
-    spark = smoothstep(0.72, 1.0, spark);
+    if(t<0.2) return mix(c0,c1,t/0.2);
+    if(t<0.40) return mix(c1,c2,(t-0.2)/0.20);
+    if(t<0.60) return mix(c2,c3,(t-0.4)/0.20);
+    if(t<0.80) return mix(c3,c4,(t-0.6)/0.20);
+    return mix(c4,c5,(t-0.8)/0.20);
+  }
 
-    /* ── Combinação de camadas ── */
-    float energy = r1 * 0.75 + r2 * 0.55 + spark * 0.30;
-    energy = clamp(energy, 0., 1.);
+  void main(){
+    vec2 uv=gl_FragCoord.xy/u_resolution;
+    float t=u_time*0.40;
 
-    /* ── Pulsação temporal ── */
-    float pulse = 0.82 + 0.18 * sin(t * 1.8 + uv.y * 3.0);
-    energy *= pulse;
+    /* ── Escala de amostragem: amplifica detalhes ── */
+    vec2 p=uv*2.2;
 
-    /* ── Paleta de cores: dourado → branco elétrico ── */
-    vec3 goldDeep  = vec3(0.72, 0.48, 0.08);   /* âmbar profundo     */
-    vec3 gold      = vec3(0.92, 0.72, 0.22);   /* dourado principal  */
-    vec3 goldBright= vec3(1.00, 0.92, 0.60);   /* dourado brilhante  */
-    vec3 white     = vec3(1.00, 0.98, 0.95);   /* branco elétrico    */
+    /* ── Warped noise principal ── */
+    float n=warpedNoise(p, t);
 
-    vec3 col = goldDeep;
-    col = mix(col, gold,      smoothstep(0.15, 0.45, energy));
-    col = mix(col, goldBright,smoothstep(0.45, 0.72, energy));
-    col = mix(col, white,     smoothstep(0.72, 1.00, energy));
+    /* ── Normaliza para [0,1] ── */
+    float energy=(n+1.0)*0.5;
 
-    /* ── Alpha: energy × bodyMask + glow halo ── */
-    float halo = pow(energy, 0.6) * 0.18;  /* glow difuso          */
-    float core = pow(energy, 1.4) * 0.80;  /* núcleo nítido        */
-    float alpha = (core + halo) * bodyMask;
-    alpha = clamp(alpha, 0., 1.);
+    /* ── Brilho não-linear: enfatiza filamentos brilhantes ── */
+    energy=pow(energy,1.1);
 
-    gl_FragColor = vec4(col, alpha);
+    /* ── Segunda camada fina: micro-filamentos rápidos ── */
+    float micro=snoise(uv*9.0+vec2(t*1.2,-t*0.8));
+    micro=(micro+1.0)*0.5;
+    micro=pow(micro,3.0)*0.35;
+    energy=clamp(energy+micro,0.,1.);
+
+    /* ── Pulsação de vida ── */
+    float pulse=0.88+0.12*sin(t*2.1+uv.y*4.0+uv.x*2.0);
+    energy*=pulse;
+
+    /* ══════════════════════════════════════════════
+       MÁSCARA CORPORAL — concentra onde Clara está
+       Desktop: Clara ~50–90% X, ~0–95% Y
+       O gradiente é mais denso onde o corpo está
+    ══════════════════════════════════════════════ */
+
+    /* Máscara horizontal: foca no lado direito onde está Clara */
+    float mX=smoothstep(0.32,0.58,uv.x) * smoothstep(1.0,0.62,uv.x);
+
+    /* Máscara vertical: cobre do topo ao rodapé com fade nas bordas */
+    float mY=smoothstep(0.0,0.06,uv.y) * smoothstep(1.0,0.04,uv.y);
+
+    /* Concentração extra no "núcleo" do corpo (~65-78% X) */
+    float bodyCore=smoothstep(0.48,0.68,uv.x)*smoothstep(0.88,0.68,uv.x);
+    float bodyMask=(mX*mY)*1.0 + bodyCore*0.5;
+    bodyMask=clamp(bodyMask,0.,1.);
+
+    /* Expande a máscara de forma não-linear para cobrir mais silhueta */
+    bodyMask=pow(bodyMask,0.45);
+
+    /* Vinheta suave nas bordas do canvas todo */
+    float vigX=smoothstep(0.,0.08,uv.x)*smoothstep(1.,0.92,uv.x);
+    float vigY=smoothstep(0.,0.04,uv.y)*smoothstep(1.,0.96,uv.y);
+    float vignette=vigX*vigY;
+
+    /* ── Cor final via paleta ── */
+    vec3 col=firePalette(energy);
+
+    /* ── Alpha: núcleo nítido + halo difuso ── */
+    float halo=pow(energy,0.5)*0.22;
+    float core=pow(energy,1.6)*0.85;
+    float alpha=(core+halo)*bodyMask*vignette;
+
+    /* Clamp final */
+    alpha=clamp(alpha,0.,0.92);
+
+    gl_FragColor=vec4(col,alpha);
   }
 `;
 
 const EnergyFlow = () => {
-  const canvasRef  = useRef<HTMLCanvasElement>(null);
-  const glRef      = useRef<WebGLRenderingContext | null>(null);
-  const progRef    = useRef<WebGLProgram | null>(null);
-  const rafRef     = useRef<number>(0);
-  const startRef   = useRef(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const glRef     = useRef<WebGLRenderingContext | null>(null);
+  const progRef   = useRef<WebGLProgram | null>(null);
+  const rafRef    = useRef<number>(0);
+  const t0Ref     = useRef(0);
 
   const initGL = useCallback(() => {
     const canvas = canvasRef.current;
@@ -154,9 +194,8 @@ const EnergyFlow = () => {
       const s = gl.createShader(type)!;
       gl.shaderSource(s, src);
       gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-        console.warn("EnergyFlow shader error:", gl.getShaderInfoLog(s));
-      }
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+        console.warn("EnergyFlow shader:", gl.getShaderInfoLog(s));
       return s;
     };
 
@@ -166,7 +205,7 @@ const EnergyFlow = () => {
     gl.linkProgram(prog);
 
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-      console.warn("EnergyFlow link error:", gl.getProgramInfoLog(prog));
+      console.warn("EnergyFlow link:", gl.getProgramInfoLog(prog));
       return false;
     }
 
@@ -196,18 +235,19 @@ const EnergyFlow = () => {
     const prog   = progRef.current!;
     const canvas = canvasRef.current!;
 
+    /* Renderiza em resolução reduzida para performance — o blur do blend mode cobre */
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio, 1.5);
+      const dpr = Math.min(window.devicePixelRatio, 1.2);
       canvas.width  = canvas.clientWidth  * dpr;
       canvas.height = canvas.clientHeight * dpr;
       gl.viewport(0, 0, canvas.width, canvas.height);
     };
     resize();
     window.addEventListener("resize", resize);
-    startRef.current = performance.now();
+    t0Ref.current = performance.now();
 
     const render = () => {
-      const t = (performance.now() - startRef.current) / 1000;
+      const t = (performance.now() - t0Ref.current) / 1000;
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.useProgram(prog);
@@ -218,7 +258,6 @@ const EnergyFlow = () => {
     };
 
     rafRef.current = requestAnimationFrame(render);
-
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
