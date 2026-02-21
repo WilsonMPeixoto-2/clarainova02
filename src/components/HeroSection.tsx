@@ -52,6 +52,13 @@ const HeroSection = () => {
   const [showAllQuestions, setShowAllQuestions] = useState(false);
   const [canPlayVideo, setCanPlayVideo] = useState(false);
 
+  // Fallback: if onCanPlay never fires (e.g. browser policy), show video after timeout
+  useEffect(() => {
+    if (canPlayVideo || isMobile || shouldReduceMotion) return;
+    const timer = setTimeout(() => setCanPlayVideo(true), 3000);
+    return () => clearTimeout(timer);
+  }, [canPlayVideo, isMobile, shouldReduceMotion]);
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
@@ -139,7 +146,8 @@ const HeroSection = () => {
               playsInline
               preload="metadata"
               className={`hero-clara-video transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
-              onCanPlayThrough={() => setCanPlayVideo(true)}
+              onCanPlay={() => setCanPlayVideo(true)}
+              onLoadedData={() => setCanPlayVideo(true)}
               aria-hidden="true"
             />
           </motion.div>
