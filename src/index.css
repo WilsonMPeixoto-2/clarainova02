@@ -70,7 +70,7 @@
     .clara-hero {
       --hero-copy-max: 380px;
       --hero-copy-left: clamp(20px, 2.5vw, 40px);
-      --hero-media-width: 52%;
+      --hero-media-width: 100%;
       --hero-overlay-strength: 0.90;
       --hero-min-h: 100svh;
     }
@@ -80,7 +80,7 @@
     .clara-hero {
       --hero-copy-max: 420px;
       --hero-copy-left: clamp(28px, 3vw, 56px);
-      --hero-media-width: 54%;
+      --hero-media-width: 100%;
       --hero-overlay-strength: 0.88;
     }
   }
@@ -89,7 +89,7 @@
     .clara-hero {
       --hero-copy-max: 460px;
       --hero-copy-left: clamp(40px, 4vw, 72px);
-      --hero-media-width: 55%;
+      --hero-media-width: 100%;
       --hero-overlay-strength: 0.87;
     }
   }
@@ -98,7 +98,7 @@
     .clara-hero {
       --hero-copy-max: 520px;
       --hero-copy-left: clamp(48px, 5vw, 96px);
-      --hero-media-width: 56%;
+      --hero-media-width: 100%;
       --hero-overlay-strength: 0.85;
     }
   }
@@ -122,8 +122,9 @@
   inset: 0;
   z-index: 0;
   background:
+    radial-gradient(ellipse 50% 70% at 25% 50%, hsl(var(--background) / 0.97) 0%, transparent 70%),
     radial-gradient(ellipse 60% 50% at 70% 40%, hsl(var(--gold-dim) / 0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 80% 60% at 30% 60%, hsl(var(--background) / 0.95) 0%, hsl(var(--background)) 100%);
+    hsl(var(--background));
 }
 
 /* Layer 2: Media Stage — right-anchored focal video */
@@ -162,10 +163,10 @@
   background: linear-gradient(
     to right,
     hsl(var(--background)) 0%,
-    hsl(var(--background) / 0.85) 12%,
-    hsl(var(--background) / 0.55) 30%,
-    hsl(var(--background) / 0.2) 50%,
-    transparent 65%
+    hsl(var(--background) / 0.92) 20%,
+    hsl(var(--background) / 0.6) 38%,
+    hsl(var(--background) / 0.15) 58%,
+    transparent 75%
   );
   pointer-events: none;
 }
@@ -211,21 +212,15 @@
   z-index: 0;
 }
 
-/* Blur only if supported */
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+/* Desktop: remove glass card — text relies on overlay for legibility */
+@media (min-width: 900px) {
   .hero-copy-surface::before {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-}
-
-/* Enhancement: dissolve right edge — only if mask is supported */
-@supports ((-webkit-mask-image: linear-gradient(#000, transparent)) or (mask-image: linear-gradient(#000, transparent))) {
-  @media (min-width: 900px) {
-    .hero-copy-surface::before {
-      -webkit-mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
-      mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
-    }
+    background: transparent;
+    border: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }
 
