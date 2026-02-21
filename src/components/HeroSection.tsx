@@ -203,7 +203,7 @@ const HeroSection = () => {
 
       {/* LAYER 3: Content — copy column left-aligned */}
       <div
-        className="relative z-20 mx-auto w-full max-w-[1400px] px-6 lg:px-10 pt-24 md:pt-28 pb-16 md:pb-24 flex items-center"
+        className="relative z-20 w-full px-4 md:px-8 lg:px-12 pt-24 md:pt-28 pb-16 md:pb-24 flex items-center"
         style={{ minHeight: "inherit" }}
       >
         <div className="w-full">

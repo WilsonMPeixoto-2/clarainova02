@@ -68,7 +68,7 @@
 
   @media (min-width: 900px) {
     .clara-hero {
-      --hero-copy-max: 280px;
+      --hero-copy-max: 340px;
       --hero-copy-left: 0px;
       --hero-media-width: 100%;
       --hero-overlay-strength: 0.90;
@@ -78,7 +78,7 @@
 
   @media (min-width: 1024px) {
     .clara-hero {
-      --hero-copy-max: 320px;
+      --hero-copy-max: 380px;
       --hero-copy-left: 0px;
       --hero-media-width: 100%;
       --hero-overlay-strength: 0.88;
@@ -87,7 +87,7 @@
 
   @media (min-width: 1280px) {
     .clara-hero {
-      --hero-copy-max: 340px;
+      --hero-copy-max: 420px;
       --hero-copy-left: 0px;
       --hero-media-width: 100%;
       --hero-overlay-strength: 0.87;
@@ -96,7 +96,7 @@
 
   @media (min-width: 1600px) {
     .clara-hero {
-      --hero-copy-max: 380px;
+      --hero-copy-max: 460px;
       --hero-copy-left: 0px;
       --hero-media-width: 100%;
       --hero-overlay-strength: 0.85;
@@ -186,7 +186,7 @@
 
 /* Layer 3: Content — left-aligned copy column */
 .hero-copy-column {
-  width: clamp(260px, 22vw, 380px);
+  width: clamp(300px, 28vw, 460px);
   max-width: var(--hero-copy-max);
   margin-left: var(--hero-copy-left);
 }
