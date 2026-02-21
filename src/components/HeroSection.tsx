@@ -203,7 +203,7 @@ const HeroSection = () => {
 
       {/* LAYER 3: Content — copy column left-aligned */}
       <div
-        className="relative z-20 w-full px-4 md:px-8 lg:px-12 pt-20 md:pt-20 pb-16 md:pb-24 flex items-center"
+        className="relative z-20 w-full px-4 md:px-8 lg:px-12 pt-16 md:pt-14 pb-16 md:pb-24 flex items-center"
         style={{ minHeight: "inherit" }}
       >
         <div className="w-full">
@@ -219,7 +219,7 @@ const HeroSection = () => {
                 copy-safe-zone
               </span>
             )}
-            <div className="hero-copy-surface space-y-3 md:space-y-4">
+            <div className="hero-copy-surface space-y-4 md:space-y-5">
               {/* Status badges */}
               <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
@@ -237,7 +237,7 @@ const HeroSection = () => {
 
               {/* CLARA title */}
               <motion.h1
-                className="font-display font-extrabold tracking-[0.04em] text-[3rem] leading-[1] text-gradient-gold"
+                className="font-display font-extrabold tracking-[0.06em] text-[3.5rem] md:text-[4rem] leading-[0.95] text-gradient-gold"
                 variants={itemVariants}
               >
                 CLARA
@@ -245,7 +245,7 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="font-display text-[1.35rem] font-bold text-foreground leading-[1.35]"
+                className="font-display text-[1.4rem] md:text-[1.55rem] font-bold text-foreground leading-[1.3]"
               >
                 <span className="text-primary">C</span>onsultora de{" "}
                 <span className="text-primary">L</span>egislação e{" "}
@@ -256,7 +256,7 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="text-[0.875rem] text-muted-foreground max-w-[40ch] leading-[1.6]"
+                className="text-[0.9rem] md:text-[0.95rem] text-muted-foreground max-w-[42ch] leading-[1.65]"
               >
                 Sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais.
               </motion.p>
@@ -264,14 +264,14 @@ const HeroSection = () => {
               <motion.div variants={itemVariants} className="flex flex-row gap-3 pt-1">
                 <button
                   ref={btnPrimaryRef}
-                  className="flex-1 max-w-[200px] py-2.5 rounded-full bg-primary text-primary-foreground font-semibold text-[0.8rem] transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+                  className="flex-1 max-w-[210px] py-3 rounded-full bg-primary text-primary-foreground font-semibold text-[0.85rem] transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
                   Iniciar conversa
                 </button>
                 <button
                   ref={btnSecondaryRef}
-                  className="flex-1 max-w-[200px] py-2.5 rounded-full border border-border text-foreground font-medium text-[0.8rem] hover:bg-surface-elevated hover:border-gold/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 max-w-[210px] py-3 rounded-full border border-border text-foreground font-medium text-[0.85rem] hover:bg-surface-elevated hover:border-gold/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
                   Ver tópicos
