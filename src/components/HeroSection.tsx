@@ -54,10 +54,14 @@ const HeroSection = () => {
 
   // Fallback: if onCanPlay never fires (e.g. browser policy), show video after timeout
   useEffect(() => {
-    if (canPlayVideo || isMobile || shouldReduceMotion) return;
+    if (canPlayVideo || shouldReduceMotion) return;
     const timer = setTimeout(() => setCanPlayVideo(true), 3000);
     return () => clearTimeout(timer);
-  }, [canPlayVideo, isMobile, shouldReduceMotion]);
+  }, [canPlayVideo, shouldReduceMotion]);
+
+  // Mobile video source — set to null until asset is available
+  // When ready, replace with "/videos/clara-hero-mobile.mp4"
+  const mobileVideoSrc: string | null = null;
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -94,7 +98,7 @@ const HeroSection = () => {
   }, []);
 
   const isDebug = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "hero";
-  const showVideo = !isMobile && !shouldReduceMotion;
+  const showVideo = !shouldReduceMotion;
 
   return (
     <section
@@ -121,8 +125,8 @@ const HeroSection = () => {
         {!isMobile && <GoldParticles />}
       </div>
 
-      {/* LAYER 2: Media Stage — right-anchored focal video (desktop only) */}
-      {showVideo && (
+      {/* LAYER 2: Media Stage — video background */}
+      {showVideo && !isMobile && (
         <div
           className="hero-media-stage"
           style={isDebug ? { outline: "2px dashed hsl(210 80% 60%)" } : undefined}
@@ -154,15 +158,31 @@ const HeroSection = () => {
         </div>
       )}
 
-      {/* Mobile poster — static image behind content */}
+      {/* Mobile: vertical video (9:16) or static poster fallback */}
       {isMobile && (
         <div className="absolute inset-0 z-[5]" aria-hidden="true">
-          <img
-            src={claraHero}
-            alt=""
-            className="w-full h-full object-cover"
-            fetchPriority="high"
-          />
+          {mobileVideoSrc && showVideo ? (
+            <video
+              ref={videoRef}
+              src={mobileVideoSrc}
+              poster={claraHero}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className={`w-full h-full object-cover transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
+              onCanPlay={() => setCanPlayVideo(true)}
+              onLoadedData={() => setCanPlayVideo(true)}
+            />
+          ) : (
+            <img
+              src={claraHero}
+              alt=""
+              className="w-full h-full object-cover"
+              fetchPriority="high"
+            />
+          )}
           {/* Dark overlay for text legibility */}
           <div
             className="absolute inset-0"
