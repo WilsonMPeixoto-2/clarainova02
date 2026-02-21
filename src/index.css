@@ -69,7 +69,7 @@
   @media (min-width: 900px) {
     .clara-hero {
       --hero-copy-max: 280px;
-      --hero-copy-left: clamp(12px, 1.5vw, 24px);
+      --hero-copy-left: 0px;
       --hero-media-width: 100%;
       --hero-overlay-strength: 0.90;
       --hero-min-h: 100svh;
@@ -79,7 +79,7 @@
   @media (min-width: 1024px) {
     .clara-hero {
       --hero-copy-max: 320px;
-      --hero-copy-left: clamp(16px, 2vw, 32px);
+      --hero-copy-left: 0px;
       --hero-media-width: 100%;
       --hero-overlay-strength: 0.88;
     }
@@ -88,7 +88,7 @@
   @media (min-width: 1280px) {
     .clara-hero {
       --hero-copy-max: 340px;
-      --hero-copy-left: clamp(20px, 2.5vw, 40px);
+      --hero-copy-left: 0px;
       --hero-media-width: 100%;
       --hero-overlay-strength: 0.87;
     }
@@ -97,7 +97,7 @@
   @media (min-width: 1600px) {
     .clara-hero {
       --hero-copy-max: 380px;
-      --hero-copy-left: clamp(24px, 3vw, 48px);
+      --hero-copy-left: 0px;
       --hero-media-width: 100%;
       --hero-overlay-strength: 0.85;
     }
