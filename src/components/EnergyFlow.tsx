@@ -61,111 +61,129 @@ const FRAG = `
     float v=0.;
     float amp=0.55;
     float freq=1.;
-    for(int i=0;i<5;i++){
-      v+=amp*snoise(p*freq+vec2(t*0.18,-t*0.12));
-      amp*=0.50;
-      freq*=2.05;
-      p=p*1.2+vec2(0.3,0.7); /* deslocamento entre oitavas */
+    for(int i=0;i<6;i++){
+      v+=amp*snoise(p*freq+vec2(t*0.22,-t*0.15));
+      amp*=0.48;
+      freq*=2.1;
+      p=p*1.15+vec2(0.3,0.7);
     }
     return v;
   }
 
   float warpedNoise(vec2 p, float t){
-    /* 1ª distorção */
     vec2 q=vec2(
       fbm(p + vec2(0.00, 0.00), t),
       fbm(p + vec2(5.20, 1.30), t+0.5)
     );
-    /* 2ª distorção — alimenta q de volta */
     vec2 r=vec2(
-      fbm(p + 3.8*q + vec2(1.70, 9.20), t*0.8),
-      fbm(p + 3.8*q + vec2(8.30, 2.80), t*0.8+0.3)
+      fbm(p + 4.2*q + vec2(1.70, 9.20), t*0.85),
+      fbm(p + 4.2*q + vec2(8.30, 2.80), t*0.85+0.3)
     );
-    /* Valor final */
-    return fbm(p + 4.5*r, t*0.6);
+    vec2 s=vec2(
+      fbm(p + 3.5*r + vec2(3.10, 7.40), t*0.7),
+      fbm(p + 3.5*r + vec2(6.50, 4.10), t*0.7+0.2)
+    );
+    return fbm(p + 5.0*s, t*0.5);
   }
 
-  /* ══════════════════════════════════════════════
-     PALETA FOGO DOURADO
-     0.0 = escuro/fundo, 1.0 = branco elétrico
-  ══════════════════════════════════════════════ */
+  /* Segunda variação de warp para camada de detalhe */
+  float warpedNoise2(vec2 p, float t){
+    vec2 q=vec2(
+      fbm(p + vec2(2.10, 3.80), t*1.1),
+      fbm(p + vec2(7.40, 0.60), t*1.1+0.4)
+    );
+    vec2 r=vec2(
+      fbm(p + 3.6*q + vec2(4.20, 1.80), t*0.9),
+      fbm(p + 3.6*q + vec2(0.90, 6.30), t*0.9+0.5)
+    );
+    return fbm(p + 4.0*r, t*0.65);
+  }
+
   vec3 firePalette(float t){
     t=clamp(t,0.,1.);
-    vec3 c0=vec3(0.05,0.02,0.00);  /* preto/marrom */
-    vec3 c1=vec3(0.55,0.18,0.00);  /* laranja escuro */
-    vec3 c2=vec3(0.88,0.52,0.05);  /* âmbar */
-    vec3 c3=vec3(0.98,0.80,0.25);  /* dourado */
-    vec3 c4=vec3(1.00,0.97,0.75);  /* branco dourado */
-    vec3 c5=vec3(1.00,1.00,1.00);  /* branco puro — núcleo */
+    vec3 c0=vec3(0.04,0.01,0.00);
+    vec3 c1=vec3(0.45,0.12,0.00);
+    vec3 c2=vec3(0.80,0.38,0.02);
+    vec3 c3=vec3(0.95,0.65,0.12);
+    vec3 c4=vec3(1.00,0.88,0.45);
+    vec3 c5=vec3(1.00,0.98,0.85);
 
-    if(t<0.2) return mix(c0,c1,t/0.2);
-    if(t<0.40) return mix(c1,c2,(t-0.2)/0.20);
-    if(t<0.60) return mix(c2,c3,(t-0.4)/0.20);
-    if(t<0.80) return mix(c3,c4,(t-0.6)/0.20);
-    return mix(c4,c5,(t-0.8)/0.20);
+    if(t<0.15) return mix(c0,c1,t/0.15);
+    if(t<0.30) return mix(c1,c2,(t-0.15)/0.15);
+    if(t<0.50) return mix(c2,c3,(t-0.30)/0.20);
+    if(t<0.75) return mix(c3,c4,(t-0.50)/0.25);
+    return mix(c4,c5,(t-0.75)/0.25);
   }
 
   void main(){
     vec2 uv=gl_FragCoord.xy/u_resolution;
-    float t=u_time*0.40;
+    float t=u_time*0.35;
 
-    /* ── Escala de amostragem: amplifica detalhes ── */
-    vec2 p=uv*2.2;
+    /* ── Camada principal: plasma denso ── */
+    vec2 p1=uv*2.5;
+    float n1=warpedNoise(p1, t);
+    float e1=(n1+1.0)*0.5;
+    e1=pow(e1,0.95);
 
-    /* ── Warped noise principal ── */
-    float n=warpedNoise(p, t);
+    /* ── Camada 2: filamentos rápidos ── */
+    vec2 p2=uv*3.8+vec2(t*0.1,0.0);
+    float n2=warpedNoise2(p2, t*1.3);
+    float e2=(n2+1.0)*0.5;
+    e2=pow(e2,1.3)*0.6;
 
-    /* ── Normaliza para [0,1] ── */
-    float energy=(n+1.0)*0.5;
+    /* ── Camada 3: micro-detalhes ultra-rápidos ── */
+    float micro1=snoise(uv*12.0+vec2(t*1.5,-t*1.1));
+    float micro2=snoise(uv*18.0+vec2(-t*0.9,t*1.4));
+    float micro=(micro1+micro2+2.0)*0.25;
+    micro=pow(micro,3.5)*0.25;
 
-    /* ── Brilho não-linear: enfatiza filamentos brilhantes ── */
-    energy=pow(energy,1.1);
+    /* ── Camada 4: ondulações lentas de fundo ── */
+    float slow=snoise(uv*1.2+vec2(t*0.08,t*0.05));
+    slow=(slow+1.0)*0.5;
+    slow=pow(slow,0.6)*0.3;
 
-    /* ── Segunda camada fina: micro-filamentos rápidos ── */
-    float micro=snoise(uv*9.0+vec2(t*1.2,-t*0.8));
-    micro=(micro+1.0)*0.5;
-    micro=pow(micro,3.0)*0.35;
-    energy=clamp(energy+micro,0.,1.);
+    /* ── Combinação ── */
+    float energy=clamp(e1 + e2 + micro + slow, 0.0, 1.0);
 
-    /* ── Pulsação de vida ── */
-    float pulse=0.88+0.12*sin(t*2.1+uv.y*4.0+uv.x*2.0);
+    /* ── Pulsação orgânica multi-frequência ── */
+    float pulse=0.85
+      + 0.08*sin(t*1.8+uv.y*5.0+uv.x*3.0)
+      + 0.05*sin(t*3.2+uv.y*8.0-uv.x*2.0)
+      + 0.04*sin(t*5.5+uv.x*12.0);
     energy*=pulse;
 
+    /* ── Filamentos brilhantes (ridge noise) ── */
+    float ridge1=abs(snoise(uv*5.0+vec2(t*0.4,-t*0.3)));
+    float ridge2=abs(snoise(uv*8.0+vec2(-t*0.5,t*0.35)));
+    float ridges=1.0 - (ridge1*ridge2);
+    ridges=pow(ridges, 4.0)*0.35;
+    energy=clamp(energy+ridges, 0.0, 1.0);
+
     /* ══════════════════════════════════════════════
-       MÁSCARA CORPORAL — concentra onde Clara está
-       Desktop: Clara ~50–90% X, ~0–95% Y
-       O gradiente é mais denso onde o corpo está
+       MÁSCARA CORPORAL
     ══════════════════════════════════════════════ */
-
-    /* Máscara horizontal: foca no lado direito onde está Clara */
-    float mX=smoothstep(0.32,0.58,uv.x) * smoothstep(1.0,0.62,uv.x);
-
-    /* Máscara vertical: cobre do topo ao rodapé com fade nas bordas */
-    float mY=smoothstep(0.0,0.06,uv.y) * smoothstep(1.0,0.04,uv.y);
-
-    /* Concentração extra no "núcleo" do corpo (~65-78% X) */
-    float bodyCore=smoothstep(0.48,0.68,uv.x)*smoothstep(0.88,0.68,uv.x);
-    float bodyMask=(mX*mY)*1.0 + bodyCore*0.5;
+    float mX=smoothstep(0.30,0.55,uv.x) * smoothstep(1.0,0.60,uv.x);
+    float mY=smoothstep(0.0,0.05,uv.y) * smoothstep(1.0,0.03,uv.y);
+    float bodyCore=smoothstep(0.45,0.65,uv.x)*smoothstep(0.90,0.65,uv.x);
+    float bodyMask=(mX*mY)*1.0 + bodyCore*0.6;
     bodyMask=clamp(bodyMask,0.,1.);
+    bodyMask=pow(bodyMask,0.4);
 
-    /* Expande a máscara de forma não-linear para cobrir mais silhueta */
-    bodyMask=pow(bodyMask,0.45);
-
-    /* Vinheta suave nas bordas do canvas todo */
-    float vigX=smoothstep(0.,0.08,uv.x)*smoothstep(1.,0.92,uv.x);
-    float vigY=smoothstep(0.,0.04,uv.y)*smoothstep(1.,0.96,uv.y);
+    float vigX=smoothstep(0.,0.06,uv.x)*smoothstep(1.,0.94,uv.x);
+    float vigY=smoothstep(0.,0.03,uv.y)*smoothstep(1.,0.97,uv.y);
     float vignette=vigX*vigY;
 
-    /* ── Cor final via paleta ── */
+    /* ── Cor via paleta ── */
     vec3 col=firePalette(energy);
 
-    /* ── Alpha: núcleo nítido + halo difuso ── */
-    float halo=pow(energy,0.5)*0.22;
-    float core=pow(energy,1.6)*0.85;
-    float alpha=(core+halo)*bodyMask*vignette;
+    /* ── Boost de brilho nos picos ── */
+    col+=vec3(1.0,0.95,0.7)*pow(energy,3.0)*0.5;
 
-    /* Clamp final */
-    alpha=clamp(alpha,0.,0.92);
+    /* ── Alpha com mais presença ── */
+    float halo=pow(energy,0.4)*0.28;
+    float core=pow(energy,1.4)*0.90;
+    float alpha=(core+halo)*bodyMask*vignette;
+    alpha=clamp(alpha,0.,0.95);
 
     gl_FragColor=vec4(col,alpha);
   }
