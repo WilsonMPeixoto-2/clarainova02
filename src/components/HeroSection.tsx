@@ -203,7 +203,7 @@ const HeroSection = () => {
 
       {/* LAYER 3: Content — copy column left-aligned */}
       <div
-        className="relative z-20 w-full px-4 md:px-8 lg:px-12 pt-16 md:pt-14 pb-16 md:pb-24 flex items-center"
+        className="relative z-20 w-full px-4 md:px-8 lg:px-12 pt-12 md:pt-10 pb-16 md:pb-24 flex items-center"
         style={{ minHeight: "inherit" }}
       >
         <div className="w-full">
@@ -219,7 +219,7 @@ const HeroSection = () => {
                 copy-safe-zone
               </span>
             )}
-            <div className="hero-copy-surface space-y-4 md:space-y-5">
+            <div className="hero-copy-surface space-y-5 md:space-y-6">
               {/* Status badges */}
               <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
@@ -230,14 +230,15 @@ const HeroSection = () => {
 
               <motion.div variants={itemVariants}>
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-border bg-surface/60 text-muted-foreground">
-                  <span className="w-2 h-2 rounded-full bg-accent" />
+                  <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                   CLARA em manutenção e atualização. Volta em breve.
                 </span>
               </motion.div>
 
-              {/* CLARA title */}
+              {/* CLARA title — wordmark monumental */}
               <motion.h1
-                className="font-display font-extrabold tracking-[0.06em] text-[3.5rem] md:text-[4rem] leading-[0.95] text-gradient-gold"
+                className="font-display font-extrabold tracking-[0.08em] text-[4.5rem] md:text-[5rem] leading-[0.9] text-gradient-gold"
+                style={{ textShadow: "0 0 40px hsl(38 65% 58% / 0.25), 0 0 80px hsl(38 65% 58% / 0.1)" }}
                 variants={itemVariants}
               >
                 CLARA
@@ -245,18 +246,18 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="font-display text-[1.4rem] md:text-[1.55rem] font-bold text-foreground leading-[1.3]"
+                className="font-display text-[1.5rem] md:text-[1.65rem] font-bold text-foreground/70 leading-[1.45]"
               >
-                <span className="text-primary">C</span>onsultora de{" "}
-                <span className="text-primary">L</span>egislação e{" "}
-                <span className="text-primary">A</span>poio a{" "}
-                <span className="text-primary">R</span>otinas{" "}
-                <span className="text-primary">A</span>dministrativas
+                <span className="text-primary hero-capital-glow">C</span>onsultora de{" "}
+                <span className="text-primary hero-capital-glow">L</span>egislação e{" "}
+                <span className="text-primary hero-capital-glow">A</span>poio a{" "}
+                <span className="text-primary hero-capital-glow">R</span>otinas{" "}
+                <span className="text-primary hero-capital-glow">A</span>dministrativas
               </motion.p>
 
               <motion.p
                 variants={itemVariants}
-                className="text-[0.9rem] md:text-[0.95rem] text-muted-foreground max-w-[42ch] leading-[1.65]"
+                className="text-[0.95rem] md:text-[1rem] text-muted-foreground max-w-[42ch] leading-[1.75]"
               >
                 Sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais.
               </motion.p>
@@ -264,14 +265,14 @@ const HeroSection = () => {
               <motion.div variants={itemVariants} className="flex flex-row gap-3 pt-1">
                 <button
                   ref={btnPrimaryRef}
-                  className="flex-1 max-w-[210px] py-3 rounded-full bg-primary text-primary-foreground font-semibold text-[0.85rem] transition-all glow-pulse flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+                  className="hero-btn-primary flex-1 max-w-[210px] py-3 rounded-full bg-primary text-primary-foreground font-semibold text-[0.85rem] border border-primary/20 transition-all duration-300 ease-out flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/25"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
                   Iniciar conversa
                 </button>
                 <button
                   ref={btnSecondaryRef}
-                  className="flex-1 max-w-[210px] py-3 rounded-full border border-border text-foreground font-medium text-[0.85rem] hover:bg-surface-elevated hover:border-gold/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                  className="hero-btn-secondary flex-1 max-w-[210px] py-3 rounded-full border border-border/60 text-foreground font-medium text-[0.85rem] transition-all duration-300 ease-out flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:bg-white/5 hover:border-white/15"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
                   Ver tópicos
@@ -300,7 +301,7 @@ const HeroSection = () => {
                     {quickQuestions.map((q, i) => (
                       <button
                         key={i}
-                        className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium glass-card text-muted-foreground hover:text-foreground transition-all whitespace-nowrap"
+                        className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium glass-card border-white/[0.08] text-muted-foreground hover:text-foreground hover:border-primary/25 transition-all duration-300 whitespace-nowrap"
                       >
                         {q}
                       </button>
@@ -327,7 +328,7 @@ const HeroSection = () => {
                   {(showAllQuestions ? quickQuestions : quickQuestions.slice(0, DESKTOP_INITIAL_COUNT)).map((q, i) => (
                     <button
                       key={i}
-                      className="w-fit px-4 py-2 rounded-full text-sm font-medium glass-card text-muted-foreground hover:text-foreground hover:border-gold/40 hover:scale-[1.02] transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                      className="w-fit px-4 py-2 rounded-full text-sm font-medium glass-card border-white/[0.08] text-muted-foreground hover:text-foreground hover:border-primary/25 hover:scale-[1.02] transition-all duration-300 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                     >
                       {q}
                     </button>
