@@ -203,7 +203,7 @@ const HeroSection = () => {
 
       {/* LAYER 3: Content — copy column left-aligned */}
       <div
-        className="relative z-20 w-full px-4 md:px-8 lg:px-12 pt-24 md:pt-28 pb-16 md:pb-24 flex items-center"
+        className="relative z-20 w-full px-4 md:px-8 lg:px-12 pt-20 md:pt-20 pb-16 md:pb-24 flex items-center"
         style={{ minHeight: "inherit" }}
       >
         <div className="w-full">
@@ -224,7 +224,7 @@ const HeroSection = () => {
               <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  🚀 INTELIGÊNCIA ADMINISTRATIVA
+                  INTELIGÊNCIA ADMINISTRATIVA
                 </span>
               </motion.div>
 
@@ -237,7 +237,7 @@ const HeroSection = () => {
 
               {/* CLARA title */}
               <motion.h1
-                className="font-display font-extrabold tracking-[0.04em] text-[2.5rem] leading-[1] text-gradient-gold"
+                className="font-display font-extrabold tracking-[0.04em] text-[3rem] leading-[1] text-gradient-gold"
                 variants={itemVariants}
               >
                 CLARA
@@ -245,7 +245,7 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="font-display text-[1.2rem] font-bold text-foreground leading-[1.35]"
+                className="font-display text-[1.35rem] font-bold text-foreground leading-[1.35]"
               >
                 <span className="text-primary">C</span>onsultora de{" "}
                 <span className="text-primary">L</span>egislação e{" "}
@@ -256,7 +256,7 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="text-[0.8rem] text-muted-foreground max-w-[36ch] leading-[1.6]"
+                className="text-[0.875rem] text-muted-foreground max-w-[40ch] leading-[1.6]"
               >
                 Sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais.
               </motion.p>
