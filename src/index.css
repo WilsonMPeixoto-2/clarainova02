@@ -104,7 +104,7 @@
   }
 }
 
-/* Defensive: hide heavy layers on mobile BEFORE JS runs */
+/* Defensive: hide heavy decoration layers on mobile BEFORE JS runs */
 @media (max-width: 899px) {
   .hero-aurora-layer,
   .hero-particles-layer,
