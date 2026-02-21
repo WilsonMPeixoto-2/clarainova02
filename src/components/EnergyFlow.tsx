@@ -160,30 +160,28 @@ const FRAG = `
     energy=clamp(energy+ridges, 0.0, 1.0);
 
     /* ══════════════════════════════════════════════
-       MÁSCARA CORPORAL
+       MÁSCARA CORPORAL — sutil, apenas bordas/silhueta
     ══════════════════════════════════════════════ */
-    float mX=smoothstep(0.30,0.55,uv.x) * smoothstep(1.0,0.60,uv.x);
-    float mY=smoothstep(0.0,0.05,uv.y) * smoothstep(1.0,0.03,uv.y);
-    float bodyCore=smoothstep(0.45,0.65,uv.x)*smoothstep(0.90,0.65,uv.x);
-    float bodyMask=(mX*mY)*1.0 + bodyCore*0.6;
-    bodyMask=clamp(bodyMask,0.,1.);
-    bodyMask=pow(bodyMask,0.4);
+    float mX=smoothstep(0.45,0.62,uv.x) * smoothstep(1.0,0.70,uv.x);
+    float mY=smoothstep(0.0,0.10,uv.y) * smoothstep(1.0,0.05,uv.y);
+    float bodyMask=mX*mY;
+    bodyMask=pow(bodyMask,1.2);
 
-    float vigX=smoothstep(0.,0.06,uv.x)*smoothstep(1.,0.94,uv.x);
-    float vigY=smoothstep(0.,0.03,uv.y)*smoothstep(1.,0.97,uv.y);
+    float vigX=smoothstep(0.,0.08,uv.x)*smoothstep(1.,0.92,uv.x);
+    float vigY=smoothstep(0.,0.05,uv.y)*smoothstep(1.,0.95,uv.y);
     float vignette=vigX*vigY;
 
     /* ── Cor via paleta ── */
     vec3 col=firePalette(energy);
 
-    /* ── Boost de brilho nos picos ── */
-    col+=vec3(1.0,0.95,0.7)*pow(energy,3.0)*0.5;
+    /* ── Boost sutil nos picos ── */
+    col+=vec3(1.0,0.95,0.7)*pow(energy,4.0)*0.25;
 
-    /* ── Alpha com mais presença ── */
-    float halo=pow(energy,0.4)*0.28;
-    float core=pow(energy,1.4)*0.90;
+    /* ── Alpha muito mais contido ── */
+    float halo=pow(energy,0.8)*0.08;
+    float core=pow(energy,2.0)*0.35;
     float alpha=(core+halo)*bodyMask*vignette;
-    alpha=clamp(alpha,0.,0.95);
+    alpha=clamp(alpha,0.,0.45);
 
     gl_FragColor=vec4(col,alpha);
   }
