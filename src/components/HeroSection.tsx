@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import claraHero from "@/assets/clara-hero.jpg";
 import GoldParticles from "@/components/GoldParticles";
@@ -43,6 +43,7 @@ const DESKTOP_INITIAL_COUNT = 5;
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const btnPrimaryRef = useMagneticCursor<HTMLButtonElement>();
@@ -55,74 +56,142 @@ const HeroSection = () => {
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0px", "24px"]);
+  const mediaY = useTransform(scrollYProgress, [0, 1], ["0px", "24px"]);
   const auroraY = useTransform(scrollYProgress, [0, 1], ["0px", "16px"]);
 
-  const scrollChips = (dir: "left" | "right") => {
+  // IntersectionObserver: pause video when hero leaves viewport
+  useEffect(() => {
+    const video = videoRef.current;
+    const section = sectionRef.current;
+    if (!video || !section || isMobile) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [isMobile]);
+
+  const scrollChips = useCallback((dir: "left" | "right") => {
     if (!chipsRef.current) return;
     const amount = dir === "left" ? -200 : 200;
     chipsRef.current.scrollBy({ left: amount, behavior: "smooth" });
-  };
+  }, []);
+
+  const isDebug = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "hero";
+  const showVideo = !isMobile && !shouldReduceMotion;
 
   return (
-    <section ref={sectionRef} className="clara-hero relative min-h-svh overflow-hidden noise-overlay">
-      {/* Background: parallax wrapper → scale wrapper → image */}
-      <div className="absolute inset-0 z-0">
-        <motion.div
-          className="hero-bg-parallax"
-          style={{ y: shouldReduceMotion || isMobile ? 0 : bgY }}
+    <section
+      ref={sectionRef}
+      className="clara-hero relative overflow-hidden noise-overlay"
+      style={{ minHeight: "var(--hero-min-h, 100svh)" }}
+    >
+      {/* LAYER 1: Base/Ambiente — full-bleed dark background */}
+      <div className="hero-base-layer" aria-hidden="true">
+        {/* Aurora — desktop only */}
+        {!isMobile && (
+          <motion.div
+            style={{ y: shouldReduceMotion ? 0 : auroraY }}
+            className="absolute inset-0"
+          >
+            <AuroraBackground />
+          </motion.div>
+        )}
+
+        {/* Energy glow — desktop only */}
+        {!isMobile && <div className="hero-energy-glow" />}
+
+        {/* Gold particles — desktop only */}
+        {!isMobile && <GoldParticles />}
+      </div>
+
+      {/* LAYER 2: Media Stage — right-anchored focal video (desktop only) */}
+      {showVideo && (
+        <div
+          className="hero-media-stage"
+          style={isDebug ? { outline: "2px dashed hsl(210 80% 60%)" } : undefined}
         >
-          <div className="hero-bg-scale">
-            {/* Desktop: vídeo cinematográfico com energia */}
+          {isDebug && (
+            <span className="absolute top-3 right-3 z-50 text-xs font-mono bg-blue-900/80 text-blue-300 px-2 py-1 rounded">
+              media-stage
+            </span>
+          )}
+          <motion.div
+            className="hero-media-motion"
+            style={{ y: shouldReduceMotion ? 0 : mediaY }}
+          >
             <video
-              src="/videos/energy-flow.mp4"
+              ref={videoRef}
+              src="/videos/clara-hero.mp4"
+              poster={claraHero}
               autoPlay
               muted
               loop
               playsInline
-              className={`hero-clara-video w-full h-full object-cover hidden md:block transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
+              preload="metadata"
+              className={`hero-clara-video transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
               onCanPlayThrough={() => setCanPlayVideo(true)}
               aria-hidden="true"
             />
-            {/* Mobile: imagem estática leve */}
-            <img
-              src={claraHero}
-              alt=""
-              className="hero-clara-img w-full h-full object-cover md:hidden"
-              fetchPriority="high"
-              aria-hidden="true"
-            />
-          </div>
-        </motion.div>
-        <div className="absolute inset-0 hero-overlay-directional z-[10]" />
-      </div>
-
-      {/* Energy glow layer — desktop only */}
-      {!isMobile && <div className="hero-energy-glow" aria-hidden="true" />}
-
-      {/* Aurora — desktop only */}
-      {!isMobile && (
-        <motion.div style={{ y: shouldReduceMotion ? 0 : auroraY }} className="absolute inset-0">
-          <AuroraBackground />
-        </motion.div>
+          </motion.div>
+        </div>
       )}
 
-
-      {/* Gold particles — desktop only */}
-      {!isMobile && <GoldParticles />}
+      {/* Mobile poster — static image behind content */}
+      {isMobile && (
+        <div className="absolute inset-0 z-[5]" aria-hidden="true">
+          <img
+            src={claraHero}
+            alt=""
+            className="w-full h-full object-cover"
+            fetchPriority="high"
+          />
+          {/* Dark overlay for text legibility */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(
+                to bottom,
+                hsl(var(--background) / 0.55) 0%,
+                hsl(var(--background) / 0.35) 30%,
+                hsl(var(--background) / 0.65) 65%,
+                hsl(var(--background) / 0.9) 100%
+              )`,
+            }}
+          />
+        </div>
+      )}
 
       <HeroDebugOverlay />
 
-      {/* Content — card flutuante, sem grid */}
-      <div className="relative z-20 mx-auto w-full max-w-[1400px] px-6 lg:px-10 pt-24 md:pt-28 pb-16 md:pb-24 min-h-[inherit] flex items-center">
+      {/* LAYER 3: Content — copy column left-aligned */}
+      <div
+        className="relative z-20 mx-auto w-full max-w-[1400px] px-6 lg:px-10 pt-24 md:pt-28 pb-16 md:pb-24 flex items-center"
+        style={{ minHeight: "inherit" }}
+      >
         <div className="w-full">
           <motion.div
             className="hero-copy-column"
             variants={shouldReduceMotion ? undefined : containerVariants}
             initial={shouldReduceMotion ? undefined : "hidden"}
             animate="visible"
+            style={isDebug ? { outline: "2px dashed hsl(120 60% 50%)" } : undefined}
           >
-            <div className="hero-glass-card space-y-3 md:space-y-4">
+            {isDebug && (
+              <span className="absolute -top-6 left-0 z-50 text-xs font-mono bg-green-900/80 text-green-300 px-2 py-1 rounded">
+                copy-safe-zone
+              </span>
+            )}
+            <div className="hero-copy-surface space-y-3 md:space-y-4">
               {/* Status badges */}
               <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
@@ -251,7 +320,7 @@ const HeroSection = () => {
       </div>
 
       {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-30 pointer-events-none" />
     </section>
   );
 };
