@@ -3,7 +3,6 @@ import { motion, useScroll, useTransform, useReducedMotion } from "motion/react"
 import claraHero from "@/assets/clara-hero.jpg";
 import GoldParticles from "@/components/GoldParticles";
 import AuroraBackground from "@/components/AuroraBackground";
-import EnergyFlow from "@/components/EnergyFlow";
 import HeroDebugOverlay from "@/components/HeroDebugOverlay";
 import { useMagneticCursor } from "@/hooks/useMagneticCursor";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -50,6 +49,7 @@ const HeroSection = () => {
   const btnSecondaryRef = useMagneticCursor<HTMLButtonElement>();
   const chipsRef = useRef<HTMLDivElement>(null);
   const [showAllQuestions, setShowAllQuestions] = useState(false);
+  const [canPlayVideo, setCanPlayVideo] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -73,10 +73,22 @@ const HeroSection = () => {
           style={{ y: shouldReduceMotion || isMobile ? 0 : bgY }}
         >
           <div className="hero-bg-scale">
+            {/* Desktop: vídeo cinematográfico com energia */}
+            <video
+              src="/videos/energy-flow.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className={`hero-clara-img w-full h-full object-cover hidden md:block transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
+              onCanPlayThrough={() => setCanPlayVideo(true)}
+              aria-hidden="true"
+            />
+            {/* Mobile: imagem estática leve */}
             <img
               src={claraHero}
               alt=""
-              className="hero-clara-img w-full h-full object-cover"
+              className="hero-clara-img w-full h-full object-cover md:hidden"
               fetchPriority="high"
               aria-hidden="true"
             />
@@ -95,8 +107,6 @@ const HeroSection = () => {
         </motion.div>
       )}
 
-      {/* Energy flow — partículas nos fios de cabelo/silhueta da Clara */}
-      {!isMobile && <EnergyFlow />}
 
       {/* Gold particles — desktop only */}
       {!isMobile && <GoldParticles />}
