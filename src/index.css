@@ -53,81 +53,53 @@
 
     --font-display: 'Space Grotesk', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-
   }
 
-  /* ===== LAYOUT CONTRACT v2 — scoped to .clara-hero ===== */
+  /* ===== LAYOUT CONTRACT v3 — 3-Layer Hero, scoped to .clara-hero ===== */
+
+  /* Mobile-first defaults (<900px) */
   .clara-hero {
-    --hero-card-w: min(92vw, 520px);
-    --hero-card-ml: 0px;
-    --clara-pos: 50% 15%;
-    --clara-video-pos: 50% 20%;
-    --clara-scale: 1;
-    --hero-overlay-opacity: 0.85;
-
-    /* Token-based hero colors — derived from existing design tokens */
-    --hero-card-bg: hsl(var(--card) / 0.52);
-    --hero-card-border: hsl(var(--border) / 0.22);
-    --hero-overlay-base: var(--background);
-
-    /* Overlay gradient stops — derived from --background token */
-    --hero-overlay-base-1: hsl(var(--background) / var(--hero-overlay-opacity));
-    --hero-overlay-base-2: hsl(var(--background) / calc(var(--hero-overlay-opacity) - 0.2));
-    --hero-overlay-base-3: hsl(var(--background) / 0.25);
-    --hero-overlay-base-4: hsl(var(--background) / 0.08);
+    --hero-copy-max: 100%;
+    --hero-copy-left: 0px;
+    --hero-media-width: 100%;
+    --hero-overlay-strength: 0;
+    --hero-min-h: auto;
   }
 
-  @media (min-width: 1440px) {
+  @media (min-width: 900px) {
     .clara-hero {
-      --hero-card-w: clamp(420px, 34vw, 560px);
-      --hero-card-ml: clamp(40px, 4vw, 80px);
-      --clara-pos: 72% 30%;
-      --clara-video-pos: 62% 18%;
-      --clara-scale: 1;
-      --hero-overlay-opacity: 0.88;
+      --hero-copy-max: 420px;
+      --hero-copy-left: clamp(20px, 2.5vw, 40px);
+      --hero-media-width: 40%;
+      --hero-overlay-strength: 0.90;
+      --hero-min-h: 100svh;
     }
   }
 
-  @media (min-width: 1280px) and (max-width: 1439px) {
+  @media (min-width: 1024px) {
     .clara-hero {
-      --hero-card-w: clamp(400px, 36vw, 520px);
-      --hero-card-ml: clamp(32px, 3vw, 64px);
-      --clara-pos: 70% 30%;
-      --clara-video-pos: 60% 18%;
-      --clara-scale: 1;
-      --hero-overlay-opacity: 0.88;
+      --hero-copy-max: 480px;
+      --hero-copy-left: clamp(28px, 3vw, 56px);
+      --hero-media-width: 42%;
+      --hero-overlay-strength: 0.88;
     }
   }
 
-  @media (min-width: 1024px) and (max-width: 1279px) {
+  @media (min-width: 1280px) {
     .clara-hero {
-      --hero-card-w: clamp(380px, 40vw, 480px);
-      --hero-card-ml: clamp(24px, 2.5vw, 48px);
-      --clara-pos: 68% 32%;
-      --clara-video-pos: 58% 20%;
-      --clara-scale: 1;
-      --hero-overlay-opacity: 0.90;
+      --hero-copy-max: 520px;
+      --hero-copy-left: clamp(40px, 4vw, 72px);
+      --hero-media-width: 44%;
+      --hero-overlay-strength: 0.87;
     }
   }
 
-  @media (min-width: 900px) and (max-width: 1023px) {
+  @media (min-width: 1600px) {
     .clara-hero {
-      --hero-card-w: clamp(340px, 44vw, 440px);
-      --hero-card-ml: clamp(16px, 2vw, 32px);
-      --clara-pos: 72% 34%;
-      --clara-video-pos: 60% 22%;
-      --clara-scale: 1;
-      --hero-overlay-opacity: 0.92;
-    }
-  }
-
-  @media (max-width: 899px) {
-    .clara-hero {
-      --hero-card-w: min(92vw, 520px);
-      --hero-card-ml: auto;
-      --clara-pos: 50% 20%;
-      --clara-scale: 1;
-      --hero-overlay-opacity: 0;
+      --hero-copy-max: 560px;
+      --hero-copy-left: clamp(48px, 5vw, 96px);
+      --hero-media-width: 45%;
+      --hero-overlay-strength: 0.85;
     }
   }
 }
@@ -136,95 +108,154 @@
 @media (max-width: 899px) {
   .hero-aurora-layer,
   .hero-particles-layer,
-  .hero-energy-glow {
+  .hero-energy-glow,
+  .hero-media-stage {
     display: none !important;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+/* ===== 3-LAYER HERO SYSTEM ===== */
 
-  body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-body);
-    line-height: 1.65;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  h1, h2, h3, h4 {
-    font-family: var(--font-display);
-  }
-}
-
-/* ===== LAYOUT CONTRACT v2: Hero Image + Card ===== */
-
-/* Image: position only — scale handled by wrapper */
-.hero-clara-img {
-  object-position: var(--clara-pos);
-  will-change: auto;
-}
-
-/* Video: separate position tokens (different aspect ratio than photo) */
-.hero-clara-video {
-  object-position: var(--clara-video-pos);
-  will-change: auto;
-}
-
-/* Scale wrapper — separated from parallax transform */
-.hero-bg-scale {
+/* Layer 1: Base — full-bleed dark background with radial glow */
+.hero-base-layer {
   position: absolute;
   inset: 0;
-  transform: scale(var(--clara-scale));
-  transform-origin: center center;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 70% 40%, hsl(var(--gold-dim) / 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 60% at 30% 60%, hsl(var(--background) / 0.95) 0%, hsl(var(--background)) 100%);
 }
 
-/* Parallax wrapper — translateY only */
-.hero-bg-parallax {
+/* Layer 2: Media Stage — right-anchored focal video */
+.hero-media-stage {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--hero-media-width);
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Motion wrapper (parallax translateY only) */
+.hero-media-motion {
+  position: relative;
+  width: 100%;
+  height: 100%;
   will-change: transform;
 }
 
-/* Card — width and position controlled by contract */
-.hero-copy-column {
-  width: var(--hero-card-w);
-  margin-left: var(--hero-card-ml);
-  max-width: none;
+/* Video element — preserves aspect ratio, anchored right-center */
+.hero-clara-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
 }
 
-/* Directional overlay: dark left (text) → transparent right (face) */
-.hero-overlay-directional {
+/* Lateral mask: left fade integrates video with base */
+.hero-media-stage::after {
+  content: '';
   position: absolute;
   inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    to right,
+    hsl(var(--background)) 0%,
+    hsl(var(--background) / 0.7) 15%,
+    hsl(var(--background) / 0.3) 35%,
+    transparent 60%
+  );
+  pointer-events: none;
 }
 
-/* Desktop directional overlay — using pre-computed token stops */
-@media (min-width: 900px) {
-  .clara-hero .hero-overlay-directional {
-    background: linear-gradient(
-      to right,
-      var(--hero-overlay-base-1) 0%,
-      var(--hero-overlay-base-2) 30%,
-      var(--hero-overlay-base-3) 55%,
-      var(--hero-overlay-base-4) 75%,
-      transparent 100%
-    );
+/* Bottom fade on media */
+.hero-media-stage::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  z-index: 3;
+  background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Layer 3: Content — left-aligned copy column */
+.hero-copy-column {
+  width: 100%;
+  max-width: var(--hero-copy-max);
+  margin-left: var(--hero-copy-left);
+}
+
+/* Glass surface — premium, no hard borders */
+.hero-copy-surface {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-radius: 1rem;
+  padding: 2.25rem 2.25rem;
+}
+
+/* Pseudo-element: background (no blur by default) */
+.hero-copy-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: hsl(var(--card) / 0.52);
+  border: 1px solid hsl(var(--border) / 0.22);
+  border-radius: inherit;
+  z-index: 0;
+}
+
+/* Blur only if supported */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hero-copy-surface::before {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
 }
 
-/* Mobile overlay: vertical gradient — token-based */
+/* Enhancement: dissolve right edge — only if mask is supported */
+@supports ((-webkit-mask-image: linear-gradient(#000, transparent)) or (mask-image: linear-gradient(#000, transparent))) {
+  @media (min-width: 900px) {
+    .hero-copy-surface::before {
+      -webkit-mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
+      mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
+    }
+  }
+}
+
+/* Card content above pseudo-element */
+.hero-copy-surface > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 1024px) {
+  .hero-copy-surface {
+    padding: 2.75rem 3rem;
+  }
+}
+
+/* Mobile: no mask, solid card, reduced blur */
 @media (max-width: 899px) {
-  .clara-hero .hero-overlay-directional {
-    background: linear-gradient(
-      to bottom,
-      hsl(var(--hero-overlay-base) / 0.55) 0%,
-      hsl(var(--hero-overlay-base) / 0.35) 30%,
-      hsl(var(--hero-overlay-base) / 0.65) 65%,
-      hsl(var(--hero-overlay-base) / 0.9) 100%
-    );
+  .hero-copy-surface::before {
+    -webkit-mask-image: none;
+    mask-image: none;
+    background: hsl(var(--card) / 0.52);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .hero-copy-surface {
+    padding: 1.5rem 1.25rem;
+    border-radius: 0.75rem;
+  }
+  .hero-copy-column {
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -244,14 +275,6 @@
     radial-gradient(ellipse 70% 90% at 55% 40%, hsl(var(--gold-dim) / 0.08) 0%, transparent 80%);
   mix-blend-mode: screen;
   animation: energy-shimmer 20s ease-in-out infinite;
-}
-
-@media (max-width: 899px) {
-  .hero-energy-glow {
-    width: 100%;
-    opacity: 0.5;
-    animation-duration: 36s;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -404,9 +427,6 @@
   .glow-pulse {
     animation: none !important;
   }
-  .hero-bg-scale {
-    transform: none !important;
-  }
 }
 
 /* Gold gradient text utility */
@@ -434,70 +454,6 @@
   border: 1px solid hsl(var(--border) / 0.5);
 }
 
-/* Hero glass card — base (works without mask or blur) */
-.clara-hero .hero-glass-card {
-  position: relative;
-  overflow: hidden;
-  background: transparent;
-  border: none;
-  border-radius: 1rem;
-  padding: 2.25rem 2.25rem;
-}
-
-/* Pseudo-element: background only (no blur by default) */
-.clara-hero .hero-glass-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--hero-card-bg);
-  border: 1px solid var(--hero-card-border);
-  border-radius: inherit;
-  z-index: 0;
-}
-
-/* Blur only if supported */
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .clara-hero .hero-glass-card::before {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-}
-
-/* Enhancement: dissolve right edge — only if mask is supported */
-@supports ((-webkit-mask-image: linear-gradient(#000, transparent)) or (mask-image: linear-gradient(#000, transparent))) {
-  .clara-hero .hero-glass-card::before {
-    -webkit-mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
-    mask-image: linear-gradient(to right, black 0%, black 75%, transparent 100%);
-  }
-}
-
-/* Card content above pseudo-element */
-.clara-hero .hero-glass-card > * {
-  position: relative;
-  z-index: 1;
-}
-
-@media (min-width: 1024px) {
-  .clara-hero .hero-glass-card {
-    padding: 2.75rem 3rem;
-  }
-}
-
-/* Mobile: no mask, solid card using token, reduced blur */
-@media (max-width: 899px) {
-  .clara-hero .hero-glass-card::before {
-    -webkit-mask-image: none;
-    mask-image: none;
-    background: var(--hero-card-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .clara-hero .hero-glass-card {
-    padding: 1.5rem 1.25rem;
-    border-radius: 0.75rem;
-  }
-}
-
 /* Scrollbar hide utility */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -512,4 +468,3 @@
 .scroll-snap-x-mandatory {
   scroll-snap-type: x mandatory;
 }
-
