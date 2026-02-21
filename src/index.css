@@ -68,9 +68,9 @@
 
   @media (min-width: 900px) {
     .clara-hero {
-      --hero-copy-max: 420px;
+      --hero-copy-max: 380px;
       --hero-copy-left: clamp(20px, 2.5vw, 40px);
-      --hero-media-width: 40%;
+      --hero-media-width: 52%;
       --hero-overlay-strength: 0.90;
       --hero-min-h: 100svh;
     }
@@ -78,27 +78,27 @@
 
   @media (min-width: 1024px) {
     .clara-hero {
-      --hero-copy-max: 480px;
+      --hero-copy-max: 420px;
       --hero-copy-left: clamp(28px, 3vw, 56px);
-      --hero-media-width: 42%;
+      --hero-media-width: 54%;
       --hero-overlay-strength: 0.88;
     }
   }
 
   @media (min-width: 1280px) {
     .clara-hero {
-      --hero-copy-max: 520px;
+      --hero-copy-max: 460px;
       --hero-copy-left: clamp(40px, 4vw, 72px);
-      --hero-media-width: 44%;
+      --hero-media-width: 55%;
       --hero-overlay-strength: 0.87;
     }
   }
 
   @media (min-width: 1600px) {
     .clara-hero {
-      --hero-copy-max: 560px;
+      --hero-copy-max: 520px;
       --hero-copy-left: clamp(48px, 5vw, 96px);
-      --hero-media-width: 45%;
+      --hero-media-width: 56%;
       --hero-overlay-strength: 0.85;
     }
   }
@@ -162,9 +162,10 @@
   background: linear-gradient(
     to right,
     hsl(var(--background)) 0%,
-    hsl(var(--background) / 0.7) 15%,
-    hsl(var(--background) / 0.3) 35%,
-    transparent 60%
+    hsl(var(--background) / 0.85) 12%,
+    hsl(var(--background) / 0.55) 30%,
+    hsl(var(--background) / 0.2) 50%,
+    transparent 65%
   );
   pointer-events: none;
 }
@@ -184,7 +185,7 @@
 
 /* Layer 3: Content — left-aligned copy column */
 .hero-copy-column {
-  width: 100%;
+  width: clamp(320px, 30vw, 520px);
   max-width: var(--hero-copy-max);
   margin-left: var(--hero-copy-left);
 }
