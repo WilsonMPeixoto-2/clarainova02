@@ -80,7 +80,7 @@ const HeroSection = () => {
               muted
               loop
               playsInline
-              className={`hero-clara-img w-full h-full object-cover hidden md:block transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
+              className={`hero-clara-video w-full h-full object-cover hidden md:block transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
               onCanPlayThrough={() => setCanPlayVideo(true)}
               aria-hidden="true"
             />
