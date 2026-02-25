@@ -180,6 +180,7 @@ const HeroSection = () => {
               src={claraHero}
               alt=""
               className="w-full h-full object-cover"
+              style={{ objectPosition: "65% 20%" }}
               fetchPriority="high"
             />
           )}
@@ -189,10 +190,10 @@ const HeroSection = () => {
             style={{
               background: `linear-gradient(
                 to bottom,
-                hsl(var(--background) / 0.55) 0%,
-                hsl(var(--background) / 0.35) 30%,
-                hsl(var(--background) / 0.65) 65%,
-                hsl(var(--background) / 0.9) 100%
+                hsl(var(--background) / 0.45) 0%,
+                hsl(var(--background) / 0.20) 30%,
+                hsl(var(--background) / 0.55) 65%,
+                hsl(var(--background) / 0.88) 100%
               )`,
             }}
           />
