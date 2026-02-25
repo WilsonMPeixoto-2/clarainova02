@@ -3,29 +3,36 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border/50 pt-16 pb-8 px-6">
+    <footer className="border-t border-border/30 pt-16 pb-8 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between gap-10 mb-10">
-          {/* Left column */}
-          <div className="space-y-3">
-            <h3 className="font-display text-xl font-bold text-gradient-gold">CLARA</h3>
-            <p className="text-sm text-foreground">
-              Desenvolvido por <strong>Wilson M. Peixoto</strong> - SME/RJ
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Inovação para a Gestão Pública
-            </p>
-            <div className="flex items-center gap-5 pt-2">
-              <a href="tel:+5521994974132" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                <Phone className="w-3.5 h-3.5" />
+          {/* Left column — Developer Signature */}
+          <div className="space-y-4">
+            <h3 className="font-display text-xl font-bold tracking-[0.06em] text-gradient-gold">CLARA</h3>
+
+            {/* Elegant signature card */}
+            <div className="relative pl-4 border-l-2 border-primary/30 space-y-1.5">
+              <p className="text-sm text-foreground/90 font-medium tracking-wide">
+                Desenvolvido por{" "}
+                <strong className="text-foreground font-semibold">Wilson M. Peixoto</strong>
+                <span className="text-muted-foreground font-normal"> — SME/RJ</span>
+              </p>
+              <p className="text-xs text-primary/70 font-medium tracking-wider uppercase">
+                Inovação para a Gestão Pública
+              </p>
+            </div>
+
+            <div className="flex items-center gap-5 pt-1">
+              <a href="tel:+5521994974132" className="group flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
+                <Phone className="w-3.5 h-3.5 group-hover:drop-shadow-[0_0_4px_hsl(38_65%_58%/0.5)] transition-all duration-300" />
                 (21) 99497-4132
               </a>
-              <a href="mailto:wilsonmp2@gmail.com" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                <Mail className="w-3.5 h-3.5" />
+              <a href="mailto:wilsonmp2@gmail.com" className="group flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
+                <Mail className="w-3.5 h-3.5 group-hover:drop-shadow-[0_0_4px_hsl(38_65%_58%/0.5)] transition-all duration-300" />
                 wilsonmp2@gmail.com
               </a>
-              <a href="#" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                <Linkedin className="w-3.5 h-3.5" />
+              <a href="#" className="group flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
+                <Linkedin className="w-3.5 h-3.5 group-hover:drop-shadow-[0_0_4px_hsl(38_65%_58%/0.5)] transition-all duration-300" />
                 LinkedIn
               </a>
             </div>
