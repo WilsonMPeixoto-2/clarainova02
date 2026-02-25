@@ -1,71 +1,51 @@
 
 
-# Polimento Awwwards — "Liquid Authority" Final
+# Integracao da Personagem Clara no Mobile
 
-## Visao Geral
+## Objetivo
 
-Cinco intervencoes cirurgicas para elevar o Hero de "layout funcional" para obra de arte digital, mantendo performance e acessibilidade.
+Melhorar a visibilidade da personagem Clara na versao mobile, inspirado na referencia enviada onde o rosto/perfil da personagem fica claramente visivel por tras do texto, criando uma composicao cinematografica integrada. **Nenhuma alteracao no desktop/notebook.**
 
----
+## O Que Muda
 
-## A. Tipografia Editorial e Tracking
+### 1. Posicionamento da Imagem (Mobile)
 
-**Titulo "CLARA"**
-- Aumentar para `text-[4.5rem] md:text-[5rem]` com tracking `0.08em`
-- Adicionar text-shadow dourado sutil para efeito de glow cinematografico
-- Line-height reduzido para `0.9` (wordmark monumental)
+Atualmente a imagem usa `object-cover` generico. A Clara fica cortada de forma imprevisivel.
 
-**Subtitulo Acronimo**
-- Capitulares (C, L, A, R, A) com glow ambar via `drop-shadow(0 0 8px hsl(38 80% 60% / 0.6))`
-- Texto restante em `text-foreground/70` (branco translucido elegante)
-- Line-height aumentado para `1.45` (respiracao editorial)
-- Tamanho `text-[1.5rem] md:text-[1.65rem]`
+**Mudanca**: Ajustar `object-position` no mobile para `65% 20%`, priorizando o enquadramento do rosto/perfil da personagem (similar a referencia onde o rosto aparece no terco direito da tela).
 
-**Descricao**
-- Tamanho `text-[0.95rem] md:text-[1rem]` com line-height `1.75`
+### 2. Overlay Mais Leve e Inteligente
 
-## B. Glassmorphism 2.0 ("Vidro Invisivel")
+O gradiente atual sobre a imagem no mobile e muito pesado (opacidades de 0.55 a 0.9), escondendo a personagem.
 
-No desktop, o card ja e transparente (conforme implementacao anterior). No mobile, refinar:
-- Reduzir opacidade do fundo de `0.52` para `0.35`
-- Aumentar blur de `10px` para `24px`
-- Borda sutil: `1px solid hsl(var(--border) / 0.08)`
-- Adicionar bevel edge superior com gradiente branco 3%
+**Mudanca**: Reduzir as opacidades do gradiente vertical para:
+- Topo: `0.45` (era 0.55) — levemente mais transparente na area do badge
+- Meio: `0.20` (era 0.35) — zona do rosto da Clara fica mais visivel  
+- Inferior: `0.55` (era 0.65) — area dos botoes, ainda legivel mas mais aberta
+- Base: `0.88` (era 0.9) — mantem legibilidade na zona dos chips
 
-## C. Emulsao Cinematografica (Film Grain)
+### 3. Glass Card Mobile Mais Transparente
 
-O `.noise-overlay` ja existe na section mas usa opacidade de 3%. Refinar:
-- Aumentar para `opacity: 0.04` e adicionar `mix-blend-mode: overlay`
-- Garantir que cobre todas as camadas (z-index adequado)
+O `.hero-copy-surface::before` no mobile usa `hsl(var(--card) / 0.52)` — uma parede fosca.
 
-## D. Botoes de Autoridade
+**Mudanca**: Reduzir para `0.30` e aumentar `backdrop-blur` para `20px`, criando o efeito de "ar denso" que permite ver a personagem por tras do texto.
 
-- Borda do botao primario: `border border-primary/20` visivel por padrao
-- Hover: borda ilumina para `border-primary/60` com transicao `300ms`
-- Botao secundario: hover com `bg-white/5` e `border-white/15`
-- Ambos: `transition-all duration-300 ease-out` (fisica mais suave)
-- Remover `glow-pulse` constante do primario (muito "SaaS"), substituir por glow apenas no hover
+### 4. Borda Sutil no Glass Mobile
 
-## E. Espacamento e Posicionamento
-
-- Subir conteudo: `pt-12 md:pt-10`
-- Badge de manutencao: ponto laranja com animacao `pulse` para chamar atencao
-- Gap entre titulo e subtitulo: `space-y-5 md:space-y-6`
-- Chips de perguntas rapidas: borda `border-white/8` e hover `border-gold/25`
+Adicionar `border: 1px solid hsl(var(--border) / 0.08)` com um gradiente superior branco de 3% para efeito bevel, refinando o glassmorphism.
 
 ---
 
 ## Arquivos Editados
 
-| Arquivo | Mudanca |
+| Arquivo | O Que Muda |
 |---|---|
-| `src/components/HeroSection.tsx` | Tipografia, botoes, espacamento, glow nas capitulares |
-| `src/index.css` | Glassmorphism mobile, film grain refinado, botao hover states |
+| `src/components/HeroSection.tsx` | `object-position` condicional no mobile, opacidades do overlay reduzidas |
+| `src/index.css` | `.hero-copy-surface::before` — opacidade e blur refinados para mobile |
 
 ## Impacto
 
-- Zero dependencias novas
-- Performance inalterada (apenas CSS/classes)
-- Acessibilidade mantida (contraste WCAG AA preservado)
-- Reduced motion respeitado
+- Zero alteracoes no desktop (condicional via `isMobile` e media query `max-width: 899px`)
+- Performance mantida (nenhum asset novo, apenas CSS)
+- Texto continua legivel (contraste WCAG AA respeitado com o gradiente ajustado)
 
