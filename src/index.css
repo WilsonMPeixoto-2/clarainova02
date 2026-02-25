@@ -241,7 +241,7 @@
   .hero-copy-surface::before {
     -webkit-mask-image: none;
     mask-image: none;
-    background: hsl(var(--card) / 0.30);
+    background: hsl(var(--card) / 0.15);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid hsl(var(--border) / 0.08);
