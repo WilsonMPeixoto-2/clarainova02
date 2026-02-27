@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { FileSearch, MessagesSquare, BookCheck, ArrowUpRight, Sparkles, Gavel, ShieldCheck, Route, FileCheck2 } from 'lucide-react';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
+import { useChat } from '@/hooks/useChatStore';
 
 const features = [
   {
@@ -44,6 +45,7 @@ const bentoCards = [
 ];
 
 const FeaturesSection = () => {
+  const { openChat } = useChat();
   return (
     <section id="conhecimento" className="knowledge-section py-20 md:py-28 relative overflow-hidden" aria-labelledby="features-heading">
       <div id="features" className="absolute -top-20" aria-hidden="true" />
@@ -88,7 +90,7 @@ const FeaturesSection = () => {
                 <ul className="knowledge-points" aria-label={`Diferenciais de ${feature.title}`}>
                   {feature.points.map((point) => (<li key={point}>{point}</li>))}
                 </ul>
-                <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}>
+                <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }} onClick={() => openChat(feature.title)}>
                   Explorar no chat <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
                 </motion.button>
               </motion.article>
@@ -111,7 +113,7 @@ const FeaturesSection = () => {
         <ScrollReveal delay={0.18}>
           <div className="knowledge-bottom-cta">
             <p className="text-body">Pronto para validar um caso real da sua rotina?</p>
-            <motion.button type="button" className="btn-clara-primary type-label inline-flex items-center justify-center gap-2 px-6" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+            <motion.button type="button" className="btn-clara-primary type-label inline-flex items-center justify-center gap-2 px-6" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={() => openChat()}>
               Iniciar análise com a CLARA
             </motion.button>
           </div>

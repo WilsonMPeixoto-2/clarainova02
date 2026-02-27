@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { Sparkles, ShieldCheck } from 'lucide-react';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useChat } from '@/hooks/useChatStore';
 
 const faqItems = [
   { id: 'faq-1', question: 'A CLARA substitui análise jurídica?', answer: 'Não. A CLARA acelera entendimento e execução de rotinas administrativas, mas decisões formais devem considerar normas oficiais e, quando necessário, parecer técnico-jurídico.' },
@@ -12,6 +13,7 @@ const faqItems = [
 ];
 
 const FAQSection = () => {
+  const { openChat } = useChat();
   return (
     <section id="faq" className="faq-section py-20 md:py-24 relative" aria-labelledby="faq-heading">
       <div className="container mx-auto px-6">
@@ -31,7 +33,7 @@ const FAQSection = () => {
                   <AccordionTrigger className="faq-trigger">{item.question}</AccordionTrigger>
                   <AccordionContent className="faq-content">
                     <p className="text-body mb-4">{item.answer}</p>
-                    <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}>
+                    <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }} onClick={() => openChat(item.question)}>
                       Levar essa dúvida para o chat
                       <Sparkles className="w-4 h-4" aria-hidden="true" />
                     </motion.button>
