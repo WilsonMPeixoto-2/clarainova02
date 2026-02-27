@@ -1,60 +1,54 @@
-import { Phone, Mail, Linkedin } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Mail, Phone, Linkedin, ShieldCheck } from 'lucide-react';
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="border-t border-border/30 pt-16 pb-8 px-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between gap-10 mb-10">
-          {/* Left column — Developer Signature */}
-          <div className="space-y-4">
-            <h3 className="font-display text-xl font-bold tracking-[0.06em] text-gradient-gold">CLARA</h3>
+    <footer className="py-16 md:py-20 border-t border-[hsl(var(--border-subtle))]" role="contentinfo">
+      <div className="container mx-auto px-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-10">
+          <div className="flex flex-col gap-3 max-w-xl">
+            <span className="text-xl font-bold text-foreground tracking-tight">CLARA</span>
+            <p className="text-sm text-muted-foreground">
+              Desenvolvido por <span className="text-foreground font-medium">Wilson M. Peixoto</span> - SME/RJ
+            </p>
+            <p className="text-xs text-muted-foreground/80">Inovação para a Gestão Pública</p>
 
-            {/* Elegant signature card */}
-            <div className="relative pl-4 border-l-2 border-primary/30 space-y-1.5">
-              <p className="text-sm text-foreground/90 font-medium tracking-wide">
-                Desenvolvido por{" "}
-                <strong className="text-foreground font-semibold">Wilson M. Peixoto</strong>
-                <span className="text-muted-foreground font-normal"> — SME/RJ</span>
-              </p>
-              <p className="text-xs text-primary/70 font-medium tracking-wider uppercase">
-                Inovação para a Gestão Pública
-              </p>
-            </div>
-
-            <div className="flex items-center gap-5 pt-1">
-              <a href="tel:+5521994974132" className="group flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
-                <Phone className="w-3.5 h-3.5 group-hover:drop-shadow-[0_0_4px_hsl(38_65%_58%/0.5)] transition-all duration-300" />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
+              <a href="tel:+5521994974132" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
+                <Phone className="w-3.5 h-3.5" aria-hidden="true" />
                 (21) 99497-4132
               </a>
-              <a href="mailto:wilsonmp2@gmail.com" className="group flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
-                <Mail className="w-3.5 h-3.5 group-hover:drop-shadow-[0_0_4px_hsl(38_65%_58%/0.5)] transition-all duration-300" />
+              <a href="mailto:wilsonmp2@gmail.com" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
+                <Mail className="w-3.5 h-3.5" aria-hidden="true" />
                 wilsonmp2@gmail.com
               </a>
-              <a href="#" className="group flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
-                <Linkedin className="w-3.5 h-3.5 group-hover:drop-shadow-[0_0_4px_hsl(38_65%_58%/0.5)] transition-all duration-300" />
+              <a
+                href="https://www.linkedin.com/in/wilsonmalafaia/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 hover:text-primary transition-colors"
+              >
+                <Linkedin className="w-3.5 h-3.5" aria-hidden="true" />
                 LinkedIn
               </a>
             </div>
+
+            <p className="text-caption">© {currentYear} CLARA. Todos os direitos reservados.</p>
           </div>
 
-          {/* Right nav */}
-          <nav className="flex items-start gap-8 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">Sobre</a>
-            <Link to="/termos" className="hover:text-foreground transition-colors">Termos de Serviço</Link>
-            <Link to="/privacidade" className="hover:text-foreground transition-colors">Política de Privacidade</Link>
-            <a href="#" className="hover:text-foreground transition-colors">Contato</a>
+          <nav className="flex flex-wrap justify-start md:justify-center gap-6 md:gap-8" aria-label="Links do rodapé">
+            <a href="#" className="footer-link">Sobre</a>
+            <a href="/termos" className="footer-link">Termos de Serviço</a>
+            <a href="/privacidade" className="footer-link">Política de Privacidade</a>
+            <a href="mailto:wilsonmp2@gmail.com" className="footer-link">Contato</a>
           </nav>
         </div>
 
-        <p className="text-xs text-muted-foreground mb-8">
-          © 2026 CLARA. Todos os direitos reservados.
-        </p>
-
-        <div className="border-t border-border/50 pt-6">
-          <p className="text-xs text-muted-foreground leading-relaxed max-w-4xl" style={{ lineHeight: "1.7" }}>
-            A CLARA é uma ferramenta de apoio e suas orientações não substituem a consulta direta às normas oficiais ou assessoria
-            jurídica especializada. Não possui caráter oficial ou vinculante. Podem conter imprecisões ou informações desatualizadas.
+        <div className="mt-10 pt-8 border-t border-[hsl(var(--border-subtle))]">
+          <p className="text-xs text-muted-foreground text-center max-w-3xl mx-auto leading-relaxed inline-flex items-center justify-center gap-2 w-full" role="note">
+            <ShieldCheck className="w-3.5 h-3.5 text-primary flex-shrink-0" aria-hidden="true" />
+            A CLARA é uma ferramenta de apoio e suas orientações não substituem a consulta direta às normas oficiais ou assessoria jurídica especializada.
           </p>
         </div>
       </div>

@@ -1,63 +1,46 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { motion } from 'motion/react';
+import { Sparkles, ShieldCheck } from 'lucide-react';
+import ScrollReveal from '@/components/animations/ScrollReveal';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-const faqs = [
-  {
-    question: "A CLARA substitui análise jurídica?",
-    answer:
-      "Não. A CLARA é uma ferramenta de apoio que fornece orientações baseadas em documentos oficiais e legislação vigente. Suas respostas não substituem a consulta direta às normas oficiais nem assessoria jurídica especializada.",
-  },
-  {
-    question: "Posso usar para processos em andamento no SEI-Rio?",
-    answer:
-      "Sim. A CLARA pode orientar sobre procedimentos, tramitação e documentação necessária para processos no SEI-Rio, sempre indicando as fontes documentais relevantes.",
-  },
-  {
-    question: "Como funciona o modo Direto e o Didático?",
-    answer:
-      "No modo Direto, a CLARA fornece respostas objetivas e concisas. No modo Didático, as respostas incluem explicações detalhadas, contexto normativo e exemplos práticos para facilitar o entendimento.",
-  },
-  {
-    question: "As respostas trazem base documental?",
-    answer:
-      "Sim. Todas as orientações da CLARA incluem indicação das fontes documentais consultadas, permitindo conferência e rastreabilidade das informações fornecidas.",
-  },
+const faqItems = [
+  { id: 'faq-1', question: 'A CLARA substitui análise jurídica?', answer: 'Não. A CLARA acelera entendimento e execução de rotinas administrativas, mas decisões formais devem considerar normas oficiais e, quando necessário, parecer técnico-jurídico.' },
+  { id: 'faq-2', question: 'Posso usar para processos em andamento no SEI-Rio?', answer: 'Sim. Você pode usar para revisão de etapas, organização documental, prazos e preparação de encaminhamentos, com foco em clareza e rastreabilidade.' },
+  { id: 'faq-3', question: 'Como funciona o modo Direto e o Didático?', answer: 'Direto prioriza resposta curta e acionável. Didático explica fundamentos, contexto e passo a passo para apoiar aprendizado e padronização interna.' },
+  { id: 'faq-4', question: 'As respostas trazem base documental?', answer: 'A experiência foi desenhada para privilegiar fonte e contexto. Sempre que possível, valide com os documentos e normativos oficiais da sua rotina.' },
+  { id: 'faq-5', question: 'A CLARA funciona em celular e desktop?', answer: 'Sim. O layout foi otimizado para ambos. No desktop, o chat é redimensionável; no mobile, funciona como sheet com pontos de ajuste.' },
 ];
 
 const FAQSection = () => {
   return (
-    <section className="relative py-24 px-6">
-      <div className="max-w-3xl mx-auto">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-3 text-center">
-          DÚVIDAS FREQUENTES
-        </p>
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4 text-center">
-          Clareza operacional com confiança
-        </h2>
-        <p className="text-muted-foreground text-base text-center mb-12 max-w-2xl mx-auto" style={{ lineHeight: "1.7" }}>
-          Respostas para as perguntas que mais impactam execução, segurança e consistência no trabalho administrativo.
-        </p>
-
-        <Accordion type="single" collapsible className="space-y-3">
-          {faqs.map((faq, i) => (
-            <AccordionItem
-              key={i}
-              value={`faq-${i}`}
-              className="glass-card rounded-xl border-none px-6"
-            >
-              <AccordionTrigger className="text-left font-display font-semibold text-foreground hover:no-underline py-5">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-sm leading-relaxed pb-5" style={{ lineHeight: "1.7" }}>
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+    <section id="faq" className="faq-section py-20 md:py-24 relative" aria-labelledby="faq-heading">
+      <div className="container mx-auto px-6">
+        <ScrollReveal>
+          <div className="faq-shell">
+            <div className="faq-header">
+              <span className="knowledge-kicker">
+                <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                Dúvidas Frequentes
+              </span>
+              <h2 id="faq-heading" className="text-h2 mt-4">Clareza operacional com confiança</h2>
+              <p className="text-body mt-3 max-w-3xl">Respostas para as perguntas que mais impactam execução, segurança e consistência no trabalho administrativo.</p>
+            </div>
+            <Accordion type="single" collapsible className="faq-accordion">
+              {faqItems.map((item) => (
+                <AccordionItem key={item.id} value={item.id} className="faq-item">
+                  <AccordionTrigger className="faq-trigger">{item.question}</AccordionTrigger>
+                  <AccordionContent className="faq-content">
+                    <p className="text-body mb-4">{item.answer}</p>
+                    <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}>
+                      Levar essa dúvida para o chat
+                      <Sparkles className="w-4 h-4" aria-hidden="true" />
+                    </motion.button>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

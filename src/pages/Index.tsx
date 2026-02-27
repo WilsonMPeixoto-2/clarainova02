@@ -1,24 +1,24 @@
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import KnowledgeBaseSection from "@/components/KnowledgeBaseSection";
-import ServicesSection from "@/components/ServicesSection";
-import NumberedFeaturesSection from "@/components/NumberedFeaturesSection";
-import StepsSection from "@/components/StepsSection";
-import CTASection from "@/components/CTASection";
+import FeaturesSection from "@/components/FeaturesSection";
 import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      {/* Skip link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg"
+      >
+        Pular para o conteúdo principal
+      </a>
+
       <Header />
-      <main>
+      <main id="main-content" className="site-main-canvas">
         <HeroSection />
-        <KnowledgeBaseSection />
-        <ServicesSection />
-        <NumberedFeaturesSection />
-        <StepsSection />
-        <CTASection />
+        <FeaturesSection />
         <FAQSection />
       </main>
       <Footer />

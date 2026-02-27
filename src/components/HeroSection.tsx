@@ -1,354 +1,350 @@
-import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
-import claraHero from "@/assets/clara-hero.jpg";
-import GoldParticles from "@/components/GoldParticles";
-import AuroraBackground from "@/components/AuroraBackground";
-import HeroDebugOverlay from "@/components/HeroDebugOverlay";
-import { useMagneticCursor } from "@/hooks/useMagneticCursor";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { BookOpen, MessageCircle, Sparkles } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import claraHeroFallback from '@/assets/clara-hero.jpg';
 
-const quickQuestions = [
-  "Como anexar documentos no SEI-Rio?",
-  "Quais são os prazos da prestação de contas?",
-  "Como solicitar diárias administrativas?",
-  "Como organizar bloco de assinatura no SEI?",
-  "Como encaminhar um processo administrativo?",
-  "Como atualizar dados no SDP?",
-  "Quais documentos são exigidos em licitações?",
-  "Como validar uma assinatura digital?",
-  "Como acompanhar a tramitação de protocolos?",
-  "Como cadastrar contratos e aditivos?",
-  "Como configurar notificações de prazos?",
-  "Onde encontro modelos oficiais no sistema?",
+const QUICK_QUESTIONS = [
+  'Como anexar documentos no SEI-Rio?',
+  'Quais são os prazos da prestação de contas?',
+  'Como solicitar diárias administrativas?',
+  'Como organizar bloco de assinatura no SEI?',
+  'Como encaminhar um processo administrativo?',
+  'Como atualizar dados no SDP?',
+  'Quais documentos são exigidos em licitações?',
+  'Como validar uma assinatura digital?',
+  'Como acompanhar a tramitação de protocolos?',
+  'Como cadastrar contratos e aditivos?',
+  'Como configurar notificações de prazos?',
+  'Onde encontro modelos oficiais no sistema?',
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.12 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 24, filter: "blur(2px)" },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const },
-  },
-};
-
-const DESKTOP_INITIAL_COUNT = 6;
+const QUICK_SCROLL_DISTANCE = 320;
+const HERO_MOBILE_QUERY = '(max-width: 899px)';
 
 const HeroSection = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const shouldReduceMotion = useReducedMotion();
   const isMobile = useIsMobile();
-  const btnPrimaryRef = useMagneticCursor<HTMLButtonElement>();
-  const btnSecondaryRef = useMagneticCursor<HTMLButtonElement>();
-  const chipsRef = useRef<HTMLDivElement>(null);
-  const [showAllQuestions, setShowAllQuestions] = useState(false);
-  const [canPlayVideo, setCanPlayVideo] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+  const heroSectionRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const quickCarouselRef = useRef<HTMLDivElement>(null);
+  const magneticRafRef = useRef<number | null>(null);
 
-  // Fallback: if onCanPlay never fires (e.g. browser policy), show video after timeout
-  useEffect(() => {
-    if (canPlayVideo || shouldReduceMotion) return;
-    const timer = setTimeout(() => setCanPlayVideo(true), 3000);
-    return () => clearTimeout(timer);
-  }, [canPlayVideo, shouldReduceMotion]);
-
-  // Mobile video source — set to null until asset is available
-  // When ready, replace with "/videos/clara-hero-mobile.mp4"
-  const mobileVideoSrc: string | null = null;
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
+  const [isHeroMobile, setIsHeroMobile] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return isMobile;
+    return window.matchMedia(HERO_MOBILE_QUERY).matches;
   });
-  const mediaY = useTransform(scrollYProgress, [0, 1], ["0px", "24px"]);
-  const auroraY = useTransform(scrollYProgress, [0, 1], ["0px", "16px"]);
 
-  // IntersectionObserver: pause video when hero leaves viewport
-  useEffect(() => {
-    const video = videoRef.current;
-    const section = sectionRef.current;
-    if (!video || !section || isMobile) return;
+  const [videoErrorLevel, setVideoErrorLevel] = useState(0);
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
+  const desktopVideoSources = [
+    '/videos/clara-hero.mp4',
+  ];
+
+  const mobileVideoSources = [
+    '/videos/clara-hero.mp4',
+  ];
+
+  const currentSources = isHeroMobile ? mobileVideoSources : desktopVideoSources;
+  const currentVideoSrc = currentSources[Math.min(videoErrorLevel, currentSources.length - 1)];
+
+  useEffect(() => { setVideoErrorLevel(0); }, [isHeroMobile]);
+
+  const handleVideoError = () => {
+    if (videoErrorLevel < currentSources.length - 1) {
+      setVideoErrorLevel((prev) => prev + 1);
+    }
+  };
+
+  const shouldAnimate = !prefersReducedMotion && !isHeroMobile;
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        staggerChildren: isHeroMobile ? 0.1 : 0.12,
+        delayChildren: 0.06,
+        duration: 0.7,
+        ease: [0.16, 1, 0.3, 1] as const,
       },
-      { threshold: 0.1 }
-    );
+    },
+  };
 
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, [isMobile]);
+  const itemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: isHeroMobile ? 0.55 : 0.75,
+        ease: [0.16, 1, 0.3, 1] as const,
+      },
+    },
+  };
 
-  const scrollChips = useCallback((dir: "left" | "right") => {
-    if (!chipsRef.current) return;
-    const amount = dir === "left" ? -200 : 200;
-    chipsRef.current.scrollBy({ left: amount, behavior: "smooth" });
+  const scrollQuickCarousel = useCallback((direction: 'prev' | 'next') => {
+    const el = quickCarouselRef.current;
+    if (!el) return;
+    el.scrollBy({
+      left: direction === 'next' ? QUICK_SCROLL_DISTANCE : -QUICK_SCROLL_DISTANCE,
+      behavior: 'smooth',
+    });
   }, []);
 
-  const isDebug = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "hero";
-  const showVideo = !shouldReduceMotion;
+  const handleMagneticMove = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      if (!shouldAnimate || isHeroMobile || !window.matchMedia('(pointer:fine)').matches) return;
+      const target = event.currentTarget;
+      const rect = target.getBoundingClientRect();
+      const offsetX = ((event.clientX - (rect.left + rect.width / 2)) / rect.width) * 12;
+      const offsetY = ((event.clientY - (rect.top + rect.height / 2)) / rect.height) * 12;
+
+      if (magneticRafRef.current) cancelAnimationFrame(magneticRafRef.current);
+      magneticRafRef.current = requestAnimationFrame(() => {
+        target.style.setProperty('--magnetic-x', `${offsetX.toFixed(2)}px`);
+        target.style.setProperty('--magnetic-y', `${offsetY.toFixed(2)}px`);
+      });
+    },
+    [isHeroMobile, shouldAnimate],
+  );
+
+  const handleMagneticLeave = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    const target = event.currentTarget;
+    target.style.setProperty('--magnetic-x', '0px');
+    target.style.setProperty('--magnetic-y', '0px');
+  }, []);
+
+  // Performance Video Observer
+  useEffect(() => {
+    if (!videoRef.current || !heroSectionRef.current || isHeroMobile || prefersReducedMotion) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!videoRef.current) return;
+          if (entry.isIntersecting) {
+            videoRef.current.play().catch(() => {});
+          } else {
+            videoRef.current.pause();
+          }
+        });
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(heroSectionRef.current);
+    return () => observer.disconnect();
+  }, [isHeroMobile, prefersReducedMotion]);
+
+  useEffect(() => {
+    return () => { if (magneticRafRef.current) cancelAnimationFrame(magneticRafRef.current); };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      setIsHeroMobile(isMobile);
+      return;
+    }
+    const mediaQuery = window.matchMedia(HERO_MOBILE_QUERY);
+    const syncViewport = () => setIsHeroMobile(mediaQuery.matches);
+    syncViewport();
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', syncViewport);
+      return () => mediaQuery.removeEventListener('change', syncViewport);
+    }
+    mediaQuery.addListener(syncViewport);
+    return () => mediaQuery.removeListener(syncViewport);
+  }, [isMobile]);
+
+  const { scrollYProgress } = useScroll({
+    target: heroSectionRef,
+    offset: ['start start', 'end start'],
+  });
+  const textParallaxY = useTransform(scrollYProgress, [0, 1], [0, 30]);
+  const mediaParallaxY = useTransform(scrollYProgress, [0, 1], [0, 60]);
 
   return (
-    <section
-      ref={sectionRef}
-      className="clara-hero relative overflow-hidden noise-overlay"
-      style={{ minHeight: "var(--hero-min-h, 100svh)" }}
-    >
-      {/* LAYER 1: Base/Ambiente — full-bleed dark background */}
+    <section ref={heroSectionRef} className="clara-hero">
+      {/* 1. Base Layer */}
       <div className="hero-base-layer" aria-hidden="true">
-        {/* Aurora — desktop only */}
-        {!isMobile && (
-          <motion.div
-            style={{ y: shouldReduceMotion ? 0 : auroraY }}
-            className="absolute inset-0"
-          >
-            <AuroraBackground />
-          </motion.div>
-        )}
-
-        {/* Energy glow — desktop only */}
-        {!isMobile && <div className="hero-energy-glow" />}
-
-        {/* Gold particles — desktop only */}
-        {!isMobile && <GoldParticles />}
+        <div className="hero-energy-glow" />
+        <div className="cinematic-noise" />
       </div>
 
-      {/* LAYER 2: Media Stage — video background */}
-      {showVideo && !isMobile && (
-        <div
-          className="hero-media-stage"
-          style={isDebug ? { outline: "2px dashed hsl(210 80% 60%)" } : undefined}
-        >
-          {isDebug && (
-            <span className="absolute top-3 right-3 z-50 text-xs font-mono bg-blue-900/80 text-blue-300 px-2 py-1 rounded">
-              media-stage
-            </span>
-          )}
+      {/* 2. Media Layer */}
+      {!isHeroMobile && (
+        <div className="hero-media-stage" aria-hidden="true">
           <motion.div
             className="hero-media-motion"
-            style={{ y: shouldReduceMotion ? 0 : mediaY }}
+            initial={shouldAnimate ? { opacity: 0 } : false}
+            animate={{ opacity: 1 }}
+            transition={shouldAnimate ? { duration: 1.2, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
+            style={shouldAnimate ? { y: mediaParallaxY } : undefined}
           >
-            <video
-              ref={videoRef}
-              src="/videos/clara-hero.mp4"
-              poster={claraHero}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className={`hero-clara-video transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
-              onCanPlay={() => setCanPlayVideo(true)}
-              onLoadedData={() => setCanPlayVideo(true)}
-              aria-hidden="true"
-            />
+            {shouldAnimate ? (
+              <video
+                ref={videoRef}
+                src={currentVideoSrc}
+                poster={claraHeroFallback}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                onError={handleVideoError}
+                className="hero-clara-video"
+              />
+            ) : (
+              <img
+                src={claraHeroFallback}
+                alt=""
+                className="hero-clara-video"
+              />
+            )}
           </motion.div>
         </div>
       )}
 
-      {/* Mobile: vertical video (9:16) or static poster fallback */}
-      {isMobile && (
+      {/* Mobile: static poster fallback */}
+      {isHeroMobile && (
         <div className="absolute inset-0 z-[5]" aria-hidden="true">
-          {mobileVideoSrc && showVideo ? (
-            <video
-              ref={videoRef}
-              src={mobileVideoSrc}
-              poster={claraHero}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className={`w-full h-full object-cover transition-opacity duration-1000 ${canPlayVideo ? "opacity-100" : "opacity-0"}`}
-              onCanPlay={() => setCanPlayVideo(true)}
-              onLoadedData={() => setCanPlayVideo(true)}
-            />
-          ) : (
-            <img
-              src={claraHero}
-              alt=""
-              className="w-full h-full object-cover"
-              style={{ objectPosition: "78% 20%" }}
-              fetchPriority="high"
-            />
-          )}
-          {/* Dark overlay for text legibility */}
+          <img
+            src={claraHeroFallback}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ objectPosition: '78% 20%' }}
+            fetchPriority="high"
+          />
           <div
             className="absolute inset-0"
             style={{
-              background: `linear-gradient(
-                to bottom,
+              background: `linear-gradient(to bottom,
                 hsl(var(--background) / 0.35) 0%,
                 hsl(var(--background) / 0.10) 20%,
                 hsl(var(--background) / 0.10) 45%,
                 hsl(var(--background) / 0.50) 70%,
-                hsl(var(--background) / 0.85) 100%
-              )`,
+                hsl(var(--background) / 0.85) 100%)`,
             }}
           />
         </div>
       )}
 
-      <HeroDebugOverlay />
-
-      {/* LAYER 3: Content — copy column left-aligned */}
-      <div
-        className="relative z-20 w-full px-4 md:px-8 lg:px-12 pt-12 md:pt-10 pb-16 md:pb-24 flex items-center"
-        style={{ minHeight: "inherit" }}
+      {/* 3. Content Layer */}
+      <motion.div
+        className="hero-content-layer"
+        style={shouldAnimate ? { y: textParallaxY } : undefined}
       >
-        <div className="w-full">
+        <div className="hero-copy-column">
           <motion.div
-            className="hero-copy-column"
-            variants={shouldReduceMotion ? undefined : containerVariants}
-            initial={shouldReduceMotion ? undefined : "hidden"}
+            variants={containerVariants}
+            initial={shouldAnimate ? 'hidden' : 'visible'}
             animate="visible"
-            style={isDebug ? { outline: "2px dashed hsl(120 60% 50%)" } : undefined}
+            className="hero-copy-surface space-y-6 md:space-y-9"
           >
-            {isDebug && (
-              <span className="absolute -top-6 left-0 z-50 text-xs font-mono bg-green-900/80 text-green-300 px-2 py-1 rounded">
-                copy-safe-zone
+            <motion.div variants={itemVariants}>
+              <span className="badge-chip">
+                <motion.span
+                  animate={shouldAnimate ? { scale: [1, 1.2, 1] } : undefined}
+                  transition={shouldAnimate ? { duration: 2, repeat: Infinity } : undefined}
+                  className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_theme(colors.cyan.400)]"
+                />
+                <Sparkles className="w-3 h-3 text-cyan-400" aria-hidden="true" />
+                Inteligência Administrativa
               </span>
-            )}
-            <div className="hero-copy-surface space-y-5 md:space-y-6">
-              {/* Status badges */}
-              <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  🚀 INTELIGÊNCIA ADMINISTRATIVA
-                </span>
-              </motion.div>
+            </motion.div>
 
-              <motion.div variants={itemVariants}>
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-border bg-surface/60 text-muted-foreground">
-                  <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                  CLARA em manutenção e atualização. Volta em breve.
-                </span>
-              </motion.div>
+            <motion.div variants={itemVariants}>
+              <div className="maintenance-chip" role="status" aria-live="polite">
+                <span className="maintenance-dot animate-pulse-subtle" aria-hidden="true" />
+                CLARA em manutenção e atualização. Volta em breve.
+              </div>
+            </motion.div>
 
-              {/* CLARA title — wordmark monumental */}
-              <motion.h1
-                className="font-display font-extrabold tracking-[0.08em] text-[4.5rem] md:text-[5rem] leading-[0.9] text-gradient-gold"
-                style={{ textShadow: "0 0 40px hsl(38 65% 58% / 0.25), 0 0 80px hsl(38 65% 58% / 0.1)" }}
-                variants={itemVariants}
+            <motion.h1 variants={itemVariants} className="hero-title-mask">
+              <motion.span
+                className="hero-title inline-block hero-title-reveal"
+                initial={shouldAnimate ? { opacity: 0, filter: 'blur(4px)', clipPath: 'inset(0 100% 0 0)' } : false}
+                animate={{ opacity: 1, filter: 'blur(0px)', clipPath: 'inset(0 0% 0 0)' }}
+                transition={shouldAnimate ? { duration: 0.68, delay: 0.16, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
               >
                 CLARA
-              </motion.h1>
+              </motion.span>
+            </motion.h1>
 
-              <motion.p
-                variants={itemVariants}
-                className="font-display text-sm md:text-base font-bold text-foreground/70 uppercase tracking-[0.18em] leading-[1.6]"
+            <motion.p variants={itemVariants} className="hero-subtitle text-glow">
+              <span className="text-white font-medium drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">C</span>onsultora de{' '}
+              <span className="text-white font-medium drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">L</span>egislação e{' '}
+              <span className="text-white font-medium drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">A</span>poio a{' '}
+              <span className="text-white font-medium drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">R</span>otinas{' '}
+              <span className="text-white font-medium drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">A</span>dministrativas
+            </motion.p>
+
+            <motion.p variants={itemVariants} className="text-body max-w-[50ch]">
+              Sua assistente especializada em sistemas eletrônicos de informações e procedimentos
+              administrativos. Orientações passo a passo com indicação de fontes documentais.
+            </motion.p>
+
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-3">
+              <button
+                className="btn-cinematic-glow hero-cta-button type-label flex items-center justify-center gap-2"
+                onMouseMove={handleMagneticMove}
+                onMouseLeave={handleMagneticLeave}
               >
-                Consultora de Legislação e<br />
-                Apoio a Rotinas Administrativas
-              </motion.p>
-
-              <motion.p
-                variants={itemVariants}
-                className="text-[0.95rem] md:text-[1rem] text-muted-foreground max-w-[42ch] leading-[1.75]"
+                <MessageCircle size={20} aria-hidden="true" />
+                Iniciar conversa
+              </button>
+              <button
+                onClick={() => {
+                  const featuresSection = document.getElementById('conhecimento') ?? document.getElementById('features');
+                  featuresSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="btn-clara-secondary hero-cta-button type-label flex items-center justify-center gap-2"
+                onMouseMove={handleMagneticMove}
+                onMouseLeave={handleMagneticLeave}
               >
-                Sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais.
-              </motion.p>
+                <BookOpen size={20} aria-hidden="true" />
+                Ver tópicos
+              </button>
+            </motion.div>
 
-              <motion.div variants={itemVariants} className="flex flex-row gap-3 pt-1">
-                <button
-                  ref={btnPrimaryRef}
-                  className="hero-btn-primary flex-1 max-w-[210px] py-3 rounded-full bg-primary text-primary-foreground font-semibold text-[0.85rem] border border-primary/20 transition-all duration-300 ease-out flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/25"
+            <motion.p variants={itemVariants} className="text-caption max-w-[44ch]">
+              Ao usar nossos serviços, você concorda com nossa{' '}
+              <a href="/privacidade" className="text-primary hover:underline font-medium transition-colors duration-150">
+                Política de Privacidade
+              </a>
+            </motion.p>
+
+            <motion.div variants={itemVariants} className="pt-5">
+              <p className="text-caption mb-2 text-muted-foreground">Perguntas rápidas</p>
+              <div className="quick-carousel-shell">
+                <div
+                  ref={quickCarouselRef}
+                  className="quick-carousel"
+                  role="list"
+                  aria-label="Perguntas rápidas"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'ArrowRight') { event.preventDefault(); scrollQuickCarousel('next'); }
+                    if (event.key === 'ArrowLeft') { event.preventDefault(); scrollQuickCarousel('prev'); }
+                  }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
-                  Iniciar conversa
-                </button>
-                <button
-                  ref={btnSecondaryRef}
-                  className="hero-btn-secondary flex-1 max-w-[210px] py-3 rounded-full border border-border/60 text-foreground font-medium text-[0.85rem] transition-all duration-300 ease-out flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:bg-white/5 hover:border-white/15"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
-                  Ver tópicos
-                </button>
-              </motion.div>
-
-              <motion.p variants={itemVariants} className="text-xs text-muted-foreground max-w-[44ch]">
-                Ao usar nossos serviços, você concorda com nossa{" "}
-                <a href="/privacidade" className="text-primary hover:underline font-medium transition-colors">
-                  Política de Privacidade
-                </a>
-              </motion.p>
-
-              {/* Quick questions */}
-              <motion.div variants={itemVariants}>
-                <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
-                  Perguntas rápidas
-                </p>
-
-                {/* Mobile: horizontal carousel */}
-                <div className="md:hidden relative">
-                  <div
-                    ref={chipsRef}
-                    className="flex gap-2 overflow-x-auto scrollbar-hide scroll-snap-x-mandatory pb-1"
-                  >
-                    {quickQuestions.map((q, i) => (
+                  {QUICK_QUESTIONS.map((question, i) => (
+                    <div key={question} role="listitem" className="quick-chip-item">
                       <button
-                        key={i}
-                        className="flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium glass-card border-white/[0.08] text-muted-foreground hover:text-foreground hover:border-primary/25 transition-all duration-300 whitespace-nowrap"
+                        type="button"
+                        className="quick-chip"
+                        style={{ animationDelay: `${0.05 * i}s` }}
                       >
-                        {q}
+                        {question}
                       </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => scrollChips("left")}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground z-10"
-                    aria-label="Anterior"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    onClick={() => scrollChips("right")}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground z-10"
-                    aria-label="Próximo"
-                  >
-                    ›
-                  </button>
-                </div>
-
-                {/* Desktop: vertical stack with "Ver mais" */}
-                <div className="hidden md:flex flex-wrap gap-2 max-w-[620px]">
-                  {(showAllQuestions ? quickQuestions : quickQuestions.slice(0, DESKTOP_INITIAL_COUNT)).map((q, i) => (
-                    <button
-                      key={i}
-                      className="w-fit px-4 py-2 rounded-full text-sm font-medium glass-card border-white/[0.08] text-muted-foreground hover:text-foreground hover:border-primary/25 hover:scale-[1.02] transition-all duration-300 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
-                    >
-                      {q}
-                    </button>
+                    </div>
                   ))}
-                  {!showAllQuestions && quickQuestions.length > DESKTOP_INITIAL_COUNT && (
-                    <button
-                      onClick={() => setShowAllQuestions(true)}
-                      className="w-fit px-4 py-2 rounded-full text-sm font-medium border border-primary/30 text-primary hover:bg-primary/10 transition-all"
-                    >
-                      Ver mais perguntas ({quickQuestions.length - DESKTOP_INITIAL_COUNT})
-                    </button>
-                  )}
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
-      </div>
-
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-30 pointer-events-none" />
+      </motion.div>
     </section>
   );
 };

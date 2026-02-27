@@ -1,83 +1,121 @@
-import { useEffect, useRef } from "react";
-import { FileSearch, MessagesSquare, BookCheck } from "lucide-react";
+import { motion } from 'motion/react';
+import { FileSearch, MessagesSquare, BookCheck, ArrowUpRight, Sparkles, Gavel, ShieldCheck, Route, FileCheck2 } from 'lucide-react';
+import ScrollReveal from '@/components/animations/ScrollReveal';
+import BentoCard from '@/components/BentoCard';
 
 const features = [
   {
+    id: 'search',
     icon: FileSearch,
-    title: "Busca Inteligente",
-    description: "Encontre normas, decretos e procedimentos com linguagem natural. A CLARA entende o contexto da sua dúvida.",
+    title: 'Pesquisa sem ruído',
+    subtitle: 'Normas, prazos e procedimentos em segundos',
+    description: 'Interprete dúvidas em linguagem natural e vá direto ao ponto com contexto administrativo.',
+    points: ['Leitura semântica de consultas', 'Prioriza fontes documentais', 'Histórico e continuidade de contexto'],
   },
   {
+    id: 'answers',
     icon: MessagesSquare,
-    title: "Respostas Contextualizadas",
-    description: "Orientações claras e objetivas, sempre com indicação das fontes documentais para conferência.",
+    title: 'Respostas com fundamento',
+    subtitle: 'Objetivo quando precisa, didático quando importa',
+    description: 'Escolha entre respostas diretas ou explicativas, mantendo rastreabilidade e transparência.',
+    points: ['Modo Direto ou Didático', 'Transparência de fonte', 'Diagnóstico amigável de erros'],
   },
   {
+    id: 'workflow',
     icon: BookCheck,
-    title: "Passo a Passo",
-    description: "Guias detalhados para procedimentos administrativos, adaptados ao seu nível de familiaridade.",
+    title: 'Execução orientada',
+    subtitle: 'Do entendimento à ação com menos retrabalho',
+    description: 'Transforme orientação em execução com fluxo claro, linguagem simples e cadência profissional.',
+    points: ['Fluxos acionáveis', 'Padronização operacional', 'Menos ambiguidade na rotina'],
   },
 ];
 
+const pipeline = [
+  { step: '01', title: 'Pergunte com linguagem natural', description: 'Sem comandos técnicos. Diga o que precisa resolver.' },
+  { step: '02', title: 'Receba base + racional', description: 'Resposta estruturada com contexto e rastreio.' },
+  { step: '03', title: 'Aja com segurança', description: 'Siga o fluxo recomendado e valide o resultado.' },
+];
+
+const bentoCards = [
+  { title: 'Leitura Normativa', description: 'Consulte requisitos, prazos e critérios com síntese objetiva para tomada de decisão.', icon: Gavel, variant: 'highlight' as const },
+  { title: 'Fluxo de Tramitação', description: 'Mapeie a ordem correta de encaminhamento no SEI e reduza retrabalho operacional.', icon: Route, variant: 'default' as const },
+  { title: 'Validação Documental', description: 'Confira checklist de anexos, assinaturas e evidências antes da submissão final.', icon: FileCheck2, variant: 'default' as const },
+  { title: 'Conformidade e Risco', description: 'Antecipe inconsistências com orientações de conformidade e justificativa de cada etapa.', icon: ShieldCheck, variant: 'default' as const },
+];
+
 const FeaturesSection = () => {
-  const cardsRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Mark JS as enabled so cards get initial hidden state via CSS
-    document.body.classList.add("js-enabled");
-
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -50px 0px" }
-    );
-
-    const cards = cardsRef.current?.querySelectorAll(".feature-card");
-    cards?.forEach((card) => observer.observe(card));
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <section id="funcionalidades" className="relative py-24 px-6 noise-overlay">
-      <div className="relative z-10 max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Como a <span className="text-gradient-gold">CLARA</span> pode ajudar
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto" style={{ lineHeight: "1.7" }}>
-            Recursos projetados para simplificar seu trabalho com legislação e processos administrativos.
-          </p>
-        </div>
+    <section id="conhecimento" className="knowledge-section py-20 md:py-28 relative overflow-hidden" aria-labelledby="features-heading">
+      <div id="features" className="absolute -top-20" aria-hidden="true" />
+      <div className="container mx-auto px-6">
+        <ScrollReveal>
+          <div className="knowledge-header max-w-4xl mx-auto text-center mb-12 md:mb-16">
+            <span className="knowledge-kicker">
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+              Base de Conhecimento
+            </span>
+            <h2 id="features-heading" className="text-h2 mt-4">Um fluxo premium para transformar dúvida em decisão</h2>
+            <p className="text-body text-lg max-w-3xl mx-auto mt-4">Estrutura visual, técnica e operacional pensada para produtividade real: clareza, velocidade e precisão.</p>
+          </div>
+        </ScrollReveal>
 
-        <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {features.map((feature, i) => (
-            <div
-              key={i}
-              className="feature-card glass-card rounded-xl p-6 group hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300"
-              style={{ transitionDelay: `${i * 100}ms` }}
-            >
-              <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-6 group-hover:bg-primary/15 group-hover:border-primary/30 transition-all duration-300">
-                <feature.icon className="w-7 h-7 text-primary" strokeWidth={1.5} />
-              </div>
-              <h3 className="font-display text-xl font-bold text-foreground mb-3 tracking-tight">
-                {feature.title}
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed" style={{ lineHeight: "1.7" }}>
-                {feature.description}
-              </p>
+        <ScrollReveal delay={0.04}>
+          <div className="max-w-6xl mx-auto mb-12 md:mb-16">
+            <div className="bento-divider mb-7 md:mb-8" aria-hidden="true" />
+            <div className="text-center md:text-left mb-5 md:mb-6">
+              <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Serviços Prioritários</p>
+              <h3 className="text-h3 mt-2">Blocos rápidos para consultas de rotina</h3>
             </div>
+            <div className="bento-services-grid">
+              {bentoCards.map((card) => (
+                <BentoCard key={card.title} title={card.title} description={card.description} icon={card.icon} variant={card.variant} />
+              ))}
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <div className="knowledge-grid" role="list" aria-label="Recursos da CLARA">
+          {features.map((feature, index) => (
+            <ScrollReveal key={feature.id} delay={index * 0.08} className={index === 0 ? 'lg:col-span-2' : ''}>
+              <motion.article className="knowledge-card group h-full" role="listitem" whileHover={{ y: -4, rotateX: 1.2, rotateY: index === 1 ? 0.8 : -0.8 }} transition={{ type: 'spring', stiffness: 260, damping: 22 }}>
+                <div className="knowledge-card-head">
+                  <div className="knowledge-icon" aria-hidden="true"><feature.icon className="w-6 h-6 text-primary" strokeWidth={1.6} /></div>
+                  <span className="knowledge-index">0{index + 1}</span>
+                </div>
+                <h3 className="knowledge-title mt-5">{feature.title}</h3>
+                <p className="knowledge-subtitle">{feature.subtitle}</p>
+                <p className="text-body mt-4">{feature.description}</p>
+                <ul className="knowledge-points" aria-label={`Diferenciais de ${feature.title}`}>
+                  {feature.points.map((point) => (<li key={point}>{point}</li>))}
+                </ul>
+                <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }}>
+                  Explorar no chat <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+                </motion.button>
+              </motion.article>
+            </ScrollReveal>
           ))}
         </div>
+
+        <ScrollReveal delay={0.12}>
+          <div className="knowledge-pipeline" aria-label="Como funciona">
+            {pipeline.map((item) => (
+              <div key={item.step} className="knowledge-step">
+                <span className="knowledge-step-index">{item.step}</span>
+                <h3 className="knowledge-step-title">{item.title}</h3>
+                <p className="knowledge-step-description">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.18}>
+          <div className="knowledge-bottom-cta">
+            <p className="text-body">Pronto para validar um caso real da sua rotina?</p>
+            <motion.button type="button" className="btn-clara-primary type-label inline-flex items-center justify-center gap-2 px-6" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+              Iniciar análise com a CLARA
+            </motion.button>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );
