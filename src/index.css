@@ -1005,6 +1005,7 @@
 
   .site-main-canvas {
     position: relative;
+    z-index: 1;
     overflow: clip;
   }
 
