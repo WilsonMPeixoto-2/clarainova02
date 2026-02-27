@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { BookOpen, MessageCircle, Sparkles } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useChat } from '@/hooks/useChatStore';
 import claraHeroFallback from '@/assets/clara-hero.jpg';
 
 const QUICK_QUESTIONS = [
@@ -24,6 +25,7 @@ const HERO_MOBILE_QUERY = '(max-width: 899px)';
 
 const HeroSection = () => {
   const isMobile = useIsMobile();
+  const { openChat } = useChat();
   const prefersReducedMotion = useReducedMotion();
   const heroSectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -287,6 +289,7 @@ const HeroSection = () => {
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-3">
               <button
                 className="btn-cinematic-glow hero-cta-button type-label flex items-center justify-center gap-2"
+                onClick={() => openChat()}
                 onMouseMove={handleMagneticMove}
                 onMouseLeave={handleMagneticLeave}
               >
@@ -334,6 +337,7 @@ const HeroSection = () => {
                         type="button"
                         className="quick-chip"
                         style={{ animationDelay: `${0.05 * i}s` }}
+                        onClick={() => openChat(question)}
                       >
                         {question}
                       </button>

@@ -3,11 +3,13 @@ import { Menu, X, MessageCircle } from 'lucide-react';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'react-router-dom';
+import { useChat } from '@/hooks/useChatStore';
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isScrolled } = useScrollPosition(50);
   const location = useLocation();
+  const { openChat } = useChat();
 
   const primaryLinks = [
     { label: 'Base de Conhecimento', href: '/#conhecimento', note: 'Guias e fluxos principais' },
@@ -94,6 +96,7 @@ const Header = () => {
               <Button
                 size="sm"
                 className="btn-clara-secondary type-label h-10 min-w-[102px] px-4 gap-2 rounded-full"
+                onClick={() => openChat()}
               >
                 <MessageCircle size={16} aria-hidden="true" />
                 Chat
@@ -206,7 +209,7 @@ const Header = () => {
 
           {/* Drawer Footer */}
           <div className="drawer-footer-surface px-4 py-5 border-t">
-            <Button className="btn-clara-primary type-label w-full gap-2 h-11">
+            <Button className="btn-clara-primary type-label w-full gap-2 h-11" onClick={() => { setMenuOpen(false); openChat(); }}>
               <MessageCircle size={18} aria-hidden="true" />
               Chat com CLARA
             </Button>
