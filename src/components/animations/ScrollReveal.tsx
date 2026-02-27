@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 
 interface ScrollRevealProps {
@@ -9,22 +9,37 @@ interface ScrollRevealProps {
 
 const ScrollReveal = ({ children, delay = 0, className = '' }: ScrollRevealProps) => {
   const prefersReducedMotion = useReducedMotion();
-  const [jsEnabled, setJsEnabled] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    setJsEnabled(true);
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '0px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
-  if (prefersReducedMotion || !jsEnabled) {
+  if (prefersReducedMotion) {
     return <div className={className}>{children}</div>;
   }
 
   return (
     <motion.div
+      ref={ref}
       className={className}
       initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
       transition={{
         duration: 0.62,
         delay: delay,
