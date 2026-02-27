@@ -39,7 +39,7 @@ const itemVariants = {
   },
 };
 
-const DESKTOP_INITIAL_COUNT = 5;
+const DESKTOP_INITIAL_COUNT = 6;
 
 const HeroSection = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -226,7 +226,7 @@ const HeroSection = () => {
               <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border border-primary/25 bg-primary/10 text-primary">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  INTELIGÊNCIA ADMINISTRATIVA
+                  🚀 INTELIGÊNCIA ADMINISTRATIVA
                 </span>
               </motion.div>
 
@@ -248,13 +248,10 @@ const HeroSection = () => {
 
               <motion.p
                 variants={itemVariants}
-                className="font-display text-[1.5rem] md:text-[1.65rem] font-bold text-foreground/70 leading-[1.45]"
+                className="font-display text-sm md:text-base font-bold text-foreground/70 uppercase tracking-[0.18em] leading-[1.6]"
               >
-                <span className="text-primary hero-capital-glow">C</span>onsultora de{" "}
-                <span className="text-primary hero-capital-glow">L</span>egislação e{" "}
-                <span className="text-primary hero-capital-glow">A</span>poio a{" "}
-                <span className="text-primary hero-capital-glow">R</span>otinas{" "}
-                <span className="text-primary hero-capital-glow">A</span>dministrativas
+                Consultora de Legislação e<br />
+                Apoio a Rotinas Administrativas
               </motion.p>
 
               <motion.p
@@ -326,7 +323,7 @@ const HeroSection = () => {
                 </div>
 
                 {/* Desktop: vertical stack with "Ver mais" */}
-                <div className="hidden md:flex flex-col gap-2 max-w-[520px]">
+                <div className="hidden md:flex flex-wrap gap-2 max-w-[620px]">
                   {(showAllQuestions ? quickQuestions : quickQuestions.slice(0, DESKTOP_INITIAL_COUNT)).map((q, i) => (
                     <button
                       key={i}
