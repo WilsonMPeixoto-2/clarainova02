@@ -143,7 +143,7 @@ const ChatSheet = () => {
                       }`}
                     >
                       {msg.role === 'assistant' ? (
-                        <div className="prose prose-sm prose-invert max-w-none [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:mb-2 [&_li]:mb-0.5">
+                        <div className="clara-prose">
                           <ReactMarkdown>{msg.content}</ReactMarkdown>
                         </div>
                       ) : (
