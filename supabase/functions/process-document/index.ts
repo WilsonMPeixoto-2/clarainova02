@@ -234,37 +234,67 @@ async function waitForFileActive(
   throw new Error(`File processing timed out: ${fileName}`);
 }
 
-// ─── Gemini text extraction ──────────────────────────────────────────────────
+// ─── Gemini text extraction (with model fallback) ───────────────────────────
+
+const EXTRACTION_MODELS = [
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+];
 
 async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<string> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { file_data: { mime_type: "application/pdf", file_uri: fileUri } },
+  let lastError = "";
+
+  for (const model of EXTRACTION_MODELS) {
+    try {
+      console.log(`Trying extraction with ${model}...`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 120_000); // 2 min timeout
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [
               {
-                text: "Extraia TODO o texto deste documento PDF. Mantenha a estrutura original (títulos, parágrafos, listas, artigos, incisos). Não resuma, não omita nada. Retorne apenas o texto extraído, sem comentários adicionais.",
+                parts: [
+                  { file_data: { mime_type: "application/pdf", file_uri: fileUri } },
+                  {
+                    text: "Extraia TODO o texto deste documento PDF. Mantenha a estrutura original (títulos, parágrafos, listas, artigos, incisos). Não resuma, não omita nada. Retorne apenas o texto extraído, sem comentários adicionais.",
+                  },
+                ],
               },
             ],
-          },
-        ],
-        generationConfig: { maxOutputTokens: 65536, temperature: 0.1 },
-      }),
-    }
-  );
+            generationConfig: { maxOutputTokens: 65536, temperature: 0.1 },
+          }),
+        }
+      );
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini extraction error: ${errText}`);
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        lastError = await response.text();
+        console.error(`${model} failed (${response.status}): ${lastError}`);
+        continue;
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      if (text.length > 50) {
+        console.log(`Extraction succeeded with ${model}`);
+        return text;
+      }
+      lastError = `${model} returned empty/short text`;
+      console.error(lastError);
+    } catch (err) {
+      lastError = `${model} error: ${err}`;
+      console.error(lastError);
+    }
   }
 
-  const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  throw new Error(`All extraction models failed. Last: ${lastError}`);
 }
 
 // ─── Chunking ────────────────────────────────────────────────────────────────
