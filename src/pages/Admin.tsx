@@ -14,6 +14,7 @@ import {
 import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import UsageStatsCard from "@/components/UsageStatsCard";
 
 interface Document {
   id: string;
@@ -239,6 +240,8 @@ export default function Admin() {
             )}
           </CardContent>
         </Card>
+
+        <UsageStatsCard />
       </div>
     </div>
   );

@@ -113,6 +113,12 @@ Deno.serve(async (req) => {
 
     console.log(`Extracted ${extractedText.length} chars from document ${document_id}`);
 
+    // Log PDF extraction
+    await supabase.from('usage_logs').insert({
+      event_type: 'pdf_extraction',
+      metadata: { document_id, text_length: extractedText.length },
+    });
+
     // 5. Split into chunks (~500 words, 50 word overlap)
     const chunks = splitIntoChunks(extractedText, 500, 50);
     console.log(`Split into ${chunks.length} chunks`);
@@ -143,6 +149,12 @@ Deno.serve(async (req) => {
         );
       }
     }
+
+    // Log embedding generation
+    await supabase.from('usage_logs').insert({
+      event_type: 'embedding_generation',
+      metadata: { document_id, chunks_count: chunks.length },
+    });
 
     // 8. Update document status
     await supabase.from("documents").update({ status: "processed" }).eq("id", document_id);
