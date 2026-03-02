@@ -237,8 +237,9 @@ async function waitForFileActive(
 // ─── Gemini text extraction (with model fallback) ───────────────────────────
 
 const EXTRACTION_MODELS = [
+  "gemini-3-flash-preview",
+  "gemini-2.5-flash",
   "gemini-2.0-flash",
-  "gemini-1.5-flash",
 ];
 
 async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<string> {
@@ -251,7 +252,7 @@ async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<s
       const timeout = setTimeout(() => controller.abort(), 120_000); // 2 min timeout
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
