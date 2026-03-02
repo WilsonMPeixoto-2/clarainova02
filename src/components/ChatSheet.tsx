@@ -7,7 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const ChatSheet = () => {
-  const { isOpen, messages, pendingQuestion, isLoading, closeChat, sendMessage, clearMessages } = useChat();
+  const { isOpen, messages, pendingQuestion, isLoading, isStreaming, closeChat, sendMessage, clearMessages } = useChat();
   const isMobile = useIsMobile();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -153,7 +153,7 @@ const ChatSheet = () => {
                   </div>
                 ))}
 
-                {isLoading && (
+                {isLoading && !isStreaming && (
                   <div className="flex justify-start">
                     <div className="bg-[hsl(var(--surface-2))] border border-[hsl(var(--border-subtle))] rounded-2xl rounded-bl-md px-4 py-3">
                       <Loader2 className="w-4 h-4 text-primary animate-spin" />
