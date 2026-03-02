@@ -1,102 +1,74 @@
 
 
-# RAG Completo para CLARA -- com solucao anti-falha de PDF
+# Painel de Uso na pagina Admin
 
-## O problema do projeto anterior
+## Objetivo
 
-PDFs gerados ou modificados por Chrome, Edge, Adobe e downloads em dispositivos moveis frequentemente tem formatos internos diferentes. Bibliotecas tradicionais de parsing (como `pdf-parse`) falham silenciosamente ou extraem texto corrompido/vazio nesses casos.
+Adicionar um card de monitoramento na pagina `/admin` para acompanhar o consumo das Edge Functions (Cloud) e chamadas a API do Gemini, sem depender de APIs externas de billing.
 
-## A solucao: Gemini extrai o texto
+## Abordagem
 
-Em vez de usar bibliotecas de parsing no servidor, vamos enviar o PDF diretamente para a **API multimodal do Gemini** (`gemini-2.5-flash`), que consegue ler qualquer PDF -- Adobe, Chrome, Edge, escaneado, modificado, etc. O Gemini faz OCR automaticamente quando necessario.
+Como nao existe API para consultar o saldo do Lovable Cloud nem do Google AI Studio diretamente, a solucao e **registrar cada chamada internamente** no banco de dados e exibir os totais no Admin.
 
-Fluxo:
-```text
-[Upload PDF no Admin]
-    --> Storage bucket "documents"
-    --> Edge Function "process-document"
-        --> Envia PDF como base64 para Gemini (multimodal)
-        --> Gemini extrai texto completo
-        --> Divide em fragmentos (~500 palavras)
-        --> Gera embeddings (text-embedding-004)
-        --> Salva fragmentos + vetores no banco (pgvector)
+## Etapas
 
-[Usuario pergunta no chat]
-    --> Edge Function "chat"
-        --> Gera embedding da pergunta
-        --> Busca 5 fragmentos mais relevantes (similaridade cosseno)
-        --> Injeta no prompt do Gemini como contexto
-        --> Resposta em streaming
-```
+### 1. Criar tabela `usage_logs` (migracao SQL)
 
----
+Tabela simples para registrar cada chamada:
 
-## Etapas de implementacao
+| Coluna | Tipo | Descricao |
+|---|---|---|
+| id | uuid | Chave primaria |
+| event_type | text | `chat_message`, `embedding_query`, `pdf_extraction`, `embedding_generation` |
+| created_at | timestamptz | Data/hora do evento |
+| metadata | jsonb | Dados opcionais (ex: tokens estimados, document_id) |
 
-### 1. Banco de dados (migracao SQL)
+- RLS: leitura publica (dados nao sensiveis, apenas contadores)
+- Sem foreign keys complexas
 
-- Ativar extensao `vector` (pgvector)
-- Criar tabela `documents` (id, nome, status, created_at)
-- Criar tabela `document_chunks` (id, document_id, conteudo, embedding vector(768), posicao)
-- Criar funcao SQL `match_chunks(query_embedding, match_count)` para busca por similaridade
-- RLS desabilitado (conteudo publico de consulta legislativa)
+### 2. Atualizar Edge Function `chat`
 
-### 2. Storage bucket
+Ao final de cada resposta bem-sucedida, inserir 1-2 registros na tabela `usage_logs`:
+- `chat_message` (1 por pergunta)
+- `embedding_query` (1 por busca RAG, quando ocorre)
 
-- Criar bucket `documents` (publico) para armazenar os PDFs originais
+Impacto minimo: apenas um INSERT adicional por mensagem.
 
-### 3. Edge Function `process-document` (NOVA)
+### 3. Atualizar Edge Function `process-document`
 
-Arquivo: `supabase/functions/process-document/index.ts`
+Registrar eventos durante o processamento:
+- `pdf_extraction` (1 por PDF enviado ao Gemini)
+- `embedding_generation` (1 por PDF, com quantidade de chunks no metadata)
 
-Fluxo:
-1. Recebe `document_id` via POST
-2. Baixa o PDF do bucket storage
-3. Converte para base64
-4. Envia para Gemini como conteudo multimodal com prompt: "Extraia todo o texto deste documento, mantendo a estrutura"
-5. Divide o texto extraido em fragmentos de ~500 palavras com 50 palavras de sobreposicao
-6. Gera embeddings para cada fragmento usando `text-embedding-004`
-7. Salva tudo na tabela `document_chunks`
-8. Atualiza status do documento para "processed"
+### 4. Adicionar card de uso no Admin
 
-Usa a mesma `GEMINI_API_KEY` ja configurada. Custo zero.
+Novo card na pagina `Admin.tsx` exibindo:
 
-### 4. Atualizar Edge Function `chat`
+- **Mensagens do chat** (total do mes atual)
+- **Buscas RAG** (total do mes atual)
+- **PDFs processados** (total do mes atual)
+- **Embeddings gerados** (total do mes atual)
 
-Modificar `supabase/functions/chat/index.ts`:
+Informacoes contextuais fixas (texto explicativo):
+- "Edge Functions: incluidas nos US$ 25/mes do Cloud"
+- "API Gemini: uso gratuito via Google AI Studio"
+- "Gateway Lovable AI (US$ 1/mes): nao utilizado"
 
-- Gerar embedding da pergunta do usuario usando `text-embedding-004`
-- Chamar funcao SQL `match_chunks` para buscar os 5 fragmentos mais relevantes
-- Adicionar os trechos encontrados no `SYSTEM_PROMPT` como secao "Base de Conhecimento"
-- Instruir a CLARA a priorizar informacoes da base de conhecimento nas respostas
+### 5. Criar Edge Function `get-usage-stats`
 
-### 5. Pagina Admin (frontend)
-
-Nova pagina: `src/pages/Admin.tsx`
-- Upload de PDFs com drag-and-drop ou botao
-- Lista de documentos com status (processando/pronto/erro)
-- Botao para remover documentos
-- Rota `/admin` adicionada ao `App.tsx`
+Uma funcao simples que consulta a tabela `usage_logs` agrupando por `event_type` no mes atual e retorna os totais. O Admin chama essa funcao para exibir os dados.
 
 ---
 
-## Por que isso resolve o problema anterior
+## Resumo tecnico
 
-| Problema anterior | Solucao agora |
+| Componente | Alteracao |
 |---|---|
-| `pdf-parse` falhava com PDFs do Chrome/Edge | Gemini le qualquer formato de PDF via multimodal |
-| PDFs escaneados nao tinham texto extraivel | Gemini faz OCR automaticamente |
-| Arquivos modificados por download corrompiam | Gemini processa o arquivo visual, nao depende da estrutura interna |
-| Bibliotecas incompativeis com Deno runtime | Sem dependencia de bibliotecas -- so chamada de API |
+| Nova tabela `usage_logs` | Migracao SQL |
+| `supabase/functions/chat/index.ts` | Adicionar INSERT de log |
+| `supabase/functions/process-document/index.ts` | Adicionar INSERT de log |
+| Nova Edge Function `get-usage-stats` | Consulta agrupada |
+| `src/pages/Admin.tsx` | Novo card com estatisticas |
 
-## Custos
-
-| Componente | Custo |
-|---|---|
-| Gemini 2.5 Flash (extracao de texto + chat) | Gratuito |
-| Gemini text-embedding-004 (embeddings) | Gratuito |
-| pgvector no banco | Incluido no plano |
-| Storage bucket | Incluido no plano |
-| Edge Functions | Incluido no plano |
-| **Total** | **R$ 0** |
+Custo adicional: praticamente zero (INSERTs leves no banco ja incluso).
 
