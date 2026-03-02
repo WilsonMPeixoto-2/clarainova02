@@ -1,65 +1,56 @@
 
+# Corrigir Posicionamento da Imagem da Clara no Hero
 
-# Corrigir Extração de PDF: Modelos Atualizados + Build Errors
+## Problema
 
-## Diagnóstico
+A imagem da Clara esta cobrindo toda a tela, invadindo a area do texto. No site de producao (Vercel), a Clara fica posicionada na metade direita da tela, enquanto a metade esquerda tem um overlay escuro que protege o texto.
 
-Confirmei na documentação oficial do Google que os seguintes modelos estao disponíveis com tier gratuito e suportam PDF como input:
+## Comparacao Visual
 
-- **gemini-3-flash-preview** -- modelo mais recente, suporta PDF, 1M tokens de input
-- **gemini-2.5-flash** -- modelo estável, excelente custo-benefício
-- **gemini-2.0-flash** -- quota esgotada na sua chave, mas mantido como fallback
-
-O problema atual e que:
-1. `gemini-2.0-flash` tem quota 0 na sua chave gratuita
-2. `gemini-1.5-flash` retorna 404 porque a URL usa `v1beta` em vez de `v1`
-3. Modelos mais novos (`gemini-3-flash-preview`, `gemini-2.5-flash`) tem quotas separadas e provavelmente disponíveis
-
-## Plano de Correção
-
-### 1. Atualizar modelos de extração
-
-**Arquivo:** `supabase/functions/process-document/index.ts`
-
-Trocar a lista de modelos para:
-```
-gemini-3-flash-preview -> gemini-2.5-flash -> gemini-2.0-flash
+```text
+PRODUCAO (Vercel):                    LOVABLE (atual):
++------------------+----------+       +-----------------------------+
+| TEXTO LEGIVEL    | CLARA    |       | CLARA POR CIMA DE TUDO     |
+| overlay escuro   | visivel  |       | texto ilegivel misturado   |
+| fundo protegido  | direita  |       | sem separacao              |
++------------------+----------+       +-----------------------------+
 ```
 
-Cada modelo tem quota independente no tier gratuito, entao se um esgotar, o próximo assume.
+## Correcoes no CSS (src/index.css)
 
-### 2. Corrigir URL da API: v1beta para v1
+### 1. Reposicionar hero-media-stage para a direita
 
-Na funcao `extractTextWithGemini`, trocar:
-```
-v1beta/models/{model}:generateContent
-```
-por:
-```
-v1/models/{model}:generateContent
-```
+Alterar o `.hero-media-stage` no desktop para ocupar apenas a metade direita da tela em vez de 100%:
+- Remover `left: 0`
+- Adicionar `left: auto` no desktop (>= 900px)
+- Definir `width: 55%` (em vez de 100%) para que a Clara ocupe apenas o lado direito
+- Ajustar a mascara de gradiente para um fade mais suave na borda esquerda
 
-Isso resolve o erro 404 que impedia modelos como `gemini-1.5-flash` de funcionar e garante compatibilidade com todos os modelos.
+### 2. Fortalecer overlay na area do texto
 
-### 3. Limpar documento travado
+Adicionar um overlay escuro mais forte no lado esquerdo para garantir legibilidade do texto, similar ao que existe na producao:
+- Gradiente horizontal (`to right`) partindo de opacidade alta (0.92) ate transparente
 
-Atualizar o documento preso em "processing" para "error" no banco para permitir exclusao.
+### 3. Ajustar object-position do video/imagem
 
-### 4. Corrigir build errors no chart.tsx
+Manter `object-position: 80% center` mas garantir que funcione corretamente quando o container esta limitado ao lado direito.
 
-Os erros de TypeScript em `chart.tsx` sao causados por incompatibilidade de tipos com a versao atual do `recharts`. Correcao com type assertions para resolver.
+### 4. Valores por breakpoint
 
-## Arquivos a editar
+| Breakpoint   | Media width | Mask fade | Overlay |
+|-------------|-------------|-----------|---------|
+| >= 1600px   | 55%         | 0-20%     | 0.85    |
+| >= 1280px   | 55%         | 0-18%     | 0.87    |
+| >= 1024px   | 52%         | 0-15%     | 0.88    |
+| >= 900px    | 50%         | 0-12%     | 0.90    |
+| < 900px     | 100%        | none      | vertical|
+
+## Arquivo a editar
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `supabase/functions/process-document/index.ts` | Modelos: gemini-3-flash-preview, 2.5-flash, 2.0-flash + URL v1 |
-| `src/components/ui/chart.tsx` | Fix TypeScript errors com type assertions |
+| `src/index.css` | Reposicionar hero-media-stage para direita, fortalecer overlay esquerdo, ajustar media-width por breakpoint |
 
 ## Resultado esperado
 
-- Extração usara gemini-3-flash-preview (mais recente, quota separada)
-- Se falhar, tenta gemini-2.5-flash, depois gemini-2.0-flash
-- URL correta (v1) para todos os modelos
-- Build sem erros
-
+Clara visivel no lado direito da tela, texto perfeitamente legivel no lado esquerdo com overlay escuro, identico ao site de producao na Vercel.
