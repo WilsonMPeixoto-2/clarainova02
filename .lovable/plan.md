@@ -1,362 +1,239 @@
 
 
-# Guia Completo: Backend da CLARA sem Lovable Cloud
+# Relatorio Duplo: Backend da CLARA
 
-## Visao Geral
+## PARTE 1 — O que sera construido aqui no Lovable
 
-Este guia vai te levar do zero ate ter o chat da CLARA funcionando com IA, usando **sua propria conta Supabase** (gratuita) e o **Vercel** que voce ja usa. Nenhuma dependencia do Lovable.
+### Visao Geral da Arquitetura
 
----
-
-## Arquitetura Final
+A Etapa 1 (interface do chat) ja esta pronta. Todos os 7 pontos de entrada estao conectados e o chat funciona com respostas mockadas. A proxima fase e dar "cerebro" a CLARA — conectar a interface a uma IA real.
 
 ```text
-+------------------+       +-------------------+       +--------------------+
-|   Frontend       |       |   Supabase        |       |   API de IA        |
-|   (Vercel)       | ----> |   Edge Function   | ----> |   (OpenAI / Google)|
-|                  |       |   "chat"          |       |                    |
-|  React + Vite    | <---- |                   | <---- |                    |
-+------------------+       +-------------------+       +--------------------+
-                           |   PostgreSQL      |
-                           |   (opcional fase 3)|
-                           +-------------------+
+Fluxo completo de uma pergunta:
+
+  Usuario clica       Frontend envia        Edge Function        API de IA
+  "Iniciar conversa"  mensagem via fetch     recebe, adiciona     processa e
+  ou chip de          para Edge Function     system prompt,       retorna resposta
+  pergunta rapida     no Supabase            envia para IA        via streaming
+        |                   |                      |                    |
+        v                   v                      v                    v
+  [ChatSheet.tsx] --> [useChatStore.tsx] --> [Edge Function] --> [Gemini / GPT]
+                                                   |
+                                            retorna tokens
+                                            um a um (SSE)
+                                                   |
+                                                   v
+                                           [ChatSheet exibe
+                                            letra por letra]
 ```
+
+### O que e uma Edge Function?
+
+Uma Edge Function e um pequeno programa que roda no servidor (nao no navegador do usuario). Ela existe por dois motivos:
+
+1. **Seguranca**: A chave da API de IA (que custa dinheiro) fica no servidor, invisivel para qualquer pessoa que inspecione o site
+2. **Controle**: Voce pode adicionar regras (system prompt, limites de uso, filtros) antes de enviar a pergunta para a IA
+
+Analogia: imagine que o usuario manda um bilhete (pergunta). A Edge Function e a secretaria que recebe o bilhete, adiciona instrucoes internas ("responda em portugues, seja objetiva, cite fontes") e entrega ao especialista (IA). O especialista responde, e a secretaria devolve ao usuario.
+
+### O que sera construido
+
+| Componente | O que faz | Onde vive |
+|---|---|---|
+| **Edge Function `chat`** | Recebe mensagens do frontend, adiciona o system prompt da CLARA, chama a API de IA, e retorna a resposta em streaming (token por token) | `supabase/functions/chat/index.ts` |
+| **System Prompt** | Texto interno que define a personalidade e expertise da CLARA (SEI-Rio, legislacao municipal, rotinas administrativas) | Dentro da Edge Function |
+| **Streaming SSE** | Tecnica que permite mostrar a resposta letra por letra em tempo real, em vez de esperar a resposta completa | Frontend (`useChatStore.tsx`) |
+| **Tratamento de erros** | Mensagens claras quando a IA esta fora do ar, limite de uso excedido (429), ou creditos esgotados (402) | Edge Function + Frontend |
+
+### Como sera construido no Lovable
+
+1. **Ativar Lovable Cloud** — habilita a infraestrutura de servidor dentro do Lovable
+2. **Ativar Lovable AI** — disponibiliza a chave `LOVABLE_API_KEY` automaticamente (voce nao precisa configurar nada)
+3. **Criar a Edge Function `chat`** — um unico arquivo TypeScript que:
+   - Recebe `{ messages }` do frontend
+   - Adiciona o system prompt da CLARA
+   - Chama `https://ai.gateway.lovable.dev/v1/chat/completions` com streaming
+   - Retorna o stream SSE para o frontend
+4. **Atualizar `useChatStore.tsx`** — substituir a funcao `getMockResponse` por uma chamada real com parsing de SSE token a token
+5. **Atualizar `ChatSheet.tsx`** — exibir a resposta progressivamente (letra por letra) em vez de esperar a resposta completa
+
+### Modelo de IA
+
+O Lovable AI Gateway oferece acesso a modelos Google Gemini e OpenAI. O modelo padrao sera `google/gemini-3-flash-preview` — rapido, barato e eficiente para o tipo de consulta da CLARA.
 
 ---
 
-## ETAPA 1 - Interface do Chat (Frontend puro, sem backend)
+## PARTE 2 — Guia Estrategico para o Projeto na Vercel
 
-**Objetivo:** Criar o visual do chat e conectar todos os 7 botoes. Tudo funciona local, sem API.
+### As opcoes de mercado comparadas
 
-### 1.1 Criar o estado global do chat
+Voce precisa de 3 coisas para o backend funcionar fora do Lovable:
 
-Criar arquivo `src/hooks/useChatStore.ts`:
+1. **Lugar para rodar a Edge Function** (o "cerebro" que fala com a IA)
+2. **API de IA** (o modelo que gera as respostas)
+3. **Banco de dados com PDFs** (a base de conhecimento)
+
+Abaixo, cada opcao avaliada:
+
+---
+
+### 1. Onde rodar a Edge Function
+
+| Opcao | Cota Gratuita | Vantagens | Desvantagens |
+|---|---|---|---|
+| **Vercel Functions** | 100 GB-h/mes, 100k invocacoes | Ja esta no mesmo deploy do frontend; zero config extra; suporta streaming SSE nativamente | Timeout de 10s no plano gratuito (pode cortar respostas longas) |
+| **Supabase Edge Functions** | 500k invocacoes/mes, 2M tempo de execucao | Generoso; facil de escalar; bom para adicionar banco depois | Precisa de conta separada e CLI |
+| **Google Cloud Functions** | 2M invocacoes/mes | Muito generoso | Setup complexo; console confusa; cold starts |
+| **Firebase Functions** | Requer plano Blaze (pague pelo uso) | Integracao com Firebase Auth | Nao tem cota gratuita real para functions |
+
+**Recomendacao**: Comece com **Vercel Functions** (voce ja usa Vercel). Se precisar de mais tempo de execucao ou banco de dados, adicione Supabase depois.
+
+#### Como criar uma Vercel Function
+
+Na raiz do seu projeto, crie a pasta `api/` com um arquivo:
+
+```text
+api/
+  chat.ts    <-- sua funcao serverless
+```
+
+Exemplo de estrutura:
 
 ```typescript
-// Um React Context simples para:
-// - abrir/fechar o chat (isOpen)
-// - armazenar mensagens em memoria [{role, content}]
-// - pre-preencher uma pergunta (pendingQuestion)
-// - funcao sendMessage (por enquanto, responde com mensagem fixa)
+// api/chat.ts
+export const config = { runtime: 'edge' };   // roda no edge, mais rapido
+
+export default async function handler(req: Request) {
+  const { messages } = await req.json();
+  
+  const response = await fetch('URL_DA_API_DE_IA', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.AI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'gemini-2.5-flash',
+      messages: [
+        { role: 'system', content: 'Voce e a CLARA...' },
+        ...messages,
+      ],
+      stream: true,
+    }),
+  });
+
+  return new Response(response.body, {
+    headers: { 'Content-Type': 'text/event-stream' },
+  });
+}
 ```
 
-O estado precisa de:
-- `isOpen: boolean`
-- `messages: {role: 'user' | 'assistant', content: string}[]`
-- `pendingQuestion: string | null`
-- `openChat(question?: string): void`
-- `closeChat(): void`
-- `sendMessage(text: string): void`
-
-### 1.2 Criar o componente ChatSheet
-
-Criar arquivo `src/components/ChatSheet.tsx`:
-
-- No **desktop**: um drawer lateral direito (usa o componente Sheet que ja existe)
-- No **mobile**: sheet fullscreen
-- Dentro: lista de mensagens + campo de input + botao enviar
-- Renderizar markdown nas respostas (instalar `react-markdown`)
-
-### 1.3 Conectar os 7 pontos de entrada
-
-Todos os botoes abaixo chamarao `openChat()`:
-
-| Componente | Botao/Elemento | Acao |
-|---|---|---|
-| `HeroSection.tsx` | "Iniciar conversa" | `openChat()` |
-| `HeroSection.tsx` | 12 chips de perguntas | `openChat(question)` |
-| `Header.tsx` | Botao "Chat" no header | `openChat()` |
-| `Header.tsx` | "Chat com CLARA" no drawer | `openChat()` |
-| `FeaturesSection.tsx` | 3x "Explorar no chat" | `openChat(feature.title)` |
-| `FAQSection.tsx` | "Levar essa duvida para o chat" | `openChat(faq.question)` |
-| `FeaturesSection.tsx` | "Iniciar analise com a CLARA" | `openChat()` |
-
-### 1.4 Renderizar na pagina
-
-Em `Index.tsx`, adicionar `<ChatSheet />` e envolver com o Provider do chat.
-
-**Resultado da Etapa 1:** Chat visual funcionando, botoes conectados, respostas mockadas.
-
-**Dependencia para instalar:** `react-markdown`
+A chave `AI_API_KEY` fica em **Vercel > Settings > Environment Variables**.
 
 ---
 
-## ETAPA 2 - Supabase Proprio + Edge Function
+### 2. Qual API de IA usar
 
-**Objetivo:** Criar sua conta Supabase, uma Edge Function que chama a API de IA, e conectar o frontend.
+| Provedor | Modelo | Cota Gratuita | Custo apos cota | Qualidade |
+|---|---|---|---|---|
+| **Google AI Studio** | Gemini 2.5 Flash | 15 RPM, 1M tokens/min (gratuito) | $0.075/1M tokens entrada | Excelente custo-beneficio |
+| **Google AI Studio** | Gemini 2.5 Pro | 5 RPM (gratuito, mais lento) | $1.25/1M tokens entrada | Melhor qualidade, mais caro |
+| **OpenAI** | GPT-4o-mini | Sem cota gratuita; $5 credito inicial | $0.15/1M tokens entrada | Bom, mas sem cota gratuita permanente |
+| **OpenAI** | GPT-4o | Sem cota gratuita | $2.50/1M tokens entrada | Top de linha, caro |
 
-### 2.1 Criar projeto no Supabase
+**Recomendacao**: **Google AI Studio com Gemini 2.5 Flash**. E gratuito dentro de limites generosos e a qualidade e excelente para o caso da CLARA.
 
-1. Acesse [supabase.com](https://supabase.com) e crie uma conta gratuita
-2. Clique em "New Project"
-3. Escolha nome (ex: `clara-backend`), senha do banco, e regiao (`South America` se disponivel)
-4. Aguarde o projeto ser criado (~2 min)
-5. Va em **Project Settings > API** e anote:
-   - `Project URL` (ex: `https://abcdefg.supabase.co`)
-   - `anon public key` (a chave publica, comeca com `eyJ...`)
-
-### 2.2 Instalar Supabase CLI no seu computador
-
-```bash
-# macOS
-brew install supabase/tap/supabase
-
-# Windows (via scoop)
-scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
-scoop install supabase
-
-# Ou via npm (qualquer sistema)
-npm install -g supabase
-```
-
-### 2.3 Inicializar Supabase no seu projeto
-
-Na raiz do seu projeto (o que esta no Vercel):
-
-```bash
-supabase init
-supabase login
-supabase link --project-ref SEU_PROJECT_REF
-```
-
-O `project-ref` e o ID que aparece na URL do seu projeto Supabase (ex: `abcdefg` de `https://abcdefg.supabase.co`).
-
-### 2.4 Obter chave de API de IA
-
-Voce precisa de UMA chave de API de um provedor de IA. Opcoes:
-
-| Provedor | Modelo Recomendado | Custo |
-|---|---|---|
-| Google AI Studio | Gemini 2.5 Flash | Gratuito ate certo limite |
-| OpenAI | GPT-4o-mini | ~$0.15/1M tokens |
-
-**Google AI Studio (recomendado para comecar gratis):**
+Como obter a chave:
 1. Acesse [aistudio.google.com](https://aistudio.google.com)
-2. Clique em "Get API Key" > "Create API Key"
-3. Copie a chave
-
-### 2.5 Adicionar a chave como Secret no Supabase
-
-```bash
-supabase secrets set AI_API_KEY=sua_chave_aqui
-```
-
-### 2.6 Criar a Edge Function
-
-```bash
-supabase functions new chat
-```
-
-Isso cria `supabase/functions/chat/index.ts`. Substitua o conteudo por:
-
-```typescript
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const { messages } = await req.json();
-    const AI_API_KEY = Deno.env.get("AI_API_KEY");
-
-    if (!AI_API_KEY) throw new Error("AI_API_KEY not configured");
-
-    // === Google Gemini ===
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${AI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gemini-2.5-flash",
-          messages: [
-            {
-              role: "system",
-              content: `Voce e a CLARA - Consultora de Legislacao e Apoio a 
-              Rotinas Administrativas. Especializada em SEI-Rio, processos 
-              administrativos, legislacao municipal do Rio de Janeiro, e 
-              rotinas de gestao publica. Responda sempre em portugues 
-              brasileiro, de forma clara e fundamentada.`,
-            },
-            ...messages,
-          ],
-          stream: true,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "Erro na API de IA" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-    });
-  } catch (e) {
-    return new Response(
-      JSON.stringify({ error: e.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-});
-```
-
-### 2.7 Deploy da Edge Function
-
-```bash
-supabase functions deploy chat --no-verify-jwt
-```
-
-O `--no-verify-jwt` permite chamadas publicas (sem login). Voce pode restringir depois na Etapa 4.
-
-### 2.8 Testar a funcao
-
-```bash
-curl -X POST https://SEU_PROJECT_REF.supabase.co/functions/v1/chat \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer SUA_ANON_KEY" \
-  -d '{"messages": [{"role": "user", "content": "O que e o SEI?"}]}'
-```
-
-### 2.9 Conectar o frontend
-
-No seu projeto, crie/atualize o arquivo `.env`:
-
-```
-VITE_SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...sua_anon_key...
-```
-
-No `useChatStore.ts`, substitua a resposta mockada por uma chamada real:
-
-```typescript
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
-
-// Na funcao sendMessage, fazer fetch com streaming SSE
-// (codigo de streaming fornecido no contexto acima)
-```
-
-### 2.10 Configurar variaveis no Vercel
-
-No painel do Vercel:
-1. Va em **Settings > Environment Variables**
-2. Adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
-3. Faca redeploy
-
-**Resultado da Etapa 2:** Chat funcional com IA respondendo em tempo real via streaming.
+2. Clique em "Get API Key" e depois "Create API Key"
+3. Copie e cole em `Vercel > Settings > Environment Variables` como `AI_API_KEY`
 
 ---
 
-## ETAPA 3 - Persistencia de Conversas (Banco de Dados)
+### 3. Base de conhecimento (10 PDFs)
 
-**Objetivo:** Salvar conversas para o usuario poder retomar depois.
+Os 10 PDFs sao a "memoria" da CLARA — legislacao, manuais, procedimentos. Existem duas abordagens:
 
-### 3.1 Criar tabelas no Supabase
-
-No painel do Supabase, va em **SQL Editor** e execute:
-
-```sql
-CREATE TABLE conversations (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE TABLE messages (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
-  role TEXT CHECK (role IN ('user', 'assistant', 'system')),
-  content TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE INDEX idx_messages_conversation ON messages(conversation_id);
-```
-
-### 3.2 Habilitar RLS (Row Level Security)
-
-```sql
-ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-
--- Politica publica (sem auth por enquanto)
-CREATE POLICY "allow_all_conversations" ON conversations FOR ALL USING (true);
-CREATE POLICY "allow_all_messages" ON messages FOR ALL USING (true);
-```
-
-### 3.3 Atualizar o frontend
-
-- Ao iniciar conversa: criar registro em `conversations`
-- A cada mensagem enviada/recebida: inserir em `messages`
-- No ChatSheet: adicionar botao "Historico" que lista conversas anteriores
-
-**Resultado da Etapa 3:** Conversas persistem e podem ser retomadas.
-
----
-
-## ETAPA 4 - Autenticacao (Opcional)
-
-**Objetivo:** Identificar usuarios para conversas privadas.
-
-### 4.1 Ativar Auth no Supabase
-
-No painel: **Authentication > Providers > Email** (ja vem ativado por padrao).
-
-### 4.2 Adicionar coluna user_id
-
-```sql
-ALTER TABLE conversations ADD COLUMN user_id UUID REFERENCES auth.users(id);
-
--- Atualizar politicas RLS
-DROP POLICY "allow_all_conversations" ON conversations;
-CREATE POLICY "user_conversations" ON conversations
-  FOR ALL USING (auth.uid() = user_id);
-
-DROP POLICY "allow_all_messages" ON messages;
-CREATE POLICY "user_messages" ON messages
-  FOR ALL USING (
-    conversation_id IN (
-      SELECT id FROM conversations WHERE user_id = auth.uid()
-    )
-  );
-```
-
-### 4.3 Criar tela de login
-
-Adicionar pagina `/login` com magic link (email sem senha) usando `supabase.auth.signInWithOtp()`.
-
-**Resultado da Etapa 4:** Cada usuario ve apenas suas proprias conversas.
-
----
-
-## Resumo de Ordem e Tempo Estimado
+#### Abordagem A: Embeddings + Banco Vetorial (recomendada para escala)
 
 ```text
-Etapa 1: Interface do Chat ............ ~2-3 horas
-Etapa 2: Supabase + Edge Function ..... ~1-2 horas
-Etapa 3: Persistencia ................. ~1-2 horas
-Etapa 4: Autenticacao ................. ~1-2 horas
+PDF --> Extrair texto --> Dividir em trechos --> Gerar embeddings --> Salvar no banco
+                                                                          |
+Pergunta do usuario --> Gerar embedding --> Buscar trechos similares --> Enviar como contexto para IA
 ```
 
-Cada etapa funciona de forma independente. Voce pode parar apos qualquer uma e ja ter valor entregue.
+| Onde hospedar | Cota Gratuita | Como funciona |
+|---|---|---|
+| **Supabase (pgvector)** | 500 MB de banco gratuito | PostgreSQL com extensao vetorial; busca semantica nativa |
+| **Pinecone** | 100k vetores gratuitos | Banco vetorial dedicado; muito rapido |
+| **Qdrant Cloud** | 1 GB gratuito | Open source, boa performance |
 
-## Proxima Acao
+**Recomendacao**: **Supabase com pgvector**. Voce ganha banco relacional + vetorial no mesmo lugar, e a cota gratuita de 500 MB comporta facilmente 10 PDFs.
 
-Ao aprovar, comeco implementando a **Etapa 1** completa aqui no Lovable: crio o `useChatStore`, o `ChatSheet` e conecto todos os 7 botoes. Voce depois copia esses arquivos para o seu projeto no Vercel.
+Passo a passo:
+1. Crie projeto gratuito em [supabase.com](https://supabase.com)
+2. Ative a extensao pgvector no SQL Editor: `CREATE EXTENSION IF NOT EXISTS vector;`
+3. Crie tabela de documentos com coluna de embedding
+4. Use um script (pode ser local, Node.js) para extrair texto dos PDFs, gerar embeddings via API do Google, e inserir no banco
+5. Na Edge Function, antes de chamar a IA, busque trechos relevantes e inclua no prompt
+
+#### Abordagem B: Contexto Direto no Prompt (rapida, para poucos PDFs)
+
+Se os 10 PDFs somam menos de ~50 paginas de texto util, voce pode simplesmente colar o conteudo resumido dentro do system prompt. Sem banco de dados.
+
+Vantagens: zero infraestrutura extra
+Desvantagens: nao escala; consome mais tokens; limite de contexto
+
+**Recomendacao para comecar**: Use a Abordagem B primeiro (rapido, sem banco). Quando precisar de mais precisao ou mais documentos, migre para Abordagem A.
+
+---
+
+### 4. Dados e Analytics — o que vale a pena medir
+
+| Dado | Por que medir | Como implementar |
+|---|---|---|
+| **Perguntas mais frequentes** | Identificar gaps na documentacao e treinamento | Salvar cada pergunta no banco com timestamp |
+| **Topicos recorrentes** | Priorizar conteudo e atualizacoes | Classificar perguntas por categoria (pode ser feito pela propria IA) |
+| **Taxa de satisfacao** | Saber se as respostas ajudam | Botao polegar cima/baixo apos cada resposta |
+| **Tempo medio de resposta** | Monitorar performance | Registrar timestamp de envio e recebimento |
+| **Perguntas sem resposta** | Identificar limitacoes da base | Detectar quando a IA responde "nao sei" ou variantes |
+
+Para implementar: basta adicionar uma tabela `analytics` no Supabase e inserir um registro a cada interacao. Nao precisa de ferramenta externa.
+
+---
+
+### 5. Outras ferramentas mencionadas
+
+| Ferramenta | Serve para CLARA? | Veredicto |
+|---|---|---|
+| **Google Workspace** | Nao. E para email/docs/drive corporativo | Irrelevante para o backend |
+| **Firebase** | Possivel, mas sem cota gratuita para Functions e mais complexo que Supabase | Nao recomendado |
+| **Google Cloud (GCP)** | Poderoso, mas overkill e complexo para este projeto | So se voce ja usar GCP |
+
+---
+
+### Resumo da Estrategia Recomendada (Vercel)
+
+```text
+Fase 1 (agora):
+  Frontend (Vercel) + Vercel Edge Function + Google Gemini Flash (gratis)
+  System prompt com conteudo resumido dos PDFs
+
+Fase 2 (quando precisar de mais):
+  + Supabase (banco + pgvector) para embeddings dos PDFs
+  + Tabela analytics para medir uso
+  + Busca semantica antes de cada resposta
+
+Fase 3 (opcional):
+  + Supabase Auth para login por email
+  + Historico de conversas por usuario
+```
+
+---
+
+### Proxima Acao
+
+Aqui no Lovable, implementarei a Etapa 2 completa: ativar Cloud, criar a Edge Function `chat`, conectar o streaming ao `useChatStore` e ao `ChatSheet`. Resultado: chat com IA real respondendo em tempo real.
+
+Para o projeto na Vercel, voce pode seguir o guia acima criando o arquivo `api/chat.ts` e configurando a chave do Google AI Studio nas variaveis de ambiente.
 
