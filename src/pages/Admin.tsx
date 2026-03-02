@@ -635,6 +635,29 @@ export default function Admin() {
                           {statusIcon(doc)}
                           {statusLabel(doc)}
                         </span>
+                        {canRetry(doc) && (
+                          <div className="flex gap-2 mt-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRetry(doc)}
+                              disabled={retryingId === doc.id}
+                              className="h-7 text-xs"
+                            >
+                              <RefreshCw className={`h-3 w-3 mr-1 ${retryingId === doc.id ? "animate-spin" : ""}`} />
+                              Reprocessar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDelete(doc)}
+                              className="h-7 text-xs text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Excluir
+                            </Button>
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
