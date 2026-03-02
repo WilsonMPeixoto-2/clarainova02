@@ -234,12 +234,12 @@ async function waitForFileActive(
   throw new Error(`File processing timed out: ${fileName}`);
 }
 
-// ─── Gemini text extraction (with model fallback) ───────────────────────────
+// ─── Gemini text extraction (SSE streaming + model fallback) ────────────────
 
 const EXTRACTION_MODELS = [
-  "gemini-3-flash-preview",
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
+  "gemini-2.5-flash",      // Best for PDF extraction, large context, fast
+  "gemini-3-flash",        // Next-gen alternative
+  "gemini-2.5-flash-lite", // Ultra-light fallback
 ];
 
 async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<string> {
@@ -247,12 +247,14 @@ async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<s
 
   for (const model of EXTRACTION_MODELS) {
     try {
-      console.log(`Trying extraction with ${model}...`);
+      console.log(`Trying SSE extraction with ${model}...`);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 120_000); // 2 min timeout
+      // 140s timeout — safely under Supabase's 150s wall-clock limit
+      const timeout = setTimeout(() => controller.abort(), 140_000);
 
+      // Use streamGenerateContent with alt=sse for streaming responses
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -263,7 +265,7 @@ async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<s
                 parts: [
                   { file_data: { mime_type: "application/pdf", file_uri: fileUri } },
                   {
-                    text: "Extraia TODO o texto deste documento PDF. Mantenha a estrutura original (títulos, parágrafos, listas, artigos, incisos). Não resuma, não omita nada. Retorne apenas o texto extraído, sem comentários adicionais.",
+                    text: "Extraia TODO o texto deste documento PDF. Mantenha a estrutura original (títulos, parágrafos, listas, artigos, incisos). Não resuma, não omita nada. Retorne apenas o texto extraído.",
                   },
                 ],
               },
@@ -281,21 +283,66 @@ async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<s
         continue;
       }
 
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      // Parse SSE stream and accumulate text chunks
+      const text = await consumeSSEStream(response);
+
       if (text.length > 50) {
-        console.log(`Extraction succeeded with ${model}`);
+        console.log(`SSE extraction succeeded with ${model} (${text.length} chars)`);
         return text;
       }
-      lastError = `${model} returned empty/short text`;
+      lastError = `${model} returned empty/short text (${text.length} chars)`;
       console.error(lastError);
     } catch (err) {
-      lastError = `${model} error: ${err}`;
-      console.error(lastError);
+      if ((err as Error).name === "AbortError") {
+        lastError = `${model} timed out after 140s (PDF too large for this model)`;
+        console.error(lastError);
+      } else {
+        lastError = `${model} error: ${err}`;
+        console.error(lastError);
+      }
     }
   }
 
   throw new Error(`All extraction models failed. Last: ${lastError}`);
+}
+
+// ─── SSE Stream Consumer ────────────────────────────────────────────────────
+
+async function consumeSSEStream(response: Response): Promise<string> {
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let accumulated = "";
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    // Keep last potentially incomplete line in buffer
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const jsonStr = line.slice(6).trim();
+      if (!jsonStr || jsonStr === "[DONE]") continue;
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const parts = parsed.candidates?.[0]?.content?.parts;
+        if (parts) {
+          for (const part of parts) {
+            if (part.text) accumulated += part.text;
+          }
+        }
+      } catch {
+        // Skip malformed SSE lines
+      }
+    }
+  }
+
+  return accumulated;
 }
 
 // ─── Chunking ────────────────────────────────────────────────────────────────
