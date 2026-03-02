@@ -73,6 +73,24 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          created_at: string
+          id: string
+          identifier: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          identifier: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          identifier?: string
+        }
+        Relationships: []
+      }
       usage_logs: {
         Row: {
           created_at: string
@@ -99,6 +117,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_identifier: string
+          p_max_requests?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
+      hybrid_search_chunks: {
+        Args: {
+          match_count?: number
+          query_embedding: string
+          query_text: string
+          rrf_k?: number
+        }
+        Returns: {
+          content: string
+          document_id: string
+          id: string
+          similarity: number
+        }[]
+      }
       match_chunks: {
         Args: { match_count?: number; query_embedding: string }
         Returns: {
