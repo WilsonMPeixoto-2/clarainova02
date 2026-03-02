@@ -6,6 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const FILE_API_THRESHOLD = 15_000_000; // 15MB
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -55,17 +57,27 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 3. Convert to base64 (chunk-safe for large files)
     const arrayBuffer = await fileData.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
-    let binary = "";
-    const chunkSize = 8192;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-    }
-    const base64 = btoa(binary);
+    const fileSize = bytes.length;
+    console.log(`Document ${document_id}: ${fileSize} bytes (${(fileSize / 1024 / 1024).toFixed(1)}MB)`);
 
-    // 4. Send to Gemini multimodal to extract text
+    // 3. Build content parts based on file size
+    let filePart: Record<string, unknown>;
+
+    if (fileSize > FILE_API_THRESHOLD) {
+      // Large file: use Gemini File API
+      console.log("Using Gemini File API for large file...");
+      const fileUri = await uploadToGeminiFileAPI(bytes, doc.name, geminiKey);
+      filePart = { file_data: { mime_type: "application/pdf", file_uri: fileUri } };
+    } else {
+      // Small file: use inline_data with safe base64 conversion
+      console.log("Using inline_data for small file...");
+      const base64 = safeBase64Encode(bytes);
+      filePart = { inline_data: { mime_type: "application/pdf", data: base64 } };
+    }
+
+    // 4. Send to Gemini to extract text
     const extractResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
@@ -75,12 +87,7 @@ Deno.serve(async (req) => {
           contents: [
             {
               parts: [
-                {
-                  inline_data: {
-                    mime_type: "application/pdf",
-                    data: base64,
-                  },
-                },
+                filePart,
                 {
                   text: "Extraia TODO o texto deste documento PDF. Mantenha a estrutura original (títulos, parágrafos, listas, artigos, incisos). Não resuma, não omita nada. Retorne apenas o texto extraído, sem comentários adicionais.",
                 },
@@ -122,7 +129,7 @@ Deno.serve(async (req) => {
     // Log PDF extraction
     await supabase.from('usage_logs').insert({
       event_type: 'pdf_extraction',
-      metadata: { document_id, text_length: extractedText.length },
+      metadata: { document_id, text_length: extractedText.length, file_size: fileSize },
     });
 
     // 5. Split into chunks (~500 words, 50 word overlap)
@@ -170,6 +177,7 @@ Deno.serve(async (req) => {
         success: true,
         chunks_count: chunks.length,
         text_length: extractedText.length,
+        file_size: fileSize,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -181,6 +189,120 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// Safe base64 encoding that never overflows the call stack
+function safeBase64Encode(bytes: Uint8Array): string {
+  let binary = "";
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+    for (let j = 0; j < chunk.length; j++) {
+      binary += String.fromCharCode(chunk[j]);
+    }
+  }
+  return btoa(binary);
+}
+
+// Upload file to Gemini File API for large PDFs (>15MB)
+async function uploadToGeminiFileAPI(
+  bytes: Uint8Array,
+  displayName: string,
+  apiKey: string
+): Promise<string> {
+  // Step 1: Initiate resumable upload
+  const startResponse = await fetch(
+    `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Upload-Protocol": "resumable",
+        "X-Goog-Upload-Command": "start",
+        "X-Goog-Upload-Header-Content-Length": String(bytes.length),
+        "X-Goog-Upload-Header-Content-Type": "application/pdf",
+      },
+      body: JSON.stringify({
+        file: { display_name: displayName },
+      }),
+    }
+  );
+
+  if (!startResponse.ok) {
+    const errText = await startResponse.text();
+    throw new Error(`Gemini File API start failed: ${errText}`);
+  }
+
+  const uploadUrl = startResponse.headers.get("X-Goog-Upload-URL");
+  if (!uploadUrl) {
+    throw new Error("Gemini File API did not return upload URL");
+  }
+
+  // Step 2: Upload the file bytes
+  const uploadResponse = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      "Content-Length": String(bytes.length),
+      "X-Goog-Upload-Offset": "0",
+      "X-Goog-Upload-Command": "upload, finalize",
+    },
+    body: bytes,
+  });
+
+  if (!uploadResponse.ok) {
+    const errText = await uploadResponse.text();
+    throw new Error(`Gemini File API upload failed: ${errText}`);
+  }
+
+  const uploadResult = await uploadResponse.json();
+  const fileName = uploadResult.file?.name;
+  if (!fileName) {
+    throw new Error("Gemini File API did not return file name");
+  }
+
+  console.log(`Uploaded to Gemini File API: ${fileName}, waiting for processing...`);
+
+  // Step 3: Poll until file is ACTIVE
+  const fileUri = await waitForFileProcessing(fileName, apiKey);
+  return fileUri;
+}
+
+// Poll Gemini File API until file status is ACTIVE
+async function waitForFileProcessing(
+  fileName: string,
+  apiKey: string,
+  maxWaitMs = 120_000
+): Promise<string> {
+  const startTime = Date.now();
+  const pollInterval = 3000;
+
+  while (Date.now() - startTime < maxWaitMs) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`
+    );
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`File status check failed: ${errText}`);
+    }
+
+    const result = await response.json();
+    const state = result.state;
+
+    if (state === "ACTIVE") {
+      console.log(`File ${fileName} is ACTIVE, URI: ${result.uri}`);
+      return result.uri;
+    }
+
+    if (state === "FAILED") {
+      throw new Error(`File processing failed for ${fileName}`);
+    }
+
+    console.log(`File ${fileName} state: ${state}, waiting...`);
+    await new Promise((r) => setTimeout(r, pollInterval));
+  }
+
+  throw new Error(`File processing timed out for ${fileName}`);
+}
 
 function splitIntoChunks(
   text: string,
