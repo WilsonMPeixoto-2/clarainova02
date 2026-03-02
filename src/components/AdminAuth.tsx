@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Loader2 } from "lucide-react";
+import { Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
@@ -16,6 +16,8 @@ export default function AdminAuth({ children }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,12 +34,21 @@ export default function AdminAuth({ children }: Props) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast({ title: "Erro no login", description: error.message, variant: "destructive" });
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        toast({ title: "Erro no cadastro", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Conta criada!", description: "Verifique seu email para confirmar o cadastro." });
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast({ title: "Erro no login", description: error.message, variant: "destructive" });
+      }
     }
     setSubmitting(false);
   };
@@ -56,10 +67,10 @@ export default function AdminAuth({ children }: Props) {
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
             <Lock className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-            <CardTitle className="text-xl">Área Administrativa</CardTitle>
+            <CardTitle className="text-xl">{isSignUp ? "Criar Conta" : "Área Administrativa"}</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
+            <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
               <Input
                 type="email"
                 placeholder="Email"
@@ -68,18 +79,36 @@ export default function AdminAuth({ children }: Props) {
                 autoComplete="username"
                 required
               />
-              <Input
-                type="password"
-                placeholder="Senha"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  className="pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Criar Conta" : "Entrar"}
               </Button>
             </form>
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isSignUp ? "Já tenho conta" : "Criar conta"}
+            </button>
           </CardContent>
         </Card>
       </div>
