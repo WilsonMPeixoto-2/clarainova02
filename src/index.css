@@ -1097,3 +1097,172 @@
     }
   }
 }
+
+/* ============================================
+   CLARA CHAT — Rich Markdown Styling
+   Visual Law / Legal Design / Information Design
+   ============================================ */
+.clara-prose {
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: hsl(var(--text-primary));
+  word-break: break-word;
+}
+
+/* Headings */
+.clara-prose h1,
+.clara-prose h2,
+.clara-prose h3 {
+  font-family: var(--font-heading);
+  color: hsl(var(--gold-1));
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+.clara-prose h3 { font-size: 0.875rem; font-weight: 600; }
+.clara-prose h2 { font-size: 0.9375rem; font-weight: 600; }
+.clara-prose h1 { font-size: 1rem; font-weight: 700; }
+
+/* Remove top margin from first element */
+.clara-prose > :first-child { margin-top: 0; }
+.clara-prose > :last-child { margin-bottom: 0; }
+
+/* Paragraphs — short blocks with breathing room */
+.clara-prose p {
+  margin-bottom: 0.75em;
+}
+.clara-prose p:last-child { margin-bottom: 0; }
+
+/* Bold = gold accent for scannability */
+.clara-prose strong {
+  color: hsl(var(--gold-1));
+  font-weight: 600;
+}
+
+/* Blockquotes = colored callout boxes */
+.clara-prose blockquote {
+  margin: 0.875em 0;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid hsl(var(--gold-1) / 0.6);
+  background: hsl(var(--gold-1) / 0.06);
+  color: hsl(var(--text-primary));
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.clara-prose blockquote p {
+  margin-bottom: 0.25em;
+}
+.clara-prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Ordered lists — step-by-step blocks with spacing */
+.clara-prose ol {
+  list-style: none;
+  counter-reset: clara-step;
+  padding-left: 0;
+  margin: 0.75em 0;
+}
+.clara-prose ol > li {
+  counter-increment: clara-step;
+  position: relative;
+  padding: 0.5rem 0.625rem 0.5rem 2.25rem;
+  margin-bottom: 0.5em;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--surface-2) / 0.5);
+  border: 1px solid hsl(var(--border-subtle) / 0.5);
+}
+.clara-prose ol > li::before {
+  content: counter(clara-step);
+  position: absolute;
+  left: 0.625rem;
+  top: 0.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: hsl(var(--gold-1) / 0.15);
+  color: hsl(var(--gold-1));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Unordered lists */
+.clara-prose ul {
+  padding-left: 1.25em;
+  margin: 0.5em 0;
+}
+.clara-prose ul > li {
+  margin-bottom: 0.35em;
+  position: relative;
+}
+.clara-prose ul > li::marker {
+  color: hsl(var(--gold-1) / 0.6);
+}
+
+/* Code / inline code */
+.clara-prose code {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  background: hsl(var(--surface-3) / 0.7);
+  color: hsl(var(--gold-2));
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Code blocks */
+.clara-prose pre {
+  margin: 0.75em 0;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--surface-2));
+  border: 1px solid hsl(var(--border-subtle));
+  overflow-x: auto;
+}
+.clara-prose pre code {
+  padding: 0;
+  background: none;
+  font-size: 0.75rem;
+}
+
+/* Tables */
+.clara-prose table {
+  width: 100%;
+  margin: 0.75em 0;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+.clara-prose th {
+  text-align: left;
+  padding: 0.375rem 0.5rem;
+  background: hsl(var(--gold-1) / 0.08);
+  color: hsl(var(--gold-1));
+  font-weight: 600;
+  border-bottom: 1px solid hsl(var(--border-subtle));
+}
+.clara-prose td {
+  padding: 0.375rem 0.5rem;
+  border-bottom: 1px solid hsl(var(--border-subtle) / 0.4);
+}
+
+/* Horizontal rules = section dividers */
+.clara-prose hr {
+  border: none;
+  height: 1px;
+  background: hsl(var(--border-subtle) / 0.5);
+  margin: 1em 0;
+}
+
+/* Links */
+.clara-prose a {
+  color: hsl(var(--gold-2));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.clara-prose a:hover {
+  color: hsl(var(--gold-1));
+}
