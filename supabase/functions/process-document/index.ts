@@ -252,7 +252,7 @@ async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<s
       const timeout = setTimeout(() => controller.abort(), 120_000); // 2 min timeout
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
