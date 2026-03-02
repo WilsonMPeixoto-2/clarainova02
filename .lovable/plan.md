@@ -1,53 +1,60 @@
 
-# Atualizar Modelos Gemini Deprecados na Clarainova
+# Corrigir Diagramacao Hero: Restaurar Media Full-Width como Producao
 
-## Problema Critico
+## Problema
 
-Tres riscos de quebra iminente foram identificados:
+Na ultima correcao, o `.hero-media-stage` foi alterado para `left: auto` e `width: 50-55%`, empurrando o video fisicamente para a metade direita. Isso cortou a Clara e criou uma separacao artificial onde parte do video fica atras do card textual.
 
-1. **text-embedding-004** -- Ja desligado (Jan 2026). Usado em AMBAS as edge functions (chat e process-document). Embeddings estao funcionando por sorte ou cache, mas podem parar a qualquer momento.
-2. **gemini-2.0-flash** -- Desliga em 1 Jun 2026. Usado como fallback no chat.
-3. **gemini-1.5-flash** -- Modelo legado, ja dando 404.
+Na producao (clarainova.vercel.app), a abordagem e diferente: o video ocupa 100% da largura (`left: 0`, `width: 100%`) e a separacao visual e feita APENAS pelo gradiente de mascara (`mask-image`) e pelo overlay escuro. O resultado e uma integracao organica onde a Clara "emerge" do fundo escuro.
 
-## Alteracoes
-
-### 1. Migrar embeddings: `text-embedding-004` para `gemini-embedding-001`
-
-**Arquivo:** `supabase/functions/chat/index.ts`
-- Linha 272: trocar endpoint de `text-embedding-004` para `gemini-embedding-001`
-- Linha 277: trocar model de `models/text-embedding-004` para `models/gemini-embedding-001`
-
-**Arquivo:** `supabase/functions/process-document/index.ts`
-- Linha 372: trocar endpoint de `text-embedding-004` para `gemini-embedding-001`
-- Linha 377: trocar model de `models/text-embedding-004` para `models/gemini-embedding-001`
-
-### 2. Atualizar fallback de modelos do chat
-
-**Arquivo:** `supabase/functions/chat/index.ts` (linhas 142-146)
-
-De:
-```
-gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash
+```text
+PRODUCAO (correto):                   LOVABLE (atual - quebrado):
++-----------------------------+       +-----------+--------------+
+| overlay  | mask  | CLARA    |       | texto     | CLARA cortada|
+| escuro   | fade  | full-w   |       | sem video | width: 50%   |
+| texto    |       | video    |       |           | left: auto   |
++-----------------------------+       +-----------+--------------+
+  media-stage: width 100%, left 0      media-stage: width 50%, left auto
+  separacao via gradient overlay        separacao fisica (errado)
 ```
 
-Para:
-```
-gemini-2.5-flash, gemini-3-flash-preview, gemini-2.5-flash-lite
-```
+## Correcoes no CSS (src/index.css)
 
-Remove os dois modelos deprecados/legados e adiciona alternativas seguras.
+### 1. Restaurar hero-media-stage para full-width
 
-### 3. Redeploy das edge functions
+Reverter `.hero-media-stage` para usar `left: 0` e `width: 100%` em todos os breakpoints, identico a producao:
 
-Ambas as functions (`chat` e `process-document`) serao redeployadas apos as alteracoes.
+- Linha 398: trocar `left: auto` para `left: 0`
+- `--hero-media-width` volta para `100%` em todos os breakpoints (linhas 344, 354, 363, 372)
 
-## Nota sobre compatibilidade de embeddings
+### 2. Ajustar mask-image para fade organico
 
-O `gemini-embedding-001` produz vetores de dimensao 768 por padrao (mesma dimensao do `text-embedding-004`), entao os embeddings existentes no banco continuam compativeis. Nao e necessario reprocessar documentos ja indexados.
+Ajustar o gradiente da mascara para `transparent 0%, black 15%` (producao usa 15%, nos usamos 20%):
 
-## Arquivos editados
+- Linhas 402-403: trocar `black 20%` para `black 15%`
+
+### 3. Remover o pseudo-elemento `clara-hero::after` de overlay separado
+
+Na producao, NAO existe um `::after` com overlay horizontal. A protecao do texto e feita pela propria mascara do media-stage + o glass do `hero-copy-surface` + o backdrop-filter. O `::after` que adicionamos esta criando uma camada extra desnecessaria que escurece demais a cena.
+
+- Remover o bloco `.clara-hero::after` (linhas 407-419)
+- Zerar `--hero-overlay-strength` ja que nao sera mais usado
+
+### 4. Restaurar variaveis de breakpoint
+
+| Breakpoint | hero-media-width (atual) | hero-media-width (corrigido) |
+|-----------|--------------------------|------------------------------|
+| 900px     | 50%                      | 100%                         |
+| 1024px    | 52%                      | 100%                         |
+| 1280px    | 55%                      | 100%                         |
+| 1600px    | 55%                      | 100%                         |
+
+## Arquivo a editar
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `supabase/functions/chat/index.ts` | Migrar embedding model + atualizar fallback models |
-| `supabase/functions/process-document/index.ts` | Migrar embedding model |
+| `src/index.css` | Restaurar media full-width, ajustar mask fade para 15%, remover overlay ::after |
+
+## Resultado esperado
+
+Clara visivel em full-width com integracao organica via mask-image fade, texto protegido pelo glass card com backdrop-blur, identico ao site de producao.
