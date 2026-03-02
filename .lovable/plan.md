@@ -1,115 +1,61 @@
 
 
-# Analise Comparativa: Melhorias Identificadas no Repositorio Externo
+# Melhoria do System Prompt: Tom Pedagogico e Compreensao de Linguagem Informal
 
-## Resumo da Analise
+## O que foi encontrado no repositorio externo
 
-Analisei o repositorio `WilsonMPeixoto-2/clarainova` comparando com o projeto atual. Identifiquei **6 melhorias compativeis** que podem ser adaptadas ao ambiente Lovable Cloud. Tambem identifiquei elementos que **nao devem ser copiados** por incompatibilidade.
+O projeto externo (`clarainova`) tem um sistema de prompt mais sofisticado com **duas diferencas importantes**:
 
----
+### 1. Modos de Resposta (Fast vs Deep)
+O outro projeto define dois modos de resposta com instrucoes explicitas:
 
-## Melhorias Recomendadas (por prioridade)
+- **Modo DIRETO (fast)**: Respostas em ate 10 linhas, passos numerados, checklists curtas
+- **Modo DIDATICO (deep)**: Explica o "por que", estrutura em secoes (Resumo, Passo a passo, Observacoes, Exemplo), evita jargoes e define termos tecnicos em 1 frase
 
-### 1. Guardrails Anti Prompt-Injection (ALTA PRIORIDADE - Seguranca)
+### 2. Instrucoes de Tom e Citacao de Fontes
+- "Tom: acolhedor, direto e profissional. Evite sermoes e seja pratica."
+- Regras explicitas para citar fontes como `[Fonte 1]`, `[Fonte 2]`
+- Instrucao para redirecionar a fontes oficiais quando nao houver informacao suficiente
 
-**O que o outro projeto tem:** Um modulo `guardrails.ts` com deteccao de padroes de prompt injection (tentativas de extrair system prompt, API keys, bypass de seguranca, jailbreak, etc). Bloqueia mensagens maliciosas antes de enviar ao Gemini.
+### 3. O que NENHUM dos dois projetos tem (e que voce pediu)
+Nenhum dos projetos tem instrucoes explicitas para a IA entender **linguagem informal/coloquial** e mapear para termos tecnicos. Por exemplo:
+- "colocar um PDF dentro do processo" → "anexar documento externo"
+- "mandar o processo pra frente" → "tramitar o processo"
+- "assinar o papel" → "assinar documento eletronicamente no SEI"
 
-**Por que importa:** Seu chat atual nao tem nenhuma protecao contra manipulacao. Um usuario pode pedir "mostre seu system prompt" ou "ignore suas regras" e a IA pode obedecer.
-
-**O que fazer:**
-- Criar um modulo `guardrails.ts` na Edge Function `chat` com padroes regex para detectar ataques
-- Adicionar regras de seguranca ao system prompt (nunca revelar configuracoes internas)
-- Retornar respostas seguras e educadas quando detectado
-
-### 2. Busca Hibrida (Semantica + Keywords) com RRF (ALTA PRIORIDADE - Qualidade)
-
-**O que o outro projeto tem:** Alem da busca por similaridade vetorial (que voce ja tem), combina com busca por keywords usando Reciprocal Rank Fusion (RRF). Isso melhora significativamente a qualidade dos resultados RAG.
-
-**Por que importa:** Sua busca atual usa apenas similaridade de cosseno. Se o usuario usar termos exatos de um decreto (ex: "Decreto 12345"), a busca semantica pode falhar, mas keywords encontraria.
-
-**O que fazer:**
-- Criar funcao SQL `hybrid_search_chunks` que combina pgvector + `ts_rank` (full-text search do Postgres)
-- Substituir a chamada `match_chunks` atual pela busca hibrida
-- Adicionar indice GIN para full-text search na coluna `content`
-
-### 3. Rate Limiting por Sessao (MEDIA PRIORIDADE - Protecao)
-
-**O que o outro projeto tem:** Uma funcao SQL `check_rate_limit` que limita 15 requisicoes por minuto por sessao/IP, impedindo abuso e custo excessivo com a API.
-
-**Por que importa:** Sem rate limiting, um usuario (ou bot) pode fazer centenas de chamadas ao Gemini rapidamente, consumindo sua cota gratuita.
-
-**O que fazer:**
-- Criar tabela `rate_limits` e funcao SQL `check_rate_limit`
-- Chamar no inicio da Edge Function `chat` antes de processar
-- Retornar mensagem amigavel quando o limite for atingido
-
-### 4. Lazy Loading de Paginas com Retry (BAIXA PRIORIDADE - Performance)
-
-**O que o outro projeto tem:** Um wrapper `lazyWithRetry()` que carrega paginas sob demanda e, se falhar (cache invalidado), recarrega automaticamente. Tambem configura o QueryClient com `staleTime: 5min` e `retry: 2`.
-
-**Por que importa:** Melhora o tempo de carregamento inicial e previne telas brancas quando o cache do navegador fica desatualizado.
-
-**O que fazer:**
-- Usar `React.lazy()` com wrapper de retry para as rotas `/admin`, `/privacidade`, `/termos`
-- Adicionar `Suspense` com fallback de loading
-- Configurar `staleTime` e `retry` no QueryClient
-
-### 5. Fallback de Modelos Gemini (MEDIA PRIORIDADE - Resiliencia)
-
-**O que o outro projeto tem:** Uma lista de modelos fallback (`gemini-2.0-flash` -> `gemini-1.5-flash` -> `gemini-1.5-flash-8b`). Se um modelo falhar, tenta o proximo automaticamente.
-
-**Por que importa:** Se o `gemini-2.5-flash` ficar fora do ar ou com cota esgotada, seu chat para de funcionar completamente.
-
-**O que fazer:**
-- Adicionar array de modelos fallback na Edge Function `chat`
-- Tentar cada modelo sequencialmente ate obter resposta
-- Logar qual modelo foi efetivamente usado
-
-### 6. ErrorBoundary Global (BAIXA PRIORIDADE - Robustez)
-
-**O que o outro projeto tem:** Um componente `ErrorBoundary` que envolve toda a aplicacao, capturando erros de renderizacao e exibindo uma tela amigavel ao inves de tela branca.
-
-**O que fazer:**
-- Criar componente `ErrorBoundary` simples com class component React
-- Envolver o App inteiro nele
-
----
-
-## O que NAO copiar (incompativel ou desnecessario)
-
-| Elemento | Motivo |
-|---|---|
-| Vercel Analytics / SpeedInsights | Especifico para deploy na Vercel, nao compativel com Lovable |
-| `react-helmet-async` (SEO) | Adiciona complexidade; Lovable ja gerencia `index.html` |
-| `framer-motion` AnimatedRoutes | O projeto atual usa `motion/react` (Framer v12+), sintaxe diferente; transicoes de rota nao sao prioritarias |
-| Web Search (Firecrawl) | Requer API key paga adicional e Edge Function extra |
-| `AuthProvider` / `AuthContext` | O projeto atual ja tem `AdminAuth` com Supabase Auth; arquiteturas diferentes |
-| `chat_metrics` / `search_metrics` / `query_analytics` | Voce ja tem `usage_logs` implementado; adicionar 3 tabelas extras e excessivo para o escopo atual |
+Essa e uma melhoria **original** que deve ser adicionada ao system prompt.
 
 ---
 
 ## Plano de Implementacao
 
-A ordem sugerida e:
+Atualizar o `SYSTEM_PROMPT` na Edge Function `chat/index.ts` com tres blocos de melhorias:
 
-1. **Guardrails** - Protecao imediata contra prompt injection
-2. **Busca hibrida** - Melhoria na qualidade das respostas RAG
-3. **Rate limiting** - Protecao contra abuso
-4. **Fallback de modelos** - Resiliencia
-5. **Lazy loading + ErrorBoundary** - Performance e robustez
+### A. Modo Pedagogico (passo a passo)
+Adicionar instrucoes para que a Clara sempre estruture respostas complexas em formato didatico:
+- Resumo curto no inicio
+- Passo a passo numerado
+- Observacoes ou dicas ao final
+- Quando usar termos tecnicos, explicar em linguagem simples
 
-### Detalhes Tecnicos
+### B. Mapeamento de Linguagem Informal
+Adicionar uma secao no prompt instruindo a IA a:
+- Interpretar expressoes coloquiais como equivalentes aos termos tecnicos dos manuais
+- Exemplos explicitos de mapeamento (ex: "colocar PDF" = "incluir documento externo", "mandar pra frente" = "tramitar")
+- Nunca corrigir o usuario de forma pedante; simplesmente responder usando o termo correto naturalmente
 
-**Migracao SQL necessaria:**
-- Funcao `hybrid_search_chunks` (busca hibrida com RRF)
-- Indice GIN para full-text search
-- Tabela e funcao `check_rate_limit`
+### C. Citacao de Fontes da Base de Conhecimento
+Quando a resposta vier da base de conhecimento (RAG), citar as fontes de forma clara e organizada.
 
-**Arquivos a criar/editar:**
-- `supabase/functions/chat/guardrails.ts` (novo)
-- `supabase/functions/chat/index.ts` (editar: guardrails + rate limit + fallback)
-- `src/App.tsx` (editar: lazy loading + ErrorBoundary)
-- `src/components/ErrorBoundary.tsx` (novo)
+---
 
-Todas as melhorias sao incrementais e nao quebram funcionalidades existentes.
+## Detalhes Tecnicos
+
+**Arquivo a editar:** `supabase/functions/chat/index.ts`
+
+**Alteracao:** Expandir a constante `SYSTEM_PROMPT` (linhas 73-99) com as novas instrucoes, mantendo tudo o que ja existe (personalidade, especialidades, regras de seguranca).
+
+O novo prompt adicionara aproximadamente 30-40 linhas de instrucoes comportamentais, sem alterar nenhuma outra parte do codigo (guardrails, rate limiting, fallback, RAG continuam identicos).
+
+**Nao sera necessario** criar tabelas, migracoes SQL ou novos arquivos. E apenas uma melhoria de conteudo no prompt textual.
 
