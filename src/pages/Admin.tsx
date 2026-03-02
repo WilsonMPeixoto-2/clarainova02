@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
+import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import UsageStatsCard from "@/components/UsageStatsCard";
@@ -144,20 +144,30 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-4xl space-y-6">
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Base de Conhecimento — CLARA
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Faça upload de PDFs para alimentar a base de conhecimento da assistente.
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                Base de Conhecimento — CLARA
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Faça upload de PDFs para alimentar a base de conhecimento da assistente.
+              </p>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => supabase.auth.signOut()}
+            title="Sair"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
 
         <Card>

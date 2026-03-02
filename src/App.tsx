@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Privacidade from "./pages/Privacidade";
 import Termos from "./pages/Termos";
 import Admin from "./pages/Admin";
+import AdminAuth from "./components/AdminAuth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,7 +24,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/termos" element={<Termos />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin" element={<AdminAuth><Admin /></AdminAuth>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
