@@ -1,77 +1,102 @@
 
 
-# Etapa 2 — Backend com sua API Gemini (sem Lovable Cloud/AI)
+# RAG Completo para CLARA -- com solucao anti-falha de PDF
 
-## Garantia de custo zero
+## O problema do projeto anterior
 
-- A Edge Function chamara a API do Google Gemini **diretamente** (generativelanguage.googleapis.com)
-- **Nenhum uso** do gateway `ai.gateway.lovable.dev` ou do `LOVABLE_API_KEY`
-- Voce fornece sua chave gratuita do Google AI Studio
-- Tudo roda dentro do plano gratuito do backend
+PDFs gerados ou modificados por Chrome, Edge, Adobe e downloads em dispositivos moveis frequentemente tem formatos internos diferentes. Bibliotecas tradicionais de parsing (como `pdf-parse`) falham silenciosamente ou extraem texto corrompido/vazio nesses casos.
+
+## A solucao: Gemini extrai o texto
+
+Em vez de usar bibliotecas de parsing no servidor, vamos enviar o PDF diretamente para a **API multimodal do Gemini** (`gemini-2.5-flash`), que consegue ler qualquer PDF -- Adobe, Chrome, Edge, escaneado, modificado, etc. O Gemini faz OCR automaticamente quando necessario.
+
+Fluxo:
+```text
+[Upload PDF no Admin]
+    --> Storage bucket "documents"
+    --> Edge Function "process-document"
+        --> Envia PDF como base64 para Gemini (multimodal)
+        --> Gemini extrai texto completo
+        --> Divide em fragmentos (~500 palavras)
+        --> Gera embeddings (text-embedding-004)
+        --> Salva fragmentos + vetores no banco (pgvector)
+
+[Usuario pergunta no chat]
+    --> Edge Function "chat"
+        --> Gera embedding da pergunta
+        --> Busca 5 fragmentos mais relevantes (similaridade cosseno)
+        --> Injeta no prompt do Gemini como contexto
+        --> Resposta em streaming
+```
 
 ---
 
-## O que sera feito
+## Etapas de implementacao
 
-### 1. Adicionar sua chave da API do Gemini
+### 1. Banco de dados (migracao SQL)
 
-Antes de criar a funcao, vou solicitar que voce insira sua chave do Google AI Studio como um secret chamado `GEMINI_API_KEY`. Essa chave fica criptografada no servidor e nunca aparece no codigo do frontend.
+- Ativar extensao `vector` (pgvector)
+- Criar tabela `documents` (id, nome, status, created_at)
+- Criar tabela `document_chunks` (id, document_id, conteudo, embedding vector(768), posicao)
+- Criar funcao SQL `match_chunks(query_embedding, match_count)` para busca por similaridade
+- RLS desabilitado (conteudo publico de consulta legislativa)
 
-Se voce ainda nao tem a chave:
-1. Acesse [aistudio.google.com](https://aistudio.google.com)
-2. Clique em "Get API Key" e depois "Create API Key"
-3. Copie a chave
+### 2. Storage bucket
 
-### 2. Criar Edge Function `chat`
+- Criar bucket `documents` (publico) para armazenar os PDFs originais
 
-Arquivo: `supabase/functions/chat/index.ts`
+### 3. Edge Function `process-document` (NOVA)
 
-O que faz:
-- Recebe as mensagens do chat via POST
-- Adiciona o **system prompt** da CLARA (personalidade, especialidades, tom)
-- Chama a API do Gemini diretamente em `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`
-- Retorna a resposta em **streaming SSE** (token por token)
-- Trata erros: 429 (limite de requisicoes), 403 (chave invalida), falhas de rede
+Arquivo: `supabase/functions/process-document/index.ts`
 
-Configuracao no `supabase/config.toml`:
-```text
-[functions.chat]
-verify_jwt = false
-```
+Fluxo:
+1. Recebe `document_id` via POST
+2. Baixa o PDF do bucket storage
+3. Converte para base64
+4. Envia para Gemini como conteudo multimodal com prompt: "Extraia todo o texto deste documento, mantendo a estrutura"
+5. Divide o texto extraido em fragmentos de ~500 palavras com 50 palavras de sobreposicao
+6. Gera embeddings para cada fragmento usando `text-embedding-004`
+7. Salva tudo na tabela `document_chunks`
+8. Atualiza status do documento para "processed"
 
-### 3. Atualizar `useChatStore.tsx`
+Usa a mesma `GEMINI_API_KEY` ja configurada. Custo zero.
 
-Mudancas:
-- Remover `MOCK_RESPONSES` e `getMockResponse`
-- Nova funcao `streamChat` que faz fetch para a Edge Function
-- Parsing de SSE linha por linha: extrai tokens de `data: {"choices":[{"delta":{"content":"..."}}]}`
-- Atualiza a mensagem do assistente progressivamente (letra por letra)
-- Detecta `[DONE]` para encerrar
-- Tratamento de erros com mensagens claras em portugues
+### 4. Atualizar Edge Function `chat`
 
-### 4. Ajustar `ChatSheet.tsx`
+Modificar `supabase/functions/chat/index.ts`:
 
-Mudanca menor:
-- Esconder o spinner assim que o primeiro token chegar (a mensagem ja aparece sendo preenchida)
+- Gerar embedding da pergunta do usuario usando `text-embedding-004`
+- Chamar funcao SQL `match_chunks` para buscar os 5 fragmentos mais relevantes
+- Adicionar os trechos encontrados no `SYSTEM_PROMPT` como secao "Base de Conhecimento"
+- Instruir a CLARA a priorizar informacoes da base de conhecimento nas respostas
+
+### 5. Pagina Admin (frontend)
+
+Nova pagina: `src/pages/Admin.tsx`
+- Upload de PDFs com drag-and-drop ou botao
+- Lista de documentos com status (processando/pronto/erro)
+- Botao para remover documentos
+- Rota `/admin` adicionada ao `App.tsx`
 
 ---
 
-## Arquitetura final
+## Por que isso resolve o problema anterior
 
-```text
-[ChatSheet] --> [useChatStore] --> [Edge Function "chat"] --> [Google Gemini API]
-                                   usa GEMINI_API_KEY           generativelanguage
-                                   (secret do servidor)         .googleapis.com
-                                   
-                                   SEM gateway Lovable
-                                   SEM LOVABLE_API_KEY
-```
+| Problema anterior | Solucao agora |
+|---|---|
+| `pdf-parse` falhava com PDFs do Chrome/Edge | Gemini le qualquer formato de PDF via multimodal |
+| PDFs escaneados nao tinham texto extraivel | Gemini faz OCR automaticamente |
+| Arquivos modificados por download corrompiam | Gemini processa o arquivo visual, nao depende da estrutura interna |
+| Bibliotecas incompativeis com Deno runtime | Sem dependencia de bibliotecas -- so chamada de API |
 
-## Custo
+## Custos
 
 | Componente | Custo |
 |---|---|
-| Edge Function | Incluido no plano (500k invocacoes/mes) |
-| Google Gemini 2.5 Flash | Gratuito (15 RPM, 1M tokens/min) |
+| Gemini 2.5 Flash (extracao de texto + chat) | Gratuito |
+| Gemini text-embedding-004 (embeddings) | Gratuito |
+| pgvector no banco | Incluido no plano |
+| Storage bucket | Incluido no plano |
+| Edge Functions | Incluido no plano |
 | **Total** | **R$ 0** |
 
