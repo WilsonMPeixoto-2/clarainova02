@@ -1,61 +1,31 @@
 
 
-# Melhoria do System Prompt: Tom Pedagogico e Compreensao de Linguagem Informal
+# Corrigir Acesso ao Painel Admin
 
-## O que foi encontrado no repositorio externo
+## Problema
+O formulario de login em `/admin` so permite entrar com credenciais existentes, mas nenhuma conta foi criada. Alem disso, nao ha como visualizar a senha digitada.
 
-O projeto externo (`clarainova`) tem um sistema de prompt mais sofisticado com **duas diferencas importantes**:
+## Solucao
 
-### 1. Modos de Resposta (Fast vs Deep)
-O outro projeto define dois modos de resposta com instrucoes explicitas:
+### 1. Adicionar fluxo de cadastro (signup) ao AdminAuth
+- Adicionar um toggle "Criar conta" / "Ja tenho conta" no formulario
+- No modo cadastro, usar `supabase.auth.signUp()` com email e senha
+- Manter o formulario simples (email + senha) sem campos extras
+- Apos o cadastro, informar que a conta foi criada (verificacao de email depende da configuracao atual)
 
-- **Modo DIRETO (fast)**: Respostas em ate 10 linhas, passos numerados, checklists curtas
-- **Modo DIDATICO (deep)**: Explica o "por que", estrutura em secoes (Resumo, Passo a passo, Observacoes, Exemplo), evita jargoes e define termos tecnicos em 1 frase
-
-### 2. Instrucoes de Tom e Citacao de Fontes
-- "Tom: acolhedor, direto e profissional. Evite sermoes e seja pratica."
-- Regras explicitas para citar fontes como `[Fonte 1]`, `[Fonte 2]`
-- Instrucao para redirecionar a fontes oficiais quando nao houver informacao suficiente
-
-### 3. O que NENHUM dos dois projetos tem (e que voce pediu)
-Nenhum dos projetos tem instrucoes explicitas para a IA entender **linguagem informal/coloquial** e mapear para termos tecnicos. Por exemplo:
-- "colocar um PDF dentro do processo" → "anexar documento externo"
-- "mandar o processo pra frente" → "tramitar o processo"
-- "assinar o papel" → "assinar documento eletronicamente no SEI"
-
-Essa e uma melhoria **original** que deve ser adicionada ao system prompt.
-
----
-
-## Plano de Implementacao
-
-Atualizar o `SYSTEM_PROMPT` na Edge Function `chat/index.ts` com tres blocos de melhorias:
-
-### A. Modo Pedagogico (passo a passo)
-Adicionar instrucoes para que a Clara sempre estruture respostas complexas em formato didatico:
-- Resumo curto no inicio
-- Passo a passo numerado
-- Observacoes ou dicas ao final
-- Quando usar termos tecnicos, explicar em linguagem simples
-
-### B. Mapeamento de Linguagem Informal
-Adicionar uma secao no prompt instruindo a IA a:
-- Interpretar expressoes coloquiais como equivalentes aos termos tecnicos dos manuais
-- Exemplos explicitos de mapeamento (ex: "colocar PDF" = "incluir documento externo", "mandar pra frente" = "tramitar")
-- Nunca corrigir o usuario de forma pedante; simplesmente responder usando o termo correto naturalmente
-
-### C. Citacao de Fontes da Base de Conhecimento
-Quando a resposta vier da base de conhecimento (RAG), citar as fontes de forma clara e organizada.
-
----
+### 2. Botao de mostrar/ocultar senha
+- Adicionar um icone de olho (Eye/EyeOff do lucide-react) dentro do campo de senha
+- Alternar entre `type="password"` e `type="text"` ao clicar
 
 ## Detalhes Tecnicos
 
-**Arquivo a editar:** `supabase/functions/chat/index.ts`
+**Arquivo a editar:** `src/components/AdminAuth.tsx`
 
-**Alteracao:** Expandir a constante `SYSTEM_PROMPT` (linhas 73-99) com as novas instrucoes, mantendo tudo o que ja existe (personalidade, especialidades, regras de seguranca).
+Alteracoes:
+- Novo estado `isSignUp` (boolean) para alternar entre login e cadastro
+- Novo estado `showPassword` (boolean) para visibilidade da senha
+- No submit: chamar `signInWithPassword` ou `signUp` conforme o modo
+- Adicionar icone Eye/EyeOff posicionado dentro do input de senha (absolute right)
+- Link "Criar conta" / "Ja tenho conta" abaixo do botao
 
-O novo prompt adicionara aproximadamente 30-40 linhas de instrucoes comportamentais, sem alterar nenhuma outra parte do codigo (guardrails, rate limiting, fallback, RAG continuam identicos).
-
-**Nao sera necessario** criar tabelas, migracoes SQL ou novos arquivos. E apenas uma melhoria de conteudo no prompt textual.
-
+Nenhuma alteracao de banco de dados ou edge functions necessaria.
