@@ -141,8 +141,8 @@ REGRAS DE SEGURANÇA (OBRIGATÓRIAS):
 
 const GEMINI_MODELS = [
   'gemini-2.5-flash',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash-lite',
 ];
 
 async function callGeminiWithFallback(
@@ -269,12 +269,12 @@ Deno.serve(async (req) => {
       try {
         // Generate embedding for the user's question
         const embeddingResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              model: 'models/text-embedding-004',
+              model: 'models/gemini-embedding-001',
               content: { parts: [{ text: lastUserMessage.content }] },
             }),
           }
