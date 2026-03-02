@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -21,7 +23,8 @@ Regras:
 - Use formatação Markdown para organizar respostas (listas, negrito, títulos)
 - Quando não souber algo com certeza, indique que o usuário deve verificar com fontes oficiais
 - Nunca invente legislação ou números de decreto
-- Sempre que possível, cite a fonte legal aplicável`;
+- Sempre que possível, cite a fonte legal aplicável
+- PRIORIZE informações da Base de Conhecimento quando disponível. Se a resposta está na base, use-a como fonte principal.`;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -46,8 +49,61 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Get the latest user message for RAG search
+    const lastUserMessage = [...messages].reverse().find((m: { role: string }) => m.role === 'user');
+    let knowledgeContext = '';
+
+    if (lastUserMessage) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Generate embedding for the user's question
+        const embeddingResponse = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'models/text-embedding-004',
+              content: { parts: [{ text: lastUserMessage.content }] },
+            }),
+          }
+        );
+
+        if (embeddingResponse.ok) {
+          const embeddingData = await embeddingResponse.json();
+          const queryEmbedding = embeddingData.embedding?.values;
+
+          if (queryEmbedding) {
+            // Search for relevant chunks
+            const { data: chunks, error: matchErr } = await supabase.rpc('match_chunks', {
+              query_embedding: JSON.stringify(queryEmbedding),
+              match_count: 5,
+            });
+
+            if (!matchErr && chunks && chunks.length > 0) {
+              const relevantChunks = chunks
+                .filter((c: { similarity: number }) => c.similarity > 0.3)
+                .map((c: { content: string; similarity: number }) => c.content);
+
+              if (relevantChunks.length > 0) {
+                knowledgeContext = `\n\n--- BASE DE CONHECIMENTO ---\nOs trechos abaixo foram encontrados na base de documentos oficiais. Use-os como fonte principal para responder:\n\n${relevantChunks.join('\n\n---\n\n')}\n--- FIM DA BASE DE CONHECIMENTO ---`;
+              }
+            }
+          }
+        }
+      } catch (ragError) {
+        console.error('RAG search error (non-fatal):', ragError);
+        // Continue without RAG context - non-fatal error
+      }
+    }
+
+    const systemPromptWithContext = SYSTEM_PROMPT + knowledgeContext;
+
     const geminiMessages = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: systemPromptWithContext },
       ...messages.map((m: { role: string; content: string }) => ({
         role: m.role === 'assistant' ? 'assistant' : 'user',
         content: m.content,
@@ -78,7 +134,6 @@ Deno.serve(async (req) => {
       if (status === 429) errorMsg = 'Muitas requisições. Aguarde um momento e tente novamente.';
       if (status === 403) errorMsg = 'Chave da API inválida ou sem permissão.';
       
-      // Consume body to prevent leak
       await response.text();
       
       return new Response(
@@ -87,7 +142,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Stream the response directly to the client
     return new Response(response.body, {
       headers: {
         ...corsHeaders,
