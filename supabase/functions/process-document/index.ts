@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const FILE_API_THRESHOLD = 15_000_000; // 15MB
@@ -66,12 +66,10 @@ Deno.serve(async (req) => {
     let filePart: Record<string, unknown>;
 
     if (fileSize > FILE_API_THRESHOLD) {
-      // Large file: use Gemini File API
       console.log("Using Gemini File API for large file...");
       const fileUri = await uploadToGeminiFileAPI(bytes, doc.name, geminiKey);
       filePart = { file_data: { mime_type: "application/pdf", file_uri: fileUri } };
     } else {
-      // Small file: use inline_data with safe base64 conversion
       console.log("Using inline_data for small file...");
       const base64 = safeBase64Encode(bytes);
       filePart = { inline_data: { mime_type: "application/pdf", data: base64 } };
@@ -126,20 +124,19 @@ Deno.serve(async (req) => {
 
     console.log(`Extracted ${extractedText.length} chars from document ${document_id}`);
 
-    // Log PDF extraction
     await supabase.from('usage_logs').insert({
       event_type: 'pdf_extraction',
       metadata: { document_id, text_length: extractedText.length, file_size: fileSize },
     });
 
-    // 5. Split into chunks (~500 words, 50 word overlap)
+    // 5. Split into chunks
     const chunks = splitIntoChunks(extractedText, 500, 50);
     console.log(`Split into ${chunks.length} chunks`);
 
-    // 6. Generate embeddings for each chunk
+    // 6. Generate embeddings
     const embeddings = await generateEmbeddings(chunks, geminiKey);
 
-    // 7. Save chunks + embeddings to database
+    // 7. Save chunks + embeddings
     const chunkRows = chunks.map((content, i) => ({
       document_id,
       content,
@@ -147,7 +144,6 @@ Deno.serve(async (req) => {
       chunk_index: i,
     }));
 
-    // Insert in batches of 20
     for (let i = 0; i < chunkRows.length; i += 20) {
       const batch = chunkRows.slice(i, i + 20);
       const { error: insertErr } = await supabase
@@ -163,7 +159,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Log embedding generation
     await supabase.from('usage_logs').insert({
       event_type: 'embedding_generation',
       metadata: { document_id, chunks_count: chunks.length },
@@ -209,7 +204,6 @@ async function uploadToGeminiFileAPI(
   displayName: string,
   apiKey: string
 ): Promise<string> {
-  // Step 1: Initiate resumable upload
   const startResponse = await fetch(
     `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
     {
@@ -237,7 +231,6 @@ async function uploadToGeminiFileAPI(
     throw new Error("Gemini File API did not return upload URL");
   }
 
-  // Step 2: Upload the file bytes
   const uploadResponse = await fetch(uploadUrl, {
     method: "POST",
     headers: {
@@ -261,7 +254,6 @@ async function uploadToGeminiFileAPI(
 
   console.log(`Uploaded to Gemini File API: ${fileName}, waiting for processing...`);
 
-  // Step 3: Poll until file is ACTIVE
   const fileUri = await waitForFileProcessing(fileName, apiKey);
   return fileUri;
 }
@@ -331,7 +323,6 @@ async function generateEmbeddings(
 ): Promise<number[][]> {
   const embeddings: number[][] = [];
 
-  // Process in batches of 5
   for (let i = 0; i < texts.length; i += 5) {
     const batch = texts.slice(i, i + 5);
     const requests = batch.map((text) =>
