@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw } from "lucide-react";
+import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw, X, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import UsageStatsCard from "@/components/UsageStatsCard";
@@ -24,10 +24,41 @@ interface Document {
   created_at: string;
 }
 
+interface UploadState {
+  fileName: string;
+  loaded: number;
+  total: number;
+  phase: "uploading" | "done" | "error";
+  startTime: number;
+  xhr?: XMLHttpRequest;
+}
+
+const TIMEOUT_SECONDS = 300; // 5 minutes
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatTimer(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}m${s.toString().padStart(2, "0")}s` : `${s}s`;
+}
+
+function formatETA(loaded: number, total: number, startTime: number): string {
+  const elapsed = (Date.now() - startTime) / 1000;
+  if (elapsed < 1 || loaded === 0) return "";
+  const speed = loaded / elapsed;
+  const remaining = (total - loaded) / speed;
+  if (remaining < 60) return `~${Math.ceil(remaining)}s restante`;
+  return `~${Math.ceil(remaining / 60)}min restante`;
+}
+
 export default function Admin() {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploads, setUploads] = useState<UploadState[]>([]);
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [processingTimers, setProcessingTimers] = useState<Record<string, number>>({});
   const prevStatusRef = useRef<Record<string, string>>({});
@@ -41,14 +72,14 @@ export default function Admin() {
     if (data) setDocuments(data as unknown as Document[]);
   }, []);
 
-  // Polling + status change toasts
+  // Polling
   useEffect(() => {
     fetchDocuments();
     const interval = setInterval(fetchDocuments, 5000);
     return () => clearInterval(interval);
   }, [fetchDocuments]);
 
-  // Detect status changes and show toasts
+  // Detect status changes → toasts
   useEffect(() => {
     const prev = prevStatusRef.current;
     for (const doc of documents) {
@@ -71,15 +102,12 @@ export default function Admin() {
       setProcessingTimers({});
       return;
     }
-
     const interval = setInterval(() => {
       setProcessingTimers((prev) => {
         const next = { ...prev };
         for (const doc of processingDocs) {
           if (!next[doc.id]) {
-            // Calculate from created_at
-            const elapsed = Math.floor((Date.now() - new Date(doc.created_at).getTime()) / 1000);
-            next[doc.id] = elapsed;
+            next[doc.id] = Math.floor((Date.now() - new Date(doc.created_at).getTime()) / 1000);
           } else {
             next[doc.id] = prev[doc.id] + 1;
           }
@@ -87,16 +115,76 @@ export default function Admin() {
         return next;
       });
     }, 1000);
-
     return () => clearInterval(interval);
   }, [documents]);
+
+  // XHR upload to Supabase Storage with real progress
+  const uploadFileXHR = (file: File, filePath: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/documents/${filePath}`;
+
+      const uploadState: UploadState = {
+        fileName: file.name,
+        loaded: 0,
+        total: file.size,
+        phase: "uploading",
+        startTime: Date.now(),
+        xhr,
+      };
+
+      setUploads((prev) => [...prev, uploadState]);
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          setUploads((prev) =>
+            prev.map((u) =>
+              u.fileName === file.name ? { ...u, loaded: e.loaded, total: e.total } : u
+            )
+          );
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploads((prev) =>
+            prev.map((u) =>
+              u.fileName === file.name ? { ...u, phase: "done", loaded: u.total } : u
+            )
+          );
+          resolve();
+        } else {
+          setUploads((prev) =>
+            prev.map((u) =>
+              u.fileName === file.name ? { ...u, phase: "error" } : u
+            )
+          );
+          reject(new Error(`Upload failed: ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = () => {
+        setUploads((prev) =>
+          prev.map((u) =>
+            u.fileName === file.name ? { ...u, phase: "error" } : u
+          )
+        );
+        reject(new Error("Network error"));
+      };
+
+      xhr.open("POST", url);
+      xhr.setRequestHeader("Authorization", `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`);
+      xhr.setRequestHeader("apikey", import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+      xhr.setRequestHeader("x-upsert", "false");
+      xhr.send(file);
+    });
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setUploading(true);
-    setUploadProgress(0);
+    setUploads([]);
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -106,15 +194,12 @@ export default function Admin() {
       }
 
       try {
-        setUploadProgress(((i) / files.length) * 100);
-
         const filePath = `${crypto.randomUUID()}_${file.name}`;
-        const { error: uploadErr } = await supabase.storage
-          .from("documents")
-          .upload(filePath, file);
 
-        if (uploadErr) throw uploadErr;
+        // Upload with real progress
+        await uploadFileXHR(file, filePath);
 
+        // Insert document record
         const { data: doc, error: docErr } = await supabase
           .from("documents")
           .insert({ name: file.name, file_path: filePath, status: "pending" })
@@ -123,46 +208,43 @@ export default function Admin() {
 
         if (docErr) throw docErr;
 
-        triggerProcessing((doc as unknown as Document).id);
-
-        setUploadProgress(((i + 1) / files.length) * 100);
+        // Trigger processing with error handling
+        await triggerProcessing((doc as unknown as Document).id, file.name);
       } catch (err) {
         console.error(err);
         toast({ title: "Erro no upload", description: `Falha ao enviar ${file.name}`, variant: "destructive" });
       }
     }
 
-    setUploading(false);
     fetchDocuments();
     e.target.value = "";
-    toast({ title: "Upload concluído", description: "Os documentos estão sendo processados." });
+
+    // Clear upload states after 3s
+    setTimeout(() => setUploads([]), 3000);
   };
 
-  const triggerProcessing = (docId: string) => {
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-    fetch(
-      `https://${projectId}.supabase.co/functions/v1/process-document`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({ document_id: docId }),
-      }
-    ).catch(console.error);
+  const triggerProcessing = async (docId: string, docName?: string) => {
+    const { error } = await supabase.functions.invoke("process-document", {
+      body: { document_id: docId },
+    });
+
+    if (error) {
+      console.error("Process-document invoke error:", error);
+      await supabase.from("documents").update({ status: "error" }).eq("id", docId);
+      toast({
+        title: "Erro ao processar",
+        description: `Falha ao iniciar processamento${docName ? ` de "${docName}"` : ""}. Tente reprocessar.`,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleRetry = async (doc: Document) => {
     setRetryingId(doc.id);
     try {
-      // Delete old chunks
       await supabase.from("document_chunks").delete().eq("document_id", doc.id);
-      // Reset status
       await supabase.from("documents").update({ status: "pending" }).eq("id", doc.id);
-      // Re-trigger
-      triggerProcessing(doc.id);
+      await triggerProcessing(doc.id, doc.name);
       toast({ title: "Reprocessando", description: `"${doc.name}" será processado novamente.` });
       fetchDocuments();
     } catch {
@@ -170,6 +252,27 @@ export default function Admin() {
     } finally {
       setRetryingId(null);
     }
+  };
+
+  const handleCancel = async (doc: Document) => {
+    try {
+      await supabase.from("document_chunks").delete().eq("document_id", doc.id);
+      await supabase.from("documents").update({ status: "cancelled" }).eq("id", doc.id);
+      fetchDocuments();
+      toast({ title: "Cancelado", description: `"${doc.name}" foi cancelado.` });
+    } catch {
+      toast({ title: "Erro ao cancelar", variant: "destructive" });
+    }
+  };
+
+  const handleCancelUpload = (fileName: string) => {
+    setUploads((prev) => {
+      const upload = prev.find((u) => u.fileName === fileName);
+      if (upload?.xhr) {
+        upload.xhr.abort();
+      }
+      return prev.filter((u) => u.fileName !== fileName);
+    });
   };
 
   const handleDelete = async (doc: Document) => {
@@ -184,14 +287,14 @@ export default function Admin() {
     }
   };
 
-  const formatTimer = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return m > 0 ? `${m}m${s.toString().padStart(2, "0")}s` : `${s}s`;
+  const isTimedOut = (docId: string) => {
+    const timer = processingTimers[docId];
+    return timer !== undefined && timer >= TIMEOUT_SECONDS;
   };
 
-  const statusIcon = (status: string) => {
-    switch (status) {
+  const statusIcon = (doc: Document) => {
+    if (isTimedOut(doc.id)) return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    switch (doc.status) {
       case "processed":
         return <CheckCircle2 className="h-4 w-4 text-primary" />;
       case "processing":
@@ -199,17 +302,23 @@ export default function Admin() {
         return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
       case "error":
         return <XCircle className="h-4 w-4 text-destructive" />;
+      case "cancelled":
+        return <X className="h-4 w-4 text-muted-foreground" />;
       default:
         return null;
     }
   };
 
   const statusLabel = (doc: Document) => {
+    if (isTimedOut(doc.id)) {
+      return "Possível falha — tente reprocessar";
+    }
     const map: Record<string, string> = {
-      pending: "Aguardando",
+      pending: "Na fila",
       processing: "Processando",
       processed: "Pronto",
       error: "Erro",
+      cancelled: "Cancelado",
     };
     const label = map[doc.status] || doc.status;
     const timer = processingTimers[doc.id];
@@ -219,11 +328,16 @@ export default function Admin() {
     return label;
   };
 
-  const canRetry = (status: string) => status === "error" || status === "processing";
+  const canRetry = (doc: Document) =>
+    doc.status === "error" || doc.status === "cancelled" || isTimedOut(doc.id);
+
+  const canCancel = (doc: Document) =>
+    (doc.status === "processing" || doc.status === "pending") && !isTimedOut(doc.id);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-4xl space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/">
@@ -240,16 +354,12 @@ export default function Admin() {
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => supabase.auth.signOut()}
-            title="Sair"
-          >
+          <Button variant="ghost" size="icon" onClick={() => supabase.auth.signOut()} title="Sair">
             <LogOut className="h-5 w-5" />
           </Button>
         </div>
 
+        {/* Upload Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -257,7 +367,7 @@ export default function Admin() {
               Upload de Documentos
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 transition-colors hover:border-primary/50 hover:bg-muted/50">
               <FileText className="mb-2 h-10 w-10 text-muted-foreground" />
               <span className="text-sm font-medium text-foreground">
@@ -272,20 +382,61 @@ export default function Admin() {
                 multiple
                 className="hidden"
                 onChange={handleUpload}
-                disabled={uploading}
+                disabled={uploads.some((u) => u.phase === "uploading")}
               />
             </label>
-            {uploading && (
-              <div className="mt-4 space-y-2">
-                <Progress value={uploadProgress} />
-                <p className="text-xs text-muted-foreground text-center">
-                  Enviando documentos...
-                </p>
+
+            {/* Active uploads with real progress */}
+            {uploads.length > 0 && (
+              <div className="space-y-3">
+                {uploads.map((u) => (
+                  <div key={u.fileName} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground truncate max-w-[70%]">
+                        {u.fileName}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {u.phase === "uploading" && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatBytes(u.loaded)} / {formatBytes(u.total)}
+                          </span>
+                        )}
+                        {u.phase === "done" && (
+                          <span className="text-xs text-primary font-medium">Enviado ✓</span>
+                        )}
+                        {u.phase === "error" && (
+                          <span className="text-xs text-destructive font-medium">Falha ✗</span>
+                        )}
+                        {u.phase === "uploading" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleCancelUpload(u.fileName)}
+                            title="Cancelar upload"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {u.phase === "uploading" && (
+                      <>
+                        <Progress value={u.total > 0 ? (u.loaded / u.total) * 100 : 0} className="h-2" />
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{Math.round((u.loaded / u.total) * 100)}%</span>
+                          <span>{formatETA(u.loaded, u.total, u.startTime)}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>
         </Card>
 
+        {/* Documents Table */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Documentos ({documents.length})</CardTitle>
@@ -300,7 +451,7 @@ export default function Admin() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead className="w-[180px]">Status</TableHead>
+                    <TableHead className="w-[220px]">Status</TableHead>
                     <TableHead className="w-[100px]" />
                   </TableRow>
                 </TableHeader>
@@ -309,14 +460,32 @@ export default function Admin() {
                     <TableRow key={doc.id}>
                       <TableCell className="font-medium">{doc.name}</TableCell>
                       <TableCell>
-                        <span className="flex items-center gap-2 text-sm">
-                          {statusIcon(doc.status)}
+                        <span
+                          className={`flex items-center gap-2 text-sm ${
+                            isTimedOut(doc.id)
+                              ? "text-yellow-600 dark:text-yellow-400 font-medium"
+                              : doc.status === "error"
+                              ? "text-destructive"
+                              : ""
+                          }`}
+                        >
+                          {statusIcon(doc)}
                           {statusLabel(doc)}
                         </span>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          {canRetry(doc.status) && (
+                          {canCancel(doc) && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleCancel(doc)}
+                              title="Cancelar processamento"
+                            >
+                              <X className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          )}
+                          {canRetry(doc) && (
                             <Button
                               variant="ghost"
                               size="icon"
