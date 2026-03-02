@@ -1,58 +1,65 @@
 
 
-# Corrigir Processamento de PDFs Grandes + Erros de Embedding
+# Corrigir Extração de PDF: Modelos Atualizados + Build Errors
 
-## Problemas Identificados nos Logs
+## Diagnóstico
 
-1. **"Memory limit exceeded"** -- O PDF de 14MB e baixado inteiro para memoria (`Uint8Array`) dentro da edge function. Isso estoura o limite de ~50MB de RAM.
-2. **Embedding model 404** -- O modelo `text-embedding-004` retorna erro "not found for API version v1beta". A URL precisa usar `v1` em vez de `v1beta`, ou o modelo precisa do prefixo correto.
-3. **Documentos presos na UI** -- Documentos com status "processing" ou "error" ficam sem opcao clara de exclusao. O botao de delete ja existe, mas documentos em "processing" nao mostram ele de forma visivel.
+Confirmei na documentação oficial do Google que os seguintes modelos estao disponíveis com tier gratuito e suportam PDF como input:
 
-## Plano de Correcao
+- **gemini-3-flash-preview** -- modelo mais recente, suporta PDF, 1M tokens de input
+- **gemini-2.5-flash** -- modelo estável, excelente custo-benefício
+- **gemini-2.0-flash** -- quota esgotada na sua chave, mas mantido como fallback
 
-### 1. Edge Function: Eliminar download do PDF para memoria
+O problema atual e que:
+1. `gemini-2.0-flash` tem quota 0 na sua chave gratuita
+2. `gemini-1.5-flash` retorna 404 porque a URL usa `v1beta` em vez de `v1`
+3. Modelos mais novos (`gemini-3-flash-preview`, `gemini-2.5-flash`) tem quotas separadas e provavelmente disponíveis
 
-**Arquivo:** `supabase/functions/process-document/index.ts`
+## Plano de Correção
 
-Em vez de baixar o PDF inteiro para um `Uint8Array` (linha 149), fazer upload para o Gemini File API usando **streaming** -- ler o body do fetch como stream e enviar diretamente ao Gemini sem acumular tudo na memoria.
-
-Mudanca principal na funcao `uploadToGeminiViaUrl`:
-- Usar `pdfResponse.body` (ReadableStream) diretamente no corpo do upload ao Gemini, sem chamar `arrayBuffer()`
-- Obter o tamanho do arquivo via header `Content-Length` da resposta do signed URL
-- Isso reduz o uso de memoria de ~14MB para quase zero
-
-### 2. Edge Function: Corrigir URL do modelo de embeddings
+### 1. Atualizar modelos de extração
 
 **Arquivo:** `supabase/functions/process-document/index.ts`
 
-O log mostra: `models/text-embedding-004 is not found for API version v1beta`
-
-Correcao: Trocar a URL de embeddings de `v1beta` para `v1`:
+Trocar a lista de modelos para:
 ```
-v1beta/models/text-embedding-004:embedContent
-→ v1/models/text-embedding-004:embedContent
+gemini-3-flash-preview -> gemini-2.5-flash -> gemini-2.0-flash
 ```
 
-### 3. Edge Function: Aumentar chunks para textos longos
+Cada modelo tem quota independente no tier gratuito, entao se um esgotar, o próximo assume.
 
-O log mostra "65595 chars" resultando em apenas 1 chunk. Com `targetWords=500` e um texto de ~10k palavras, algo esta errado. Vou verificar e ajustar o chunking para garantir que textos longos sejam divididos corretamente (provavelmente o problema e que 65k chars ~ 10k palavras, mas o chunk de 500 palavras deveria gerar ~20 chunks -- preciso confirmar se o bug e no log ou no codigo).
+### 2. Corrigir URL da API: v1beta para v1
 
-### 4. Admin UI: Garantir que documentos em qualquer status possam ser deletados
+Na funcao `extractTextWithGemini`, trocar:
+```
+v1beta/models/{model}:generateContent
+```
+por:
+```
+v1/models/{model}:generateContent
+```
 
-**Arquivo:** `src/pages/Admin.tsx`
+Isso resolve o erro 404 que impedia modelos como `gemini-1.5-flash` de funcionar e garante compatibilidade com todos os modelos.
 
-O botao de delete ja existe para todos os documentos, mas vou verificar se esta visivel em todos os estados (inclusive "processing"). Tambem vou garantir que o botao de delete apareca com destaque para documentos com erro ou travados.
+### 3. Limpar documento travado
 
-## Arquivos a Editar
+Atualizar o documento preso em "processing" para "error" no banco para permitir exclusao.
+
+### 4. Corrigir build errors no chart.tsx
+
+Os erros de TypeScript em `chart.tsx` sao causados por incompatibilidade de tipos com a versao atual do `recharts`. Correcao com type assertions para resolver.
+
+## Arquivos a editar
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `supabase/functions/process-document/index.ts` | Streaming upload (sem arrayBuffer), fix URL embeddings v1beta→v1 |
-| `src/pages/Admin.tsx` | Pequenos ajustes na visibilidade do botao delete |
+| `supabase/functions/process-document/index.ts` | Modelos: gemini-3-flash-preview, 2.5-flash, 2.0-flash + URL v1 |
+| `src/components/ui/chart.tsx` | Fix TypeScript errors com type assertions |
 
-## Resultado Esperado
+## Resultado esperado
 
-- PDFs de 14MB+ serao processados sem estourar memoria
-- Embeddings serao gerados corretamente (sem erro 404)
-- Documentos travados/com erro poderao ser deletados facilmente
+- Extração usara gemini-3-flash-preview (mais recente, quota separada)
+- Se falhar, tenta gemini-2.5-flash, depois gemini-2.0-flash
+- URL correta (v1) para todos os modelos
+- Build sem erros
 
