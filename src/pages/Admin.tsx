@@ -11,10 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw, X, AlertTriangle } from "lucide-react";
+import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw, X, AlertTriangle, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import UsageStatsCard from "@/components/UsageStatsCard";
+import * as pdfjsLib from "pdfjs-dist";
+
+// Configure pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 interface Document {
   id: string;
@@ -24,22 +28,71 @@ interface Document {
   created_at: string;
 }
 
-interface UploadState {
+interface IngestionState {
   fileName: string;
-  loaded: number;
-  total: number;
-  phase: "uploading" | "done" | "error";
-  startTime: number;
-  xhr?: XMLHttpRequest;
+  phase: "reading" | "extracting" | "chunking" | "embedding" | "done" | "error";
+  phaseLabel: string;
+  progress: number; // 0-100
+  totalChunks: number;
+  processedChunks: number;
+  error?: string;
+  abortController?: AbortController;
 }
 
-const TIMEOUT_SECONDS = 300; // 5 minutes
+// ─── Text chunking (same logic as the old edge function) ────────────────────
 
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+function splitIntoChunks(text: string, targetWords = 500, overlapWords = 50): string[] {
+  const words = text.split(/\s+/).filter((w) => w.length > 0);
+  if (words.length <= targetWords) return [text.trim()];
+  const chunks: string[] = [];
+  let start = 0;
+  while (start < words.length) {
+    const end = Math.min(start + targetWords, words.length);
+    chunks.push(words.slice(start, end).join(" "));
+    if (end >= words.length) break;
+    start += targetWords - overlapWords;
+  }
+  return chunks;
 }
+
+// ─── Sanitize file name for Supabase Storage ────────────────────────────────
+
+function sanitizeFileName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove accents
+    .replace(/[^a-zA-Z0-9._-]/g, "_") // replace special chars
+    .replace(/_+/g, "_"); // collapse multiple underscores
+}
+
+// ─── Client-side PDF text extraction via pdf.js ─────────────────────────────
+
+async function extractTextFromPDF(
+  file: File,
+  onProgress?: (pagesRead: number, totalPages: number) => void
+): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const totalPages = pdf.numPages;
+  const pageTexts: string[] = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const text = content.items
+      .map((item: any) => item.str)
+      .join(" ");
+    pageTexts.push(text);
+    onProgress?.(i, totalPages);
+  }
+
+  return pageTexts.join("\n\n");
+}
+
+// ─── Constants ──────────────────────────────────────────────────────────────
+
+const EMBED_BATCH_SIZE = 5; // chunks per edge function call
+const TIMEOUT_SECONDS = 300;
 
 function formatTimer(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -47,18 +100,9 @@ function formatTimer(seconds: number): string {
   return m > 0 ? `${m}m${s.toString().padStart(2, "0")}s` : `${s}s`;
 }
 
-function formatETA(loaded: number, total: number, startTime: number): string {
-  const elapsed = (Date.now() - startTime) / 1000;
-  if (elapsed < 1 || loaded === 0) return "";
-  const speed = loaded / elapsed;
-  const remaining = (total - loaded) / speed;
-  if (remaining < 60) return `~${Math.ceil(remaining)}s restante`;
-  return `~${Math.ceil(remaining / 60)}min restante`;
-}
-
 export default function Admin() {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [uploads, setUploads] = useState<UploadState[]>([]);
+  const [ingestions, setIngestions] = useState<IngestionState[]>([]);
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [processingTimers, setProcessingTimers] = useState<Record<string, number>>({});
   const prevStatusRef = useRef<Record<string, string>>({});
@@ -95,7 +139,7 @@ export default function Admin() {
     prevStatusRef.current = Object.fromEntries(documents.map((d) => [d.id, d.status]));
   }, [documents, toast]);
 
-  // Processing timers
+  // Processing timers for legacy server-side processing docs
   useEffect(() => {
     const processingDocs = documents.filter((d) => d.status === "processing" || d.status === "pending");
     if (processingDocs.length === 0) {
@@ -118,147 +162,270 @@ export default function Admin() {
     return () => clearInterval(interval);
   }, [documents]);
 
-  // XHR upload to Supabase Storage with real progress + user session token
-  const uploadFileXHR = async (file: File, filePath: string): Promise<void> => {
-    // Get the user's session token for authenticated uploads
-    const { data: sessionData } = await supabase.auth.getSession();
-    const accessToken = sessionData?.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  // ─── Client-side ingestion pipeline ─────────────────────────────────────
 
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/documents/${encodeURIComponent(filePath)}`;
+  const updateIngestion = (fileName: string, updates: Partial<IngestionState>) => {
+    setIngestions((prev) =>
+      prev.map((ing) => (ing.fileName === fileName ? { ...ing, ...updates } : ing))
+    );
+  };
 
-      const uploadState: UploadState = {
-        fileName: file.name,
-        loaded: 0,
-        total: file.size,
-        phase: "uploading",
-        startTime: Date.now(),
-        xhr,
-      };
+  const processFileClientSide = async (file: File) => {
+    const abortController = new AbortController();
+    const ingestion: IngestionState = {
+      fileName: file.name,
+      phase: "reading",
+      phaseLabel: "Lendo PDF...",
+      progress: 0,
+      totalChunks: 0,
+      processedChunks: 0,
+      abortController,
+    };
 
-      setUploads((prev) => [...prev, uploadState]);
+    setIngestions((prev) => [...prev, ingestion]);
 
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setUploads((prev) =>
-            prev.map((u) =>
-              u.fileName === file.name ? { ...u, loaded: e.loaded, total: e.total } : u
-            )
-          );
+    try {
+      // Phase 1: Extract text from PDF in the browser
+      updateIngestion(file.name, { phase: "extracting", phaseLabel: "Extraindo texto do PDF..." });
+
+      const text = await extractTextFromPDF(file, (pagesRead, totalPages) => {
+        updateIngestion(file.name, {
+          progress: Math.round((pagesRead / totalPages) * 25),
+          phaseLabel: `Extraindo texto... página ${pagesRead}/${totalPages}`,
+        });
+      });
+
+      if (abortController.signal.aborted) return;
+
+      if (text.length < 50) {
+        throw new Error("PDF parece estar vazio ou conter apenas imagens (sem texto extraível).");
+      }
+
+      // Phase 2: Chunk the text locally
+      updateIngestion(file.name, {
+        phase: "chunking",
+        phaseLabel: "Fatiando texto em fragmentos...",
+        progress: 25,
+      });
+
+      const chunks = splitIntoChunks(text, 500, 50);
+      const totalChunks = chunks.length;
+
+      updateIngestion(file.name, {
+        totalChunks,
+        phaseLabel: `${totalChunks} fragmentos criados`,
+        progress: 30,
+      });
+
+      if (abortController.signal.aborted) return;
+
+      // Phase 3: Upload file to storage (sanitized name)
+      const sanitizedName = sanitizeFileName(file.name);
+      const filePath = `${crypto.randomUUID()}_${sanitizedName}`;
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (!accessToken) {
+        throw new Error("Sessão expirada. Faça login novamente.");
+      }
+
+      // Simple upload via SDK (file stays in storage for reference)
+      const { error: uploadErr } = await supabase.storage
+        .from("documents")
+        .upload(filePath, file, { upsert: false });
+
+      if (uploadErr) throw new Error(`Upload falhou: ${uploadErr.message}`);
+
+      // Create document record
+      const { data: doc, error: docErr } = await supabase
+        .from("documents")
+        .insert({ name: file.name, file_path: filePath, status: "processing" })
+        .select()
+        .single();
+
+      if (docErr || !doc) throw new Error("Falha ao registrar documento");
+      const documentId = (doc as any).id;
+
+      if (abortController.signal.aborted) {
+        await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
+        return;
+      }
+
+      // Phase 4: Send chunks to edge function in batches for embedding
+      updateIngestion(file.name, {
+        phase: "embedding",
+        phaseLabel: `Vetorizando fragmentos... 0/${totalChunks}`,
+        progress: 30,
+      });
+
+      let processedChunks = 0;
+
+      for (let i = 0; i < chunks.length; i += EMBED_BATCH_SIZE) {
+        if (abortController.signal.aborted) {
+          await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
+          return;
         }
-      };
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setUploads((prev) =>
-            prev.map((u) =>
-              u.fileName === file.name ? { ...u, phase: "done", loaded: u.total } : u
-            )
-          );
-          resolve();
-        } else {
-          console.error(`Upload failed: status ${xhr.status}, response: ${xhr.responseText}`);
-          setUploads((prev) =>
-            prev.map((u) =>
-              u.fileName === file.name ? { ...u, phase: "error" } : u
-            )
-          );
-          reject(new Error(`Upload failed: ${xhr.status}`));
+        const batch = chunks.slice(i, i + EMBED_BATCH_SIZE);
+
+        const { error: fnErr } = await supabase.functions.invoke("embed-chunks", {
+          body: { document_id: documentId, chunks: batch, start_index: i },
+        });
+
+        if (fnErr) {
+          console.error(`Embed batch ${i} failed:`, fnErr);
+          throw new Error(`Falha ao vetorizar fragmento ${i + 1}: ${fnErr.message}`);
         }
-      };
 
-      xhr.onerror = () => {
-        console.error("XHR network error during upload");
-        setUploads((prev) =>
-          prev.map((u) =>
-            u.fileName === file.name ? { ...u, phase: "error" } : u
-          )
-        );
-        reject(new Error("Network error"));
-      };
+        processedChunks += batch.length;
+        const embeddingProgress = 30 + Math.round((processedChunks / totalChunks) * 65);
 
-      xhr.open("POST", url);
-      xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
-      xhr.setRequestHeader("apikey", import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
-      xhr.setRequestHeader("x-upsert", "false");
-      xhr.send(file);
-    });
+        updateIngestion(file.name, {
+          processedChunks,
+          progress: embeddingProgress,
+          phaseLabel: `Vetorizando... ${processedChunks}/${totalChunks}`,
+        });
+      }
+
+      // Done!
+      await supabase.from("documents").update({ status: "processed" }).eq("id", documentId);
+      await supabase.from("usage_logs").insert({
+        event_type: "client_side_ingestion",
+        metadata: { document_id: documentId, chunks_count: totalChunks, text_length: text.length },
+      });
+
+      updateIngestion(file.name, {
+        phase: "done",
+        phaseLabel: `✓ Pronto — ${totalChunks} fragmentos`,
+        progress: 100,
+      });
+
+      toast({ title: "✅ Documento processado", description: `"${file.name}" — ${totalChunks} fragmentos indexados.` });
+      fetchDocuments();
+    } catch (err: any) {
+      console.error("Client-side ingestion error:", err);
+      updateIngestion(file.name, {
+        phase: "error",
+        phaseLabel: `Erro: ${err.message || "Falha desconhecida"}`,
+        error: err.message,
+      });
+      toast({ title: "❌ Erro no processamento", description: err.message, variant: "destructive" });
+      fetchDocuments();
+    }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setUploads([]);
+    setIngestions([]);
 
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.type !== "application/pdf") {
-          toast({ title: "Erro", description: `${file.name} não é um PDF`, variant: "destructive" });
-          continue;
-        }
-
-        try {
-          const filePath = `${crypto.randomUUID()}_${file.name}`;
-
-          // Upload with real progress
-          await uploadFileXHR(file, filePath);
-
-          // Insert document record
-          const { data: doc, error: docErr } = await supabase
-            .from("documents")
-            .insert({ name: file.name, file_path: filePath, status: "pending" })
-            .select()
-            .single();
-
-          if (docErr) throw docErr;
-
-          // Trigger processing with error handling
-          await triggerProcessing((doc as unknown as Document).id, file.name);
-        } catch (err) {
-          console.error("Upload error for file:", files[i]?.name, err);
-          toast({ title: "Erro no upload", description: `Falha ao enviar ${files[i]?.name}`, variant: "destructive" });
-        }
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type !== "application/pdf") {
+        toast({ title: "Erro", description: `${file.name} não é um PDF`, variant: "destructive" });
+        continue;
       }
-    } catch (outerErr) {
-      console.error("Unexpected upload error:", outerErr);
-      toast({ title: "Erro inesperado", description: "Ocorreu um erro durante o upload.", variant: "destructive" });
-    } finally {
-      // Always clean up, even on error
-      try { fetchDocuments(); } catch (_) { /* ignore */ }
-      e.target.value = "";
-      setTimeout(() => setUploads([]), 3000);
+      // Process each file sequentially to avoid overwhelming the API
+      await processFileClientSide(file);
     }
+
+    e.target.value = "";
+    // Keep ingestion UI visible for a few seconds after completion
+    setTimeout(() => {
+      setIngestions((prev) => prev.filter((ing) => ing.phase !== "done"));
+    }, 5000);
   };
 
-  const triggerProcessing = async (docId: string, docName?: string) => {
-    const { error } = await supabase.functions.invoke("process-document", {
-      body: { document_id: docId },
+  const handleCancelIngestion = (fileName: string) => {
+    setIngestions((prev) => {
+      const ing = prev.find((i) => i.fileName === fileName);
+      ing?.abortController?.abort();
+      return prev.filter((i) => i.fileName !== fileName);
     });
-
-    if (error) {
-      console.error("Process-document invoke error:", error);
-      await supabase.from("documents").update({ status: "error" }).eq("id", docId);
-      toast({
-        title: "Erro ao processar",
-        description: `Falha ao iniciar processamento${docName ? ` de "${docName}"` : ""}. Tente reprocessar.`,
-        variant: "destructive",
-      });
-    }
   };
 
   const handleRetry = async (doc: Document) => {
     setRetryingId(doc.id);
     try {
+      // Delete existing chunks
       await supabase.from("document_chunks").delete().eq("document_id", doc.id);
       await supabase.from("documents").update({ status: "pending" }).eq("id", doc.id);
-      await triggerProcessing(doc.id, doc.name);
-      toast({ title: "Reprocessando", description: `"${doc.name}" será processado novamente.` });
+
+      // Download the file from storage and re-process client-side
+      const { data: fileData, error: dlErr } = await supabase.storage
+        .from("documents")
+        .download(doc.file_path);
+
+      if (dlErr || !fileData) {
+        throw new Error("Não foi possível baixar o arquivo do storage");
+      }
+
+      const file = new File([fileData], doc.name, { type: "application/pdf" });
+      
+      // Remove old doc record, processFileClientSide will create a new one
+      // Actually, let's reuse the existing record
+      await supabase.from("documents").update({ status: "processing" }).eq("id", doc.id);
+
+      // Extract & embed client-side using the existing document ID
+      const abortController = new AbortController();
+      const ingestion: IngestionState = {
+        fileName: doc.name,
+        phase: "extracting",
+        phaseLabel: "Re-extraindo texto...",
+        progress: 0,
+        totalChunks: 0,
+        processedChunks: 0,
+        abortController,
+      };
+      setIngestions((prev) => [...prev, ingestion]);
+
+      const text = await extractTextFromPDF(file, (pagesRead, totalPages) => {
+        updateIngestion(doc.name, {
+          progress: Math.round((pagesRead / totalPages) * 25),
+          phaseLabel: `Extraindo... ${pagesRead}/${totalPages}`,
+        });
+      });
+
+      if (text.length < 50) throw new Error("PDF sem texto extraível");
+
+      const chunks = splitIntoChunks(text, 500, 50);
+      updateIngestion(doc.name, {
+        phase: "embedding",
+        totalChunks: chunks.length,
+        progress: 30,
+        phaseLabel: `Vetorizando... 0/${chunks.length}`,
+      });
+
+      let processedChunks = 0;
+      for (let i = 0; i < chunks.length; i += EMBED_BATCH_SIZE) {
+        const batch = chunks.slice(i, i + EMBED_BATCH_SIZE);
+        const { error: fnErr } = await supabase.functions.invoke("embed-chunks", {
+          body: { document_id: doc.id, chunks: batch, start_index: i },
+        });
+        if (fnErr) throw new Error(`Embedding falhou: ${fnErr.message}`);
+
+        processedChunks += batch.length;
+        updateIngestion(doc.name, {
+          processedChunks,
+          progress: 30 + Math.round((processedChunks / chunks.length) * 65),
+          phaseLabel: `Vetorizando... ${processedChunks}/${chunks.length}`,
+        });
+      }
+
+      await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
+      updateIngestion(doc.name, { phase: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos` });
+      toast({ title: "✅ Reprocessado", description: `"${doc.name}" pronto.` });
       fetchDocuments();
-    } catch {
-      toast({ title: "Erro ao reprocessar", variant: "destructive" });
+
+      setTimeout(() => {
+        setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
+      }, 5000);
+    } catch (err: any) {
+      toast({ title: "Erro ao reprocessar", description: err.message, variant: "destructive" });
+      await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
+      fetchDocuments();
     } finally {
       setRetryingId(null);
     }
@@ -273,16 +440,6 @@ export default function Admin() {
     } catch {
       toast({ title: "Erro ao cancelar", variant: "destructive" });
     }
-  };
-
-  const handleCancelUpload = (fileName: string) => {
-    setUploads((prev) => {
-      const upload = prev.find((u) => u.fileName === fileName);
-      if (upload?.xhr) {
-        upload.xhr.abort();
-      }
-      return prev.filter((u) => u.fileName !== fileName);
-    });
   };
 
   const handleDelete = async (doc: Document) => {
@@ -320,9 +477,7 @@ export default function Admin() {
   };
 
   const statusLabel = (doc: Document) => {
-    if (isTimedOut(doc.id)) {
-      return "Possível falha — tente reprocessar";
-    }
+    if (isTimedOut(doc.id)) return "Possível falha — tente reprocessar";
     const map: Record<string, string> = {
       pending: "Na fila",
       processing: "Processando",
@@ -343,6 +498,14 @@ export default function Admin() {
 
   const canCancel = (doc: Document) =>
     (doc.status === "processing" || doc.status === "pending") && !isTimedOut(doc.id);
+
+  const phaseColor = (phase: IngestionState["phase"]) => {
+    switch (phase) {
+      case "done": return "text-primary";
+      case "error": return "text-destructive";
+      default: return "text-muted-foreground";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -384,7 +547,7 @@ export default function Admin() {
                 Clique ou arraste PDFs aqui
               </span>
               <span className="text-xs text-muted-foreground">
-                Apenas arquivos PDF (até 100MB)
+                Apenas arquivos PDF — processamento local no navegador
               </span>
               <input
                 type="file"
@@ -392,52 +555,42 @@ export default function Admin() {
                 multiple
                 className="hidden"
                 onChange={handleUpload}
-                disabled={uploads.some((u) => u.phase === "uploading")}
+                disabled={ingestions.some((i) => i.phase !== "done" && i.phase !== "error")}
               />
             </label>
 
-            {/* Active uploads with real progress */}
-            {uploads.length > 0 && (
+            {/* Ingestion progress */}
+            {ingestions.length > 0 && (
               <div className="space-y-3">
-                {uploads.map((u) => (
-                  <div key={u.fileName} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                {ingestions.map((ing) => (
+                  <div key={ing.fileName} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground truncate max-w-[70%]">
-                        {u.fileName}
+                      <span className="text-sm font-medium text-foreground truncate max-w-[60%]">
+                        {ing.fileName}
                       </span>
                       <div className="flex items-center gap-2">
-                        {u.phase === "uploading" && (
-                          <span className="text-xs text-muted-foreground">
-                            {formatBytes(u.loaded)} / {formatBytes(u.total)}
-                          </span>
-                        )}
-                        {u.phase === "done" && (
-                          <span className="text-xs text-primary font-medium">Enviado ✓</span>
-                        )}
-                        {u.phase === "error" && (
-                          <span className="text-xs text-destructive font-medium">Falha ✗</span>
-                        )}
-                        {u.phase === "uploading" && (
+                        <span className={`text-xs font-medium ${phaseColor(ing.phase)}`}>
+                          {ing.phase === "embedding" && <Brain className="inline h-3 w-3 mr-1" />}
+                          {ing.phaseLabel}
+                        </span>
+                        {ing.phase !== "done" && ing.phase !== "error" && (
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
-                            onClick={() => handleCancelUpload(u.fileName)}
-                            title="Cancelar upload"
+                            onClick={() => handleCancelIngestion(ing.fileName)}
+                            title="Cancelar"
                           >
                             <X className="h-3 w-3" />
                           </Button>
                         )}
                       </div>
                     </div>
-                    {u.phase === "uploading" && (
-                      <>
-                        <Progress value={u.total > 0 ? (u.loaded / u.total) * 100 : 0} className="h-2" />
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{Math.round((u.loaded / u.total) * 100)}%</span>
-                          <span>{formatETA(u.loaded, u.total, u.startTime)}</span>
-                        </div>
-                      </>
+                    {ing.phase !== "done" && ing.phase !== "error" && (
+                      <Progress value={ing.progress} className="h-2" />
+                    )}
+                    {ing.phase === "done" && (
+                      <Progress value={100} className="h-2" />
                     )}
                   </div>
                 ))}
