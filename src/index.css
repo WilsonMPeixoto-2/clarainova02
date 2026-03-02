@@ -341,7 +341,7 @@
     .clara-hero {
       --hero-copy-max: 420px;
       --hero-copy-left: clamp(20px, 2.5vw, 40px);
-      --hero-media-width: 100%;
+      --hero-media-width: 50%;
       --hero-overlay-strength: 0.90;
       --hero-min-h: 100svh;
     }
@@ -351,6 +351,7 @@
     .clara-hero {
       --hero-copy-max: 480px;
       --hero-copy-left: clamp(28px, 3vw, 56px);
+      --hero-media-width: 52%;
       --hero-overlay-strength: 0.88;
     }
   }
@@ -359,6 +360,7 @@
     .clara-hero {
       --hero-copy-max: 520px;
       --hero-copy-left: clamp(40px, 4vw, 72px);
+      --hero-media-width: 55%;
       --hero-overlay-strength: 0.87;
     }
   }
@@ -367,6 +369,7 @@
     .clara-hero {
       --hero-copy-max: 560px;
       --hero-copy-left: clamp(48px, 5vw, 96px);
+      --hero-media-width: 55%;
       --hero-overlay-strength: 0.85;
     }
   }
@@ -392,12 +395,27 @@
     top: 0;
     bottom: 0;
     right: 0;
-    left: 0;
+    left: auto;
     width: var(--hero-media-width);
     z-index: 10;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%);
-    mask-image: linear-gradient(to right, transparent 0%, black 15%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%);
+    mask-image: linear-gradient(to right, transparent 0%, black 20%);
+  }
+
+  /* Strong left overlay to protect text area */
+  .clara-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    pointer-events: none;
+    background: linear-gradient(to right,
+      hsl(var(--bg-base) / var(--hero-overlay-strength)) 0%,
+      hsl(var(--bg-base) / calc(var(--hero-overlay-strength) * 0.7)) 30%,
+      hsl(var(--bg-base) / 0.15) 55%,
+      transparent 70%
+    );
   }
 
   .hero-media-motion {
@@ -488,6 +506,7 @@
 
     .hero-media-stage {
       left: 0;
+      width: 100%;
       -webkit-mask-image: none;
       mask-image: none;
     }
@@ -495,6 +514,16 @@
     .hero-clara-video {
       object-fit: cover !important;
       object-position: center top !important;
+    }
+
+    .clara-hero::after {
+      background: linear-gradient(to bottom,
+        hsl(var(--bg-base) / 0.35) 0%,
+        transparent 30%,
+        transparent 50%,
+        hsl(var(--bg-base) / 0.7) 80%,
+        hsl(var(--bg-base) / 0.95) 100%
+      );
     }
 
     .hero-content-layer {
