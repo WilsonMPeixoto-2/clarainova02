@@ -118,11 +118,15 @@ export default function Admin() {
     return () => clearInterval(interval);
   }, [documents]);
 
-  // XHR upload to Supabase Storage with real progress
-  const uploadFileXHR = (file: File, filePath: string): Promise<void> => {
+  // XHR upload to Supabase Storage with real progress + user session token
+  const uploadFileXHR = async (file: File, filePath: string): Promise<void> => {
+    // Get the user's session token for authenticated uploads
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/documents/${filePath}`;
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/documents/${encodeURIComponent(filePath)}`;
 
       const uploadState: UploadState = {
         fileName: file.name,
@@ -154,6 +158,7 @@ export default function Admin() {
           );
           resolve();
         } else {
+          console.error(`Upload failed: status ${xhr.status}, response: ${xhr.responseText}`);
           setUploads((prev) =>
             prev.map((u) =>
               u.fileName === file.name ? { ...u, phase: "error" } : u
@@ -164,6 +169,7 @@ export default function Admin() {
       };
 
       xhr.onerror = () => {
+        console.error("XHR network error during upload");
         setUploads((prev) =>
           prev.map((u) =>
             u.fileName === file.name ? { ...u, phase: "error" } : u
@@ -173,7 +179,7 @@ export default function Admin() {
       };
 
       xhr.open("POST", url);
-      xhr.setRequestHeader("Authorization", `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`);
+      xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
       xhr.setRequestHeader("apikey", import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
       xhr.setRequestHeader("x-upsert", "false");
       xhr.send(file);
@@ -186,41 +192,45 @@ export default function Admin() {
 
     setUploads([]);
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file.type !== "application/pdf") {
-        toast({ title: "Erro", description: `${file.name} não é um PDF`, variant: "destructive" });
-        continue;
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type !== "application/pdf") {
+          toast({ title: "Erro", description: `${file.name} não é um PDF`, variant: "destructive" });
+          continue;
+        }
+
+        try {
+          const filePath = `${crypto.randomUUID()}_${file.name}`;
+
+          // Upload with real progress
+          await uploadFileXHR(file, filePath);
+
+          // Insert document record
+          const { data: doc, error: docErr } = await supabase
+            .from("documents")
+            .insert({ name: file.name, file_path: filePath, status: "pending" })
+            .select()
+            .single();
+
+          if (docErr) throw docErr;
+
+          // Trigger processing with error handling
+          await triggerProcessing((doc as unknown as Document).id, file.name);
+        } catch (err) {
+          console.error("Upload error for file:", files[i]?.name, err);
+          toast({ title: "Erro no upload", description: `Falha ao enviar ${files[i]?.name}`, variant: "destructive" });
+        }
       }
-
-      try {
-        const filePath = `${crypto.randomUUID()}_${file.name}`;
-
-        // Upload with real progress
-        await uploadFileXHR(file, filePath);
-
-        // Insert document record
-        const { data: doc, error: docErr } = await supabase
-          .from("documents")
-          .insert({ name: file.name, file_path: filePath, status: "pending" })
-          .select()
-          .single();
-
-        if (docErr) throw docErr;
-
-        // Trigger processing with error handling
-        await triggerProcessing((doc as unknown as Document).id, file.name);
-      } catch (err) {
-        console.error(err);
-        toast({ title: "Erro no upload", description: `Falha ao enviar ${file.name}`, variant: "destructive" });
-      }
+    } catch (outerErr) {
+      console.error("Unexpected upload error:", outerErr);
+      toast({ title: "Erro inesperado", description: "Ocorreu um erro durante o upload.", variant: "destructive" });
+    } finally {
+      // Always clean up, even on error
+      try { fetchDocuments(); } catch (_) { /* ignore */ }
+      e.target.value = "";
+      setTimeout(() => setUploads([]), 3000);
     }
-
-    fetchDocuments();
-    e.target.value = "";
-
-    // Clear upload states after 3s
-    setTimeout(() => setUploads([]), 3000);
   };
 
   const triggerProcessing = async (docId: string, docName?: string) => {

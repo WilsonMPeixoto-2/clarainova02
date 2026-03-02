@@ -137,18 +137,28 @@ async function uploadToGeminiStreaming(
   displayName: string,
   apiKey: string
 ): Promise<string> {
-  // Fetch PDF as a stream — get Content-Length from headers without buffering body
+  // Fetch PDF — try streaming first, fall back to buffered if no Content-Length
   const pdfResponse = await fetch(pdfUrl);
   if (!pdfResponse.ok) {
     throw new Error(`Failed to fetch PDF: ${pdfResponse.status}`);
   }
 
   const contentLength = pdfResponse.headers.get("Content-Length");
-  if (!contentLength) {
-    throw new Error("PDF response missing Content-Length header");
+  let pdfBody: ReadableStream | Uint8Array;
+  let fileSize: number;
+
+  if (contentLength) {
+    // Stream mode — don't buffer in memory
+    fileSize = parseInt(contentLength, 10);
+    pdfBody = pdfResponse.body!;
+    console.log(`PDF size: ${(fileSize / 1024 / 1024).toFixed(1)}MB (streaming)`);
+  } else {
+    // Fallback: buffer the PDF (for when Content-Length is missing)
+    const buffer = new Uint8Array(await pdfResponse.arrayBuffer());
+    fileSize = buffer.byteLength;
+    pdfBody = buffer;
+    console.log(`PDF size: ${(fileSize / 1024 / 1024).toFixed(1)}MB (buffered fallback)`);
   }
-  const fileSize = parseInt(contentLength, 10);
-  console.log(`PDF size: ${(fileSize / 1024 / 1024).toFixed(1)}MB (streaming, not buffered)`);
 
   // Initiate resumable upload to Gemini
   const startResponse = await fetch(
@@ -174,7 +184,7 @@ async function uploadToGeminiStreaming(
   const uploadUrl = startResponse.headers.get("X-Goog-Upload-URL");
   if (!uploadUrl) throw new Error("No upload URL returned");
 
-  // Stream the PDF body directly to Gemini — no arrayBuffer(), no Uint8Array
+  // Upload the PDF body to Gemini
   const uploadResponse = await fetch(uploadUrl, {
     method: "POST",
     headers: {
@@ -182,7 +192,7 @@ async function uploadToGeminiStreaming(
       "X-Goog-Upload-Offset": "0",
       "X-Goog-Upload-Command": "upload, finalize",
     },
-    body: pdfResponse.body, // ReadableStream — streamed directly
+    body: pdfBody,
   });
 
   if (!uploadResponse.ok) {
