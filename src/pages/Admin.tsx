@@ -500,6 +500,12 @@ export default function Admin() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDelete(doc)}
+                            title="Remover documento"
+                            className={
+                              doc.status === "error" || doc.status === "cancelled" || isTimedOut(doc.id)
+                                ? "opacity-100"
+                                : "opacity-60 hover:opacity-100"
+                            }
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>

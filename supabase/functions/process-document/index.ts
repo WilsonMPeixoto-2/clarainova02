@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Validate document exists
     const { data: doc, error: docErr } = await supabase
       .from("documents")
       .select("*")
@@ -38,10 +37,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update status immediately
     await supabase.from("documents").update({ status: "processing" }).eq("id", document_id);
 
-    // Process in background — return immediately to avoid compute limits
     // @ts-ignore: EdgeRuntime is available in Supabase Edge Functions
     EdgeRuntime.waitUntil(
       processDocument(supabase, doc, document_id).catch(async (error) => {
@@ -72,18 +69,18 @@ async function processDocument(
 ) {
   const geminiKey = Deno.env.get("GEMINI_API_KEY")!;
 
-  // 1. Get a signed URL for the PDF (avoids downloading into memory)
+  // 1. Get a signed URL for the PDF
   const { data: signedData, error: signedErr } = await supabase.storage
     .from("documents")
-    .createSignedUrl(doc.file_path, 600); // 10 min
+    .createSignedUrl(doc.file_path, 600);
 
   if (signedErr || !signedData?.signedUrl) {
     throw new Error("Falha ao gerar URL assinada: " + signedErr?.message);
   }
 
-  // 2. Upload PDF to Gemini File API via the signed URL
-  console.log(`Uploading ${doc.name} to Gemini File API...`);
-  const fileUri = await uploadToGeminiViaUrl(signedData.signedUrl, doc.name, geminiKey);
+  // 2. Upload PDF to Gemini File API via streaming (no memory accumulation)
+  console.log(`Uploading ${doc.name} to Gemini File API (streaming)...`);
+  const fileUri = await uploadToGeminiStreaming(signedData.signedUrl, doc.name, geminiKey);
 
   // 3. Extract text using Gemini
   console.log(`Extracting text from ${doc.name}...`);
@@ -129,28 +126,31 @@ async function processDocument(
     metadata: { document_id, chunks_count: chunks.length },
   });
 
-  // 7. Mark as processed
   await supabase.from("documents").update({ status: "processed" }).eq("id", document_id);
   console.log(`Document ${document_id} processed successfully`);
 }
 
-// ─── Gemini File API: upload via URL fetch ───────────────────────────────────
+// ─── Gemini File API: streaming upload (zero memory accumulation) ────────────
 
-async function uploadToGeminiViaUrl(
+async function uploadToGeminiStreaming(
   pdfUrl: string,
   displayName: string,
   apiKey: string
 ): Promise<string> {
-  // Download PDF as stream and re-upload to Gemini in one pass
+  // Fetch PDF as a stream — get Content-Length from headers without buffering body
   const pdfResponse = await fetch(pdfUrl);
   if (!pdfResponse.ok) {
     throw new Error(`Failed to fetch PDF: ${pdfResponse.status}`);
   }
-  const pdfBytes = new Uint8Array(await pdfResponse.arrayBuffer());
-  const fileSize = pdfBytes.length;
-  console.log(`PDF size: ${(fileSize / 1024 / 1024).toFixed(1)}MB`);
 
-  // Initiate resumable upload
+  const contentLength = pdfResponse.headers.get("Content-Length");
+  if (!contentLength) {
+    throw new Error("PDF response missing Content-Length header");
+  }
+  const fileSize = parseInt(contentLength, 10);
+  console.log(`PDF size: ${(fileSize / 1024 / 1024).toFixed(1)}MB (streaming, not buffered)`);
+
+  // Initiate resumable upload to Gemini
   const startResponse = await fetch(
     `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
     {
@@ -174,7 +174,7 @@ async function uploadToGeminiViaUrl(
   const uploadUrl = startResponse.headers.get("X-Goog-Upload-URL");
   if (!uploadUrl) throw new Error("No upload URL returned");
 
-  // Upload bytes
+  // Stream the PDF body directly to Gemini — no arrayBuffer(), no Uint8Array
   const uploadResponse = await fetch(uploadUrl, {
     method: "POST",
     headers: {
@@ -182,7 +182,7 @@ async function uploadToGeminiViaUrl(
       "X-Goog-Upload-Offset": "0",
       "X-Goog-Upload-Command": "upload, finalize",
     },
-    body: pdfBytes,
+    body: pdfResponse.body, // ReadableStream — streamed directly
   });
 
   if (!uploadResponse.ok) {
@@ -195,8 +195,6 @@ async function uploadToGeminiViaUrl(
   if (!fileName) throw new Error("No file name returned");
 
   console.log(`Uploaded to Gemini: ${fileName}`);
-
-  // Poll until ACTIVE
   return await waitForFileActive(fileName, apiKey);
 }
 
@@ -263,19 +261,19 @@ async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<s
 
 function splitIntoChunks(text: string, targetWords: number, overlapWords: number): string[] {
   const words = text.split(/\s+/).filter((w) => w.length > 0);
-  if (words.length <= targetWords) return [text];
+  if (words.length <= targetWords) return [text.trim()];
   const chunks: string[] = [];
   let start = 0;
   while (start < words.length) {
     const end = Math.min(start + targetWords, words.length);
     chunks.push(words.slice(start, end).join(" "));
-    start += targetWords - overlapWords;
     if (end >= words.length) break;
+    start += targetWords - overlapWords;
   }
   return chunks;
 }
 
-// ─── Embeddings ──────────────────────────────────────────────────────────────
+// ─── Embeddings (fixed: v1 instead of v1beta) ───────────────────────────────
 
 async function generateEmbeddings(texts: string[], apiKey: string): Promise<number[][]> {
   const embeddings: number[][] = [];
@@ -283,7 +281,7 @@ async function generateEmbeddings(texts: string[], apiKey: string): Promise<numb
     const batch = texts.slice(i, i + 5);
     const requests = batch.map((text) =>
       fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -292,14 +290,21 @@ async function generateEmbeddings(texts: string[], apiKey: string): Promise<numb
             content: { parts: [{ text }] },
           }),
         }
-      ).then((r) => r.json())
+      ).then(async (r) => {
+        if (!r.ok) {
+          const errText = await r.text();
+          console.error(`Embedding API error (${r.status}):`, errText);
+          return { embedding: null };
+        }
+        return r.json();
+      })
     );
     const results = await Promise.all(requests);
     for (const result of results) {
       if (result.embedding?.values) {
         embeddings.push(result.embedding.values);
       } else {
-        console.error("Embedding error:", JSON.stringify(result));
+        console.error("Embedding missing values:", JSON.stringify(result));
         embeddings.push(new Array(768).fill(0));
       }
     }
