@@ -55,9 +55,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 3. Convert to base64
+    // 3. Convert to base64 (chunk-safe for large files)
     const arrayBuffer = await fileData.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = "";
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    const base64 = btoa(binary);
 
     // 4. Send to Gemini multimodal to extract text
     const extractResponse = await fetch(
