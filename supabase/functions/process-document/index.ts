@@ -376,6 +376,7 @@ async function generateEmbeddings(texts: string[], apiKey: string): Promise<numb
           body: JSON.stringify({
             model: "models/gemini-embedding-001",
             content: { parts: [{ text }] },
+            outputDimensionality: 768,
           }),
         }
       ).then(async (r) => {

@@ -49,6 +49,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             model: "models/gemini-embedding-001",
             content: { parts: [{ text }] },
+            outputDimensionality: 768,
           }),
         }
       ).then(async (r) => {

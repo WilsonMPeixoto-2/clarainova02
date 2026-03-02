@@ -276,6 +276,7 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
               model: 'models/gemini-embedding-001',
               content: { parts: [{ text: lastUserMessage.content }] },
+              outputDimensionality: 768,
             }),
           }
         );
