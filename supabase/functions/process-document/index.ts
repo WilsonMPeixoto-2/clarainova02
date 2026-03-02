@@ -6,8 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const FILE_API_THRESHOLD = 15_000_000; // 15MB
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -24,10 +22,9 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const geminiKey = Deno.env.get("GEMINI_API_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 1. Get document record
+    // Validate document exists
     const { data: doc, error: docErr } = await supabase
       .from("documents")
       .select("*")
@@ -41,139 +38,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update status to processing
+    // Update status immediately
     await supabase.from("documents").update({ status: "processing" }).eq("id", document_id);
 
-    // 2. Download PDF from storage
-    const { data: fileData, error: fileErr } = await supabase.storage
-      .from("documents")
-      .download(doc.file_path);
-
-    if (fileErr || !fileData) {
-      await supabase.from("documents").update({ status: "error" }).eq("id", document_id);
-      return new Response(
-        JSON.stringify({ error: "Erro ao baixar arquivo do storage" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const arrayBuffer = await fileData.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    const fileSize = bytes.length;
-    console.log(`Document ${document_id}: ${fileSize} bytes (${(fileSize / 1024 / 1024).toFixed(1)}MB)`);
-
-    // 3. Build content parts based on file size
-    let filePart: Record<string, unknown>;
-
-    if (fileSize > FILE_API_THRESHOLD) {
-      console.log("Using Gemini File API for large file...");
-      const fileUri = await uploadToGeminiFileAPI(bytes, doc.name, geminiKey);
-      filePart = { file_data: { mime_type: "application/pdf", file_uri: fileUri } };
-    } else {
-      console.log("Using inline_data for small file...");
-      const base64 = safeBase64Encode(bytes);
-      filePart = { inline_data: { mime_type: "application/pdf", data: base64 } };
-    }
-
-    // 4. Send to Gemini to extract text
-    const extractResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                filePart,
-                {
-                  text: "Extraia TODO o texto deste documento PDF. Mantenha a estrutura original (títulos, parágrafos, listas, artigos, incisos). Não resuma, não omita nada. Retorne apenas o texto extraído, sem comentários adicionais.",
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            maxOutputTokens: 65536,
-            temperature: 0.1,
-          },
-        }),
-      }
+    // Process in background — return immediately to avoid compute limits
+    // @ts-ignore: EdgeRuntime is available in Supabase Edge Functions
+    EdgeRuntime.waitUntil(
+      processDocument(supabase, doc, document_id).catch(async (error) => {
+        console.error("Background processing error:", error);
+        await supabase.from("documents").update({ status: "error" }).eq("id", document_id);
+      })
     );
 
-    if (!extractResponse.ok) {
-      const errText = await extractResponse.text();
-      console.error("Gemini extraction error:", errText);
-      await supabase.from("documents").update({ status: "error" }).eq("id", document_id);
-      return new Response(
-        JSON.stringify({ error: "Erro na extração de texto pelo Gemini" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const extractData = await extractResponse.json();
-    const extractedText =
-      extractData.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    if (!extractedText || extractedText.length < 50) {
-      await supabase.from("documents").update({ status: "error" }).eq("id", document_id);
-      return new Response(
-        JSON.stringify({ error: "Texto extraído está vazio ou muito curto" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`Extracted ${extractedText.length} chars from document ${document_id}`);
-
-    await supabase.from('usage_logs').insert({
-      event_type: 'pdf_extraction',
-      metadata: { document_id, text_length: extractedText.length, file_size: fileSize },
-    });
-
-    // 5. Split into chunks
-    const chunks = splitIntoChunks(extractedText, 500, 50);
-    console.log(`Split into ${chunks.length} chunks`);
-
-    // 6. Generate embeddings
-    const embeddings = await generateEmbeddings(chunks, geminiKey);
-
-    // 7. Save chunks + embeddings
-    const chunkRows = chunks.map((content, i) => ({
-      document_id,
-      content,
-      embedding: JSON.stringify(embeddings[i]),
-      chunk_index: i,
-    }));
-
-    for (let i = 0; i < chunkRows.length; i += 20) {
-      const batch = chunkRows.slice(i, i + 20);
-      const { error: insertErr } = await supabase
-        .from("document_chunks")
-        .insert(batch);
-      if (insertErr) {
-        console.error("Insert error batch", i, insertErr);
-        await supabase.from("documents").update({ status: "error" }).eq("id", document_id);
-        return new Response(
-          JSON.stringify({ error: "Erro ao salvar fragmentos no banco" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    }
-
-    await supabase.from('usage_logs').insert({
-      event_type: 'embedding_generation',
-      metadata: { document_id, chunks_count: chunks.length },
-    });
-
-    // 8. Update document status
-    await supabase.from("documents").update({ status: "processed" }).eq("id", document_id);
-
     return new Response(
-      JSON.stringify({
-        success: true,
-        chunks_count: chunks.length,
-        text_length: extractedText.length,
-        file_size: fileSize,
-      }),
+      JSON.stringify({ success: true, message: "Processamento iniciado em background" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
@@ -185,25 +63,94 @@ Deno.serve(async (req) => {
   }
 });
 
-// Safe base64 encoding that never overflows the call stack
-function safeBase64Encode(bytes: Uint8Array): string {
-  let binary = "";
-  const chunkSize = 8192;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-    for (let j = 0; j < chunk.length; j++) {
-      binary += String.fromCharCode(chunk[j]);
+// ─── Background processing ───────────────────────────────────────────────────
+
+async function processDocument(
+  supabase: ReturnType<typeof createClient>,
+  doc: { file_path: string; name: string },
+  document_id: string
+) {
+  const geminiKey = Deno.env.get("GEMINI_API_KEY")!;
+
+  // 1. Get a signed URL for the PDF (avoids downloading into memory)
+  const { data: signedData, error: signedErr } = await supabase.storage
+    .from("documents")
+    .createSignedUrl(doc.file_path, 600); // 10 min
+
+  if (signedErr || !signedData?.signedUrl) {
+    throw new Error("Falha ao gerar URL assinada: " + signedErr?.message);
+  }
+
+  // 2. Upload PDF to Gemini File API via the signed URL
+  console.log(`Uploading ${doc.name} to Gemini File API...`);
+  const fileUri = await uploadToGeminiViaUrl(signedData.signedUrl, doc.name, geminiKey);
+
+  // 3. Extract text using Gemini
+  console.log(`Extracting text from ${doc.name}...`);
+  const extractedText = await extractTextWithGemini(fileUri, geminiKey);
+
+  if (!extractedText || extractedText.length < 50) {
+    throw new Error("Texto extraído está vazio ou muito curto");
+  }
+
+  console.log(`Extracted ${extractedText.length} chars from ${doc.name}`);
+
+  await supabase.from("usage_logs").insert({
+    event_type: "pdf_extraction",
+    metadata: { document_id, text_length: extractedText.length },
+  });
+
+  // 4. Split into chunks
+  const chunks = splitIntoChunks(extractedText, 500, 50);
+  console.log(`Split into ${chunks.length} chunks`);
+
+  // 5. Generate embeddings
+  const embeddings = await generateEmbeddings(chunks, geminiKey);
+
+  // 6. Save to database in batches
+  const chunkRows = chunks.map((content, i) => ({
+    document_id,
+    content,
+    embedding: JSON.stringify(embeddings[i]),
+    chunk_index: i,
+  }));
+
+  for (let i = 0; i < chunkRows.length; i += 20) {
+    const batch = chunkRows.slice(i, i + 20);
+    const { error: insertErr } = await supabase.from("document_chunks").insert(batch);
+    if (insertErr) {
+      console.error("Insert error batch", i, insertErr);
+      throw new Error("Erro ao salvar fragmentos no banco");
     }
   }
-  return btoa(binary);
+
+  await supabase.from("usage_logs").insert({
+    event_type: "embedding_generation",
+    metadata: { document_id, chunks_count: chunks.length },
+  });
+
+  // 7. Mark as processed
+  await supabase.from("documents").update({ status: "processed" }).eq("id", document_id);
+  console.log(`Document ${document_id} processed successfully`);
 }
 
-// Upload file to Gemini File API for large PDFs (>15MB)
-async function uploadToGeminiFileAPI(
-  bytes: Uint8Array,
+// ─── Gemini File API: upload via URL fetch ───────────────────────────────────
+
+async function uploadToGeminiViaUrl(
+  pdfUrl: string,
   displayName: string,
   apiKey: string
 ): Promise<string> {
+  // Download PDF as stream and re-upload to Gemini in one pass
+  const pdfResponse = await fetch(pdfUrl);
+  if (!pdfResponse.ok) {
+    throw new Error(`Failed to fetch PDF: ${pdfResponse.status}`);
+  }
+  const pdfBytes = new Uint8Array(await pdfResponse.arrayBuffer());
+  const fileSize = pdfBytes.length;
+  console.log(`PDF size: ${(fileSize / 1024 / 1024).toFixed(1)}MB`);
+
+  // Initiate resumable upload
   const startResponse = await fetch(
     `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
     {
@@ -212,12 +159,10 @@ async function uploadToGeminiFileAPI(
         "Content-Type": "application/json",
         "X-Goog-Upload-Protocol": "resumable",
         "X-Goog-Upload-Command": "start",
-        "X-Goog-Upload-Header-Content-Length": String(bytes.length),
+        "X-Goog-Upload-Header-Content-Length": String(fileSize),
         "X-Goog-Upload-Header-Content-Type": "application/pdf",
       },
-      body: JSON.stringify({
-        file: { display_name: displayName },
-      }),
+      body: JSON.stringify({ file: { display_name: displayName } }),
     }
   );
 
@@ -227,102 +172,113 @@ async function uploadToGeminiFileAPI(
   }
 
   const uploadUrl = startResponse.headers.get("X-Goog-Upload-URL");
-  if (!uploadUrl) {
-    throw new Error("Gemini File API did not return upload URL");
-  }
+  if (!uploadUrl) throw new Error("No upload URL returned");
 
+  // Upload bytes
   const uploadResponse = await fetch(uploadUrl, {
     method: "POST",
     headers: {
-      "Content-Length": String(bytes.length),
+      "Content-Length": String(fileSize),
       "X-Goog-Upload-Offset": "0",
       "X-Goog-Upload-Command": "upload, finalize",
     },
-    body: bytes,
+    body: pdfBytes,
   });
 
   if (!uploadResponse.ok) {
     const errText = await uploadResponse.text();
-    throw new Error(`Gemini File API upload failed: ${errText}`);
+    throw new Error(`Upload failed: ${errText}`);
   }
 
-  const uploadResult = await uploadResponse.json();
-  const fileName = uploadResult.file?.name;
-  if (!fileName) {
-    throw new Error("Gemini File API did not return file name");
-  }
+  const result = await uploadResponse.json();
+  const fileName = result.file?.name;
+  if (!fileName) throw new Error("No file name returned");
 
-  console.log(`Uploaded to Gemini File API: ${fileName}, waiting for processing...`);
+  console.log(`Uploaded to Gemini: ${fileName}`);
 
-  const fileUri = await waitForFileProcessing(fileName, apiKey);
-  return fileUri;
+  // Poll until ACTIVE
+  return await waitForFileActive(fileName, apiKey);
 }
 
-// Poll Gemini File API until file status is ACTIVE
-async function waitForFileProcessing(
+async function waitForFileActive(
   fileName: string,
   apiKey: string,
-  maxWaitMs = 120_000
+  maxWaitMs = 180_000
 ): Promise<string> {
-  const startTime = Date.now();
-  const pollInterval = 3000;
-
-  while (Date.now() - startTime < maxWaitMs) {
-    const response = await fetch(
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`
     );
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`File status check failed: ${errText}`);
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`File status check failed: ${t}`);
     }
-
-    const result = await response.json();
-    const state = result.state;
-
-    if (state === "ACTIVE") {
-      console.log(`File ${fileName} is ACTIVE, URI: ${result.uri}`);
-      return result.uri;
+    const data = await res.json();
+    if (data.state === "ACTIVE") {
+      console.log(`File ACTIVE: ${data.uri}`);
+      return data.uri;
     }
-
-    if (state === "FAILED") {
-      throw new Error(`File processing failed for ${fileName}`);
-    }
-
-    console.log(`File ${fileName} state: ${state}, waiting...`);
-    await new Promise((r) => setTimeout(r, pollInterval));
+    if (data.state === "FAILED") throw new Error(`File processing failed: ${fileName}`);
+    console.log(`File state: ${data.state}, waiting...`);
+    await new Promise((r) => setTimeout(r, 3000));
   }
-
-  throw new Error(`File processing timed out for ${fileName}`);
+  throw new Error(`File processing timed out: ${fileName}`);
 }
 
-function splitIntoChunks(
-  text: string,
-  targetWords: number,
-  overlapWords: number
-): string[] {
+// ─── Gemini text extraction ──────────────────────────────────────────────────
+
+async function extractTextWithGemini(fileUri: string, apiKey: string): Promise<string> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { file_data: { mime_type: "application/pdf", file_uri: fileUri } },
+              {
+                text: "Extraia TODO o texto deste documento PDF. Mantenha a estrutura original (títulos, parágrafos, listas, artigos, incisos). Não resuma, não omita nada. Retorne apenas o texto extraído, sem comentários adicionais.",
+              },
+            ],
+          },
+        ],
+        generationConfig: { maxOutputTokens: 65536, temperature: 0.1 },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini extraction error: ${errText}`);
+  }
+
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+}
+
+// ─── Chunking ────────────────────────────────────────────────────────────────
+
+function splitIntoChunks(text: string, targetWords: number, overlapWords: number): string[] {
   const words = text.split(/\s+/).filter((w) => w.length > 0);
   if (words.length <= targetWords) return [text];
-
   const chunks: string[] = [];
   let start = 0;
-
   while (start < words.length) {
     const end = Math.min(start + targetWords, words.length);
     chunks.push(words.slice(start, end).join(" "));
     start += targetWords - overlapWords;
     if (end >= words.length) break;
   }
-
   return chunks;
 }
 
-async function generateEmbeddings(
-  texts: string[],
-  apiKey: string
-): Promise<number[][]> {
-  const embeddings: number[][] = [];
+// ─── Embeddings ──────────────────────────────────────────────────────────────
 
+async function generateEmbeddings(texts: string[], apiKey: string): Promise<number[][]> {
+  const embeddings: number[][] = [];
   for (let i = 0; i < texts.length; i += 5) {
     const batch = texts.slice(i, i + 5);
     const requests = batch.map((text) =>
@@ -338,7 +294,6 @@ async function generateEmbeddings(
         }
       ).then((r) => r.json())
     );
-
     const results = await Promise.all(requests);
     for (const result of results) {
       if (result.embedding?.values) {
@@ -349,6 +304,5 @@ async function generateEmbeddings(
       }
     }
   }
-
   return embeddings;
 }
