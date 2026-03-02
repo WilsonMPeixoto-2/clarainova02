@@ -1,68 +1,58 @@
 
 
-# Fix: Upload de PDF Travado + Feedback Visual Completo
+# Corrigir Processamento de PDFs Grandes + Erros de Embedding
 
-## Diagnostico
+## Problemas Identificados nos Logs
 
-O problema principal e que o `config.toml` NAO configura `verify_jwt = false` para a funcao `process-document`. Isso significa que a funcao rejeita as chamadas do frontend com erro 401 silenciosamente -- o documento fica preso em "processing" para sempre.
+1. **"Memory limit exceeded"** -- O PDF de 14MB e baixado inteiro para memoria (`Uint8Array`) dentro da edge function. Isso estoura o limite de ~50MB de RAM.
+2. **Embedding model 404** -- O modelo `text-embedding-004` retorna erro "not found for API version v1beta". A URL precisa usar `v1` em vez de `v1beta`, ou o modelo precisa do prefixo correto.
+3. **Documentos presos na UI** -- Documentos com status "processing" ou "error" ficam sem opcao clara de exclusao. O botao de delete ja existe, mas documentos em "processing" nao mostram ele de forma visivel.
 
-Alem disso, a funcao `triggerProcessing` usa `fetch().catch(console.error)` (fire-and-forget), entao erros de autenticacao ou rede sao ignorados sem atualizar o status do documento.
+## Plano de Correcao
 
-## Mudancas
+### 1. Edge Function: Eliminar download do PDF para memoria
 
-### 1. Configurar `config.toml` com `verify_jwt = false`
+**Arquivo:** `supabase/functions/process-document/index.ts`
 
-Sem isso, nenhum PDF sera processado. A funcao precisa aceitar chamadas com a anon key.
+Em vez de baixar o PDF inteiro para um `Uint8Array` (linha 149), fazer upload para o Gemini File API usando **streaming** -- ler o body do fetch como stream e enviar diretamente ao Gemini sem acumular tudo na memoria.
 
-```toml
-project_id = "qnyoxmngkimkypfudctf"
+Mudanca principal na funcao `uploadToGeminiViaUrl`:
+- Usar `pdfResponse.body` (ReadableStream) diretamente no corpo do upload ao Gemini, sem chamar `arrayBuffer()`
+- Obter o tamanho do arquivo via header `Content-Length` da resposta do signed URL
+- Isso reduz o uso de memoria de ~14MB para quase zero
 
-[functions.process-document]
-verify_jwt = false
+### 2. Edge Function: Corrigir URL do modelo de embeddings
+
+**Arquivo:** `supabase/functions/process-document/index.ts`
+
+O log mostra: `models/text-embedding-004 is not found for API version v1beta`
+
+Correcao: Trocar a URL de embeddings de `v1beta` para `v1`:
+```
+v1beta/models/text-embedding-004:embedContent
+→ v1/models/text-embedding-004:embedContent
 ```
 
-### 2. Corrigir `triggerProcessing` com tratamento de erro
+### 3. Edge Function: Aumentar chunks para textos longos
 
-Substituir o fetch fire-and-forget por `supabase.functions.invoke()`, que ja usa as credenciais corretas. Se falhar, atualizar o status do documento para "error" imediatamente.
+O log mostra "65595 chars" resultando em apenas 1 chunk. Com `targetWords=500` e um texto de ~10k palavras, algo esta errado. Vou verificar e ajustar o chunking para garantir que textos longos sejam divididos corretamente (provavelmente o problema e que 65k chars ~ 10k palavras, mas o chunk de 500 palavras deveria gerar ~20 chunks -- preciso confirmar se o bug e no log ou no codigo).
 
-### 3. Upload com progresso real em bytes (XMLHttpRequest)
+### 4. Admin UI: Garantir que documentos em qualquer status possam ser deletados
 
-Substituir `supabase.storage.upload()` por upload via `XMLHttpRequest` direto na API REST do Storage. Isso permite:
-- Progresso real em percentual por bytes enviados
-- Exibicao de "12MB / 28MB" e velocidade estimada
-- Funciona com PDFs de 50-100MB
+**Arquivo:** `src/pages/Admin.tsx`
 
-### 4. Botao Cancelar para documentos travados
+O botao de delete ja existe para todos os documentos, mas vou verificar se esta visivel em todos os estados (inclusive "processing"). Tambem vou garantir que o botao de delete apareca com destaque para documentos com erro ou travados.
 
-Adicionar um botao "X" ao lado de documentos em `pending`/`processing` que:
-- Atualiza o status para "cancelled"
-- Remove chunks parciais do banco
+## Arquivos a Editar
 
-### 5. Deteccao visual de timeout
+| Arquivo | Mudanca |
+|---------|---------|
+| `supabase/functions/process-document/index.ts` | Streaming upload (sem arrayBuffer), fix URL embeddings v1beta→v1 |
+| `src/pages/Admin.tsx` | Pequenos ajustes na visibilidade do botao delete |
 
-Se um documento fica em `processing` por mais de 5 minutos:
-- Timer muda de cor para vermelho/amarelo
-- Texto muda para "Possivel falha - tente reprocessar"
+## Resultado Esperado
 
-### 6. Fases visuais separadas
-
-Separar claramente na UI:
-- **Enviando**: barra com % real de bytes (fase upload)
-- **Na fila / Processando**: timer com spinner
-- **Possivel falha**: alerta apos 5 min
-- **Pronto / Erro**: icones definitivos
-
-## Arquivos a editar
-
-**`supabase/config.toml`**
-- Adicionar secao `[functions.process-document]` com `verify_jwt = false`
-
-**`src/pages/Admin.tsx`**
-- Substituir `triggerProcessing` por `supabase.functions.invoke("process-document", ...)` com tratamento de erro
-- Implementar upload via XMLHttpRequest para progresso real em bytes
-- Adicionar estado de upload por arquivo (bytes enviados / total)
-- Adicionar botao cancelar (`handleCancel`)
-- Adicionar deteccao de timeout visual (5 min)
-- Melhorar estados visuais com cores e mensagens claras
-- Adicionar formatacao de tamanho (ex: "12.5 MB / 28.0 MB")
+- PDFs de 14MB+ serao processados sem estourar memoria
+- Embeddings serao gerados corretamente (sem erro 404)
+- Documentos travados/com erro poderao ser deletados facilmente
 
