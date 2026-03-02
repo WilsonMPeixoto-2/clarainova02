@@ -142,6 +142,25 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Log usage (fire-and-forget, non-blocking)
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const logClient = createClient(supabaseUrl, supabaseKey);
+
+      const logPromises = [
+        logClient.from('usage_logs').insert({ event_type: 'chat_message' }),
+      ];
+      if (knowledgeContext) {
+        logPromises.push(
+          logClient.from('usage_logs').insert({ event_type: 'embedding_query' })
+        );
+      }
+      Promise.all(logPromises).catch((e) => console.error('Usage log error:', e));
+    } catch (logErr) {
+      console.error('Usage log setup error:', logErr);
+    }
+
     return new Response(response.body, {
       headers: {
         ...corsHeaders,
