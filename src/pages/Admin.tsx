@@ -74,24 +74,30 @@ function sanitizeFileName(name: string): string {
 
 // ─── Client-side PDF text extraction via unpdf ──────────────────────────────
 
+interface PageText {
+  pageNumber: number;
+  text: string;
+}
+
 async function extractTextFromPDF(
   file: File,
   onProgress?: (pagesRead: number, totalPages: number) => void
-): Promise<string> {
+): Promise<PageText[]> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
   const totalPages = pdf.numPages;
   
-  // Report initial progress
   onProgress?.(0, totalPages);
   
   const result = await extractText(pdf, { mergePages: false });
   const pageTexts = result.text as unknown as string[];
   
-  // Report final progress
   onProgress?.(totalPages, totalPages);
 
-  return pageTexts.join("\n\n");
+  return pageTexts.map((text, index) => ({
+    pageNumber: index + 1,
+    text,
+  }));
 }
 
 // ─── Retry helper with exponential backoff ──────────────────────────────────
@@ -383,7 +389,7 @@ export default function Admin() {
       // Phase 1: Extract text from PDF in the browser
       updateIngestion(file.name, { status: "extracting", phaseLabel: "Extraindo texto do PDF..." });
 
-      const text = await extractTextFromPDF(file, (pagesRead, totalPages) => {
+      const pages = await extractTextFromPDF(file, (pagesRead, totalPages) => {
         updateIngestion(file.name, {
           progress: Math.round((pagesRead / totalPages) * 25),
           phaseLabel: `Extraindo texto... página ${pagesRead}/${totalPages}`,
@@ -392,17 +398,26 @@ export default function Admin() {
 
       if (abortController.signal.aborted) return;
 
-      if (text.length < 50) {
+      const fullText = pages.map((p) => p.text).join("\n\n");
+      if (fullText.length < 50) {
         throw new Error("PDF parece estar vazio ou conter apenas imagens (sem texto extraível).");
       }
 
-      // Phase 2: Chunk the text locally
+      // Phase 2: Chunk text per page, injecting source tags
       updateIngestion(file.name, {
         phaseLabel: "Fatiando texto em fragmentos...",
         progress: 25,
       });
 
-      const chunks = await splitWithLangChain(text);
+      const allChunks: string[] = [];
+      for (const page of pages) {
+        if (!page.text.trim()) continue;
+        const pageChunks = await splitWithLangChain(page.text);
+        for (const chunk of pageChunks) {
+          allChunks.push(`[Fonte: ${file.name} | Página: ${page.pageNumber}]\n\n${chunk}`);
+        }
+      }
+      const chunks = allChunks;
       const totalChunks = chunks.length;
 
       updateIngestion(file.name, {
@@ -459,7 +474,7 @@ export default function Admin() {
         await supabase.from("documents").update({ status: "processed" }).eq("id", documentId);
         await supabase.from("usage_logs").insert({
           event_type: "client_side_ingestion",
-          metadata: { document_id: documentId, chunks_count: totalChunks, text_length: text.length },
+          metadata: { document_id: documentId, chunks_count: totalChunks, text_length: fullText.length },
         });
         updateIngestion(file.name, {
           status: "done",
@@ -560,16 +575,25 @@ export default function Admin() {
       };
       setIngestions((prev) => [...prev.filter((i) => i.fileName !== doc.name), ingestion]);
 
-      const text = await extractTextFromPDF(file, (pagesRead, totalPages) => {
+      const pages = await extractTextFromPDF(file, (pagesRead, totalPages) => {
         updateIngestion(doc.name, {
           progress: Math.round((pagesRead / totalPages) * 25),
           phaseLabel: `Extraindo... ${pagesRead}/${totalPages}`,
         });
       });
 
-      if (text.length < 50) throw new Error("PDF sem texto extraível");
+      const fullText = pages.map((p) => p.text).join("\n\n");
+      if (fullText.length < 50) throw new Error("PDF sem texto extraível");
 
-      const chunks = await splitWithLangChain(text);
+      const allChunks: string[] = [];
+      for (const page of pages) {
+        if (!page.text.trim()) continue;
+        const pageChunks = await splitWithLangChain(page.text);
+        for (const chunk of pageChunks) {
+          allChunks.push(`[Fonte: ${doc.name} | Página: ${page.pageNumber}]\n\n${chunk}`);
+        }
+      }
+      const chunks = allChunks;
 
       updateIngestion(doc.name, {
         totalChunks: chunks.length,
