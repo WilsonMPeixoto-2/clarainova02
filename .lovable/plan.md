@@ -1,66 +1,136 @@
 
 
-# Substituir splitIntoChunks por LangChain RecursiveCharacterTextSplitter
+# Hardening do Pipeline RAG: Idempotencia, Retry com Backoff, e Eliminacao de Falsos Positivos
 
-## Resumo
+## Problema atual
 
-Trocar a funcao customizada de chunking por palavra (`splitIntoChunks`) pelo `RecursiveCharacterTextSplitter` do LangChain, que prioriza quebras de paragrafo e limites semanticos. Nenhuma outra parte do pipeline sera alterada.
+O pipeline falha na primeira tentativa (429/rate limit do Gemini) e so funciona na segunda. Alem disso, nao ha protecao contra duplicacao de chunks ao reprocessar, nem retry automatico para erros transitorios.
 
-## Mudancas
+## Visao geral das mudancas
 
-### 1. Instalar dependencia
+4 melhorias obrigatorias distribuidas entre frontend e backend:
 
-Adicionar `langchain` ao `package.json` (dependencies). O import sera:
+1. **Idempotencia** -- UNIQUE constraint no banco + upsert na Edge Function + filtragem de chunks ja existentes no frontend
+2. **Retry com backoff** -- helper `withRetry` no frontend para erros 429/5xx com delays crescentes
+3. **Verificacao pos-processamento** -- status "verifying" + SELECT count vs expectedChunks
+4. **Erro explicito** -- nunca engolir erros do JSON de resposta
 
-```typescript
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+## Mudancas detalhadas
+
+### Migration SQL
+
+Adicionar constraint UNIQUE em `(document_id, chunk_index)` na tabela `document_chunks`. Isso permite upsert idempotente e impede duplicacao.
+
+```sql
+ALTER TABLE public.document_chunks
+ADD CONSTRAINT document_chunks_doc_chunk_unique
+UNIQUE (document_id, chunk_index);
 ```
 
-### 2. Editar `src/pages/Admin.tsx`
+### Edge Function `embed-chunks/index.ts`
 
-**Remover** (linhas 42-56): a funcao `splitIntoChunks` e o comentario associado.
+- Trocar `.insert(rows)` por `.upsert(rows, { onConflict: "document_id,chunk_index" })` para idempotencia
+- Adicionar `request_id` (UUID) em todas as respostas para rastreabilidade
+- Retornar tempos de execucao (embedding_ms, db_ms) na resposta
+- Manter filtragem de chunks < 3 chars existente
 
-**Adicionar** no topo do arquivo (apos os imports existentes):
+### Frontend `Admin.tsx`
 
-```typescript
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+**A1 -- Estado enriquecido por documento:**
 
-const langChainSplitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 1000,
-  chunkOverlap: 200,
-  separators: ["\n\n", "\n", " ", ""],
-});
+Expandir `IngestionState` com novos campos:
+- `status`: idle | extracting | vectorizing | verifying | done | partial | failed | canceled
+- `expectedChunks`, `insertedChunks`
+- `lastError` com message, requestId, chunkIndex, code
 
-async function splitWithLangChain(rawText: string): Promise<string[]> {
-  const normalized = rawText.replace(/\u0000/g, "").trim();
-  const chunks = await langChainSplitter.splitText(normalized);
-  return chunks.filter((c) => c.trim().length >= 3);
-}
+**A2 -- Batch com concorrencia controlada:**
+
+Mudar `EMBED_BATCH_SIZE` de 5 para 10 (maximo aceito pela Edge Function). Envio sequencial entre lotes (sem concorrencia) para evitar throttling do Gemini.
+
+**A3 -- Helper `withRetry`:**
+
+```text
+async function withRetry(fn, opts):
+  retries = 3
+  delays = [500, 1500, 3000]
+  Repetir somente para:
+    - HTTP 429, 500-599
+    - erro de rede (fetch fail)
+  NAO repetir para erros de validacao
 ```
 
-**Substituir** as duas chamadas a `splitIntoChunks`:
+Aplicado em cada chamada a `supabase.functions.invoke("embed-chunks")`.
 
-- Linha 211: `const chunks = splitIntoChunks(text, 500, 50);` vira `const chunks = await splitWithLangChain(text);`
-- Linha 409: `const chunks = splitIntoChunks(text, 500, 50);` vira `const chunks = await splitWithLangChain(text);`
+**A4 -- Validacao de resposta:**
 
-Ambos os pontos ja estao dentro de funcoes `async`, entao basta adicionar `await`.
+Apos cada invoke, verificar `fnData?.error` e `fnData?.ok === false`. Se existir erro, incluir `requestId` e `chunkIndex` no log e na UI.
 
-### 3. Nenhuma outra alteracao
+**A5 -- Cancelamento real:**
 
-O resto do pipeline permanece identico: upload, progresso, chamadas ao `embed-chunks`, validacao de `fnData?.error`, verificacao de chunks salvos no banco, e marcacao de status "processed".
+O botao X ja usa AbortController. Refinar para que o loop de batches verifique `signal.aborted` antes de cada lote e marque status "canceled".
+
+**A6 -- Verificacao pos-processamento:**
+
+Apos enviar todos os chunks:
+1. Mudar status para "verifying" com label "Verificando integridade..."
+2. SELECT count de `document_chunks` onde `document_id = X`
+3. Se count >= expectedChunks: marcar "done"
+4. Se count > 0 mas < expectedChunks: marcar "partial" com botao "Retomar"
+5. Se count = 0: marcar "failed"
+
+**A7 -- Retomar sem duplicar (idempotencia client-side):**
+
+No `handleRetry`:
+- NAO deletar chunks existentes
+- Buscar chunk_indexes ja salvos: `SELECT chunk_index FROM document_chunks WHERE document_id = X`
+- Filtrar lista de envio para somente indices faltantes
+- Se todos ja existem: marcar "done" direto
 
 ## Arquivos afetados
 
-| Arquivo | Mudanca |
-|---------|---------|
-| `src/pages/Admin.tsx` | Remover `splitIntoChunks`, importar LangChain, criar `splitWithLangChain`, substituir 2 chamadas |
+| Arquivo | Tipo | Mudanca |
+|---------|------|---------|
+| `supabase/functions/embed-chunks/index.ts` | Edge Function | upsert + request_id + tempos |
+| `src/pages/Admin.tsx` | Frontend | withRetry, estado enriquecido, verificacao, idempotencia |
+| Migration SQL | DB | UNIQUE (document_id, chunk_index) |
 
-## Impacto no chunking
+## Fluxo revisado
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| Unidade de medida | 500 palavras | 1000 caracteres |
-| Overlap | 50 palavras | 200 caracteres |
-| Separadores | Nenhum (split por whitespace) | `\n\n`, `\n`, ` `, `""` (prioriza paragrafos) |
-| Filtragem | Nenhuma | Remove chunks < 3 chars e caracteres NUL |
+```text
+Upload PDF
+  |
+  v
+Extrair texto (pdf.js no browser)
+  |
+  v
+Fatiar (LangChain RecursiveCharacterTextSplitter)
+  |
+  v
+Para cada lote de 10 chunks:
+  |-- withRetry(embed-chunks, retries=3, backoff)
+  |-- Se 429/5xx: aguardar e repetir
+  |-- Se erro de validacao: falhar imediatamente
+  |-- Atualizar progress bar
+  |
+  v
+Status "verifying"
+  |-- SELECT count(*) FROM document_chunks WHERE document_id = X
+  |-- count >= expected? -> "done"
+  |-- count > 0 < expected? -> "partial" (botao Retomar)
+  |-- count = 0? -> "failed"
+  |
+  v
+Retomar (se partial):
+  |-- Buscar chunk_indexes existentes
+  |-- Enviar somente os faltantes
+  |-- Repetir verificacao
+```
+
+## Criterios de aceite
+
+- 4 PDFs simultaneos: so marca "done" se todos os chunks salvaram
+- Reprocessar retoma sem duplicar (upsert + filtragem de indices)
+- Chunk vazio gera erro explicito com request_id
+- 429/503 se recupera com retry automatico (ate 3 tentativas)
+- Status "partial" visivel quando chunks faltam
 
