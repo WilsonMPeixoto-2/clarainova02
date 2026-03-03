@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, use, useState, type ReactNode } from 'react';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -212,7 +212,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 }
 
 export function useChat() {
-  const ctx = useContext(ChatContext);
+  const ctx = use(ChatContext);
   if (!ctx) throw new Error('useChat must be used within ChatProvider');
   return ctx;
 }
