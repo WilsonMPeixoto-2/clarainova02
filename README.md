@@ -43,6 +43,39 @@ npm install
 npm run dev
 ```
 
+## Deploy na Vercel
+
+**🚀 Status**: Pronto para deploy na Vercel!
+
+### Quick Start
+
+**Método 1: Via GitHub (Recomendado)**
+1. Acesse [vercel.com/new](https://vercel.com/new)
+2. Importe este repositório
+3. Configure as 3 variáveis de ambiente do Supabase
+4. Clique em "Deploy"
+
+**Método 2: Via CLI**
+```sh
+npm install -g vercel
+vercel --prod
+```
+
+### Documentação Completa
+
+Para instruções detalhadas, troubleshooting e configurações avançadas, consulte:
+**📖 [Guia Completo de Deploy](./docs/DEPLOYMENT.md)**
+
+### Variáveis de Ambiente Obrigatórias
+
+| Variável | Descrição |
+|----------|-----------|
+| `VITE_SUPABASE_PROJECT_ID` | ID do projeto Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Chave pública (anon key) do Supabase |
+| `VITE_SUPABASE_URL` | URL do projeto Supabase |
+
+Configure no `.env` local ou nas configurações da Vercel.
+
 ## Licença
 
 Projeto privado — todos os direitos reservados.
