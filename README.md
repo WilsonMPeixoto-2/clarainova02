@@ -45,37 +45,26 @@ npm run dev
 
 ## Deploy na Vercel
 
-### Pré-requisitos
+**🚀 Status**: Pronto para deploy na Vercel!
 
-1. Conta na [Vercel](https://vercel.com)
-2. Projeto Supabase configurado
+### Quick Start
 
-### Configuração
+**Método 1: Via GitHub (Recomendado)**
+1. Acesse [vercel.com/new](https://vercel.com/new)
+2. Importe este repositório
+3. Configure as 3 variáveis de ambiente do Supabase
+4. Clique em "Deploy"
 
-1. **Clone e configure as variáveis de ambiente:**
-   ```sh
-   cp .env.example .env
-   # Edite .env com suas credenciais do Supabase
-   ```
+**Método 2: Via CLI**
+```sh
+npm install -g vercel
+vercel --prod
+```
 
-2. **Deploy via Vercel CLI:**
-   ```sh
-   npm install -g vercel
-   vercel
-   ```
+### Documentação Completa
 
-3. **Ou conecte via GitHub:**
-   - Acesse [Vercel Dashboard](https://vercel.com/dashboard)
-   - Importe o repositório
-   - Configure as variáveis de ambiente no painel da Vercel:
-     - `VITE_SUPABASE_PROJECT_ID`
-     - `VITE_SUPABASE_PUBLISHABLE_KEY`
-     - `VITE_SUPABASE_URL`
-
-4. **Configuração automática:**
-   - O arquivo `vercel.json` já está configurado para SPAs React
-   - Build command: `npm run build`
-   - Output directory: `dist`
+Para instruções detalhadas, troubleshooting e configurações avançadas, consulte:
+**📖 [Guia Completo de Deploy](./docs/DEPLOYMENT.md)**
 
 ### Variáveis de Ambiente Obrigatórias
 
@@ -84,6 +73,8 @@ npm run dev
 | `VITE_SUPABASE_PROJECT_ID` | ID do projeto Supabase |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Chave pública (anon key) do Supabase |
 | `VITE_SUPABASE_URL` | URL do projeto Supabase |
+
+Configure no `.env` local ou nas configurações da Vercel.
 
 ## Licença
 
