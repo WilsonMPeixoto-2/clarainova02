@@ -269,13 +269,19 @@ export default function Admin() {
 
         const batch = chunks.slice(i, i + EMBED_BATCH_SIZE);
 
-        const { error: fnErr } = await supabase.functions.invoke("embed-chunks", {
+        const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
           body: { document_id: documentId, chunks: batch, start_index: i },
         });
 
         if (fnErr) {
           console.error(`Embed batch ${i} failed:`, fnErr);
           throw new Error(`Falha ao vetorizar fragmento ${i + 1}: ${fnErr.message}`);
+        }
+
+        // Check for application-level errors in the response body
+        if (fnData?.error) {
+          console.error(`Embed batch ${i} app error:`, fnData.error);
+          throw new Error(`Erro na vetorização: ${fnData.error}`);
         }
 
         processedChunks += batch.length;
@@ -286,6 +292,16 @@ export default function Admin() {
           progress: embeddingProgress,
           phaseLabel: `Vetorizando... ${processedChunks}/${totalChunks}`,
         });
+      }
+
+      // Verify chunks were actually saved before marking as processed
+      const { count: savedCount } = await supabase
+        .from("document_chunks")
+        .select("*", { count: "exact", head: true })
+        .eq("document_id", documentId);
+
+      if (!savedCount || savedCount === 0) {
+        throw new Error("Nenhum fragmento foi salvo no banco. O processamento falhou silenciosamente.");
       }
 
       // Done!
@@ -319,7 +335,7 @@ export default function Admin() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setIngestions([]);
+    setIngestions((prev) => prev.filter((ing) => ing.phase === "embedding" || ing.phase === "extracting" || ing.phase === "reading" || ing.phase === "chunking"));
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -401,10 +417,11 @@ export default function Admin() {
       let processedChunks = 0;
       for (let i = 0; i < chunks.length; i += EMBED_BATCH_SIZE) {
         const batch = chunks.slice(i, i + EMBED_BATCH_SIZE);
-        const { error: fnErr } = await supabase.functions.invoke("embed-chunks", {
+        const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
           body: { document_id: doc.id, chunks: batch, start_index: i },
         });
         if (fnErr) throw new Error(`Embedding falhou: ${fnErr.message}`);
+        if (fnData?.error) throw new Error(`Erro na vetorização: ${fnData.error}`);
 
         processedChunks += batch.length;
         updateIngestion(doc.name, {
@@ -412,6 +429,16 @@ export default function Admin() {
           progress: 30 + Math.round((processedChunks / chunks.length) * 65),
           phaseLabel: `Vetorizando... ${processedChunks}/${chunks.length}`,
         });
+      }
+
+      // Verify chunks were actually saved
+      const { count: retryCount } = await supabase
+        .from("document_chunks")
+        .select("*", { count: "exact", head: true })
+        .eq("document_id", doc.id);
+
+      if (!retryCount || retryCount === 0) {
+        throw new Error("Nenhum fragmento foi salvo no banco após reprocessamento.");
       }
 
       await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
