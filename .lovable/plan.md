@@ -1,87 +1,84 @@
 
 
-# Auditoria de Integracao e Limpeza — Relatorio de QA
+# Auditoria Pos-Migracao: React 19 + Vite 6 + Tailwind 4
 
-## 1. Auditoria de Dependencias (package.json)
+## Diagnostico
 
-**Veredicto: OK — nenhuma acao necessaria.**
-
-- `pdfjs-dist` (^4.9.155) — usado em `Admin.tsx` linha 18. Presente.
-- `@langchain/textsplitters` (^1.0.1) — usado em `Admin.tsx` linha 19. Presente.
-- `react-markdown` (^10.1.0) — usado em `ChatSheet.tsx`. Presente.
-
-**Dependencias orfas: nenhuma encontrada.** Todos os pacotes instalados sao utilizados por componentes ativos do projeto (UI, chat, RAG, motion, etc). Nao ha pacotes residuais de tentativas anteriores.
+Apos revisar todos os arquivos do projeto, identifiquei as seguintes areas que precisam de adaptacao:
 
 ---
 
-## 2. Verificacao de Contratos (Frontend ↔ Backend)
+## 1. Componentes shadcn/ui com `forwardRef` (40 arquivos)
 
-### 2a. Admin.tsx ↔ Edge Function `embed-chunks`
+**Situacao:** Todos os 40 componentes UI usam `React.forwardRef`, que no React 19 ainda funciona mas esta **deprecated**. O padrao moderno e receber `ref` como prop direta.
 
-**Frontend envia** (linha 170-171):
-```
-{ document_id, chunks: string[], start_index: number }
-```
+**Risco:** Zero risco imediato — `forwardRef` continuara funcionando no React 19. Porem, warnings no console podem surgir em versoes futuras.
 
-**Backend espera** (`embed-chunks/index.ts` linha ~21):
-```
-{ document_id, chunks, start_index = 0 }
-```
+**Acao recomendada:** Reescrever os componentes mais usados no projeto para o padrao React 19 (ref como prop). Os componentes ativamente usados sao:
+- `button.tsx`, `input.tsx`, `card.tsx`, `progress.tsx`, `accordion.tsx`, `scroll-area.tsx`, `toast.tsx`, `label.tsx`, `form.tsx`, `table.tsx`, `sheet.tsx`, `dialog.tsx`, `tooltip.tsx`, `popover.tsx`, `separator.tsx`, `textarea.tsx`, `select.tsx`, `checkbox.tsx`, `badge.tsx`, `skeleton.tsx`
 
-**Veredicto: Contrato OK.** Tipos e nomes de campos batem perfeitamente. O `start_index` tem default no backend.
-
-### 2b. ChatSheet/useChatStore ↔ Edge Function `chat`
-
-**Frontend envia** (`useChatStore.tsx` linha 57):
-```
-{ messages: ChatMessage[] }   // ChatMessage = { role, content }
-```
-
-**Backend espera** (`chat/index.ts` linha ~139):
-```
-const { messages } = await req.json();
-// Itera messages.map(m => ({ role, content }))
-```
-
-**Veredicto: Contrato OK.** A desestruturacao bate perfeitamente.
+Os demais (~20 componentes) nao sao usados ativamente e podem ser migrados depois.
 
 ---
 
-## 3. Limpeza de Codigo Morto
+## 2. Calendar.tsx — classNames desatualizados
 
-### 3a. Edge Function `process-document` — CODIGO MORTO
+**Situacao:** O componente `calendar.tsx` usa class names do `react-day-picker` v8 (`nav_button`, `caption_label`, `head_row`, `day_selected`, etc). A v9 mudou todos esses nomes para um sistema diferente.
 
-Esta funcao e o antigo pipeline server-side que foi totalmente substituido pela arquitetura client-side (pdf.js + LangChain no navegador + `embed-chunks`). **Nenhum arquivo do frontend a invoca.** Ela ainda usa `.insert()` em vez de `.upsert()`, nao tem retry, e nao valida chunks — todos os problemas que o hardening resolveu no novo pipeline.
+**Risco:** O calendario pode renderizar sem estilos corretos.
 
-**Acao: Deletar `supabase/functions/process-document/index.ts` e remover a entrada `[functions.process-document]` do `config.toml`.**
+**Acao:** Reescrever o mapeamento de classNames para a API v9 do react-day-picker.
 
-### 3b. Console logs em Admin.tsx
+---
 
-Existem 3 ocorrencias de console.warn/error no Admin.tsx:
-- Linha 140: `console.warn` no retry — **manter** (util para debug de producao, ocorre raramente)
-- Linha 331: `console.error` em falha de batch — **manter** (erro real)
-- Linha 494: `console.error` em falha geral — **manter** (erro real)
+## 3. `src/main.tsx` — StrictMode ausente
 
-**Veredicto: Nenhum `console.log` de debug excessivo. Todos os logs sao de erro/warning legitimamente uteis.**
+**Situacao:** O `main.tsx` nao usa `React.StrictMode`, que no React 19 ganhou novos checks uteis para detectar bugs.
 
-### 3c. Console logs nas Edge Functions
+**Risco:** Nenhum risco, mas perde-se deteccao precoce de problemas.
 
-- `chat/index.ts`: 1 `console.log` (linha ~223 "Using model:") e varios `console.warn`/`console.error`. Todos sao operacionais e uteis. **Manter.**
-- `embed-chunks/index.ts`: 1 `console.error` para erros de embedding, 1 para upsert. **Manter.**
-- `process-document/index.ts`: Muitos `console.log` de debug. **Sera deletado inteiro.**
+**Acao:** Adicionar `<StrictMode>` ao redor de `<App />`.
 
-### 3d. Variaveis nao utilizadas em Admin.tsx
+---
 
-- `TIMEOUT_SECONDS` (linha 153) e `formatTimer` (linha 155) — usados para timers de documentos legacy server-side (linhas 254-273, 654-657, 676-691). Com a remocao do `process-document`, documentos nunca mais terao status "processing" vindo do server. Porem, esses timers protegem contra documentos que ficaram "stuck" no passado, entao **podem ficar** como safety net.
+## 4. Edge Functions — import de versao fixa do Supabase
+
+**Situacao:** As edge functions usam `https://esm.sh/@supabase/supabase-js@2` (versao generica v2). Funciona, mas pode ser pinado.
+
+**Risco:** Nenhum risco critico.
+
+**Acao:** Nenhuma — manter como esta.
+
+---
+
+## 5. `UsageStatsCard.tsx` — URL hardcoded
+
+**Situacao:** Usa `https://${projectId}.supabase.co/functions/v1/get-usage-stats` em vez do cliente Supabase.
+
+**Risco:** Nenhum risco funcional, mas inconsistente com o resto do projeto.
+
+**Acao:** Migrar para `supabase.functions.invoke()`.
+
+---
+
+## 6. Tailwind 4 — verificacao de classes
+
+**Situacao:** O `@theme` block no `index.css` mapeia todas as custom colors corretamente. As classes utilitarias usadas nos componentes (`text-muted-foreground`, `bg-primary`, `border-input`, etc) estao todas mapeadas. Nao encontrei classes orfas.
+
+**Risco:** Nenhum.
+
+**Acao:** Nenhuma.
 
 ---
 
 ## Resumo de Acoes
 
-| Acao | Arquivo | Motivo |
-|------|---------|--------|
-| Deletar | `supabase/functions/process-document/index.ts` | Pipeline server-side obsoleto, substituido por client-side |
-| Remover entrada | `supabase/config.toml` (linhas 9-10) | Config da funcao deletada |
+| # | Acao | Escopo | Prioridade |
+|---|------|--------|------------|
+| 1 | Reescrever ~20 componentes shadcn/ui ativos removendo `forwardRef` | 20 arquivos | Media |
+| 2 | Atualizar `calendar.tsx` para classNames do react-day-picker v9 | 1 arquivo | Alta |
+| 3 | Adicionar `StrictMode` em `main.tsx` | 1 arquivo | Baixa |
+| 4 | Migrar `UsageStatsCard` para `supabase.functions.invoke()` | 1 arquivo | Baixa |
 
-**Total: 2 mudancas. Nenhum pacote a remover. Nenhum contrato quebrado. Nenhum console.log de debug excessivo.**
+**Total: ~23 arquivos a modificar. Nenhum breaking change encontrado. O projeto esta funcional como esta — estas sao melhorias de modernizacao.**
 
