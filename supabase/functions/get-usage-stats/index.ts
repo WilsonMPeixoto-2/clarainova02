@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
+    // Fetch only event_type column for aggregation
     const { data, error } = await supabase
       .from("usage_logs")
       .select("event_type")
@@ -41,8 +42,7 @@ Deno.serve(async (req) => {
         month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
         chat_messages: counts["chat_message"] || 0,
         embedding_queries: counts["embedding_query"] || 0,
-        pdf_extractions: counts["pdf_extraction"] || 0,
-        embedding_generations: counts["embedding_generation"] || 0,
+        client_side_ingestions: counts["client_side_ingestion"] || 0,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
