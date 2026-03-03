@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MessageSquare, Search, FileText, Cpu, Activity } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UsageStats {
   month: string;
@@ -17,18 +18,9 @@ export default function UsageStatsCard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-        const res = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/get-usage-stats`,
-          {
-            headers: {
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            },
-          }
-        );
-        if (res.ok) {
-          setStats(await res.json());
+        const { data, error } = await supabase.functions.invoke("get-usage-stats");
+        if (!error && data) {
+          setStats(data as UsageStats);
         }
       } catch (e) {
         console.error("Failed to fetch usage stats:", e);
