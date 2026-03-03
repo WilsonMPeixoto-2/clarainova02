@@ -1,60 +1,66 @@
 
 
-# Corrigir Falso Positivo de Processamento e Filtrar Chunks Vazios
+# Substituir splitIntoChunks por LangChain RecursiveCharacterTextSplitter
 
-## Problema
+## Resumo
 
-O frontend marca documentos como "processados" mesmo quando a Edge Function retorna erro no corpo da resposta. Isso acontece porque `supabase.functions.invoke()` so retorna `error` para falhas de transporte (rede). Erros HTTP 400/500 com JSON no body passam despercebidos.
+Trocar a funcao customizada de chunking por palavra (`splitIntoChunks`) pelo `RecursiveCharacterTextSplitter` do LangChain, que prioriza quebras de paragrafo e limites semanticos. Nenhuma outra parte do pipeline sera alterada.
 
 ## Mudancas
 
-### 1. Edge Function `embed-chunks` -- filtrar chunks vazios
+### 1. Instalar dependencia
 
-**Arquivo:** `supabase/functions/embed-chunks/index.ts`
+Adicionar `langchain` ao `package.json` (dependencies). O import sera:
 
-Apos receber os chunks, filtrar strings vazias ou com menos de 3 caracteres antes de enviar ao Gemini. Se todos forem invalidos, retornar erro 400.
-
-```text
-Antes:  chunks vao direto para a API do Gemini
-Depois: chunks passam por filtro (>= 3 chars) antes do processamento
+```typescript
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 ```
 
-### 2. Frontend `Admin.tsx` -- validar resposta completa
+### 2. Editar `src/pages/Admin.tsx`
 
-**Arquivo:** `src/pages/Admin.tsx`
+**Remover** (linhas 42-56): a funcao `splitIntoChunks` e o comentario associado.
 
-Em dois pontos (upload em `processFileClientSide` ~linha 272 e retry em `handleRetry` ~linha 404):
+**Adicionar** no topo do arquivo (apos os imports existentes):
 
-- Capturar o `data` retornado: `const { data: fnData, error: fnErr }`
-- Verificar `fnData?.error` alem de `fnErr`
-- Se houver erro de aplicacao, lancar excecao
+```typescript
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
-### 3. Frontend `Admin.tsx` -- verificacao pos-processamento
+const langChainSplitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 1000,
+  chunkOverlap: 200,
+  separators: ["\n\n", "\n", " ", ""],
+});
 
-Antes de marcar como "processed" (~linhas 292 e 417), consultar `document_chunks` para confirmar que chunks existem no banco:
-
-```text
-Se count == 0 -> lancar erro em vez de marcar como "processed"
+async function splitWithLangChain(rawText: string): Promise<string[]> {
+  const normalized = rawText.replace(/\u0000/g, "").trim();
+  const chunks = await langChainSplitter.splitText(normalized);
+  return chunks.filter((c) => c.trim().length >= 3);
+}
 ```
 
-### 4. Frontend `Admin.tsx` -- preservar estado de uploads anteriores
+**Substituir** as duas chamadas a `splitIntoChunks`:
 
-Na linha 322, trocar `setIngestions([])` por `setIngestions(prev => [...prev])` para nao limpar o progresso de arquivos anteriores durante upload multiplo.
+- Linha 211: `const chunks = splitIntoChunks(text, 500, 50);` vira `const chunks = await splitWithLangChain(text);`
+- Linha 409: `const chunks = splitIntoChunks(text, 500, 50);` vira `const chunks = await splitWithLangChain(text);`
 
-### 5. Deploy automatico
+Ambos os pontos ja estao dentro de funcoes `async`, entao basta adicionar `await`.
 
-A Edge Function `embed-chunks` sera deployada automaticamente apos a edicao.
+### 3. Nenhuma outra alteracao
 
-## Arquivos a editar
+O resto do pipeline permanece identico: upload, progresso, chamadas ao `embed-chunks`, validacao de `fnData?.error`, verificacao de chunks salvos no banco, e marcacao de status "processed".
+
+## Arquivos afetados
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `supabase/functions/embed-chunks/index.ts` | Filtrar chunks com < 3 caracteres |
-| `src/pages/Admin.tsx` | Validar `fnData?.error`, verificar chunks no banco, preservar ingestions |
+| `src/pages/Admin.tsx` | Remover `splitIntoChunks`, importar LangChain, criar `splitWithLangChain`, substituir 2 chamadas |
 
-## Resultado esperado
+## Impacto no chunking
 
-- Documentos so sao marcados "processed" se chunks realmente existem no banco
-- Chunks vazios nunca chegam ao Gemini
-- Erros de aplicacao sao exibidos no toast em vez de engolidos
-- Upload multiplo nao perde progresso de arquivos anteriores
+| Aspecto | Antes | Depois |
+|---------|-------|--------|
+| Unidade de medida | 500 palavras | 1000 caracteres |
+| Overlap | 50 palavras | 200 caracteres |
+| Separadores | Nenhum (split por whitespace) | `\n\n`, `\n`, ` `, `""` (prioriza paragrafos) |
+| Filtragem | Nenhuma | Remove chunks < 3 chars e caracteres NUL |
+
