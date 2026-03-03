@@ -98,7 +98,7 @@ async function processDocument(
   });
 
   // 4. Split into chunks
-  const chunks = splitIntoChunks(extractedText, 500, 50);
+  const chunks = splitIntoChunks(extractedText, 1000, 200);
   console.log(`Split into ${chunks.length} chunks`);
 
   // 5. Generate embeddings
@@ -345,20 +345,60 @@ async function consumeSSEStream(response: Response): Promise<string> {
   return accumulated;
 }
 
-// ─── Chunking ────────────────────────────────────────────────────────────────
+// ─── Semantic chunking ──────────────────────────────────────────────────────
 
-function splitIntoChunks(text: string, targetWords: number, overlapWords: number): string[] {
-  const words = text.split(/\s+/).filter((w) => w.length > 0);
-  if (words.length <= targetWords) return [text.trim()];
-  const chunks: string[] = [];
-  let start = 0;
-  while (start < words.length) {
-    const end = Math.min(start + targetWords, words.length);
-    chunks.push(words.slice(start, end).join(" "));
-    if (end >= words.length) break;
-    start += targetWords - overlapWords;
+function splitIntoChunks(text: string, chunkSize = 1000, overlapSize = 200): string[] {
+  const separators = ["\n\n", "\n", " ", ""];
+  const normalized = text.replace(/\u0000/g, "").trim();
+  
+  function splitRecursive(text: string, sepIndex: number): string[] {
+    if (text.length <= chunkSize) return [text];
+    if (sepIndex >= separators.length) {
+      // Last resort: split by character count
+      const chunks: string[] = [];
+      let start = 0;
+      while (start < text.length) {
+        chunks.push(text.slice(start, start + chunkSize));
+        start += chunkSize - overlapSize;
+      }
+      return chunks;
+    }
+    
+    const sep = separators[sepIndex];
+    const parts = sep ? text.split(sep) : [text];
+    const chunks: string[] = [];
+    let current = "";
+    
+    for (const part of parts) {
+      const candidate = current ? current + sep + part : part;
+      if (candidate.length <= chunkSize) {
+        current = candidate;
+      } else {
+        if (current) chunks.push(current);
+        if (part.length > chunkSize) {
+          chunks.push(...splitRecursive(part, sepIndex + 1));
+          current = "";
+        } else {
+          current = part;
+        }
+      }
+    }
+    if (current) chunks.push(current);
+    
+    // Add overlap
+    if (overlapSize > 0 && chunks.length > 1) {
+      const overlapped: string[] = [chunks[0]];
+      for (let i = 1; i < chunks.length; i++) {
+        const prevChunk = chunks[i - 1];
+        const overlapText = prevChunk.slice(-overlapSize);
+        overlapped.push(overlapText + chunks[i]);
+      }
+      return overlapped;
+    }
+    return chunks;
   }
-  return chunks;
+  
+  return splitRecursive(normalized, 0).filter((c) => c.trim().length >= 3);
 }
 
 // ─── Embeddings (fixed: v1 instead of v1beta) ───────────────────────────────
