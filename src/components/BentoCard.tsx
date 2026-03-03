@@ -22,7 +22,7 @@ export default function BentoCard({
   className,
 }: BentoCardProps) {
   const baseClasses =
-    "group relative rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-md px-5 py-5 md:px-6 md:py-6 transition-all duration-200";
+    "group relative @container rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-md px-5 py-5 md:px-6 md:py-6 transition-all duration-200";
   const interactionClasses =
     "hover:border-white/30 hover:bg-white/[0.1] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
   const variantClasses =
@@ -39,10 +39,10 @@ export default function BentoCard({
           </span>
           <ArrowUpRight className="w-4 h-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
         </div>
-        <h3 className="mt-4 text-lg md:text-xl font-semibold tracking-tight text-foreground" style={{ fontFamily: "var(--font-heading)" }}>
+      <h3 className="mt-4 text-lg @[280px]:text-xl font-semibold tracking-tight text-foreground" style={{ fontFamily: "var(--font-heading)" }}>
           {title}
         </h3>
-        <p className="mt-2 text-sm md:text-base leading-relaxed text-muted-foreground" style={{ fontFamily: "var(--font-body)" }}>
+        <p className="mt-2 text-sm @[280px]:text-base leading-relaxed text-muted-foreground" style={{ fontFamily: "var(--font-body)" }}>
           {description}
         </p>
       </a>
@@ -56,10 +56,10 @@ export default function BentoCard({
           <Icon className="w-5 h-5" aria-hidden="true" />
         </span>
       </div>
-      <h3 className="mt-4 text-lg md:text-xl font-semibold tracking-tight text-foreground" style={{ fontFamily: "var(--font-heading)" }}>
+      <h3 className="mt-4 text-lg @[280px]:text-xl font-semibold tracking-tight text-foreground" style={{ fontFamily: "var(--font-heading)" }}>
         {title}
       </h3>
-      <p className="mt-2 text-sm md:text-base leading-relaxed text-muted-foreground" style={{ fontFamily: "var(--font-body)" }}>
+      <p className="mt-2 text-sm @[280px]:text-base leading-relaxed text-muted-foreground" style={{ fontFamily: "var(--font-body)" }}>
         {description}
       </p>
     </article>

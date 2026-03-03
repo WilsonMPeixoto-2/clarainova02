@@ -12,6 +12,8 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
+    <>
+    <title>Página não encontrada — CLARA</title>
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
@@ -40,6 +42,7 @@ const NotFound = () => {
 
       <Footer />
     </div>
+    </>
   );
 };
 

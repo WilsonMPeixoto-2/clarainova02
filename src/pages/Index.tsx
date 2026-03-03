@@ -9,6 +9,8 @@ import { ChatProvider } from "@/hooks/useChatStore";
 const Index = () => {
   return (
     <ChatProvider>
+      <title>CLARA — Consultora de Legislação e Apoio a Rotinas Administrativas</title>
+      <meta name="description" content="CLARA é sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais." />
       <div className="min-h-screen bg-background">
         {/* Skip link */}
         <a

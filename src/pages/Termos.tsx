@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 
 const Termos = () => {
   return (
+    <>
+    <title>Termos de Serviço — CLARA</title>
+    <meta name="description" content="Termos de Serviço da CLARA - Consultora de Legislação e Apoio a Rotinas Administrativas." />
     <div className="min-h-screen bg-background text-foreground">
       <nav className="flex items-center justify-center gap-6 py-6 text-sm text-muted-foreground">
         <Link to="/" className="hover:text-foreground transition-colors">← Voltar para CLARA</Link>
@@ -68,6 +71,7 @@ const Termos = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
