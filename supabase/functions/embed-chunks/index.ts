@@ -34,13 +34,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Filter out empty/trivial chunks before processing
+    const validChunks = chunks.filter((c: string) => c && c.trim().length >= 3);
+
+    if (validChunks.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Todos os chunks estão vazios ou com menos de 3 caracteres", saved: 0 }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const geminiKey = Deno.env.get("GEMINI_API_KEY")!;
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Generate embeddings for all chunks in parallel
-    const embeddingPromises = chunks.map((text: string) =>
+    // Generate embeddings for all valid chunks in parallel
+    const embeddingPromises = validChunks.map((text: string) =>
       fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${geminiKey}`,
         {
@@ -66,7 +76,7 @@ Deno.serve(async (req) => {
     const embeddings = await Promise.all(embeddingPromises);
 
     // Build rows to insert
-    const rows = chunks.map((content: string, i: number) => ({
+    const rows = validChunks.map((content: string, i: number) => ({
       document_id,
       content,
       embedding: embeddings[i] ? JSON.stringify(embeddings[i]) : JSON.stringify(new Array(768).fill(0)),
