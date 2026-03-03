@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw, X, AlertTriangle, Brain } from "lucide-react";
+import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw, X, AlertTriangle, Brain, ShieldCheck, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import UsageStatsCard from "@/components/UsageStatsCard";
@@ -29,14 +29,25 @@ interface Document {
   created_at: string;
 }
 
+type IngestionStatus = "idle" | "extracting" | "vectorizing" | "verifying" | "done" | "partial" | "failed" | "canceled";
+
+interface IngestionLastError {
+  message: string;
+  requestId?: string;
+  chunkIndex?: number;
+  code?: string;
+}
+
 interface IngestionState {
   fileName: string;
-  phase: "reading" | "extracting" | "chunking" | "embedding" | "done" | "error";
+  status: IngestionStatus;
   phaseLabel: string;
   progress: number; // 0-100
   totalChunks: number;
   processedChunks: number;
-  error?: string;
+  expectedChunks: number;
+  insertedChunks: number;
+  lastError?: IngestionLastError;
   abortController?: AbortController;
 }
 
@@ -59,9 +70,9 @@ async function splitWithLangChain(rawText: string): Promise<string[]> {
 function sanitizeFileName(name: string): string {
   return name
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove accents
-    .replace(/[^a-zA-Z0-9._-]/g, "_") // replace special chars
-    .replace(/_+/g, "_"); // collapse multiple underscores
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/_+/g, "_");
 }
 
 // ─── Client-side PDF text extraction via pdf.js ─────────────────────────────
@@ -88,15 +99,115 @@ async function extractTextFromPDF(
   return pageTexts.join("\n\n");
 }
 
+// ─── Retry helper with exponential backoff ──────────────────────────────────
+
+const RETRY_DELAYS = [500, 1500, 3000];
+
+function isTransientError(error: any): boolean {
+  const msg = String(error?.message || error || "").toLowerCase();
+  // Network failures
+  if (msg.includes("fetch") || msg.includes("network") || msg.includes("failed to fetch") || msg.includes("aborted")) {
+    return true;
+  }
+  // Edge function relay errors (supabase wraps status in the error)
+  if (msg.includes("429") || msg.includes("503") || msg.includes("500") || msg.includes("502") || msg.includes("504")) {
+    return true;
+  }
+  if (msg.includes("rate") || msg.includes("limit") || msg.includes("throttl")) {
+    return true;
+  }
+  return false;
+}
+
+function isValidationError(errorCode?: string): boolean {
+  return !!errorCode && errorCode.startsWith("VALIDATION:");
+}
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  opts: { retries?: number; signal?: AbortSignal } = {}
+): Promise<T> {
+  const { retries = 3, signal } = opts;
+  let lastErr: any;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (signal?.aborted) throw new Error("Cancelado pelo usuário");
+    try {
+      return await fn();
+    } catch (err: any) {
+      lastErr = err;
+      if (attempt < retries && isTransientError(err) && !signal?.aborted) {
+        const delay = RETRY_DELAYS[attempt] || 3000;
+        console.warn(`Retry ${attempt + 1}/${retries} after ${delay}ms:`, err.message);
+        await new Promise((r) => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw lastErr;
+}
+
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const EMBED_BATCH_SIZE = 5; // chunks per edge function call
+const EMBED_BATCH_SIZE = 10; // max accepted by edge function
 const TIMEOUT_SECONDS = 300;
 
 function formatTimer(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return m > 0 ? `${m}m${s.toString().padStart(2, "0")}s` : `${s}s`;
+}
+
+// ─── Embed a batch with retry + response validation ─────────────────────────
+
+async function embedBatchWithRetry(
+  documentId: string,
+  batch: string[],
+  startIndex: number,
+  signal?: AbortSignal
+): Promise<{ saved: number; requestId?: string }> {
+  return withRetry(async () => {
+    const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
+      body: { document_id: documentId, chunks: batch, start_index: startIndex },
+    });
+
+    // Transport-level error (network, 5xx relay)
+    if (fnErr) {
+      throw new Error(`EMBED_TRANSPORT: ${fnErr.message}`);
+    }
+
+    // Application-level error in response body
+    if (fnData?.ok === false || fnData?.error) {
+      const code = fnData?.error || "UNKNOWN";
+      if (isValidationError(code)) {
+        // Don't retry validation errors
+        const err = new Error(`Validação: ${code}`);
+        (err as any).noRetry = true;
+        throw err;
+      }
+      throw new Error(`EMBED_APP_ERROR: ${code} (req: ${fnData?.request_id || "?"})`);
+    }
+
+    return { saved: fnData?.saved || batch.length, requestId: fnData?.request_id };
+  }, { retries: 3, signal });
+}
+
+// ─── Verify chunks in DB ────────────────────────────────────────────────────
+
+async function verifyChunksInDB(documentId: string): Promise<number> {
+  const { count } = await supabase
+    .from("document_chunks")
+    .select("*", { count: "exact", head: true })
+    .eq("document_id", documentId);
+  return count || 0;
+}
+
+async function getExistingChunkIndexes(documentId: string): Promise<Set<number>> {
+  const { data } = await supabase
+    .from("document_chunks")
+    .select("chunk_index")
+    .eq("document_id", documentId);
+  return new Set((data || []).map((r: any) => r.chunk_index));
 }
 
 export default function Admin() {
@@ -169,15 +280,105 @@ export default function Admin() {
     );
   };
 
+  /**
+   * Send chunks in batches with retry, verification, and idempotency.
+   * Returns { insertedChunks, status }.
+   */
+  const sendChunksInBatches = async (
+    documentId: string,
+    chunks: string[],
+    fileName: string,
+    abortSignal: AbortSignal,
+    skipIndexes?: Set<number>
+  ): Promise<{ insertedChunks: number; status: IngestionStatus }> => {
+    const totalChunks = chunks.length;
+    const chunksToSend: { chunk: string; index: number }[] = [];
+
+    for (let i = 0; i < chunks.length; i++) {
+      if (!skipIndexes || !skipIndexes.has(i)) {
+        chunksToSend.push({ chunk: chunks[i], index: i });
+      }
+    }
+
+    if (chunksToSend.length === 0) {
+      // All chunks already exist
+      return { insertedChunks: totalChunks, status: "done" };
+    }
+
+    let processedCount = skipIndexes ? (totalChunks - chunksToSend.length) : 0;
+
+    updateIngestion(fileName, {
+      status: "vectorizing",
+      expectedChunks: totalChunks,
+      processedChunks: processedCount,
+      phaseLabel: `Vetorizando... ${processedCount}/${totalChunks}`,
+      progress: 30 + Math.round((processedCount / totalChunks) * 60),
+    });
+
+    // Process in batches of EMBED_BATCH_SIZE
+    for (let i = 0; i < chunksToSend.length; i += EMBED_BATCH_SIZE) {
+      if (abortSignal.aborted) {
+        return { insertedChunks: processedCount, status: "canceled" };
+      }
+
+      const batchItems = chunksToSend.slice(i, i + EMBED_BATCH_SIZE);
+      const batchChunks = batchItems.map((b) => b.chunk);
+      const batchStartIndex = batchItems[0].index;
+
+      try {
+        await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
+      } catch (err: any) {
+        console.error(`Batch at index ${batchStartIndex} failed after retries:`, err);
+        updateIngestion(fileName, {
+          lastError: {
+            message: err.message,
+            chunkIndex: batchStartIndex,
+            code: err.message.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
+          },
+        });
+        // Don't throw — move to verification
+        break;
+      }
+
+      processedCount += batchItems.length;
+      const embeddingProgress = 30 + Math.round((processedCount / totalChunks) * 60);
+      updateIngestion(fileName, {
+        processedChunks: processedCount,
+        progress: embeddingProgress,
+        phaseLabel: `Vetorizando... ${processedCount}/${totalChunks}`,
+      });
+    }
+
+    // Verification phase
+    updateIngestion(fileName, {
+      status: "verifying",
+      phaseLabel: "Verificando integridade...",
+      progress: 92,
+    });
+
+    const insertedChunks = await verifyChunksInDB(documentId);
+    updateIngestion(fileName, { insertedChunks });
+
+    if (insertedChunks >= totalChunks) {
+      return { insertedChunks, status: "done" };
+    } else if (insertedChunks > 0) {
+      return { insertedChunks, status: "partial" };
+    } else {
+      return { insertedChunks, status: "failed" };
+    }
+  };
+
   const processFileClientSide = async (file: File) => {
     const abortController = new AbortController();
     const ingestion: IngestionState = {
       fileName: file.name,
-      phase: "reading",
+      status: "extracting",
       phaseLabel: "Lendo PDF...",
       progress: 0,
       totalChunks: 0,
       processedChunks: 0,
+      expectedChunks: 0,
+      insertedChunks: 0,
       abortController,
     };
 
@@ -185,7 +386,7 @@ export default function Admin() {
 
     try {
       // Phase 1: Extract text from PDF in the browser
-      updateIngestion(file.name, { phase: "extracting", phaseLabel: "Extraindo texto do PDF..." });
+      updateIngestion(file.name, { status: "extracting", phaseLabel: "Extraindo texto do PDF..." });
 
       const text = await extractTextFromPDF(file, (pagesRead, totalPages) => {
         updateIngestion(file.name, {
@@ -202,7 +403,6 @@ export default function Admin() {
 
       // Phase 2: Chunk the text locally
       updateIngestion(file.name, {
-        phase: "chunking",
         phaseLabel: "Fatiando texto em fragmentos...",
         progress: 25,
       });
@@ -212,13 +412,14 @@ export default function Admin() {
 
       updateIngestion(file.name, {
         totalChunks,
+        expectedChunks: totalChunks,
         phaseLabel: `${totalChunks} fragmentos criados`,
         progress: 30,
       });
 
       if (abortController.signal.aborted) return;
 
-      // Phase 3: Upload file to storage (sanitized name)
+      // Phase 3: Upload file to storage
       const sanitizedName = sanitizeFileName(file.name);
       const filePath = `${crypto.randomUUID()}_${sanitizedName}`;
 
@@ -229,7 +430,6 @@ export default function Admin() {
         throw new Error("Sessão expirada. Faça login novamente.");
       }
 
-      // Simple upload via SDK (file stays in storage for reference)
       const { error: uploadErr } = await supabase.storage
         .from("documents")
         .upload(filePath, file, { upsert: false });
@@ -251,79 +451,51 @@ export default function Admin() {
         return;
       }
 
-      // Phase 4: Send chunks to edge function in batches for embedding
-      updateIngestion(file.name, {
-        phase: "embedding",
-        phaseLabel: `Vetorizando fragmentos... 0/${totalChunks}`,
-        progress: 30,
-      });
+      // Phase 4: Send chunks with retry + verification
+      const result = await sendChunksInBatches(documentId, chunks, file.name, abortController.signal);
 
-      let processedChunks = 0;
+      if (result.status === "canceled") {
+        await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
+        updateIngestion(file.name, { status: "canceled", phaseLabel: "Cancelado" });
+        return;
+      }
 
-      for (let i = 0; i < chunks.length; i += EMBED_BATCH_SIZE) {
-        if (abortController.signal.aborted) {
-          await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
-          return;
-        }
-
-        const batch = chunks.slice(i, i + EMBED_BATCH_SIZE);
-
-        const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
-          body: { document_id: documentId, chunks: batch, start_index: i },
+      if (result.status === "done") {
+        await supabase.from("documents").update({ status: "processed" }).eq("id", documentId);
+        await supabase.from("usage_logs").insert({
+          event_type: "client_side_ingestion",
+          metadata: { document_id: documentId, chunks_count: totalChunks, text_length: text.length },
         });
-
-        if (fnErr) {
-          console.error(`Embed batch ${i} failed:`, fnErr);
-          throw new Error(`Falha ao vetorizar fragmento ${i + 1}: ${fnErr.message}`);
-        }
-
-        // Check for application-level errors in the response body
-        if (fnData?.error) {
-          console.error(`Embed batch ${i} app error:`, fnData.error);
-          throw new Error(`Erro na vetorização: ${fnData.error}`);
-        }
-
-        processedChunks += batch.length;
-        const embeddingProgress = 30 + Math.round((processedChunks / totalChunks) * 65);
-
         updateIngestion(file.name, {
-          processedChunks,
-          progress: embeddingProgress,
-          phaseLabel: `Vetorizando... ${processedChunks}/${totalChunks}`,
+          status: "done",
+          phaseLabel: `✓ Pronto — ${totalChunks} fragmentos`,
+          progress: 100,
         });
+        toast({ title: "✅ Documento processado", description: `"${file.name}" — ${totalChunks} fragmentos indexados.` });
+      } else if (result.status === "partial") {
+        await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
+        updateIngestion(file.name, {
+          status: "partial",
+          phaseLabel: `⚠ Parcial — ${result.insertedChunks}/${totalChunks} fragmentos`,
+          progress: Math.round((result.insertedChunks / totalChunks) * 100),
+        });
+        toast({ title: "⚠ Processamento parcial", description: `"${file.name}" — ${result.insertedChunks}/${totalChunks}. Use Retomar.`, variant: "destructive" });
+      } else {
+        await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
+        updateIngestion(file.name, {
+          status: "failed",
+          phaseLabel: "Falha — nenhum fragmento salvo",
+        });
+        toast({ title: "❌ Falha total", description: `"${file.name}" — nenhum fragmento salvo.`, variant: "destructive" });
       }
 
-      // Verify chunks were actually saved before marking as processed
-      const { count: savedCount } = await supabase
-        .from("document_chunks")
-        .select("*", { count: "exact", head: true })
-        .eq("document_id", documentId);
-
-      if (!savedCount || savedCount === 0) {
-        throw new Error("Nenhum fragmento foi salvo no banco. O processamento falhou silenciosamente.");
-      }
-
-      // Done!
-      await supabase.from("documents").update({ status: "processed" }).eq("id", documentId);
-      await supabase.from("usage_logs").insert({
-        event_type: "client_side_ingestion",
-        metadata: { document_id: documentId, chunks_count: totalChunks, text_length: text.length },
-      });
-
-      updateIngestion(file.name, {
-        phase: "done",
-        phaseLabel: `✓ Pronto — ${totalChunks} fragmentos`,
-        progress: 100,
-      });
-
-      toast({ title: "✅ Documento processado", description: `"${file.name}" — ${totalChunks} fragmentos indexados.` });
       fetchDocuments();
     } catch (err: any) {
       console.error("Client-side ingestion error:", err);
       updateIngestion(file.name, {
-        phase: "error",
+        status: "failed",
         phaseLabel: `Erro: ${err.message || "Falha desconhecida"}`,
-        error: err.message,
+        lastError: { message: err.message },
       });
       toast({ title: "❌ Erro no processamento", description: err.message, variant: "destructive" });
       fetchDocuments();
@@ -334,7 +506,8 @@ export default function Admin() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setIngestions((prev) => prev.filter((ing) => ing.phase === "embedding" || ing.phase === "extracting" || ing.phase === "reading" || ing.phase === "chunking"));
+    // Clear completed/errored ingestions
+    setIngestions((prev) => prev.filter((ing) => ing.status === "vectorizing" || ing.status === "extracting" || ing.status === "verifying"));
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -342,14 +515,12 @@ export default function Admin() {
         toast({ title: "Erro", description: `${file.name} não é um PDF`, variant: "destructive" });
         continue;
       }
-      // Process each file sequentially to avoid overwhelming the API
       await processFileClientSide(file);
     }
 
     e.target.value = "";
-    // Keep ingestion UI visible for a few seconds after completion
     setTimeout(() => {
-      setIngestions((prev) => prev.filter((ing) => ing.phase !== "done"));
+      setIngestions((prev) => prev.filter((ing) => ing.status !== "done"));
     }, 5000);
   };
 
@@ -357,16 +528,17 @@ export default function Admin() {
     setIngestions((prev) => {
       const ing = prev.find((i) => i.fileName === fileName);
       ing?.abortController?.abort();
-      return prev.filter((i) => i.fileName !== fileName);
+      return prev.map((i) => i.fileName === fileName ? { ...i, status: "canceled" as IngestionStatus, phaseLabel: "Cancelado" } : i);
     });
   };
 
   const handleRetry = async (doc: Document) => {
     setRetryingId(doc.id);
     try {
-      // Delete existing chunks
-      await supabase.from("document_chunks").delete().eq("document_id", doc.id);
-      await supabase.from("documents").update({ status: "pending" }).eq("id", doc.id);
+      // Check which chunks already exist (idempotent resume)
+      const existingIndexes = await getExistingChunkIndexes(doc.id);
+
+      await supabase.from("documents").update({ status: "processing" }).eq("id", doc.id);
 
       // Download the file from storage and re-process client-side
       const { data: fileData, error: dlErr } = await supabase.storage
@@ -378,23 +550,20 @@ export default function Admin() {
       }
 
       const file = new File([fileData], doc.name, { type: "application/pdf" });
-      
-      // Remove old doc record, processFileClientSide will create a new one
-      // Actually, let's reuse the existing record
-      await supabase.from("documents").update({ status: "processing" }).eq("id", doc.id);
 
-      // Extract & embed client-side using the existing document ID
       const abortController = new AbortController();
       const ingestion: IngestionState = {
         fileName: doc.name,
-        phase: "extracting",
+        status: "extracting",
         phaseLabel: "Re-extraindo texto...",
         progress: 0,
         totalChunks: 0,
         processedChunks: 0,
+        expectedChunks: 0,
+        insertedChunks: 0,
         abortController,
       };
-      setIngestions((prev) => [...prev, ingestion]);
+      setIngestions((prev) => [...prev.filter((i) => i.fileName !== doc.name), ingestion]);
 
       const text = await extractTextFromPDF(file, (pagesRead, totalPages) => {
         updateIngestion(doc.name, {
@@ -406,43 +575,45 @@ export default function Admin() {
       if (text.length < 50) throw new Error("PDF sem texto extraível");
 
       const chunks = await splitWithLangChain(text);
+
       updateIngestion(doc.name, {
-        phase: "embedding",
         totalChunks: chunks.length,
+        expectedChunks: chunks.length,
         progress: 30,
-        phaseLabel: `Vetorizando... 0/${chunks.length}`,
       });
 
-      let processedChunks = 0;
-      for (let i = 0; i < chunks.length; i += EMBED_BATCH_SIZE) {
-        const batch = chunks.slice(i, i + EMBED_BATCH_SIZE);
-        const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
-          body: { document_id: doc.id, chunks: batch, start_index: i },
-        });
-        if (fnErr) throw new Error(`Embedding falhou: ${fnErr.message}`);
-        if (fnData?.error) throw new Error(`Erro na vetorização: ${fnData.error}`);
+      // If all chunks already exist, mark done directly
+      if (existingIndexes.size >= chunks.length) {
+        await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
+        updateIngestion(doc.name, { status: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos (já existiam)` });
+        toast({ title: "✅ Já completo", description: `"${doc.name}" — todos os fragmentos já existiam.` });
+        fetchDocuments();
+        setTimeout(() => {
+          setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
+        }, 5000);
+        return;
+      }
 
-        processedChunks += batch.length;
+      // Send only missing chunks
+      const result = await sendChunksInBatches(doc.id, chunks, doc.name, abortController.signal, existingIndexes);
+
+      if (result.status === "done") {
+        await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
+        updateIngestion(doc.name, { status: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos` });
+        toast({ title: "✅ Reprocessado", description: `"${doc.name}" pronto.` });
+      } else if (result.status === "partial") {
+        await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
         updateIngestion(doc.name, {
-          processedChunks,
-          progress: 30 + Math.round((processedChunks / chunks.length) * 65),
-          phaseLabel: `Vetorizando... ${processedChunks}/${chunks.length}`,
+          status: "partial",
+          phaseLabel: `⚠ ${result.insertedChunks}/${chunks.length} — Retome novamente`,
         });
+        toast({ title: "⚠ Parcial", description: `"${doc.name}" — ${result.insertedChunks}/${chunks.length}. Retome.`, variant: "destructive" });
+      } else {
+        await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
+        updateIngestion(doc.name, { status: "failed", phaseLabel: "Falha no reprocessamento" });
+        toast({ title: "❌ Falha", description: "Reprocessamento falhou.", variant: "destructive" });
       }
 
-      // Verify chunks were actually saved
-      const { count: retryCount } = await supabase
-        .from("document_chunks")
-        .select("*", { count: "exact", head: true })
-        .eq("document_id", doc.id);
-
-      if (!retryCount || retryCount === 0) {
-        throw new Error("Nenhum fragmento foi salvo no banco após reprocessamento.");
-      }
-
-      await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
-      updateIngestion(doc.name, { phase: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos` });
-      toast({ title: "✅ Reprocessado", description: `"${doc.name}" pronto.` });
       fetchDocuments();
 
       setTimeout(() => {
@@ -525,11 +696,23 @@ export default function Admin() {
   const canCancel = (doc: Document) =>
     (doc.status === "processing" || doc.status === "pending") && !isTimedOut(doc.id);
 
-  const phaseColor = (phase: IngestionState["phase"]) => {
-    switch (phase) {
+  const phaseColor = (status: IngestionStatus) => {
+    switch (status) {
       case "done": return "text-primary";
-      case "error": return "text-destructive";
+      case "failed": return "text-destructive";
+      case "partial": return "text-yellow-600 dark:text-yellow-400";
+      case "canceled": return "text-muted-foreground";
+      case "verifying": return "text-blue-500";
       default: return "text-muted-foreground";
+    }
+  };
+
+  const phaseIcon = (status: IngestionStatus) => {
+    switch (status) {
+      case "vectorizing": return <Brain className="inline h-3 w-3 mr-1" />;
+      case "verifying": return <ShieldCheck className="inline h-3 w-3 mr-1" />;
+      case "partial": return <AlertCircle className="inline h-3 w-3 mr-1" />;
+      default: return null;
     }
   };
 
@@ -581,7 +764,7 @@ export default function Admin() {
                 multiple
                 className="hidden"
                 onChange={handleUpload}
-                disabled={ingestions.some((i) => i.phase !== "done" && i.phase !== "error")}
+                disabled={ingestions.some((i) => i.status === "vectorizing" || i.status === "extracting" || i.status === "verifying")}
               />
             </label>
 
@@ -595,11 +778,11 @@ export default function Admin() {
                         {ing.fileName}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${phaseColor(ing.phase)}`}>
-                          {ing.phase === "embedding" && <Brain className="inline h-3 w-3 mr-1" />}
+                        <span className={`text-xs font-medium ${phaseColor(ing.status)}`}>
+                          {phaseIcon(ing.status)}
                           {ing.phaseLabel}
                         </span>
-                        {ing.phase !== "done" && ing.phase !== "error" && (
+                        {(ing.status === "vectorizing" || ing.status === "extracting" || ing.status === "verifying") && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -612,11 +795,20 @@ export default function Admin() {
                         )}
                       </div>
                     </div>
-                    {ing.phase !== "done" && ing.phase !== "error" && (
+                    {ing.status !== "done" && ing.status !== "failed" && ing.status !== "canceled" && ing.status !== "partial" && (
                       <Progress value={ing.progress} className="h-2" />
                     )}
-                    {ing.phase === "done" && (
+                    {ing.status === "done" && (
                       <Progress value={100} className="h-2" />
+                    )}
+                    {ing.status === "partial" && (
+                      <Progress value={ing.progress} className="h-2" />
+                    )}
+                    {ing.lastError && (
+                      <p className="text-xs text-destructive mt-1">
+                        {ing.lastError.message}
+                        {ing.lastError.chunkIndex !== undefined && ` (chunk #${ing.lastError.chunkIndex})`}
+                      </p>
                     )}
                   </div>
                 ))}
@@ -671,7 +863,7 @@ export default function Admin() {
                               className="h-7 text-xs"
                             >
                               <RefreshCw className={`h-3 w-3 mr-1 ${retryingId === doc.id ? "animate-spin" : ""}`} />
-                              Reprocessar
+                              Retomar
                             </Button>
                             <Button
                               size="sm"
@@ -703,7 +895,7 @@ export default function Admin() {
                               size="icon"
                               onClick={() => handleRetry(doc)}
                               disabled={retryingId === doc.id}
-                              title="Reprocessar"
+                              title="Retomar"
                             >
                               <RefreshCw className={`h-4 w-4 text-muted-foreground ${retryingId === doc.id ? "animate-spin" : ""}`} />
                             </Button>
