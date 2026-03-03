@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import UsageStatsCard from "@/components/UsageStatsCard";
 import * as pdfjsLib from "pdfjs-dist";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 // Configure pdf.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -39,20 +40,18 @@ interface IngestionState {
   abortController?: AbortController;
 }
 
-// ─── Text chunking (same logic as the old edge function) ────────────────────
+// ─── Semantic text chunking via LangChain ───────────────────────────────────
 
-function splitIntoChunks(text: string, targetWords = 500, overlapWords = 50): string[] {
-  const words = text.split(/\s+/).filter((w) => w.length > 0);
-  if (words.length <= targetWords) return [text.trim()];
-  const chunks: string[] = [];
-  let start = 0;
-  while (start < words.length) {
-    const end = Math.min(start + targetWords, words.length);
-    chunks.push(words.slice(start, end).join(" "));
-    if (end >= words.length) break;
-    start += targetWords - overlapWords;
-  }
-  return chunks;
+const langChainSplitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 1000,
+  chunkOverlap: 200,
+  separators: ["\n\n", "\n", " ", ""],
+});
+
+async function splitWithLangChain(rawText: string): Promise<string[]> {
+  const normalized = rawText.replace(/\u0000/g, "").trim();
+  const chunks = await langChainSplitter.splitText(normalized);
+  return chunks.filter((c) => c.trim().length >= 3);
 }
 
 // ─── Sanitize file name for Supabase Storage ────────────────────────────────
@@ -208,7 +207,7 @@ export default function Admin() {
         progress: 25,
       });
 
-      const chunks = splitIntoChunks(text, 500, 50);
+      const chunks = await splitWithLangChain(text);
       const totalChunks = chunks.length;
 
       updateIngestion(file.name, {
@@ -406,7 +405,7 @@ export default function Admin() {
 
       if (text.length < 50) throw new Error("PDF sem texto extraível");
 
-      const chunks = splitIntoChunks(text, 500, 50);
+      const chunks = await splitWithLangChain(text);
       updateIngestion(doc.name, {
         phase: "embedding",
         totalChunks: chunks.length,
