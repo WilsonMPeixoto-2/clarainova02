@@ -1,4 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { GoogleGenAI } from "npm:@google/genai";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,8 +8,8 @@ const corsHeaders = {
 };
 
 /**
- * Lightweight edge function: receives pre-extracted text chunks,
- * generates embeddings via gemini-embedding-001, and upserts to DB.
+ * Edge function: receives pre-extracted text chunks,
+ * generates embeddings via @google/genai SDK, and upserts to DB.
  * Idempotent via UNIQUE(document_id, chunk_index).
  */
 Deno.serve(async (req) => {
@@ -35,7 +36,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Filter out empty/trivial chunks before processing
     const validChunks = chunks.filter((c: string) => c && c.trim().length >= 3);
 
     if (validChunks.length === 0) {
@@ -48,36 +48,29 @@ Deno.serve(async (req) => {
     const geminiKey = Deno.env.get("GEMINI_API_KEY")!;
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Generate embeddings for all valid chunks in parallel
+    // Generate embeddings using @google/genai SDK
     const embeddingStart = Date.now();
-    const embeddingPromises = validChunks.map((text: string) =>
-      fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "models/gemini-embedding-001",
-            content: { parts: [{ text }] },
-            outputDimensionality: 768,
-          }),
+    const embeddingPromises = validChunks.map(async (text: string) => {
+      try {
+        const result = await ai.models.embedContent({
+          model: "gemini-embedding-001",
+          contents: text,
+          config: { outputDimensionality: 768 },
+        });
+        return result.embeddings?.[0]?.values || null;
+      } catch (err: any) {
+        console.error(`Embedding error:`, err.message);
+        const status = err?.status || err?.httpStatusCode;
+        if (status === 429 || (status && status >= 500)) {
+          throw new Error(`GEMINI_${status}`);
         }
-      ).then(async (r) => {
-        if (!r.ok) {
-          const errText = await r.text();
-          console.error(`Embedding error (${r.status}):`, errText);
-          // Propagate rate-limit / server errors so caller can retry
-          if (r.status === 429 || r.status >= 500) {
-            throw new Error(`GEMINI_${r.status}`);
-          }
-          return null;
-        }
-        const data = await r.json();
-        return data.embedding?.values || null;
-      })
-    );
+        return null;
+      }
+    });
 
     const embeddings = await Promise.all(embeddingPromises);
     const embedding_ms = Date.now() - embeddingStart;
@@ -117,7 +110,6 @@ Deno.serve(async (req) => {
     );
   } catch (error: any) {
     console.error("embed-chunks error:", error);
-    // If it's a Gemini rate-limit or server error, return 429/503 so client retries
     const msg = String(error?.message || error);
     if (msg.includes("GEMINI_429")) {
       return new Response(
