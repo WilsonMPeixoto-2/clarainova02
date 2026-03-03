@@ -1,136 +1,87 @@
 
 
-# Hardening do Pipeline RAG: Idempotencia, Retry com Backoff, e Eliminacao de Falsos Positivos
+# Auditoria de Integracao e Limpeza — Relatorio de QA
 
-## Problema atual
+## 1. Auditoria de Dependencias (package.json)
 
-O pipeline falha na primeira tentativa (429/rate limit do Gemini) e so funciona na segunda. Alem disso, nao ha protecao contra duplicacao de chunks ao reprocessar, nem retry automatico para erros transitorios.
+**Veredicto: OK — nenhuma acao necessaria.**
 
-## Visao geral das mudancas
+- `pdfjs-dist` (^4.9.155) — usado em `Admin.tsx` linha 18. Presente.
+- `@langchain/textsplitters` (^1.0.1) — usado em `Admin.tsx` linha 19. Presente.
+- `react-markdown` (^10.1.0) — usado em `ChatSheet.tsx`. Presente.
 
-4 melhorias obrigatorias distribuidas entre frontend e backend:
+**Dependencias orfas: nenhuma encontrada.** Todos os pacotes instalados sao utilizados por componentes ativos do projeto (UI, chat, RAG, motion, etc). Nao ha pacotes residuais de tentativas anteriores.
 
-1. **Idempotencia** -- UNIQUE constraint no banco + upsert na Edge Function + filtragem de chunks ja existentes no frontend
-2. **Retry com backoff** -- helper `withRetry` no frontend para erros 429/5xx com delays crescentes
-3. **Verificacao pos-processamento** -- status "verifying" + SELECT count vs expectedChunks
-4. **Erro explicito** -- nunca engolir erros do JSON de resposta
+---
 
-## Mudancas detalhadas
+## 2. Verificacao de Contratos (Frontend ↔ Backend)
 
-### Migration SQL
+### 2a. Admin.tsx ↔ Edge Function `embed-chunks`
 
-Adicionar constraint UNIQUE em `(document_id, chunk_index)` na tabela `document_chunks`. Isso permite upsert idempotente e impede duplicacao.
-
-```sql
-ALTER TABLE public.document_chunks
-ADD CONSTRAINT document_chunks_doc_chunk_unique
-UNIQUE (document_id, chunk_index);
+**Frontend envia** (linha 170-171):
+```
+{ document_id, chunks: string[], start_index: number }
 ```
 
-### Edge Function `embed-chunks/index.ts`
-
-- Trocar `.insert(rows)` por `.upsert(rows, { onConflict: "document_id,chunk_index" })` para idempotencia
-- Adicionar `request_id` (UUID) em todas as respostas para rastreabilidade
-- Retornar tempos de execucao (embedding_ms, db_ms) na resposta
-- Manter filtragem de chunks < 3 chars existente
-
-### Frontend `Admin.tsx`
-
-**A1 -- Estado enriquecido por documento:**
-
-Expandir `IngestionState` com novos campos:
-- `status`: idle | extracting | vectorizing | verifying | done | partial | failed | canceled
-- `expectedChunks`, `insertedChunks`
-- `lastError` com message, requestId, chunkIndex, code
-
-**A2 -- Batch com concorrencia controlada:**
-
-Mudar `EMBED_BATCH_SIZE` de 5 para 10 (maximo aceito pela Edge Function). Envio sequencial entre lotes (sem concorrencia) para evitar throttling do Gemini.
-
-**A3 -- Helper `withRetry`:**
-
-```text
-async function withRetry(fn, opts):
-  retries = 3
-  delays = [500, 1500, 3000]
-  Repetir somente para:
-    - HTTP 429, 500-599
-    - erro de rede (fetch fail)
-  NAO repetir para erros de validacao
+**Backend espera** (`embed-chunks/index.ts` linha ~21):
+```
+{ document_id, chunks, start_index = 0 }
 ```
 
-Aplicado em cada chamada a `supabase.functions.invoke("embed-chunks")`.
+**Veredicto: Contrato OK.** Tipos e nomes de campos batem perfeitamente. O `start_index` tem default no backend.
 
-**A4 -- Validacao de resposta:**
+### 2b. ChatSheet/useChatStore ↔ Edge Function `chat`
 
-Apos cada invoke, verificar `fnData?.error` e `fnData?.ok === false`. Se existir erro, incluir `requestId` e `chunkIndex` no log e na UI.
-
-**A5 -- Cancelamento real:**
-
-O botao X ja usa AbortController. Refinar para que o loop de batches verifique `signal.aborted` antes de cada lote e marque status "canceled".
-
-**A6 -- Verificacao pos-processamento:**
-
-Apos enviar todos os chunks:
-1. Mudar status para "verifying" com label "Verificando integridade..."
-2. SELECT count de `document_chunks` onde `document_id = X`
-3. Se count >= expectedChunks: marcar "done"
-4. Se count > 0 mas < expectedChunks: marcar "partial" com botao "Retomar"
-5. Se count = 0: marcar "failed"
-
-**A7 -- Retomar sem duplicar (idempotencia client-side):**
-
-No `handleRetry`:
-- NAO deletar chunks existentes
-- Buscar chunk_indexes ja salvos: `SELECT chunk_index FROM document_chunks WHERE document_id = X`
-- Filtrar lista de envio para somente indices faltantes
-- Se todos ja existem: marcar "done" direto
-
-## Arquivos afetados
-
-| Arquivo | Tipo | Mudanca |
-|---------|------|---------|
-| `supabase/functions/embed-chunks/index.ts` | Edge Function | upsert + request_id + tempos |
-| `src/pages/Admin.tsx` | Frontend | withRetry, estado enriquecido, verificacao, idempotencia |
-| Migration SQL | DB | UNIQUE (document_id, chunk_index) |
-
-## Fluxo revisado
-
-```text
-Upload PDF
-  |
-  v
-Extrair texto (pdf.js no browser)
-  |
-  v
-Fatiar (LangChain RecursiveCharacterTextSplitter)
-  |
-  v
-Para cada lote de 10 chunks:
-  |-- withRetry(embed-chunks, retries=3, backoff)
-  |-- Se 429/5xx: aguardar e repetir
-  |-- Se erro de validacao: falhar imediatamente
-  |-- Atualizar progress bar
-  |
-  v
-Status "verifying"
-  |-- SELECT count(*) FROM document_chunks WHERE document_id = X
-  |-- count >= expected? -> "done"
-  |-- count > 0 < expected? -> "partial" (botao Retomar)
-  |-- count = 0? -> "failed"
-  |
-  v
-Retomar (se partial):
-  |-- Buscar chunk_indexes existentes
-  |-- Enviar somente os faltantes
-  |-- Repetir verificacao
+**Frontend envia** (`useChatStore.tsx` linha 57):
+```
+{ messages: ChatMessage[] }   // ChatMessage = { role, content }
 ```
 
-## Criterios de aceite
+**Backend espera** (`chat/index.ts` linha ~139):
+```
+const { messages } = await req.json();
+// Itera messages.map(m => ({ role, content }))
+```
 
-- 4 PDFs simultaneos: so marca "done" se todos os chunks salvaram
-- Reprocessar retoma sem duplicar (upsert + filtragem de indices)
-- Chunk vazio gera erro explicito com request_id
-- 429/503 se recupera com retry automatico (ate 3 tentativas)
-- Status "partial" visivel quando chunks faltam
+**Veredicto: Contrato OK.** A desestruturacao bate perfeitamente.
+
+---
+
+## 3. Limpeza de Codigo Morto
+
+### 3a. Edge Function `process-document` — CODIGO MORTO
+
+Esta funcao e o antigo pipeline server-side que foi totalmente substituido pela arquitetura client-side (pdf.js + LangChain no navegador + `embed-chunks`). **Nenhum arquivo do frontend a invoca.** Ela ainda usa `.insert()` em vez de `.upsert()`, nao tem retry, e nao valida chunks — todos os problemas que o hardening resolveu no novo pipeline.
+
+**Acao: Deletar `supabase/functions/process-document/index.ts` e remover a entrada `[functions.process-document]` do `config.toml`.**
+
+### 3b. Console logs em Admin.tsx
+
+Existem 3 ocorrencias de console.warn/error no Admin.tsx:
+- Linha 140: `console.warn` no retry — **manter** (util para debug de producao, ocorre raramente)
+- Linha 331: `console.error` em falha de batch — **manter** (erro real)
+- Linha 494: `console.error` em falha geral — **manter** (erro real)
+
+**Veredicto: Nenhum `console.log` de debug excessivo. Todos os logs sao de erro/warning legitimamente uteis.**
+
+### 3c. Console logs nas Edge Functions
+
+- `chat/index.ts`: 1 `console.log` (linha ~223 "Using model:") e varios `console.warn`/`console.error`. Todos sao operacionais e uteis. **Manter.**
+- `embed-chunks/index.ts`: 1 `console.error` para erros de embedding, 1 para upsert. **Manter.**
+- `process-document/index.ts`: Muitos `console.log` de debug. **Sera deletado inteiro.**
+
+### 3d. Variaveis nao utilizadas em Admin.tsx
+
+- `TIMEOUT_SECONDS` (linha 153) e `formatTimer` (linha 155) — usados para timers de documentos legacy server-side (linhas 254-273, 654-657, 676-691). Com a remocao do `process-document`, documentos nunca mais terao status "processing" vindo do server. Porem, esses timers protegem contra documentos que ficaram "stuck" no passado, entao **podem ficar** como safety net.
+
+---
+
+## Resumo de Acoes
+
+| Acao | Arquivo | Motivo |
+|------|---------|--------|
+| Deletar | `supabase/functions/process-document/index.ts` | Pipeline server-side obsoleto, substituido por client-side |
+| Remover entrada | `supabase/config.toml` (linhas 9-10) | Config da funcao deletada |
+
+**Total: 2 mudancas. Nenhum pacote a remover. Nenhum contrato quebrado. Nenhum console.log de debug excessivo.**
 
