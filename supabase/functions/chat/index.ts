@@ -332,20 +332,16 @@ Deno.serve(async (req) => {
 
     console.log(`Using model: ${result.model}`);
 
-    // Log usage (fire-and-forget)
-    try {
-      const logPromises = [
-        supabase.from('usage_logs').insert({ event_type: 'chat_message', metadata: { model: result.model } }),
-      ];
-      if (knowledgeContext) {
-        logPromises.push(
-          supabase.from('usage_logs').insert({ event_type: 'embedding_query' })
-        );
-      }
-      Promise.all(logPromises).catch((e) => console.error('Usage log error:', e));
-    } catch (logErr) {
-      console.error('Usage log setup error:', logErr);
+    // Log usage (fire-and-forget, single batch insert)
+    const logEntries: { event_type: string; metadata?: Record<string, unknown> }[] = [
+      { event_type: 'chat_message', metadata: { model: result.model } },
+    ];
+    if (knowledgeContext) {
+      logEntries.push({ event_type: 'embedding_query' });
     }
+    supabase.from('usage_logs').insert(logEntries).then(({ error: logErr }) => {
+      if (logErr) console.error('Usage log error:', logErr);
+    });
 
     return new Response(result.stream, {
       headers: {

@@ -47,53 +47,69 @@ async function streamChat(
 ) {
   const url = `${SUPABASE_URL}/functions/v1/chat`;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'apikey': SUPABASE_ANON_KEY,
-    },
-    body: JSON.stringify({ messages }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ messages }),
+    });
+  } catch (networkErr) {
+    onError('Falha de conexão. Verifique sua internet e tente novamente.');
+    return;
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || 'Erro ao conectar. Tente novamente.');
+    const errorMsg = body.error || `Erro ${res.status}. Tente novamente.`;
+    onError(errorMsg);
+    return;
   }
 
   const reader = res.body?.getReader();
-  if (!reader) throw new Error('Stream não disponível.');
+  if (!reader) {
+    onError('Stream não disponível.');
+    return;
+  }
 
   const decoder = new TextDecoder();
   let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
 
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || !trimmed.startsWith('data: ')) continue;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith('data: ')) continue;
 
-      const data = trimmed.slice(6);
-      if (data === '[DONE]') {
-        onDone();
-        return;
-      }
+        const data = trimmed.slice(6);
+        if (data === '[DONE]') {
+          onDone();
+          return;
+        }
 
-      try {
-        const parsed = JSON.parse(data);
-        const token = parsed.choices?.[0]?.delta?.content;
-        if (token) onDelta(token);
-      } catch {
-        // skip malformed chunks
+        try {
+          const parsed = JSON.parse(data);
+          const token = parsed.choices?.[0]?.delta?.content;
+          if (token) onDelta(token);
+        } catch {
+          // skip malformed chunks
+        }
       }
     }
+  } catch (streamErr) {
+    onError('Conexão interrompida durante a resposta. Tente novamente.');
+    return;
   }
 
   onDone();

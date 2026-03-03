@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MessageSquare, Search, FileText, Cpu, Activity } from "lucide-react";
+import { MessageSquare, Search, FileText, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UsageStats {
   month: string;
   chat_messages: number;
   embedding_queries: number;
-  pdf_extractions: number;
-  embedding_generations: number;
+  client_side_ingestions: number;
 }
 
 export default function UsageStatsCard() {
@@ -35,8 +34,7 @@ export default function UsageStatsCard() {
     ? [
         { label: "Mensagens do chat", value: stats.chat_messages, icon: MessageSquare },
         { label: "Buscas RAG", value: stats.embedding_queries, icon: Search },
-        { label: "PDFs processados", value: stats.pdf_extractions, icon: FileText },
-        { label: "Embeddings gerados", value: stats.embedding_generations, icon: Cpu },
+        { label: "PDFs ingeridos", value: stats.client_side_ingestions, icon: FileText },
       ]
     : [];
 
@@ -62,29 +60,24 @@ export default function UsageStatsCard() {
           <p className="text-sm text-muted-foreground text-center py-4">Erro ao carregar dados</p>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {items.map((item) => (
                 <div
                   key={item.label}
-                  className="flex items-center gap-3 rounded-lg border p-3"
+                  className="flex flex-col items-center gap-1 rounded-lg border p-3 text-center"
                 >
                   <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{item.value}</p>
-                    <p className="text-xs text-muted-foreground">{item.label}</p>
-                  </div>
+                  <p className="text-2xl font-bold text-foreground">{item.value}</p>
+                  <p className="text-xs text-muted-foreground">{item.label}</p>
                 </div>
               ))}
             </div>
             <div className="space-y-1 pt-2 border-t">
               <p className="text-xs text-muted-foreground">
-                ✅ Edge Functions: incluídas nos US$ 25/mês do Cloud
+                ✅ Backend Functions: incluídas no plano Lovable Cloud
               </p>
               <p className="text-xs text-muted-foreground">
                 ✅ API Gemini: uso gratuito via Google AI Studio
-              </p>
-              <p className="text-xs text-muted-foreground">
-                🔒 Gateway Lovable AI (US$ 1/mês): não utilizado
               </p>
             </div>
           </>
