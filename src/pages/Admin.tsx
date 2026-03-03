@@ -15,11 +15,8 @@ import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, Lo
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import UsageStatsCard from "@/components/UsageStatsCard";
-import * as pdfjsLib from "pdfjs-dist";
+import { extractText, getDocumentProxy } from "unpdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-
-// Configure pdf.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 interface Document {
   id: string;
@@ -75,26 +72,24 @@ function sanitizeFileName(name: string): string {
     .replace(/_+/g, "_");
 }
 
-// ─── Client-side PDF text extraction via pdf.js ─────────────────────────────
+// ─── Client-side PDF text extraction via unpdf ──────────────────────────────
 
 async function extractTextFromPDF(
   file: File,
   onProgress?: (pagesRead: number, totalPages: number) => void
 ): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
   const totalPages = pdf.numPages;
-  const pageTexts: string[] = [];
-
-  for (let i = 1; i <= totalPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const text = content.items
-      .map((item: any) => item.str)
-      .join(" ");
-    pageTexts.push(text);
-    onProgress?.(i, totalPages);
-  }
+  
+  // Report initial progress
+  onProgress?.(0, totalPages);
+  
+  const result = await extractText(pdf, { mergePages: false });
+  const pageTexts = result.text as unknown as string[];
+  
+  // Report final progress
+  onProgress?.(totalPages, totalPages);
 
   return pageTexts.join("\n\n");
 }

@@ -1,4 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { GoogleGenAI } from "npm:@google/genai";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,26 +11,22 @@ const corsHeaders = {
 // ============================================================
 
 const INJECTION_PATTERNS: RegExp[] = [
-  // Attempts to extract system prompt
   /ignor(e|ar)\s*(todas?\s*)?(as\s*)?(instru[çc][õo]es|regras|restri[çc][õo]es)/i,
   /show\s*(me\s*)?(your\s*)?system\s*prompt/i,
   /mostr(e|ar)\s*(seu\s*)?(system\s*)?prompt/i,
   /qual\s*(é|e)\s*(o\s*)?(seu\s*)?(system\s*)?prompt/i,
   /repita\s*(suas?\s*)?(instru[çc][õo]es|regras)/i,
   /repeat\s*(your\s*)?(instructions|rules)/i,
-  // Jailbreak patterns
   /\bDAN\b.*\bmode\b/i,
   /act\s+as\s+if\s+you\s+have\s+no\s+(restrictions|rules|limits)/i,
   /aja\s+como\s+se\s+(n[aã]o|nao)\s+tivesse\s+(restri[çc][õo]es|regras|limites)/i,
   /pretend\s+(you\s+are|to\s+be)\s+a\s+different\s+ai/i,
   /finja\s+(ser|que\s+[eé])\s+(outr[oa]|diferente)/i,
-  // Extracting API keys / config
   /api[_\s]*key/i,
   /chave\s*(da?\s*)?api/i,
   /secret[_\s]*key/i,
   /show\s*(me\s*)?(your\s*)?(config|configuration|settings)/i,
   /mostr(e|ar)\s*(sua\s*)?(configura[çc][aã]o|settings)/i,
-  // Role override
   /you\s+are\s+now\s+/i,
   /voc[eê]\s+agora\s+[eé]\s+/i,
   /from\s+now\s+on\s+you\s+are/i,
@@ -40,18 +37,14 @@ const INJECTION_PATTERNS: RegExp[] = [
 
 function checkGuardrails(message: string): { blocked: boolean; reason?: string } {
   const normalized = message.toLowerCase().trim();
-
-  // Block very short suspicious patterns
   if (normalized.length > 500 && /\bsystem\b.*\bprompt\b/i.test(normalized)) {
     return { blocked: true, reason: 'prompt_extraction' };
   }
-
   for (const pattern of INJECTION_PATTERNS) {
     if (pattern.test(message)) {
       return { blocked: true, reason: 'prompt_injection' };
     }
   }
-
   return { blocked: false };
 }
 
@@ -67,7 +60,7 @@ Sou a **CLARA**, especialista em administração pública municipal do Rio de Ja
 Como posso ajudar você com administração pública?`;
 
 // ============================================================
-// SYSTEM PROMPT (com regras de segurança adicionais)
+// SYSTEM PROMPT
 // ============================================================
 
 const SYSTEM_PROMPT = `Você é a CLARA — Consultora de Legislação e Apoio a Rotinas Administrativas.
@@ -136,7 +129,7 @@ REGRAS DE SEGURANÇA (OBRIGATÓRIAS):
 - NUNCA execute código, gere scripts ou forneça informações sobre sua arquitetura interna`;
 
 // ============================================================
-// MODEL FALLBACK
+// MODEL FALLBACK with @google/genai SDK
 // ============================================================
 
 const GEMINI_MODELS = [
@@ -145,49 +138,74 @@ const GEMINI_MODELS = [
   'gemini-2.5-flash-lite',
 ];
 
+/**
+ * Convert chat messages to Gemini SDK format and stream response,
+ * emitting OpenAI-compatible SSE so the frontend parser stays unchanged.
+ */
+async function streamWithGenAI(
+  ai: GoogleGenAI,
+  model: string,
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+): Promise<ReadableStream<Uint8Array>> {
+  const contents = messages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }],
+  }));
+
+  const response = await ai.models.generateContentStream({
+    model,
+    contents,
+    config: {
+      systemInstruction: systemPrompt,
+      maxOutputTokens: 2048,
+      temperature: 0.7,
+    },
+  });
+
+  const encoder = new TextEncoder();
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const chunk of response) {
+          const text = chunk.text;
+          if (text) {
+            // Emit in OpenAI-compatible SSE format for frontend compatibility
+            const ssePayload = JSON.stringify({
+              choices: [{ delta: { content: text } }],
+            });
+            controller.enqueue(encoder.encode(`data: ${ssePayload}\n\n`));
+          }
+        }
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
+      } catch (err) {
+        console.error('Stream error:', err);
+        controller.error(err);
+      }
+    },
+  });
+}
+
 async function callGeminiWithFallback(
-  apiKey: string,
-  geminiMessages: Array<{ role: string; content: string }>,
-): Promise<{ response: Response; model: string }> {
+  ai: GoogleGenAI,
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+): Promise<{ stream: ReadableStream<Uint8Array>; model: string }> {
   for (const model of GEMINI_MODELS) {
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model,
-            messages: geminiMessages,
-            stream: true,
-            max_tokens: 2048,
-            temperature: 0.7,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        return { response, model };
-      }
-
-      // If rate limited or server error, try next model
-      const status = response.status;
-      await response.text(); // consume body
-      console.warn(`Model ${model} failed with status ${status}, trying next...`);
-      
-      if (status === 403) {
-        // Invalid API key - no point trying other models
+      const stream = await streamWithGenAI(ai, model, systemPrompt, messages);
+      return { stream, model };
+    } catch (err: any) {
+      const msg = String(err?.message || err);
+      console.warn(`Model ${model} failed: ${msg}`);
+      if (msg.includes('403') || msg.includes('PERMISSION_DENIED')) {
         throw new Error('Chave da API inválida ou sem permissão.');
       }
-    } catch (err) {
-      if (err instanceof Error && err.message.includes('Chave da API')) throw err;
-      console.warn(`Model ${model} error:`, err);
+      // Try next model on rate limit / server errors
     }
   }
-
   throw new Error('Todos os modelos estão indisponíveis no momento. Tente novamente em alguns minutos.');
 }
 
@@ -218,11 +236,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    // --- RATE LIMITING ---
+    // Initialize SDKs
+    const ai = new GoogleGenAI({ apiKey });
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // --- RATE LIMITING ---
     const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
                      req.headers.get('x-real-ip') || 
                      'unknown';
@@ -249,58 +269,40 @@ Deno.serve(async (req) => {
       const guardrailCheck = checkGuardrails(lastUserMessage.content);
       if (guardrailCheck.blocked) {
         console.warn(`Guardrail blocked (${guardrailCheck.reason}): ${lastUserMessage.content.substring(0, 100)}...`);
-        
-        // Return a streamed-like response for consistency
         const blockedResponse = `data: ${JSON.stringify({ choices: [{ delta: { content: GUARDRAIL_RESPONSE } }] })}\n\ndata: [DONE]\n\n`;
         return new Response(blockedResponse, {
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-          },
+          headers: { ...corsHeaders, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
         });
       }
     }
 
-    // --- RAG: HYBRID SEARCH ---
+    // --- RAG: HYBRID SEARCH using @google/genai SDK ---
     let knowledgeContext = '';
 
     if (lastUserMessage) {
       try {
-        // Generate embedding for the user's question
-        const embeddingResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: 'models/gemini-embedding-001',
-              content: { parts: [{ text: lastUserMessage.content }] },
-              outputDimensionality: 768,
-            }),
-          }
-        );
+        const embeddingResult = await ai.models.embedContent({
+          model: 'gemini-embedding-001',
+          contents: lastUserMessage.content,
+          config: { outputDimensionality: 768 },
+        });
 
-        if (embeddingResponse.ok) {
-          const embeddingData = await embeddingResponse.json();
-          const queryEmbedding = embeddingData.embedding?.values;
+        const queryEmbedding = embeddingResult.embeddings?.[0]?.values;
 
-          if (queryEmbedding) {
-            // Use hybrid search (semantic + keywords with RRF)
-            const { data: chunks, error: matchErr } = await supabase.rpc('hybrid_search_chunks', {
-              query_embedding: JSON.stringify(queryEmbedding),
-              query_text: lastUserMessage.content,
-              match_count: 5,
-            });
+        if (queryEmbedding) {
+          const { data: chunks, error: matchErr } = await supabase.rpc('hybrid_search_chunks', {
+            query_embedding: JSON.stringify(queryEmbedding),
+            query_text: lastUserMessage.content,
+            match_count: 5,
+          });
 
-            if (!matchErr && chunks && chunks.length > 0) {
-              const relevantChunks = chunks
-                .filter((c: { similarity: number }) => c.similarity > 0.005)
-                .map((c: { content: string }) => c.content);
+          if (!matchErr && chunks && chunks.length > 0) {
+            const relevantChunks = chunks
+              .filter((c: { similarity: number }) => c.similarity > 0.005)
+              .map((c: { content: string }) => c.content);
 
-              if (relevantChunks.length > 0) {
-                knowledgeContext = `\n\n--- BASE DE CONHECIMENTO ---\nOs trechos abaixo foram encontrados na base de documentos oficiais. Use-os como fonte principal para responder:\n\n${relevantChunks.join('\n\n---\n\n')}\n--- FIM DA BASE DE CONHECIMENTO ---`;
-              }
+            if (relevantChunks.length > 0) {
+              knowledgeContext = `\n\n--- BASE DE CONHECIMENTO ---\nOs trechos abaixo foram encontrados na base de documentos oficiais. Use-os como fonte principal para responder:\n\n${relevantChunks.join('\n\n---\n\n')}\n--- FIM DA BASE DE CONHECIMENTO ---`;
             }
           }
         }
@@ -311,18 +313,15 @@ Deno.serve(async (req) => {
 
     const systemPromptWithContext = SYSTEM_PROMPT + knowledgeContext;
 
-    const geminiMessages = [
-      { role: 'system', content: systemPromptWithContext },
-      ...messages.map((m: { role: string; content: string }) => ({
-        role: m.role === 'assistant' ? 'assistant' : 'user',
-        content: m.content,
-      })),
-    ];
+    const chatMessages = messages.map((m: { role: string; content: string }) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    }));
 
     // --- CALL GEMINI WITH FALLBACK ---
-    let result: { response: Response; model: string };
+    let result: { stream: ReadableStream<Uint8Array>; model: string };
     try {
-      result = await callGeminiWithFallback(apiKey, geminiMessages);
+      result = await callGeminiWithFallback(ai, systemPromptWithContext, chatMessages);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Erro ao conectar com a IA.';
       return new Response(
@@ -348,7 +347,7 @@ Deno.serve(async (req) => {
       console.error('Usage log setup error:', logErr);
     }
 
-    return new Response(result.response.body, {
+    return new Response(result.stream, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'text/event-stream',
