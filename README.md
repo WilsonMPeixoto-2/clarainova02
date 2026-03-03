@@ -1,73 +1,48 @@
-# Welcome to your Lovable project
+# CLARAINOVA02 — Assistente Inteligente com RAG
 
-## Project info
+**CLARA** (Consultora Legal e Assistente de Respostas Automatizadas) é uma assistente de IA especializada, construída com arquitetura RAG (Retrieval-Augmented Generation) de última geração.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Stack Tecnológica
 
-## How can I edit this code?
+| Camada | Tecnologia |
+|--------|-----------|
+| **Frontend** | React 19 · TypeScript · Vite 6 · Tailwind CSS 4 · Framer Motion |
+| **Backend** | Lovable Cloud (Supabase) · Deno 2 Edge Functions |
+| **IA** | Google Gemini via `@google/genai` SDK · Embeddings `text-embedding-004` |
+| **Banco Vetorial** | pgvector com índice **HNSW** (Hierarchical Navigable Small World) |
+| **Busca** | Híbrida RRF (Reciprocal Rank Fusion) — semântica + full-text |
+| **Ingestão** | `unpdf` (extração client-side) · LangChain Text Splitter · Rastreabilidade por página |
 
-There are several ways of editing your application.
+## Arquitetura
 
-**Use Lovable**
+```
+┌─────────────┐     ┌──────────────┐     ┌───────────────┐
+│  React App  │────▶│ Edge Function│────▶│  Gemini API   │
+│  (Chat UI)  │◀────│  /chat       │◀────│  (streaming)  │
+└─────────────┘     └──────┬───────┘     └───────────────┘
+                           │
+                    ┌──────▼───────┐
+                    │   pgvector   │
+                    │  HNSW Index  │
+                    │ hybrid_search│
+                    └──────────────┘
+```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Funcionalidades
 
-Changes made via Lovable will be committed automatically to this repo.
+- 💬 Chat com streaming em tempo real
+- 📄 Ingestão de PDFs com rastreabilidade por página (`[Fonte: doc | Página: N]`)
+- 🔍 Busca híbrida vetorial + full-text com RRF
+- 📊 Painel administrativo com estatísticas de uso
+- 🎨 Design premium com animações e partículas
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Desenvolvimento
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Licença
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Projeto privado — todos os direitos reservados.
