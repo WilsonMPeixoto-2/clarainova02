@@ -477,8 +477,8 @@
     width: var(--hero-media-width);
     z-index: 10;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%);
-    mask-image: linear-gradient(to right, transparent 0%, black 15%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%);
+    mask-image: linear-gradient(to right, transparent 0%, black 20%);
   }
 
   .hero-media-motion {
@@ -497,7 +497,7 @@
   @media (min-width: 900px) {
     .hero-clara-video {
       object-fit: cover;
-      object-position: 80% center;
+      object-position: 85% center;
     }
   }
 
