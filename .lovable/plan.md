@@ -1,84 +1,38 @@
 
 
-# Auditoria Pos-Migracao: React 19 + Vite 6 + Tailwind 4
+## Plano de Correções — 3 Itens
 
-## Diagnostico
+### 1. Tag de manutenção → Versão prévia 2.1
 
-Apos revisar todos os arquivos do projeto, identifiquei as seguintes areas que precisam de adaptacao:
+No `HeroSection.tsx` (linha 261), trocar o texto e o estilo do chip:
+- **De**: `CLARA em manutenção e atualização. Volta em breve.`
+- **Para**: `Versão prévia 2.1`
+- Trocar a classe `maintenance-dot animate-pulse-subtle` por um indicador estático ou de versão (sem pulse de alerta).
 
----
+### 2. Clara mais à direita (menos competição com texto)
 
-## 1. Componentes shadcn/ui com `forwardRef` (40 arquivos)
+O `object-position` atual da imagem/vídeo no desktop é `80% center` (linha 500 do `index.css`). A Clara está muito centralizada. Ajustar para empurrá-la mais para a direita:
 
-**Situacao:** Todos os 40 componentes UI usam `React.forwardRef`, que no React 19 ainda funciona mas esta **deprecated**. O padrao moderno e receber `ref` como prop direta.
+| Breakpoint | `object-position` atual | Novo valor |
+|---|---|---|
+| ≥900px | `80% center` | `85% center` |
 
-**Risco:** Zero risco imediato — `forwardRef` continuara funcionando no React 19. Porem, warnings no console podem surgir em versoes futuras.
+Adicionalmente, o `mask-image` do `.hero-media-stage` (fade de 15%) pode ser ajustado para começar o fade um pouco antes (~20%), criando mais separação visual entre o texto e a personagem.
 
-**Acao recomendada:** Reescrever os componentes mais usados no projeto para o padrao React 19 (ref como prop). Os componentes ativamente usados sao:
-- `button.tsx`, `input.tsx`, `card.tsx`, `progress.tsx`, `accordion.tsx`, `scroll-area.tsx`, `toast.tsx`, `label.tsx`, `form.tsx`, `table.tsx`, `sheet.tsx`, `dialog.tsx`, `tooltip.tsx`, `popover.tsx`, `separator.tsx`, `textarea.tsx`, `select.tsx`, `checkbox.tsx`, `badge.tsx`, `skeleton.tsx`
+### 3. Inconsistência nas respostas — `temperature: 0.7`
 
-Os demais (~20 componentes) nao sao usados ativamente e podem ser migrados depois.
+A causa raiz está no `chat/index.ts` linha 162: `temperature: 0.7`. Este valor introduz aleatoriedade significativa nas respostas do Gemini. Para respostas consistentes e determinísticas (ideal para um assistente de legislação/procedimentos):
 
----
+- **Reduzir `temperature` de `0.7` para `0.2`** — mantém criatividade mínima na formatação mas garante que o conteúdo factual seja reproduzível.
+- Opcionalmente adicionar `topP: 0.9` para reforçar a consistência.
 
-## 2. Calendar.tsx — classNames desatualizados
+### Arquivos a editar
 
-**Situacao:** O componente `calendar.tsx` usa class names do `react-day-picker` v8 (`nav_button`, `caption_label`, `head_row`, `day_selected`, etc). A v9 mudou todos esses nomes para um sistema diferente.
+| # | Arquivo | Alteração |
+|---|---------|-----------|
+| 1 | `src/components/HeroSection.tsx` | Texto do chip: "Versão prévia 2.1" |
+| 2 | `src/index.css` | `object-position: 85% center`, mask fade 20% |
+| 3 | `supabase/functions/chat/index.ts` | `temperature: 0.2` |
 
-**Risco:** O calendario pode renderizar sem estilos corretos.
-
-**Acao:** Reescrever o mapeamento de classNames para a API v9 do react-day-picker.
-
----
-
-## 3. `src/main.tsx` — StrictMode ausente
-
-**Situacao:** O `main.tsx` nao usa `React.StrictMode`, que no React 19 ganhou novos checks uteis para detectar bugs.
-
-**Risco:** Nenhum risco, mas perde-se deteccao precoce de problemas.
-
-**Acao:** Adicionar `<StrictMode>` ao redor de `<App />`.
-
----
-
-## 4. Edge Functions — import de versao fixa do Supabase
-
-**Situacao:** As edge functions usam `https://esm.sh/@supabase/supabase-js@2` (versao generica v2). Funciona, mas pode ser pinado.
-
-**Risco:** Nenhum risco critico.
-
-**Acao:** Nenhuma — manter como esta.
-
----
-
-## 5. `UsageStatsCard.tsx` — URL hardcoded
-
-**Situacao:** Usa `https://${projectId}.supabase.co/functions/v1/get-usage-stats` em vez do cliente Supabase.
-
-**Risco:** Nenhum risco funcional, mas inconsistente com o resto do projeto.
-
-**Acao:** Migrar para `supabase.functions.invoke()`.
-
----
-
-## 6. Tailwind 4 — verificacao de classes
-
-**Situacao:** O `@theme` block no `index.css` mapeia todas as custom colors corretamente. As classes utilitarias usadas nos componentes (`text-muted-foreground`, `bg-primary`, `border-input`, etc) estao todas mapeadas. Nao encontrei classes orfas.
-
-**Risco:** Nenhum.
-
-**Acao:** Nenhuma.
-
----
-
-## Resumo de Acoes
-
-| # | Acao | Escopo | Prioridade |
-|---|------|--------|------------|
-| 1 | Reescrever ~20 componentes shadcn/ui ativos removendo `forwardRef` | 20 arquivos | Media |
-| 2 | Atualizar `calendar.tsx` para classNames do react-day-picker v9 | 1 arquivo | Alta |
-| 3 | Adicionar `StrictMode` em `main.tsx` | 1 arquivo | Baixa |
-| 4 | Migrar `UsageStatsCard` para `supabase.functions.invoke()` | 1 arquivo | Baixa |
-
-**Total: ~23 arquivos a modificar. Nenhum breaking change encontrado. O projeto esta funcional como esta — estas sao melhorias de modernizacao.**
+Três edições cirúrgicas, zero risco estrutural.
 
