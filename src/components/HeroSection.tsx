@@ -256,9 +256,9 @@ const HeroSection = () => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <div className="maintenance-chip" role="status" aria-live="polite">
-                <span className="maintenance-dot animate-pulse-subtle" aria-hidden="true" />
-                CLARA em manutenção e atualização. Volta em breve.
+              <div className="maintenance-chip" role="status">
+                <span className="w-2 h-2 rounded-full bg-cyan-400/80" aria-hidden="true" />
+                Versão prévia 2.1
               </div>
             </motion.div>
 
