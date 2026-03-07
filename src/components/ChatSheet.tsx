@@ -22,8 +22,10 @@ const ChatSheet = () => {
 
   // Scroll to bottom on new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({
+      behavior: isStreaming ? 'auto' : 'smooth'
+    });
+  }, [messages, isStreaming]);
 
   // Focus input when opened
   useEffect(() => {
@@ -136,11 +138,10 @@ const ChatSheet = () => {
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                        msg.role === 'user'
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
                           ? 'bg-primary text-primary-foreground rounded-br-md'
                           : 'bg-[hsl(var(--surface-2))] text-foreground border border-[hsl(var(--border-subtle))] rounded-bl-md'
-                      }`}
+                        }`}
                     >
                       {msg.role === 'assistant' ? (
                         <div className="clara-prose">
