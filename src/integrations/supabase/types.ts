@@ -135,6 +135,7 @@ export type Database = {
         Returns: {
           content: string
           document_id: string
+          document_name: string
           id: string
           similarity: number
         }[]
