@@ -324,7 +324,7 @@ Deno.serve(async (req) => {
             query_embedding: JSON.stringify(queryEmbedding),
             query_text: lastUserMessage.content,
             match_count: 5,
-          });
+          }) as { data: Array<{ id: string; document_id: string; content: string; similarity: number; document_name: string | null }> | null; error: any };
 
           if (matchErr) {
             console.error("Hybrid search error:", matchErr);
