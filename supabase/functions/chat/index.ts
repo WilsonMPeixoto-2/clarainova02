@@ -1,6 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { GoogleGenAI } from "npm:@google/genai";
 
+import { prepareKnowledgeDecision, type RetrievedChunk } from "./knowledge.ts";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -219,6 +221,21 @@ async function callGeminiWithFallback(
   throw new Error('Todos os modelos estão indisponíveis no momento. Tente novamente em alguns minutos.');
 }
 
+function streamTextResponse(text: string): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  const payload = JSON.stringify({
+    choices: [{ delta: { content: text } }],
+  });
+
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      controller.close();
+    },
+  });
+}
+
 // ============================================================
 // MAIN HANDLER
 // ============================================================
@@ -288,6 +305,9 @@ Deno.serve(async (req) => {
 
     // --- RAG: HYBRID SEARCH using @google/genai SDK ---
     let knowledgeContext = '';
+    let retrievalMode: "kb_only" | "model_grounded" | "model_only" = "model_only";
+    let retrievalSources: string[] = [];
+    let retrievalTopScore = 0;
 
     if (lastUserMessage) {
       try {
@@ -306,13 +326,56 @@ Deno.serve(async (req) => {
             match_count: 5,
           });
 
-          if (!matchErr && chunks && chunks.length > 0) {
-            const relevantChunks = chunks
-              .filter((c: { similarity: number }) => c.similarity > 0.3)
-              .map((c: { content: string; document_name: string }) => `[Fonte Oficial: ${c.document_name}]\nTexto extraído em contexto: ${c.content}`);
+          if (matchErr) {
+            console.error("Hybrid search error:", matchErr);
+          } else if (chunks && chunks.length > 0) {
+            const decision = prepareKnowledgeDecision(
+              lastUserMessage.content,
+              chunks as RetrievedChunk[],
+            );
 
-            if (relevantChunks.length > 0) {
-              knowledgeContext = `\n\n--- BASE DE CONHECIMENTO RETORNADA DO BANCO DE DADOS ---\nOs trechos abaixo foram encontrados na base de documentos oficiais do tribunal/governo. IMPORTANTE: antes de usar cada trecho, verifique se ele realmente responde à pergunta. Se a pergunta for respondida por estes blocos, CITE EXPLICITAMENTE o nome anotado na '[Fonte Oficial: X]' para que o usuário saiba de qual PDF ou Lei a informação foi retirada.\n\n${relevantChunks.join('\n\n---\n\n')}\n--- FIM DA BASE DE CONHECIMENTO ---`;
+            retrievalSources = decision.sources;
+            retrievalTopScore = decision.topScore;
+
+            if (decision.useKnowledgeOnly && decision.knowledgeOnlyResponse) {
+              retrievalMode = "kb_only";
+
+              const logEntries: { event_type: string; metadata?: Record<string, unknown> }[] = [
+                {
+                  event_type: "chat_message",
+                  metadata: {
+                    model: "knowledge-base",
+                    retrieval_mode: retrievalMode,
+                    top_score: decision.topScore,
+                    source_count: decision.sources.length,
+                  },
+                },
+                {
+                  event_type: "embedding_query",
+                  metadata: {
+                    retrieval_mode: retrievalMode,
+                    sources: decision.sources,
+                  },
+                },
+              ];
+
+              supabase.from("usage_logs").insert(logEntries).then(({ error: logErr }) => {
+                if (logErr) console.error("Usage log error:", logErr);
+              });
+
+              return new Response(streamTextResponse(decision.knowledgeOnlyResponse), {
+                headers: {
+                  ...corsHeaders,
+                  "Content-Type": "text/event-stream",
+                  "Cache-Control": "no-cache",
+                  "Connection": "keep-alive",
+                },
+              });
+            }
+
+            if (decision.knowledgeContext) {
+              retrievalMode = "model_grounded";
+              knowledgeContext = decision.knowledgeContext;
             }
           }
         }
@@ -344,10 +407,24 @@ Deno.serve(async (req) => {
 
     // Log usage (fire-and-forget, single batch insert)
     const logEntries: { event_type: string; metadata?: Record<string, unknown> }[] = [
-      { event_type: 'chat_message', metadata: { model: result.model } },
+      {
+        event_type: 'chat_message',
+        metadata: {
+          model: result.model,
+          retrieval_mode: retrievalMode,
+          top_score: retrievalTopScore,
+          source_count: retrievalSources.length,
+        },
+      },
     ];
     if (knowledgeContext) {
-      logEntries.push({ event_type: 'embedding_query' });
+      logEntries.push({
+        event_type: 'embedding_query',
+        metadata: {
+          retrieval_mode: retrievalMode,
+          sources: retrievalSources,
+        },
+      });
     }
     supabase.from('usage_logs').insert(logEntries).then(({ error: logErr }) => {
       if (logErr) console.error('Usage log error:', logErr);
