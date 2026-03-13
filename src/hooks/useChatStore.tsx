@@ -1,4 +1,5 @@
 import { createContext, useCallback, use, useState, type ReactNode } from 'react';
+import { answerQuestionWithLocalKnowledge } from '@/lib/localKnowledge';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -37,6 +38,30 @@ Posso ajudar com:
 Como posso ajudar você hoje?`);
     }, 800 + Math.random() * 600);
   });
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function streamTextContent(
+  text: string,
+  onDelta: (token: string) => void,
+  onDone: () => void,
+  onError: (msg: string) => void,
+) {
+  try {
+    const tokens = text.match(/\S+\s*/g) ?? [text];
+
+    for (const token of tokens) {
+      onDelta(token);
+      await wait(10);
+    }
+
+    onDone();
+  } catch {
+    onError('Falha ao montar a resposta local. Tente novamente.');
+  }
 }
 
 async function streamChat(
@@ -144,57 +169,68 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     const hasBackend = !!SUPABASE_URL;
 
-    if (!hasBackend) {
-      // Fallback mock
-      try {
-        const response = await getMockResponse();
-        setMessages((prev) => [...prev, { role: 'assistant', content: response }]);
-      } catch {
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: 'Desculpe, ocorreu um erro. Tente novamente.' },
-        ]);
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
-
     try {
       // Create empty assistant message for streaming
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
       const allMessages = [...messages, userMsg];
+      let localResponse: string | null = null;
 
-      await streamChat(
-        allMessages,
-        (token) => {
-          // First token: switch from loading to streaming
-          setIsLoading(false);
-          setIsStreaming(true);
-          setMessages((prev) => {
-            const updated = [...prev];
-            const last = updated[updated.length - 1];
-            if (last?.role === 'assistant') {
-              updated[updated.length - 1] = { ...last, content: last.content + token };
-            }
-            return updated;
-          });
-        },
-        () => {
-          setIsStreaming(false);
-        },
-        (errorMsg) => {
-          setMessages((prev) => {
-            const updated = [...prev];
-            const last = updated[updated.length - 1];
-            if (last?.role === 'assistant') {
-              updated[updated.length - 1] = { ...last, content: errorMsg };
-            }
-            return updated;
-          });
-        },
-      );
+      try {
+        const localAnswer = await answerQuestionWithLocalKnowledge(trimmed);
+        localResponse = localAnswer.response;
+      } catch (localError) {
+        console.warn('Local knowledge base failed, falling back to remote backend.', localError);
+      }
+
+      const handleDelta = (token: string) => {
+        setIsLoading(false);
+        setIsStreaming(true);
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          if (last?.role === 'assistant') {
+            updated[updated.length - 1] = { ...last, content: last.content + token };
+          }
+          return updated;
+        });
+      };
+
+      const handleDone = () => {
+        setIsStreaming(false);
+      };
+
+      const handleError = (errorMsg: string) => {
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          if (last?.role === 'assistant') {
+            updated[updated.length - 1] = { ...last, content: errorMsg };
+          }
+          return updated;
+        });
+      };
+
+      if (localResponse) {
+        await streamTextContent(localResponse, handleDelta, handleDone, handleError);
+        return;
+      }
+
+      if (hasBackend) {
+        await streamChat(allMessages, handleDelta, handleDone, handleError);
+        return;
+      }
+
+      const mockResponse = await getMockResponse();
+      setIsLoading(false);
+      setMessages((prev) => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last?.role === 'assistant') {
+          updated[updated.length - 1] = { ...last, content: mockResponse };
+        }
+        return updated;
+      });
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Erro ao conectar. Tente novamente.';
       setMessages((prev) => {
