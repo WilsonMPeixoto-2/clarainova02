@@ -167,6 +167,30 @@ const GEMINI_MODELS = [
   'gemini-2.5-flash-lite',
 ];
 
+type HybridSearchChunk = {
+  id: string;
+  document_id: string;
+  content: string;
+  similarity: number;
+  document_name: string | null;
+};
+
+function getErrorMessage(error: unknown, fallback = 'Erro ao conectar com a IA.'): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  if (typeof error === 'string' && error.trim()) {
+    return error;
+  }
+
+  return fallback;
+}
+
+/**
+ * Convert chat messages to Gemini SDK format and stream response,
+ * emitting OpenAI-compatible SSE so the frontend parser stays unchanged.
+ */
 async function streamWithGenAI(
   ai: GoogleGenAI,
   model: string,
@@ -222,8 +246,8 @@ async function callGeminiWithFallback(
     try {
       const stream = await streamWithGenAI(ai, model, systemPrompt, messages);
       return { stream, model };
-    } catch (err: any) {
-      const msg = String(err?.message || err);
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, String(err ?? ''));
       console.warn(`Model ${model} failed: ${msg}`);
       if (msg.includes('403') || msg.includes('PERMISSION_DENIED')) {
         throw new Error('Chave da API inválida ou sem permissão.');
@@ -320,7 +344,7 @@ Deno.serve(async (req) => {
             query_embedding: JSON.stringify(queryEmbedding),
             query_text: lastUserMessage.content,
             match_count: 8,
-          }) as { data: Array<{ id: string; document_id: string; content: string; similarity: number; document_name: string | null }> | null; error: any };
+          }) as { data: HybridSearchChunk[] | null; error: Error | null };
 
           if (matchErr) {
             console.error("Hybrid search error:", matchErr);
@@ -355,8 +379,8 @@ Deno.serve(async (req) => {
     let result: { stream: ReadableStream<Uint8Array>; model: string };
     try {
       result = await callGeminiWithFallback(ai, systemPromptWithContext, chatMessages);
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao conectar com a IA.';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err);
       return new Response(
         JSON.stringify({ error: errorMsg }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

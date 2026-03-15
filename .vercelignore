@@ -1,0 +1,11 @@
+/\.git
+/\.lovable
+/\.playwright-cli
+/\.vercel
+/dist
+/node_modules
+/output
+/tools
+/docs
+/supabase
+*.log

@@ -13,6 +13,17 @@ export interface LocalKnowledgeAnswer {
   topScore: number;
 }
 
+export function selectLocalKnowledgeResponse(
+  answer: LocalKnowledgeAnswer,
+  hasRemoteBackend: boolean
+): string | null {
+  if (answer.found || !hasRemoteBackend) {
+    return answer.response;
+  }
+
+  return null;
+}
+
 interface RankedChunk extends LocalKnowledgeChunk {
   score: number;
 }

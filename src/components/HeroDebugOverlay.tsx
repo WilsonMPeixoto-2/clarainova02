@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
  * Shows safe zones and current CSS variable values for the 3-layer hero.
  */
 const HeroDebugOverlay = () => {
-  const [active, setActive] = useState(false);
+  const active =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("debug") === "hero";
   const [info, setInfo] = useState({
     bp: "",
     copyMax: "",
@@ -16,9 +18,7 @@ const HeroDebugOverlay = () => {
   });
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("debug") !== "hero") return;
-    setActive(true);
+    if (!active) return;
 
     const update = () => {
       const hero = document.querySelector(".clara-hero") as HTMLElement | null;
@@ -44,7 +44,7 @@ const HeroDebugOverlay = () => {
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, []);
+  }, [active]);
 
   if (!active) return null;
 

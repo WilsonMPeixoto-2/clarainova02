@@ -7,6 +7,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function getErrorMessage(error: unknown, fallback = "Erro interno"): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  return fallback;
+}
+
+function getErrorStatus(error: unknown): number | undefined {
+  if (typeof error !== "object" || error === null) {
+    return undefined;
+  }
+
+  const statusCandidate = "status" in error
+    ? error.status
+    : "httpStatusCode" in error
+      ? error.httpStatusCode
+      : undefined;
+
+  return typeof statusCandidate === "number" ? statusCandidate : undefined;
+}
+
 /**
  * Edge function: receives pre-extracted text chunks,
  * generates embeddings via @google/genai SDK, and upserts to DB.
@@ -62,9 +88,9 @@ Deno.serve(async (req) => {
           config: { outputDimensionality: 768 },
         });
         return result.embeddings?.[0]?.values || null;
-      } catch (err: any) {
-        console.error(`Embedding error:`, err.message);
-        const status = err?.status || err?.httpStatusCode;
+      } catch (err: unknown) {
+        console.error(`Embedding error:`, getErrorMessage(err));
+        const status = getErrorStatus(err);
         if (status === 429 || (status && status >= 500)) {
           throw new Error(`GEMINI_${status}`);
         }
@@ -108,9 +134,9 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("embed-chunks error:", error);
-    const msg = String(error?.message || error);
+    const msg = getErrorMessage(error);
     if (msg.includes("GEMINI_429")) {
       return new Response(
         JSON.stringify({ ok: false, error: "RATE_LIMITED", request_id }),

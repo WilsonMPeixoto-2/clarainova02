@@ -6,6 +6,13 @@ import { useChat } from '@/hooks/useChatStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+const STARTER_PROMPTS = [
+  'Como incluir um documento externo no SEI-Rio?',
+  'Como montar um bloco de assinatura para outra unidade?',
+  'Como enviar um processo para mais de uma unidade?',
+  'Quais etapas devo conferir antes de encaminhar um processo?',
+];
+
 const ChatSheet = () => {
   const { isOpen, messages, pendingQuestion, isLoading, isStreaming, closeChat, sendMessage, clearMessages } = useChat();
   const isMobile = useIsMobile();
@@ -73,10 +80,9 @@ const ChatSheet = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.aside
-            className="fixed top-0 right-0 z-[100] h-full flex flex-col border-l border-[hsl(var(--border-subtle))]"
+            className="chat-shell fixed top-0 right-0 z-[100] h-full flex flex-col border-l border-[hsl(var(--border-subtle))]"
             style={{
               width: sheetWidth,
-              background: 'hsl(var(--surface-1))',
             }}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
@@ -87,14 +93,17 @@ const ChatSheet = () => {
             aria-modal="true"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[hsl(var(--border-subtle))]">
+            <div className="chat-header-surface flex items-center justify-between px-5 py-4 border-b border-[hsl(var(--border-subtle))]">
               <div className="flex items-center gap-3">
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-primary/35 bg-primary/10 text-primary">
                   <MessageCircle size={18} />
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-foreground">CLARA</p>
-                  <p className="text-[11px] text-muted-foreground">Assistente Administrativa</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[11px] text-muted-foreground">Apoio ao SEI-Rio</p>
+                    <span className="chat-status-pill">Base documental ativa</span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -127,8 +136,20 @@ const ChatSheet = () => {
                     </div>
                     <p className="text-sm font-medium text-foreground mb-1">Olá! Sou a CLARA.</p>
                     <p className="text-xs text-muted-foreground max-w-[28ch]">
-                      Faça uma pergunta sobre SEI-Rio, legislação ou rotinas administrativas.
+                      Faça uma pergunta sobre etapas, documentos, assinatura ou tramitação no SEI-Rio.
                     </p>
+                    <div className="chat-starter-grid mt-5">
+                      {STARTER_PROMPTS.map((prompt) => (
+                        <button
+                          key={prompt}
+                          type="button"
+                          className="chat-starter-chip"
+                          onClick={() => sendMessage(prompt)}
+                        >
+                          {prompt}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -139,8 +160,8 @@ const ChatSheet = () => {
                   >
                     <div
                       className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground rounded-br-md'
-                          : 'bg-[hsl(var(--surface-2))] text-foreground border border-[hsl(var(--border-subtle))] rounded-bl-md'
+                          ? 'chat-message-user text-primary-foreground rounded-br-md'
+                          : 'chat-message-assistant text-foreground rounded-bl-md'
                         }`}
                     >
                       {msg.role === 'assistant' ? (
@@ -177,7 +198,7 @@ const ChatSheet = () => {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Digite sua pergunta..."
+                  placeholder="Pergunte sobre etapas, documentos ou tramitação..."
                   className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-2"
                   disabled={isLoading}
                 />
@@ -191,7 +212,7 @@ const ChatSheet = () => {
                 </button>
               </div>
               <p className="text-[10px] text-muted-foreground/60 text-center mt-2">
-                CLARA pode cometer erros. Valide informações com fontes oficiais.
+                Valide sempre as orientações com os documentos oficiais da sua rotina.
               </p>
             </form>
           </motion.aside>

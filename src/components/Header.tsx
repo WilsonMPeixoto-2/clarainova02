@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Menu, X, MessageCircle } from 'lucide-react';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
-import { Button } from '@/components/ui/button';
 import { useLocation } from 'react-router-dom';
 import { useChat } from '@/hooks/useChatStore';
 
@@ -12,8 +11,8 @@ const Header = () => {
   const { openChat } = useChat();
 
   const primaryLinks = [
-    { label: 'Base de Conhecimento', href: '/#conhecimento', note: 'Guias e fluxos principais' },
-    { label: 'Dúvidas Frequentes', href: '/#faq', note: 'Perguntas e respostas rápidas' },
+    { label: 'Funcionalidades', href: '/#conhecimento', note: 'O que a CLARA ajuda a fazer' },
+    { label: 'Perguntas frequentes', href: '/#faq', note: 'Uso, limites e respostas rápidas' },
   ];
 
   const secondaryLinks = [
@@ -22,7 +21,9 @@ const Header = () => {
     { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com', note: 'wilsonmp2@gmail.com' },
   ];
 
-  const utilityLinks = [
+  const desktopLinks = [
+    { label: 'Funcionalidades', href: '/#conhecimento' },
+    { label: 'FAQ', href: '/#faq' },
     { label: 'Privacidade', href: '/privacidade' },
     { label: 'Termos', href: '/termos' },
     { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com' },
@@ -46,20 +47,19 @@ const Header = () => {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-[220ms] ${
           isScrolled
-            ? 'bg-[hsl(var(--surface-1)/0.85)] backdrop-blur-xl border-b border-[hsl(var(--border-subtle))] shadow-sm'
+            ? 'bg-[linear-gradient(180deg,hsl(var(--surface-1)/0.9),hsl(var(--surface-1)/0.72))] backdrop-blur-xl border-b border-[hsl(var(--border-subtle))] shadow-[0_20px_50px_hsl(var(--shadow)/0.32)]'
             : 'bg-transparent border-b border-transparent'
         }`}
         role="banner"
       >
-        <div className="container mx-auto max-w-[1600px] px-6 md:px-8 xl:px-10">
-          <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(300px,1fr)_auto_minmax(300px,1fr)] md:gap-10">
-            {/* Brand */}
+        <div className="container mx-auto max-w-[1440px] 2xl:max-w-[1480px] px-5 md:px-8 xl:px-10">
+          <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(260px,1fr)_auto_auto] md:gap-5 lg:gap-7">
             <a
               href="/"
-              className="inline-flex items-center gap-2 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[280px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
+              className="inline-flex items-center gap-2.5 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[280px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
             >
               <span
-                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-primary/35 bg-[linear-gradient(135deg,hsl(var(--gold-1)/0.15),hsl(var(--gold-2)/0.25))] text-primary text-lg font-bold tracking-tight"
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-primary/35 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--gold-2)/0.55),transparent_55%),linear-gradient(135deg,hsl(var(--gold-1)/0.18),hsl(var(--gold-2)/0.28))] text-primary text-lg font-bold tracking-tight shadow-[0_0_24px_hsl(var(--glow)/0.18)]"
                 aria-hidden="true"
               >
                 C
@@ -69,22 +69,21 @@ const Header = () => {
                   CLARA
                 </span>
                 <span className="hidden md:block text-[0.64rem] font-medium tracking-[0.03em] text-muted-foreground/85 mt-0.5 max-w-[28ch] leading-tight">
-                  Inteligência Administrativa & Inovação no Serviço Público
+                  Apoio ao uso do SEI-Rio e a rotinas administrativas
                 </span>
               </span>
               <span className="sr-only">CLARA - Página inicial</span>
             </a>
 
-            <nav className="hidden md:flex items-center justify-center md:justify-self-center gap-5 lg:gap-7" aria-label="Links utilitários">
-              {utilityLinks.map((link) => {
+            <nav className="hidden md:flex items-center justify-self-center gap-2 lg:gap-2.5 xl:-translate-x-10 2xl:-translate-x-16" aria-label="Navegação principal">
+              {desktopLinks.map((link) => {
                 const isActive = isActiveLink(link.href);
                 return (
                   <a
                     key={link.label}
                     href={link.href}
-                    className={`text-xs font-semibold uppercase tracking-[0.1em] transition-colors ${
-                      isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                    data-active={isActive}
+                    className="header-pill"
                   >
                     {link.label}
                   </a>
@@ -92,18 +91,18 @@ const Header = () => {
               })}
             </nav>
 
-            <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-3 shrink-0 md:justify-self-end">
-              <Button
-                size="sm"
-                className="btn-clara-secondary type-label h-10 min-w-[102px] px-4 gap-2 rounded-full"
+            <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-2.5 shrink-0 md:justify-self-end xl:-translate-x-12 2xl:-translate-x-20">
+              <button
+                type="button"
+                className="header-pill header-pill-action"
                 onClick={() => openChat()}
               >
                 <MessageCircle size={16} aria-hidden="true" />
                 Chat
-              </Button>
+              </button>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="inline-flex items-center justify-center gap-2 h-10 px-3 sm:min-w-[108px] rounded-lg border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1)/0.8)] text-muted-foreground hover:text-foreground hover:border-primary/35 transition-all duration-[150ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="header-pill header-pill-action"
                 aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
                 aria-expanded={menuOpen}
                 aria-controls="site-menu"
@@ -118,12 +117,10 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Menu Backdrop */}
       {menuOpen && (
         <div className="menu-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />
       )}
 
-      {/* Navigation Drawer */}
       <nav
         id="site-menu"
         className={`drawer-shell fixed top-0 right-0 z-50 h-full w-[min(92vw,360px)] border-l transform transition-transform duration-[220ms] ease-out
@@ -133,7 +130,6 @@ const Header = () => {
         aria-label="Menu de navegação"
         aria-hidden={!menuOpen}
       >
-        {/* Drawer Header */}
         <div className="drawer-header-surface flex items-center justify-between px-6 py-5 border-b">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-primary/35 bg-primary/10 text-primary text-xs font-semibold" aria-hidden="true">
@@ -153,11 +149,10 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Drawer Content */}
         <div className="flex flex-col h-[calc(100%-86px)]">
           <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
             <div className="space-y-1">
-              <p className="px-3 pb-2 text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Base e suporte</p>
+              <p className="px-3 pb-2 text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Home</p>
               {primaryLinks.map((link) => {
                 const isActive = isActiveLink(link.href);
                 return (
@@ -207,14 +202,13 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Drawer Footer */}
           <div className="drawer-footer-surface px-4 py-5 border-t">
-            <Button className="btn-clara-primary type-label w-full gap-2 h-11" onClick={() => { setMenuOpen(false); openChat(); }}>
+            <button type="button" className="btn-clara-primary type-label w-full gap-2 h-11 inline-flex items-center justify-center" onClick={() => { setMenuOpen(false); openChat(); }}>
               <MessageCircle size={18} aria-hidden="true" />
               Chat com CLARA
-            </Button>
+            </button>
             <p className="text-hint text-center mt-3 leading-relaxed">
-              Atalhos, base de apoio e documentos em um único menu.
+              Acesse funcionalidades, perguntas frequentes e o chat em um só lugar.
             </p>
           </div>
         </div>

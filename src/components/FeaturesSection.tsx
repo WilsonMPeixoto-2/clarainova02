@@ -1,63 +1,81 @@
+import { useSyncExternalStore } from 'react';
 import { motion } from 'motion/react';
-import { FileSearch, MessagesSquare, BookCheck, ArrowUpRight, Sparkles, Gavel, ShieldCheck, Route, FileCheck2 } from 'lucide-react';
+import { FileSearch, MessagesSquare, BookCheck, ArrowUpRight, ShieldCheck, Route, FileCheck2, Files, Signature, ClipboardList } from 'lucide-react';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
 import { useChat } from '@/hooks/useChatStore';
+import { getUhdDisplaySnapshot, subscribeToUhdDisplay } from '@/lib/displayProfile';
 
 const features = [
   {
-    id: 'search',
+    id: 'question',
     icon: FileSearch,
-    title: 'Pesquisa sem ruído',
-    subtitle: 'Normas, prazos e procedimentos em segundos',
-    description: 'Interprete dúvidas em linguagem natural e vá direto ao ponto com contexto administrativo.',
-    points: ['Leitura semântica de consultas', 'Prioriza fontes documentais', 'Histórico e continuidade de contexto'],
+    title: 'Pergunte do seu jeito',
+    subtitle: 'Dúvidas de rotina em linguagem natural',
+    description: 'Descreva a tarefa como você explicaria para um colega. A CLARA organiza a resposta com foco na ação que precisa ser feita no SEI-Rio.',
+    points: ['Consultas sobre telas, etapas e comandos do sistema', 'Continuidade de contexto dentro da conversa', 'Menos necessidade de traduzir a dúvida para linguagem técnica'],
+    prompt: 'Como incluir um documento externo no SEI-Rio?',
   },
   {
     id: 'answers',
     icon: MessagesSquare,
-    title: 'Respostas com fundamento',
-    subtitle: 'Objetivo quando precisa, didático quando importa',
-    description: 'Escolha entre respostas diretas ou explicativas, mantendo rastreabilidade e transparência.',
-    points: ['Modo Direto ou Didático', 'Transparência de fonte', 'Diagnóstico amigável de erros'],
+    title: 'Resposta direta ou passo a passo',
+    subtitle: 'Do resumo rápido ao modo didático',
+    description: 'Você pode pedir uma resposta curta para consulta imediata ou uma explicação em etapas quando precisar executar o procedimento com mais calma.',
+    points: ['Modo Direto para consultas rápidas', 'Modo Didático com sequência de etapas', 'Indicação das fontes da base quando houver respaldo'],
+    prompt: 'Explique em passo a passo como usar um bloco de assinatura no SEI-Rio.',
   },
   {
     id: 'workflow',
     icon: BookCheck,
-    title: 'Execução orientada',
-    subtitle: 'Do entendimento à ação com menos retrabalho',
-    description: 'Transforme orientação em execução com fluxo claro, linguagem simples e cadência profissional.',
-    points: ['Fluxos acionáveis', 'Padronização operacional', 'Menos ambiguidade na rotina'],
+    title: 'Apoio à execução processual',
+    subtitle: 'Documentos, assinatura e tramitação com mais clareza',
+    description: 'A CLARA ajuda a revisar o fluxo antes da ação, reduzindo dúvidas sobre anexos, encaminhamentos, atribuições e conferências operacionais.',
+    points: ['Organização de documentos e anexos', 'Apoio ao uso de blocos e encaminhamentos', 'Checagem operacional antes do envio'],
+    prompt: 'Quais etapas devo conferir antes de encaminhar um processo no SEI-Rio?',
   },
 ];
 
-const pipeline = [
-  { step: '01', title: 'Pergunte com linguagem natural', description: 'Sem comandos técnicos. Diga o que precisa resolver.' },
-  { step: '02', title: 'Receba base + racional', description: 'Resposta estruturada com contexto e rastreio.' },
-  { step: '03', title: 'Aja com segurança', description: 'Siga o fluxo recomendado e valide o resultado.' },
-];
-
 const bentoCards = [
-  { title: 'Leitura Normativa', description: 'Consulte requisitos, prazos e critérios com síntese objetiva para tomada de decisão.', icon: Gavel, variant: 'highlight' as const },
-  { title: 'Fluxo de Tramitação', description: 'Mapeie a ordem correta de encaminhamento no SEI e reduza retrabalho operacional.', icon: Route, variant: 'default' as const },
-  { title: 'Validação Documental', description: 'Confira checklist de anexos, assinaturas e evidências antes da submissão final.', icon: FileCheck2, variant: 'default' as const },
-  { title: 'Conformidade e Risco', description: 'Antecipe inconsistências com orientações de conformidade e justificativa de cada etapa.', icon: ShieldCheck, variant: 'default' as const },
+  { title: 'Inclusão de documentos', description: 'Ajuda a localizar etapas para incluir documento interno ou externo, preencher campos e revisar a conferência do arquivo.', icon: Files, variant: 'highlight' as const },
+  { title: 'Bloco de assinatura', description: 'Mostra como reunir documentos, disponibilizar para outras unidades e acompanhar o fluxo de assinatura.', icon: Signature, variant: 'default' as const },
+  { title: 'Tramitação e envio', description: 'Orienta sobre encaminhamento, envio para uma ou mais unidades, retorno programado e anexação de processos.', icon: Route, variant: 'default' as const },
+  { title: 'Conferência da instrução', description: 'Apoia a revisão de anexos, comentários, atribuição e outros pontos operacionais antes do envio.', icon: ClipboardList, variant: 'default' as const },
 ];
 
 const FeaturesSection = () => {
   const { openChat } = useChat();
+  const isUhdDisplay = useSyncExternalStore(
+    subscribeToUhdDisplay,
+    getUhdDisplaySnapshot,
+    () => false,
+  );
+  const knowledgeVideoSrc = isUhdDisplay ? '/videos/energy-flow-4k.mp4' : '/videos/energy-flow.mp4';
+
   return (
     <section id="conhecimento" className="knowledge-section py-20 md:py-28 relative overflow-hidden" aria-labelledby="features-heading">
+      <div className="knowledge-ambient-media" aria-hidden="true">
+        <video
+          className="knowledge-ambient-video"
+          src={knowledgeVideoSrc}
+          poster="/videos/energy-flow-poster-4k.jpg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        />
+      </div>
       <div id="features" className="absolute -top-20" aria-hidden="true" />
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="knowledge-header max-w-4xl mx-auto text-center mb-12 md:mb-16">
             <span className="knowledge-kicker">
-              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-              Base de Conhecimento
+              <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+              Funcionalidades da CLARA
             </span>
-            <h2 id="features-heading" className="text-h2 mt-4">Um fluxo premium para transformar dúvida em decisão</h2>
-            <p className="text-body text-lg max-w-3xl mx-auto mt-4">Estrutura visual, técnica e operacional pensada para produtividade real: clareza, velocidade e precisão.</p>
+            <h2 id="features-heading" className="text-h2 mt-4">Apoio prático para rotinas no SEI-Rio</h2>
+            <p className="text-body text-lg max-w-3xl mx-auto mt-4">A CLARA foi desenhada para orientar tarefas frequentes do sistema, com foco em documentos, assinatura, tramitação e conferência de etapas.</p>
           </div>
         </ScrollReveal>
 
@@ -65,8 +83,8 @@ const FeaturesSection = () => {
           <div className="max-w-6xl mx-auto mb-12 md:mb-16">
             <div className="bento-divider mb-7 md:mb-8" aria-hidden="true" />
             <div className="text-center md:text-left mb-5 md:mb-6">
-              <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Serviços Prioritários</p>
-              <h3 className="text-h3 mt-2">Blocos rápidos para consultas de rotina</h3>
+              <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Funcionalidades centrais</p>
+              <h3 className="text-h3 mt-2">Onde a CLARA ajuda hoje</h3>
             </div>
             <div className="bento-services-grid">
               {bentoCards.map((card) => (
@@ -78,7 +96,7 @@ const FeaturesSection = () => {
 
         <div className="knowledge-grid" role="list" aria-label="Recursos da CLARA">
           {features.map((feature, index) => (
-            <ScrollReveal key={feature.id} delay={index * 0.08} className={index === 0 ? 'lg:col-span-2' : ''}>
+            <ScrollReveal key={feature.id} delay={index * 0.08}>
               <motion.article className="knowledge-card group h-full" role="listitem" whileHover={{ y: -4, rotateX: 1.2, rotateY: index === 1 ? 0.8 : -0.8 }} transition={{ type: 'spring', stiffness: 260, damping: 22 }}>
                 <div className="knowledge-card-head">
                   <div className="knowledge-icon" aria-hidden="true"><feature.icon className="w-6 h-6 text-primary" strokeWidth={1.6} /></div>
@@ -90,34 +108,13 @@ const FeaturesSection = () => {
                 <ul className="knowledge-points" aria-label={`Diferenciais de ${feature.title}`}>
                   {feature.points.map((point) => (<li key={point}>{point}</li>))}
                 </ul>
-                <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }} onClick={() => openChat(feature.title)}>
-                  Explorar no chat <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+                <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }} onClick={() => openChat(feature.prompt)}>
+                  Levar essa tarefa ao chat <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
                 </motion.button>
               </motion.article>
             </ScrollReveal>
           ))}
         </div>
-
-        <ScrollReveal delay={0.12}>
-          <div className="knowledge-pipeline" aria-label="Como funciona">
-            {pipeline.map((item) => (
-              <div key={item.step} className="knowledge-step">
-                <span className="knowledge-step-index">{item.step}</span>
-                <h3 className="knowledge-step-title">{item.title}</h3>
-                <p className="knowledge-step-description">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.18}>
-          <div className="knowledge-bottom-cta">
-            <p className="text-body">Pronto para validar um caso real da sua rotina?</p>
-            <motion.button type="button" className="btn-clara-primary type-label inline-flex items-center justify-center gap-2 px-6" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={() => openChat()}>
-              Iniciar análise com a CLARA
-            </motion.button>
-          </div>
-        </ScrollReveal>
       </div>
     </section>
   );

@@ -10,7 +10,9 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 // Lazy load with retry for cache-busted deploys
-function lazyWithRetry(factory: () => Promise<{ default: ComponentType<any> }>) {
+function lazyWithRetry<TProps extends object>(
+  factory: () => Promise<{ default: ComponentType<TProps> }>
+) {
   return lazy(() =>
     factory().catch(() => {
       // If chunk fails (e.g. old cache), reload once

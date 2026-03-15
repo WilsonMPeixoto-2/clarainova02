@@ -1,16 +1,18 @@
+import { lazy, Suspense } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";
-import ChatSheet from "@/components/ChatSheet";
 import { ChatProvider } from "@/hooks/useChatStore";
+
+const ChatSheet = lazy(() => import("@/components/ChatSheet"));
 
 const Index = () => {
   return (
     <ChatProvider>
-      <title>CLARA — Consultora de Legislação e Apoio a Rotinas Administrativas</title>
-      <meta name="description" content="CLARA é sua assistente especializada em sistemas eletrônicos de informações e procedimentos administrativos. Orientações passo a passo com indicação de fontes documentais." />
+      <title>CLARA — apoio ao uso do SEI-Rio e a rotinas administrativas</title>
+      <meta name="description" content="CLARA é uma ferramenta de apoio para dúvidas sobre uso do SEI-Rio, documentos, tramitação e etapas operacionais em rotinas administrativas." />
       <div className="min-h-screen bg-background">
         {/* Skip link */}
         <a
@@ -27,7 +29,9 @@ const Index = () => {
           <FAQSection />
         </main>
         <Footer />
-        <ChatSheet />
+        <Suspense fallback={null}>
+          <ChatSheet />
+        </Suspense>
       </div>
     </ChatProvider>
   );

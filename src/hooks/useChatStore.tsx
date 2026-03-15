@@ -26,13 +26,13 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 function getMockResponse(): Promise<string> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(`Olá! Sou a **CLARA** — Consultora de Legislação e Apoio a Rotinas Administrativas.
+      resolve(`Olá! Sou a **CLARA**.
 
 Posso ajudar com:
 - 📋 Procedimentos no **SEI-Rio**
-- 📖 Consultas a **legislação municipal**
-- 🔄 Fluxos de **tramitação** e prazos
-- ✅ **Checklists** documentais
+- 🔄 Fluxos de **tramitação**, envio e retorno
+- ✍️ Uso de **blocos de assinatura** e documentos
+- ✅ **Conferência** de etapas antes do encaminhamento
 
 Como posso ajudar você hoje?`);
     }, 800 + Math.random() * 600);

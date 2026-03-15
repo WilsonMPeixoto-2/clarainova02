@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import type { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import {
   Table,
   TableBody,
@@ -15,16 +17,8 @@ import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, Lo
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import UsageStatsCard from "@/components/UsageStatsCard";
-import { extractText, getDocumentProxy } from "unpdf";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-interface Document {
-  id: string;
-  name: string;
-  file_path: string;
-  status: string;
-  created_at: string;
-}
+type Document = Tables<"documents">;
 
 type IngestionStatus = "idle" | "extracting" | "vectorizing" | "verifying" | "done" | "partial" | "failed" | "canceled";
 
@@ -48,17 +42,41 @@ interface IngestionState {
   abortController?: AbortController;
 }
 
+function getErrorMessage(error: unknown, fallback = "Falha desconhecida"): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  return fallback;
+}
+
 // ─── Semantic text chunking via LangChain ───────────────────────────────────
 
-const langChainSplitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 1000,
-  chunkOverlap: 200,
-  separators: ["\n\n", "\n", " ", ""],
-});
+let langChainSplitterPromise: Promise<RecursiveCharacterTextSplitter> | null = null;
+
+function getLangChainSplitter() {
+  if (!langChainSplitterPromise) {
+    langChainSplitterPromise = import("@langchain/textsplitters").then(
+      ({ RecursiveCharacterTextSplitter }) =>
+        new RecursiveCharacterTextSplitter({
+          chunkSize: 1000,
+          chunkOverlap: 200,
+          separators: ["\n\n", "\n", " ", ""],
+        })
+    );
+  }
+
+  return langChainSplitterPromise;
+}
 
 async function splitWithLangChain(rawText: string): Promise<string[]> {
-  const normalized = rawText.replace(/\u0000/g, "").trim();
-  const chunks = await langChainSplitter.splitText(normalized);
+  const splitter = await getLangChainSplitter();
+  const normalized = rawText.replaceAll("\0", "").trim();
+  const chunks = await splitter.splitText(normalized);
   return chunks.filter((c) => c.trim().length >= 3);
 }
 
@@ -83,6 +101,7 @@ async function extractTextFromPDF(
   file: File,
   onProgress?: (pagesRead: number, totalPages: number) => void
 ): Promise<PageText[]> {
+  const { extractText, getDocumentProxy } = await import("unpdf");
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
   const totalPages = pdf.numPages;
@@ -104,8 +123,8 @@ async function extractTextFromPDF(
 
 const RETRY_DELAYS = [500, 1500, 3000];
 
-function isTransientError(error: any): boolean {
-  const msg = String(error?.message || error || "").toLowerCase();
+function isTransientError(error: unknown): boolean {
+  const msg = getErrorMessage(error, String(error ?? "")).toLowerCase();
   // Network failures
   if (msg.includes("fetch") || msg.includes("network") || msg.includes("failed to fetch") || msg.includes("aborted")) {
     return true;
@@ -129,23 +148,23 @@ async function withRetry<T>(
   opts: { retries?: number; signal?: AbortSignal } = {}
 ): Promise<T> {
   const { retries = 3, signal } = opts;
-  let lastErr: any;
+  let lastErr: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (signal?.aborted) throw new Error("Cancelado pelo usuário");
     try {
       return await fn();
-    } catch (err: any) {
+    } catch (err: unknown) {
       lastErr = err;
       if (attempt < retries && isTransientError(err) && !signal?.aborted) {
         const delay = RETRY_DELAYS[attempt] || 3000;
-        console.warn(`Retry ${attempt + 1}/${retries} after ${delay}ms:`, err.message);
+        console.warn(`Retry ${attempt + 1}/${retries} after ${delay}ms:`, getErrorMessage(err));
         await new Promise((r) => setTimeout(r, delay));
       } else {
         throw err;
       }
     }
   }
-  throw lastErr;
+  throw (lastErr instanceof Error ? lastErr : new Error(getErrorMessage(lastErr)));
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -182,9 +201,7 @@ async function embedBatchWithRetry(
       const code = fnData?.error || "UNKNOWN";
       if (isValidationError(code)) {
         // Don't retry validation errors
-        const err = new Error(`Validação: ${code}`);
-        (err as any).noRetry = true;
-        throw err;
+        throw new Error(`Validação: ${code}`);
       }
       throw new Error(`EMBED_APP_ERROR: ${code} (req: ${fnData?.request_id || "?"})`);
     }
@@ -208,7 +225,7 @@ async function getExistingChunkIndexes(documentId: string): Promise<Set<number>>
     .from("document_chunks")
     .select("chunk_index")
     .eq("document_id", documentId);
-  return new Set((data || []).map((r: any) => r.chunk_index));
+  return new Set((data || []).map((row) => row.chunk_index));
 }
 
 export default function Admin() {
@@ -224,7 +241,7 @@ export default function Admin() {
       .from("documents")
       .select("*")
       .order("created_at", { ascending: false });
-    if (data) setDocuments(data as unknown as Document[]);
+      if (data) setDocuments(data);
   }, []);
 
   // Polling
@@ -328,13 +345,14 @@ export default function Admin() {
 
       try {
         await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`Batch at index ${batchStartIndex} failed after retries:`, err);
+        const message = getErrorMessage(err);
         updateIngestion(fileName, {
           lastError: {
-            message: err.message,
+            message,
             chunkIndex: batchStartIndex,
-            code: err.message.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
+            code: message.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
           },
         });
         // Don't throw — move to verification
@@ -454,7 +472,7 @@ export default function Admin() {
         .single();
 
       if (docErr || !doc) throw new Error("Falha ao registrar documento");
-      const documentId = (doc as any).id;
+      const documentId = doc.id;
 
       if (abortController.signal.aborted) {
         await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
@@ -500,19 +518,20 @@ export default function Admin() {
       }
 
       fetchDocuments();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Client-side ingestion error:", err);
+      const message = getErrorMessage(err);
       updateIngestion(file.name, {
         status: "failed",
-        phaseLabel: `Erro: ${err.message || "Falha desconhecida"}`,
-        lastError: { message: err.message },
+        phaseLabel: `Erro: ${message}`,
+        lastError: { message },
       });
-      toast({ title: "❌ Erro no processamento", description: err.message, variant: "destructive" });
+      toast({ title: "❌ Erro no processamento", description: message, variant: "destructive" });
       fetchDocuments();
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -638,8 +657,8 @@ export default function Admin() {
       setTimeout(() => {
         setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
       }, 5000);
-    } catch (err: any) {
-      toast({ title: "Erro ao reprocessar", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Erro ao reprocessar", description: getErrorMessage(err), variant: "destructive" });
       await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
       fetchDocuments();
     } finally {

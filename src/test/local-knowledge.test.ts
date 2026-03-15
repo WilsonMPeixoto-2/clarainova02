@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { answerQuestionFromChunks, type LocalKnowledgeChunk } from "@/lib/localKnowledge";
+import {
+  answerQuestionFromChunks,
+  selectLocalKnowledgeResponse,
+  type LocalKnowledgeChunk,
+} from "@/lib/localKnowledge";
 
 describe("answerQuestionFromChunks", () => {
   it("builds a grounded response from relevant local chunks", () => {
@@ -47,5 +51,27 @@ describe("answerQuestionFromChunks", () => {
 
     expect(answer.found).toBe(false);
     expect(answer.response).toContain("Nao encontrei");
+  });
+
+  it("falls back to the backend when local retrieval is not confident enough", () => {
+    const answer = {
+      found: false,
+      response: "Nao encontrei uma resposta confiavel na base local.",
+      sources: [],
+      topScore: 0,
+    };
+
+    expect(selectLocalKnowledgeResponse(answer, true)).toBeNull();
+  });
+
+  it("keeps the local response when no remote backend is available", () => {
+    const answer = {
+      found: false,
+      response: "Nao encontrei uma resposta confiavel na base local.",
+      sources: [],
+      topScore: 0,
+    };
+
+    expect(selectLocalKnowledgeResponse(answer, false)).toContain("Nao encontrei");
   });
 });
