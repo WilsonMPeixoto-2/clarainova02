@@ -1,38 +1,86 @@
 
 
-## Plano de Correções — 3 Itens
+## Plano: Upgrade do System Prompt e Melhoria do RAG
 
-### 1. Tag de manutenção → Versão prévia 2.1
+### Problema atual
 
-No `HeroSection.tsx` (linha 261), trocar o texto e o estilo do chip:
-- **De**: `CLARA em manutenção e atualização. Volta em breve.`
-- **Para**: `Versão prévia 2.1`
-- Trocar a classe `maintenance-dot animate-pulse-subtle` por um indicador estático ou de versão (sem pulse de alerta).
+1. **System prompt generico** -- o prompt atual mistura formatacao visual com regras de escopo, sem hierarquia clara de fontes. Falta a politica explicita de "base interna > busca externa > conhecimento do modelo".
 
-### 2. Clara mais à direita (menos competição com texto)
+2. **Modo `kb_only` bypassa o Gemini** -- quando `useKnowledgeOnly` e `true`, o sistema retorna um texto cru montado em `buildKnowledgeOnlyResponse()` sem passar pelo modelo. Resultado: respostas sem formatacao, sem passo-a-passo, sem tom da CLARA.
 
-O `object-position` atual da imagem/vídeo no desktop é `80% center` (linha 500 do `index.css`). A Clara está muito centralizada. Ajustar para empurrá-la mais para a direita:
+3. **`maxOutputTokens: 2048` e baixo** -- respostas complexas com passo-a-passo e fontes sao cortadas.
 
-| Breakpoint | `object-position` atual | Novo valor |
-|---|---|---|
-| ≥900px | `80% center` | `85% center` |
+4. **Frontend tenta `localKnowledge` antes do backend** -- `useChatStore.tsx` chama `answerQuestionWithLocalKnowledge()` e, se retornar algo, nunca chega ao RAG real. Isso curto-circuita o pipeline inteiro.
 
-Adicionalmente, o `mask-image` do `.hero-media-stage` (fade de 15%) pode ser ajustado para começar o fade um pouco antes (~20%), criando mais separação visual entre o texto e a personagem.
+### O que muda
 
-### 3. Inconsistência nas respostas — `temperature: 0.7`
+#### 1. Substituir o SYSTEM_PROMPT inteiro
 
-A causa raiz está no `chat/index.ts` linha 162: `temperature: 0.7`. Este valor introduz aleatoriedade significativa nas respostas do Gemini. Para respostas consistentes e determinísticas (ideal para um assistente de legislação/procedimentos):
+Usar o prompt completo que voce definiu, com as seguintes secoes:
+- IDENTIDADE E TOM (pedagogico, acolhedor, elegante)
+- ESCOPO (SEI/SEI-Rio, instrucao processual, normas oficiais -- com fallback educado)
+- POLITICA DE FONTES (base interna prioritaria, consolidacao entre documentos, tratamento de divergencias)
+- BUSCA EXTERNA (excecao controlada, apenas fontes oficiais)
+- CONHECIMENTO DO MODELO (complementar, nunca substitui base interna)
+- ESTRUTURA DAS RESPOSTAS (Resposta Inicial > Passo a Passo > Observacoes > Fontes ao final)
+- FORMATACAO E APRESENTACAO (escaneavel, titulos curtos, listas, destaques)
+- FONTES INTERNAS e EXTERNAS (formato de citacao)
+- CONDUTA SEM BASE SUFICIENTE
+- PROIBICOES
+- REGRAS DE SEGURANCA (manter as existentes)
 
-- **Reduzir `temperature` de `0.7` para `0.2`** — mantém criatividade mínima na formatação mas garante que o conteúdo factual seja reproduzível.
-- Opcionalmente adicionar `topP: 0.9` para reforçar a consistência.
+**Arquivo:** `supabase/functions/chat/index.ts` -- constante `SYSTEM_PROMPT`
 
-### Arquivos a editar
+#### 2. Eliminar modo `kb_only` -- sempre passar pelo Gemini
 
-| # | Arquivo | Alteração |
-|---|---------|-----------|
-| 1 | `src/components/HeroSection.tsx` | Texto do chip: "Versão prévia 2.1" |
-| 2 | `src/index.css` | `object-position: 85% center`, mask fade 20% |
-| 3 | `supabase/functions/chat/index.ts` | `temperature: 0.2` |
+Remover o branch que retorna `knowledgeOnlyResponse` diretamente. Todo contexto da base interna deve ser injetado no prompt e processado pelo Gemini para que a resposta tenha o tom, formatacao e estrutura da CLARA.
 
-Três edições cirúrgicas, zero risco estrutural.
+**Arquivos:**
+- `supabase/functions/chat/knowledge.ts` -- remover `buildKnowledgeOnlyResponse`, `buildSummaryLines`, campos `useKnowledgeOnly`/`knowledgeOnlyResponse`
+- `supabase/functions/chat/index.ts` -- remover o branch `kb_only` (linhas 340-374)
+
+#### 3. Melhorar a injecao de contexto no prompt
+
+Atualizar `buildKnowledgeContext()` para incluir instrucoes mais claras ao modelo:
+- Indicar pagina quando disponivel no `sourceLabel`
+- Instruir o Gemini a citar fontes ao final, nao no meio
+- Instruir a consolidar informacoes de multiplos documentos
+
+#### 4. Aumentar `maxOutputTokens` para 4096
+
+Para comportar respostas estruturadas com passo-a-passo + observacoes + fontes.
+
+**Arquivo:** `supabase/functions/chat/index.ts` -- config do `generateContentStream`
+
+#### 5. Remover curto-circuito do `localKnowledge` no frontend
+
+O `localKnowledge` intercepta perguntas antes de chegarem ao backend RAG. Remover essa camada para que todas as perguntas passem pelo pipeline completo.
+
+**Arquivo:** `src/hooks/useChatStore.tsx` -- remover o bloco `answerQuestionWithLocalKnowledge`
+
+#### 6. Aumentar `match_count` de 5 para 8
+
+Mais chunks candidatos para o filtro RRF selecionar os melhores 4, melhorando recall.
+
+**Arquivo:** `supabase/functions/chat/index.ts` -- parametro `match_count` no RPC
+
+#### 7. Redeploy da Edge Function `chat`
+
+Apos todas as alteracoes, deploy automatico.
+
+### Arquivos afetados
+
+| Arquivo | Alteracao |
+|---|---|
+| `supabase/functions/chat/index.ts` | System prompt novo, remover branch kb_only, maxOutputTokens 4096, match_count 8 |
+| `supabase/functions/chat/knowledge.ts` | Simplificar: remover kb_only logic, melhorar buildKnowledgeContext |
+| `src/hooks/useChatStore.tsx` | Remover localKnowledge bypass |
+
+### Resultado esperado
+
+- Todas as respostas passam pelo Gemini com o tom e estrutura da CLARA
+- Base interna e sempre prioritaria mas formatada pelo modelo
+- Fontes aparecem organizadas ao final
+- Respostas nao sao cortadas
+- Pipeline RAG nao e curto-circuitado pelo frontend
 
