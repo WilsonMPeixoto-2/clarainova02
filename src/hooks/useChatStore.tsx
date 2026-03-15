@@ -1,5 +1,4 @@
 import { createContext, useCallback, use, useState, type ReactNode } from 'react';
-import { answerQuestionWithLocalKnowledge } from '@/lib/localKnowledge';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
