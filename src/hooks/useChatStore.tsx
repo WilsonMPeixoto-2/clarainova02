@@ -173,14 +173,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
       const allMessages = [...messages, userMsg];
-      let localResponse: string | null = null;
-
-      try {
-        const localAnswer = await answerQuestionWithLocalKnowledge(trimmed);
-        localResponse = localAnswer.response;
-      } catch (localError) {
-        console.warn('Local knowledge base failed, falling back to remote backend.', localError);
-      }
 
       const handleDelta = (token: string) => {
         setIsLoading(false);
@@ -209,11 +201,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           return updated;
         });
       };
-
-      if (localResponse) {
-        await streamTextContent(localResponse, handleDelta, handleDone, handleError);
-        return;
-      }
 
       if (hasBackend) {
         await streamChat(allMessages, handleDelta, handleDone, handleError);
