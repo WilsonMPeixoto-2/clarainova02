@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { prepareKnowledgeDecision } from "../../supabase/functions/chat/knowledge";
 
 describe("prepareKnowledgeDecision", () => {
-  it("returns a knowledge-only answer when retrieval is strong", () => {
+  it("returns grounded context when retrieval is strong", () => {
     const decision = prepareKnowledgeDecision("Como anexar documentos no SEI?", [
       {
         document_name: "Manual SEI.pdf",
@@ -19,12 +19,12 @@ describe("prepareKnowledgeDecision", () => {
       },
     ]);
 
-    expect(decision.useKnowledgeOnly).toBe(true);
-    expect(decision.knowledgeOnlyResponse).toContain("base de conhecimento");
-    expect(decision.sources).toContain("Manual SEI.pdf - pagina 12");
+    expect(decision.knowledgeContext).toContain("BASE DE CONHECIMENTO INTERNA");
+    expect(decision.sources).toContain("Manual SEI.pdf - Página 12");
+    expect(decision.topScore).toBeGreaterThan(0);
   });
 
-  it("keeps knowledge context for model fallback when retrieval is relevant but incomplete", () => {
+  it("returns knowledge context for model when retrieval is relevant", () => {
     const decision = prepareKnowledgeDecision("Como validar assinatura digital?", [
       {
         document_name: "Guia Pratico.pdf",
@@ -34,7 +34,6 @@ describe("prepareKnowledgeDecision", () => {
       },
     ]);
 
-    expect(decision.useKnowledgeOnly).toBe(false);
-    expect(decision.knowledgeContext).toContain("[Fonte Oficial: Guia Pratico.pdf]");
+    expect(decision.knowledgeContext).toContain("[Fonte Oficial: Guia Pratico.pdf");
   });
 });
