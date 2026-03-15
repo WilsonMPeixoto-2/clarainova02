@@ -36,4 +36,36 @@ describe("prepareKnowledgeDecision", () => {
 
     expect(decision.knowledgeContext).toContain("[Fonte Oficial: Guia Pratico.pdf");
   });
+
+  it("prefers explicit section and page metadata when available", () => {
+    const decision = prepareKnowledgeDecision("Como usar bloco de assinatura no SEI-Rio?", [
+      {
+        document_name: "Manual SEI-Rio.pdf",
+        similarity: 0.019,
+        page_start: 44,
+        page_end: 45,
+        section_title: "Bloco de assinatura",
+        content:
+          "Para disponibilizar um documento em bloco de assinatura, abra o processo, escolha a opcao correspondente e selecione as unidades participantes antes de concluir o envio.",
+      },
+    ]);
+
+    expect(decision.sources).toContain("Manual SEI-Rio.pdf - Bloco de assinatura - Página 44-45");
+    expect(decision.knowledgeContext).toContain("Manual SEI-Rio.pdf - Bloco de assinatura - Página 44-45");
+  });
+
+  it("ignores weak chunks without lexical overlap", () => {
+    const decision = prepareKnowledgeDecision("Como solicitar assinatura de outra unidade?", [
+      {
+        document_name: "Manual SEI-Rio.pdf",
+        similarity: 0.007,
+        content:
+          "[Fonte: Manual SEI-Rio.pdf | Página: 9]\n\nA parametrizacao inicial do sistema e realizada pela administracao central da plataforma.",
+      },
+    ]);
+
+    expect(decision.relevantChunks).toHaveLength(0);
+    expect(decision.sources).toHaveLength(0);
+    expect(decision.knowledgeContext).toBe("");
+  });
 });

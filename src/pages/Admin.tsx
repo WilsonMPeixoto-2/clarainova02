@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -19,6 +19,9 @@ import { Link } from "react-router-dom";
 import UsageStatsCard from "@/components/UsageStatsCard";
 
 type Document = Tables<"documents">;
+type IngestionJobInsert = TablesInsert<"ingestion_jobs">;
+type IngestionJobUpdate = TablesUpdate<"ingestion_jobs">;
+type ProcessingEventInsert = TablesInsert<"document_processing_events">;
 
 type IngestionStatus = "idle" | "extracting" | "vectorizing" | "verifying" | "done" | "partial" | "failed" | "canceled";
 
@@ -75,7 +78,7 @@ function getLangChainSplitter() {
 
 async function splitWithLangChain(rawText: string): Promise<string[]> {
   const splitter = await getLangChainSplitter();
-  const normalized = rawText.replaceAll("\0", "").trim();
+  const normalized = rawText.replace(/\0/g, "").trim();
   const chunks = await splitter.splitText(normalized);
   return chunks.filter((c) => c.trim().length >= 3);
 }
@@ -88,6 +91,14 @@ function sanitizeFileName(name: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9._-]/g, "_")
     .replace(/_+/g, "_");
+}
+
+async function computeFileHash(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const digest = await crypto.subtle.digest("SHA-256", buffer);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 // ─── Client-side PDF text extraction via unpdf ──────────────────────────────
@@ -184,11 +195,17 @@ async function embedBatchWithRetry(
   documentId: string,
   batch: string[],
   startIndex: number,
+  ingestionJobId?: string | null,
   signal?: AbortSignal
-): Promise<{ saved: number; requestId?: string }> {
+): Promise<{ saved: number; requestId?: string; failedEmbeddings: number }> {
   return withRetry(async () => {
     const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
-      body: { document_id: documentId, chunks: batch, start_index: startIndex },
+      body: {
+        document_id: documentId,
+        chunks: batch,
+        start_index: startIndex,
+        ingestion_job_id: ingestionJobId ?? null,
+      },
     });
 
     // Transport-level error (network, 5xx relay)
@@ -206,7 +223,11 @@ async function embedBatchWithRetry(
       throw new Error(`EMBED_APP_ERROR: ${code} (req: ${fnData?.request_id || "?"})`);
     }
 
-    return { saved: fnData?.saved || batch.length, requestId: fnData?.request_id };
+    return {
+      saved: fnData?.saved || batch.length,
+      requestId: fnData?.request_id,
+      failedEmbeddings: fnData?.failed_embeddings || 0,
+    };
   }, { retries: 3, signal });
 }
 
@@ -226,6 +247,61 @@ async function getExistingChunkIndexes(documentId: string): Promise<Set<number>>
     .select("chunk_index")
     .eq("document_id", documentId);
   return new Set((data || []).map((row) => row.chunk_index));
+}
+
+async function safeCreateIngestionJob(payload: IngestionJobInsert): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("ingestion_jobs")
+    .insert(payload)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    console.warn("Could not create ingestion job:", error.message);
+    return null;
+  }
+
+  return data?.id ?? null;
+}
+
+async function safeUpdateIngestionJob(jobId: string | null | undefined, payload: IngestionJobUpdate): Promise<void> {
+  if (!jobId) return;
+
+  const { error } = await supabase
+    .from("ingestion_jobs")
+    .update(payload)
+    .eq("id", jobId);
+
+  if (error) {
+    console.warn("Could not update ingestion job:", error.message);
+  }
+}
+
+async function safeLogProcessingEvent(payload: ProcessingEventInsert): Promise<void> {
+  const { error } = await supabase
+    .from("document_processing_events")
+    .insert(payload);
+
+  if (error) {
+    console.warn("Could not log processing event:", error.message);
+  }
+}
+
+async function getNextAttemptNumber(documentId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from("ingestion_jobs")
+    .select("attempt_number")
+    .eq("document_id", documentId)
+    .order("attempt_number", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("Could not determine ingestion attempt number:", error.message);
+    return 1;
+  }
+
+  return (data?.attempt_number ?? 0) + 1;
 }
 
 export default function Admin() {
@@ -307,7 +383,8 @@ export default function Admin() {
     chunks: string[],
     fileName: string,
     abortSignal: AbortSignal,
-    skipIndexes?: Set<number>
+    skipIndexes?: Set<number>,
+    ingestionJobId?: string | null
   ): Promise<{ insertedChunks: number; status: IngestionStatus }> => {
     const totalChunks = chunks.length;
     const chunksToSend: { chunk: string; index: number }[] = [];
@@ -324,6 +401,19 @@ export default function Admin() {
     }
 
     let processedCount = skipIndexes ? (totalChunks - chunksToSend.length) : 0;
+    let failedEmbeddings = 0;
+
+    await safeLogProcessingEvent({
+      document_id: documentId,
+      ingestion_job_id: ingestionJobId ?? null,
+      event_type: "embedding_batches_started",
+      message: `Vetorizacao iniciada para ${chunksToSend.length} fragmentos pendentes.`,
+      details_json: {
+        total_chunks: totalChunks,
+        pending_chunks: chunksToSend.length,
+        skipped_chunks: processedCount,
+      },
+    });
 
     updateIngestion(fileName, {
       status: "vectorizing",
@@ -344,7 +434,8 @@ export default function Admin() {
       const batchStartIndex = batchItems[0].index;
 
       try {
-        await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
+        const batchResult = await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, ingestionJobId, abortSignal);
+        failedEmbeddings += batchResult.failedEmbeddings;
       } catch (err: unknown) {
         console.error(`Batch at index ${batchStartIndex} failed after retries:`, err);
         const message = getErrorMessage(err);
@@ -374,21 +465,67 @@ export default function Admin() {
       phaseLabel: "Verificando integridade...",
       progress: 92,
     });
+    await safeLogProcessingEvent({
+      document_id: documentId,
+      ingestion_job_id: ingestionJobId ?? null,
+      event_type: "verification_started",
+      message: "Verificacao de integridade iniciada apos a vetorizacao.",
+      details_json: {
+        total_chunks: totalChunks,
+        processed_chunks: processedCount,
+        failed_embeddings: failedEmbeddings,
+      },
+    });
 
     const insertedChunks = await verifyChunksInDB(documentId);
     updateIngestion(fileName, { insertedChunks });
 
-    if (insertedChunks >= totalChunks) {
+    if (insertedChunks >= totalChunks && failedEmbeddings === 0) {
+      await safeLogProcessingEvent({
+        document_id: documentId,
+        ingestion_job_id: ingestionJobId ?? null,
+        event_type: "verification_completed",
+        message: "Todos os fragmentos esperados foram confirmados no banco.",
+        details_json: {
+          inserted_chunks: insertedChunks,
+          total_chunks: totalChunks,
+        },
+      });
       return { insertedChunks, status: "done" };
     } else if (insertedChunks > 0) {
+      await safeLogProcessingEvent({
+        document_id: documentId,
+        ingestion_job_id: ingestionJobId ?? null,
+        event_type: "verification_partial",
+        event_level: "warning",
+        message: "A verificacao encontrou persistencia parcial dos fragmentos.",
+        details_json: {
+          inserted_chunks: insertedChunks,
+          total_chunks: totalChunks,
+          failed_embeddings: failedEmbeddings,
+        },
+      });
       return { insertedChunks, status: "partial" };
     } else {
+      await safeLogProcessingEvent({
+        document_id: documentId,
+        ingestion_job_id: ingestionJobId ?? null,
+        event_type: "verification_failed",
+        event_level: "error",
+        message: "Nenhum fragmento foi confirmado no banco apos a vetorizacao.",
+        details_json: {
+          inserted_chunks: insertedChunks,
+          total_chunks: totalChunks,
+          failed_embeddings: failedEmbeddings,
+        },
+      });
       return { insertedChunks, status: "failed" };
     }
   };
 
   const processFileClientSide = async (file: File) => {
     const abortController = new AbortController();
+    const startedAt = new Date().toISOString();
     const ingestion: IngestionState = {
       fileName: file.name,
       status: "extracting",
@@ -403,7 +540,33 @@ export default function Admin() {
 
     setIngestions((prev) => [...prev, ingestion]);
 
+    let ingestionJobId: string | null = null;
+    let documentId: string | null = null;
+
     try {
+      ingestionJobId = await safeCreateIngestionJob({
+        job_type: "upload_ingestion",
+        trigger_source: "admin_panel",
+        status: "running",
+        attempt_number: 1,
+        started_at: startedAt,
+        payload_json: {
+          file_name: file.name,
+          mime_type: file.type || "application/pdf",
+          size_bytes: file.size,
+        },
+      });
+
+      await safeLogProcessingEvent({
+        ingestion_job_id: ingestionJobId,
+        event_type: "upload_received",
+        message: `Arquivo ${file.name} recebido para ingestao.`,
+        details_json: {
+          mime_type: file.type || "application/pdf",
+          size_bytes: file.size,
+        },
+      });
+
       // Phase 1: Extract text from PDF in the browser
       updateIngestion(file.name, { status: "extracting", phaseLabel: "Extraindo texto do PDF..." });
 
@@ -414,12 +577,36 @@ export default function Admin() {
         });
       });
 
-      if (abortController.signal.aborted) return;
+      if (abortController.signal.aborted) {
+        const cancelledAt = new Date().toISOString();
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "cancelled",
+          failed_at: cancelledAt,
+          error_message: "Processamento cancelado durante a extracao de texto.",
+        });
+        await safeLogProcessingEvent({
+          ingestion_job_id: ingestionJobId,
+          event_type: "ingestion_cancelled",
+          event_level: "warning",
+          message: "Processamento cancelado durante a extracao de texto.",
+        });
+        return;
+      }
 
       const fullText = pages.map((p) => p.text).join("\n\n");
       if (fullText.length < 50) {
         throw new Error("PDF parece estar vazio ou conter apenas imagens (sem texto extraível).");
       }
+
+      await safeLogProcessingEvent({
+        ingestion_job_id: ingestionJobId,
+        event_type: "text_extracted",
+        message: "Texto extraido do PDF no navegador.",
+        details_json: {
+          page_count: pages.length,
+          text_char_count: fullText.length,
+        },
+      });
 
       // Phase 2: Chunk text per page, injecting source tags
       updateIngestion(file.name, {
@@ -445,11 +632,36 @@ export default function Admin() {
         progress: 30,
       });
 
-      if (abortController.signal.aborted) return;
+      await safeLogProcessingEvent({
+        ingestion_job_id: ingestionJobId,
+        event_type: "chunks_generated",
+        message: `${totalChunks} fragmentos gerados a partir do PDF.`,
+        details_json: {
+          total_chunks: totalChunks,
+          page_count: pages.length,
+        },
+      });
+
+      if (abortController.signal.aborted) {
+        const cancelledAt = new Date().toISOString();
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "cancelled",
+          failed_at: cancelledAt,
+          error_message: "Processamento cancelado antes do upload do arquivo.",
+        });
+        await safeLogProcessingEvent({
+          ingestion_job_id: ingestionJobId,
+          event_type: "ingestion_cancelled",
+          event_level: "warning",
+          message: "Processamento cancelado antes do upload do arquivo.",
+        });
+        return;
+      }
 
       // Phase 3: Upload file to storage
       const sanitizedName = sanitizeFileName(file.name);
       const filePath = `${crypto.randomUUID()}_${sanitizedName}`;
+      const documentHash = await computeFileHash(file);
 
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
@@ -464,35 +676,136 @@ export default function Admin() {
 
       if (uploadErr) throw new Error(`Upload falhou: ${uploadErr.message}`);
 
+      await safeLogProcessingEvent({
+        ingestion_job_id: ingestionJobId,
+        event_type: "storage_uploaded",
+        message: "Arquivo salvo no storage da base documental.",
+        details_json: {
+          storage_path: filePath,
+        },
+      });
+
       // Create document record
       const { data: doc, error: docErr } = await supabase
         .from("documents")
-        .insert({ name: file.name, file_path: filePath, status: "processing" })
+        .insert({
+          name: file.name,
+          file_name: file.name,
+          file_path: filePath,
+          storage_path: filePath,
+          mime_type: file.type || "application/pdf",
+          document_hash: documentHash,
+          source_type: "upload",
+          source_name: "Painel administrativo CLARA",
+          language_code: "pt-BR",
+          jurisdiction_scope: "municipal_rj",
+          topic_scope: "sei_rio",
+          page_count: pages.length,
+          text_char_count: fullText.length,
+          metadata_json: {
+            ingestion_source: "admin_panel",
+            extraction_mode: "client_side",
+          },
+          status: "processing",
+        })
         .select()
         .single();
 
       if (docErr || !doc) throw new Error("Falha ao registrar documento");
-      const documentId = doc.id;
+      documentId = doc.id;
+
+      await safeUpdateIngestionJob(ingestionJobId, {
+        document_id: documentId,
+      });
+
+      await safeLogProcessingEvent({
+        document_id: documentId,
+        ingestion_job_id: ingestionJobId,
+        event_type: "document_registered",
+        message: "Documento registrado no acervo documental.",
+        details_json: {
+          page_count: pages.length,
+          total_chunks: totalChunks,
+          document_hash: documentHash,
+        },
+      });
 
       if (abortController.signal.aborted) {
-        await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
+        const cancelledAt = new Date().toISOString();
+        await supabase.from("documents").update({ status: "cancelled", failure_reason: "Processamento cancelado pelo usuário", failed_at: cancelledAt }).eq("id", documentId);
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "cancelled",
+          failed_at: cancelledAt,
+          error_message: "Processamento cancelado pelo usuario antes do envio final dos chunks.",
+        });
+        await safeLogProcessingEvent({
+          document_id: documentId,
+          ingestion_job_id: ingestionJobId,
+          event_type: "ingestion_cancelled",
+          event_level: "warning",
+          message: "Processamento cancelado pelo usuario.",
+        });
         return;
       }
 
       // Phase 4: Send chunks with retry + verification
-      const result = await sendChunksInBatches(documentId, chunks, file.name, abortController.signal);
+      const result = await sendChunksInBatches(documentId, chunks, file.name, abortController.signal, undefined, ingestionJobId);
 
       if (result.status === "canceled") {
-        await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
+        const cancelledAt = new Date().toISOString();
+        await supabase.from("documents").update({ status: "cancelled", failure_reason: "Processamento cancelado pelo usuário", failed_at: cancelledAt }).eq("id", documentId);
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "cancelled",
+          failed_at: cancelledAt,
+          error_message: "Processamento cancelado durante a vetorizacao.",
+          result_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: totalChunks,
+          },
+        });
+        await safeLogProcessingEvent({
+          document_id: documentId,
+          ingestion_job_id: ingestionJobId,
+          event_type: "ingestion_cancelled",
+          event_level: "warning",
+          message: "Processamento cancelado durante a vetorizacao.",
+          details_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: totalChunks,
+          },
+        });
         updateIngestion(file.name, { status: "canceled", phaseLabel: "Cancelado" });
         return;
       }
 
       if (result.status === "done") {
-        await supabase.from("documents").update({ status: "processed" }).eq("id", documentId);
+        const processedAt = new Date().toISOString();
+        await supabase.from("documents").update({ status: "processed", processed_at: processedAt, failed_at: null, failure_reason: null }).eq("id", documentId);
         await supabase.from("usage_logs").insert({
           event_type: "client_side_ingestion",
           metadata: { document_id: documentId, chunks_count: totalChunks, text_length: fullText.length },
+        });
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "completed",
+          completed_at: processedAt,
+          failed_at: null,
+          error_code: null,
+          error_message: null,
+          result_json: {
+            inserted_chunks: totalChunks,
+            expected_chunks: totalChunks,
+            text_char_count: fullText.length,
+          },
+        });
+        await safeLogProcessingEvent({
+          document_id: documentId,
+          ingestion_job_id: ingestionJobId,
+          event_type: "ingestion_completed",
+          message: "Documento processado com sucesso e incorporado ao indice vetorial.",
+          details_json: {
+            inserted_chunks: totalChunks,
+            expected_chunks: totalChunks,
+          },
         });
         updateIngestion(file.name, {
           status: "done",
@@ -501,7 +814,30 @@ export default function Admin() {
         });
         toast({ title: "✅ Documento processado", description: `"${file.name}" — ${totalChunks} fragmentos indexados.` });
       } else if (result.status === "partial") {
-        await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
+        const failedAt = new Date().toISOString();
+        const failureReason = "Processamento parcial: parte dos chunks ficou sem embedding ou não foi persistida.";
+        await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: failureReason }).eq("id", documentId);
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "failed",
+          failed_at: failedAt,
+          error_code: "PARTIAL_INGESTION",
+          error_message: failureReason,
+          result_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: totalChunks,
+          },
+        });
+        await safeLogProcessingEvent({
+          document_id: documentId,
+          ingestion_job_id: ingestionJobId,
+          event_type: "ingestion_partial",
+          event_level: "warning",
+          message: failureReason,
+          details_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: totalChunks,
+          },
+        });
         updateIngestion(file.name, {
           status: "partial",
           phaseLabel: `⚠ Parcial — ${result.insertedChunks}/${totalChunks} fragmentos`,
@@ -509,7 +845,30 @@ export default function Admin() {
         });
         toast({ title: "⚠ Processamento parcial", description: `"${file.name}" — ${result.insertedChunks}/${totalChunks}. Use Retomar.`, variant: "destructive" });
       } else {
-        await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
+        const failedAt = new Date().toISOString();
+        const failureReason = "Falha total no processamento dos chunks.";
+        await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: failureReason }).eq("id", documentId);
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "failed",
+          failed_at: failedAt,
+          error_code: "INGESTION_FAILED",
+          error_message: failureReason,
+          result_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: totalChunks,
+          },
+        });
+        await safeLogProcessingEvent({
+          document_id: documentId,
+          ingestion_job_id: ingestionJobId,
+          event_type: "ingestion_failed",
+          event_level: "error",
+          message: failureReason,
+          details_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: totalChunks,
+          },
+        });
         updateIngestion(file.name, {
           status: "failed",
           phaseLabel: "Falha — nenhum fragmento salvo",
@@ -525,6 +884,20 @@ export default function Admin() {
         status: "failed",
         phaseLabel: `Erro: ${message}`,
         lastError: { message },
+      });
+      const failedAt = new Date().toISOString();
+      await safeUpdateIngestionJob(ingestionJobId, {
+        status: "failed",
+        failed_at: failedAt,
+        error_code: "CLIENT_INGESTION_ERROR",
+        error_message: message,
+      });
+      await safeLogProcessingEvent({
+        document_id: documentId,
+        ingestion_job_id: ingestionJobId,
+        event_type: "ingestion_failed",
+        event_level: "error",
+        message,
       });
       toast({ title: "❌ Erro no processamento", description: message, variant: "destructive" });
       fetchDocuments();
@@ -563,11 +936,36 @@ export default function Admin() {
 
   const handleRetry = async (doc: Document) => {
     setRetryingId(doc.id);
+    let ingestionJobId: string | null = null;
     try {
+      const attemptNumber = await getNextAttemptNumber(doc.id);
+      ingestionJobId = await safeCreateIngestionJob({
+        document_id: doc.id,
+        job_type: "reprocess",
+        trigger_source: "admin_panel",
+        status: "running",
+        attempt_number: attemptNumber,
+        started_at: new Date().toISOString(),
+        payload_json: {
+          file_name: doc.name,
+          storage_path: doc.file_path,
+        },
+      });
+
+      await safeLogProcessingEvent({
+        document_id: doc.id,
+        ingestion_job_id: ingestionJobId,
+        event_type: "reprocess_started",
+        message: "Reprocessamento iniciado a partir do painel administrativo.",
+        details_json: {
+          attempt_number: attemptNumber,
+        },
+      });
+
       // Check which chunks already exist (idempotent resume)
       const existingIndexes = await getExistingChunkIndexes(doc.id);
 
-      await supabase.from("documents").update({ status: "processing" }).eq("id", doc.id);
+      await supabase.from("documents").update({ status: "processing", failed_at: null, failure_reason: null }).eq("id", doc.id);
 
       // Download the file from storage and re-process client-side
       const { data: fileData, error: dlErr } = await supabase.storage
@@ -601,6 +999,16 @@ export default function Admin() {
         });
       });
 
+      await safeLogProcessingEvent({
+        document_id: doc.id,
+        ingestion_job_id: ingestionJobId,
+        event_type: "text_extracted",
+        message: "Texto reextraido do PDF para reprocessamento.",
+        details_json: {
+          page_count: pages.length,
+        },
+      });
+
       const fullText = pages.map((p) => p.text).join("\n\n");
       if (fullText.length < 50) throw new Error("PDF sem texto extraível");
 
@@ -620,9 +1028,40 @@ export default function Admin() {
         progress: 30,
       });
 
+      await safeLogProcessingEvent({
+        document_id: doc.id,
+        ingestion_job_id: ingestionJobId,
+        event_type: "chunks_generated",
+        message: `${chunks.length} fragmentos recalculados para reprocessamento.`,
+        details_json: {
+          total_chunks: chunks.length,
+          existing_chunks: existingIndexes.size,
+        },
+      });
+
       // If all chunks already exist, mark done directly
       if (existingIndexes.size >= chunks.length) {
-        await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
+        const processedAt = new Date().toISOString();
+        await supabase.from("documents").update({ status: "processed", processed_at: processedAt, failed_at: null, failure_reason: null }).eq("id", doc.id);
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "completed",
+          completed_at: processedAt,
+          result_json: {
+            total_chunks: chunks.length,
+            skipped_chunks: existingIndexes.size,
+            outcome: "already_complete",
+          },
+        });
+        await safeLogProcessingEvent({
+          document_id: doc.id,
+          ingestion_job_id: ingestionJobId,
+          event_type: "reprocess_completed",
+          message: "Reprocessamento concluido sem necessidade de novos embeddings.",
+          details_json: {
+            total_chunks: chunks.length,
+            skipped_chunks: existingIndexes.size,
+          },
+        });
         updateIngestion(doc.name, { status: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos (já existiam)` });
         toast({ title: "✅ Já completo", description: `"${doc.name}" — todos os fragmentos já existiam.` });
         fetchDocuments();
@@ -633,21 +1072,95 @@ export default function Admin() {
       }
 
       // Send only missing chunks
-      const result = await sendChunksInBatches(doc.id, chunks, doc.name, abortController.signal, existingIndexes);
+      const result = await sendChunksInBatches(doc.id, chunks, doc.name, abortController.signal, existingIndexes, ingestionJobId);
 
       if (result.status === "done") {
-        await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
+        const processedAt = new Date().toISOString();
+        await supabase.from("documents").update({ status: "processed", processed_at: processedAt, failed_at: null, failure_reason: null }).eq("id", doc.id);
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "completed",
+          completed_at: processedAt,
+          failed_at: null,
+          error_code: null,
+          error_message: null,
+          result_json: {
+            inserted_chunks: chunks.length,
+            expected_chunks: chunks.length,
+            skipped_chunks: existingIndexes.size,
+          },
+        });
+        await safeLogProcessingEvent({
+          document_id: doc.id,
+          ingestion_job_id: ingestionJobId,
+          event_type: "reprocess_completed",
+          message: "Reprocessamento concluido com sucesso.",
+          details_json: {
+            inserted_chunks: chunks.length,
+            expected_chunks: chunks.length,
+            skipped_chunks: existingIndexes.size,
+          },
+        });
         updateIngestion(doc.name, { status: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos` });
         toast({ title: "✅ Reprocessado", description: `"${doc.name}" pronto.` });
       } else if (result.status === "partial") {
-        await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
+        const failedAt = new Date().toISOString();
+        const failureReason = "Reprocessamento parcial: parte dos chunks ficou sem embedding ou não foi persistida.";
+        await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: failureReason }).eq("id", doc.id);
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "failed",
+          failed_at: failedAt,
+          error_code: "PARTIAL_REPROCESS",
+          error_message: failureReason,
+          result_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: chunks.length,
+            skipped_chunks: existingIndexes.size,
+          },
+        });
+        await safeLogProcessingEvent({
+          document_id: doc.id,
+          ingestion_job_id: ingestionJobId,
+          event_type: "reprocess_partial",
+          event_level: "warning",
+          message: failureReason,
+          details_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: chunks.length,
+            skipped_chunks: existingIndexes.size,
+          },
+        });
         updateIngestion(doc.name, {
           status: "partial",
           phaseLabel: `⚠ ${result.insertedChunks}/${chunks.length} — Retome novamente`,
         });
         toast({ title: "⚠ Parcial", description: `"${doc.name}" — ${result.insertedChunks}/${chunks.length}. Retome.`, variant: "destructive" });
       } else {
-        await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
+        const failedAt = new Date().toISOString();
+        const failureReason = "Falha no reprocessamento dos chunks.";
+        await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: failureReason }).eq("id", doc.id);
+        await safeUpdateIngestionJob(ingestionJobId, {
+          status: "failed",
+          failed_at: failedAt,
+          error_code: "REPROCESS_FAILED",
+          error_message: failureReason,
+          result_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: chunks.length,
+            skipped_chunks: existingIndexes.size,
+          },
+        });
+        await safeLogProcessingEvent({
+          document_id: doc.id,
+          ingestion_job_id: ingestionJobId,
+          event_type: "reprocess_failed",
+          event_level: "error",
+          message: failureReason,
+          details_json: {
+            inserted_chunks: result.insertedChunks,
+            expected_chunks: chunks.length,
+            skipped_chunks: existingIndexes.size,
+          },
+        });
         updateIngestion(doc.name, { status: "failed", phaseLabel: "Falha no reprocessamento" });
         toast({ title: "❌ Falha", description: "Reprocessamento falhou.", variant: "destructive" });
       }
@@ -658,8 +1171,23 @@ export default function Admin() {
         setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
       }, 5000);
     } catch (err: unknown) {
-      toast({ title: "Erro ao reprocessar", description: getErrorMessage(err), variant: "destructive" });
-      await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
+      const message = getErrorMessage(err);
+      const failedAt = new Date().toISOString();
+      toast({ title: "Erro ao reprocessar", description: message, variant: "destructive" });
+      await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: message }).eq("id", doc.id);
+      await safeUpdateIngestionJob(ingestionJobId, {
+        status: "failed",
+        failed_at: failedAt,
+        error_code: "REPROCESS_ERROR",
+        error_message: message,
+      });
+      await safeLogProcessingEvent({
+        document_id: doc.id,
+        ingestion_job_id: ingestionJobId,
+        event_type: "reprocess_failed",
+        event_level: "error",
+        message,
+      });
       fetchDocuments();
     } finally {
       setRetryingId(null);
@@ -669,7 +1197,13 @@ export default function Admin() {
   const handleCancel = async (doc: Document) => {
     try {
       await supabase.from("document_chunks").delete().eq("document_id", doc.id);
-      await supabase.from("documents").update({ status: "cancelled" }).eq("id", doc.id);
+      await supabase.from("documents").update({ status: "cancelled", failed_at: new Date().toISOString(), failure_reason: "Processamento cancelado manualmente." }).eq("id", doc.id);
+      await safeLogProcessingEvent({
+        document_id: doc.id,
+        event_type: "processing_cancelled_manually",
+        event_level: "warning",
+        message: "Processamento cancelado manualmente pelo painel administrativo.",
+      });
       fetchDocuments();
       toast({ title: "Cancelado", description: `"${doc.name}" foi cancelado.` });
     } catch {

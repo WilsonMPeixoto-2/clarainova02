@@ -25,3 +25,6 @@ dist-ssr
 .vercel
 .playwright-cli
 supabase/.temp
+output/
+tools/
+*.tsbuildinfo

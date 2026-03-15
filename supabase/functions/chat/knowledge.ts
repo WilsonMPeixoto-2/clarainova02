@@ -2,6 +2,9 @@ export interface RetrievedChunk {
   content: string;
   similarity: number;
   document_name?: string | null;
+  page_start?: number | null;
+  page_end?: number | null;
+  section_title?: string | null;
 }
 
 export interface KnowledgeDecision {
@@ -16,6 +19,7 @@ interface ParsedChunk {
   similarity: number;
   documentName: string;
   pageLabel?: string;
+  sectionTitle?: string;
   sourceLabel: string;
 }
 
@@ -49,16 +53,25 @@ function tokenizeQuestion(question: string): string[] {
 function parseChunk(chunk: RetrievedChunk): ParsedChunk {
   const match = chunk.content.match(/^\[Fonte:\s*([^\]|]+?)(?:\s*\|\s*P[aá]gina:\s*([^\]]+))?\]\s*/i);
   const parsedSource = match?.[1]?.trim();
-  const pageLabel = match?.[2]?.trim();
+  const explicitPageLabel =
+    typeof chunk.page_start === "number"
+      ? chunk.page_end && chunk.page_end !== chunk.page_start
+        ? `${chunk.page_start}-${chunk.page_end}`
+        : `${chunk.page_start}`
+      : undefined;
+  const pageLabel = explicitPageLabel ?? match?.[2]?.trim();
+  const sectionTitle = chunk.section_title?.trim() || undefined;
   const documentName = chunk.document_name?.trim() || parsedSource || "Documento sem nome";
   const cleanContent = match ? chunk.content.slice(match[0].length).trim() : chunk.content.trim();
-  const sourceLabel = pageLabel ? `${documentName} - Página ${pageLabel}` : documentName;
+  const sourceBase = sectionTitle ? `${documentName} - ${sectionTitle}` : documentName;
+  const sourceLabel = pageLabel ? `${sourceBase} - Página ${pageLabel}` : sourceBase;
 
   return {
     content: cleanContent,
     similarity: chunk.similarity,
     documentName,
     pageLabel,
+    sectionTitle,
     sourceLabel,
   };
 }
@@ -119,6 +132,7 @@ export function prepareKnowledgeDecision(
     content: chunk.content,
     similarity: chunk.similarity,
     document_name: chunk.documentName,
+    section_title: chunk.sectionTitle ?? null,
   }));
   const topScore = parsedChunks[0]?.similarity ?? 0;
   const sources = Array.from(new Set(parsedChunks.map((chunk) => chunk.sourceLabel)));
