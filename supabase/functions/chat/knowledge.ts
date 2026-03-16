@@ -51,7 +51,10 @@ function tokenizeQuestion(question: string): string[] {
     new Set(
       normalizeText(question)
         .split(/[^a-z0-9]+/)
-        .filter((token) => token.length >= 4 && !STOP_WORDS.has(token))
+        .filter((token) =>
+          !STOP_WORDS.has(token) &&
+          (token.length >= MIN_TOKEN_LENGTH || PROTECTED_TOKENS.has(token))
+        )
     )
   );
 }
