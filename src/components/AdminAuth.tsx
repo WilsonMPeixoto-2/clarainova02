@@ -16,7 +16,6 @@ export default function AdminAuth({ children }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
@@ -37,18 +36,9 @@ export default function AdminAuth({ children }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        toast({ title: "Erro no cadastro", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Conta criada!", description: "Verifique seu email para confirmar o cadastro." });
-      }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        toast({ title: "Erro no login", description: error.message, variant: "destructive" });
-      }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      toast({ title: "Erro no login", description: error.message, variant: "destructive" });
     }
     setSubmitting(false);
   };
@@ -67,7 +57,7 @@ export default function AdminAuth({ children }: Props) {
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
             <Lock className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-            <CardTitle className="text-xl">{isSignUp ? "Criar Conta" : "Área Administrativa"}</CardTitle>
+            <CardTitle className="text-xl">Área Administrativa</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
@@ -85,7 +75,7 @@ export default function AdminAuth({ children }: Props) {
                   placeholder="Senha"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  autoComplete="current-password"
                   className="pr-10"
                   required
                 />
@@ -99,16 +89,15 @@ export default function AdminAuth({ children }: Props) {
                 </button>
               </div>
               <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : isSignUp ? "Criar Conta" : "Entrar"}
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar"}
               </Button>
             </form>
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {isSignUp ? "Já tenho conta" : "Criar conta"}
-            </button>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Acesso restrito a contas administrativas já provisionadas.
+            </p>
+            <p className="mt-2 text-center text-xs text-muted-foreground/80">
+              Na migracao para o backend proprio, esta area sera preparada para login com Google no desktop e credenciais modernas no mobile.
+            </p>
           </CardContent>
         </Card>
       </div>

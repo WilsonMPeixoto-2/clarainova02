@@ -1328,7 +1328,10 @@ export default function Admin() {
                 Clique ou arraste PDFs aqui
               </span>
               <span className="text-xs text-muted-foreground">
-                Apenas arquivos PDF — processamento local no navegador
+                PDFs oficiais de diferentes origens, com extracao inicial local no navegador
+              </span>
+              <span className="text-[11px] text-muted-foreground/80 text-center max-w-xl mt-1">
+                Nesta fase, o painel aceita PDFs do jeito mais simples possivel. Na migracao do backend proprio, o fluxo sera preparado para upload mais robusto e leitura complementar quando um arquivo vier com estrutura mais dificil.
               </span>
               <input
                 type="file"

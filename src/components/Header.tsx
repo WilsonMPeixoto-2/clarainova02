@@ -1,8 +1,15 @@
 import { useState } from 'react';
 import { Menu, X, MessageCircle } from 'lucide-react';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useChat } from '@/hooks/useChatStore';
+
+type NavItem = {
+  label: string;
+  note?: string;
+  to?: string;
+  href?: string;
+};
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -10,36 +17,55 @@ const Header = () => {
   const location = useLocation();
   const { openChat } = useChat();
 
-  const primaryLinks = [
-    { label: 'Funcionalidades', href: '/#conhecimento', note: 'O que a CLARA ajuda a fazer' },
-    { label: 'Perguntas frequentes', href: '/#faq', note: 'Uso, limites e respostas rápidas' },
+  const primaryLinks: NavItem[] = [
+    { label: 'Funcionalidades', to: '/#conhecimento', note: 'O que a CLARA ajuda a fazer' },
+    { label: 'Perguntas frequentes', to: '/#faq', note: 'Uso, limites e respostas rápidas' },
   ];
 
-  const secondaryLinks = [
-    { label: 'Política de Privacidade', href: '/privacidade', note: 'Uso e proteção de dados' },
-    { label: 'Termos de Uso', href: '/termos', note: 'Condições de acesso ao serviço' },
+  const secondaryLinks: NavItem[] = [
+    { label: 'Política de Privacidade', to: '/privacidade', note: 'Uso e proteção de dados' },
+    { label: 'Termos de Uso', to: '/termos', note: 'Condições de acesso ao serviço' },
     { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com', note: 'wilsonmp2@gmail.com' },
   ];
 
-  const desktopLinks = [
-    { label: 'Funcionalidades', href: '/#conhecimento' },
-    { label: 'FAQ', href: '/#faq' },
-    { label: 'Privacidade', href: '/privacidade' },
-    { label: 'Termos', href: '/termos' },
+  const desktopLinks: NavItem[] = [
+    { label: 'Funcionalidades', to: '/#conhecimento' },
+    { label: 'FAQ', to: '/#faq' },
+    { label: 'Privacidade', to: '/privacidade' },
+    { label: 'Termos', to: '/termos' },
     { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com' },
   ];
 
-  const isActiveLink = (href: string) => {
-    if (href.includes('#')) {
-      const [path, hash] = href.split('#');
+  const isActiveLink = (target: string) => {
+    if (target.includes('#')) {
+      const [path, hash] = target.split('#');
       const hashWithPrefix = hash ? `#${hash}` : '';
       if (path && location.pathname !== path) return false;
       return hashWithPrefix ? location.hash === hashWithPrefix : false;
     }
-    if (href.includes('privacidade')) return location.pathname.startsWith('/privacidade');
-    if (href.includes('termos')) return location.pathname.startsWith('/termos');
-    if (href.startsWith('/')) return location.pathname === href;
+    if (target.includes('privacidade')) return location.pathname.startsWith('/privacidade');
+    if (target.includes('termos')) return location.pathname.startsWith('/termos');
+    if (target.startsWith('/')) return location.pathname === target;
     return false;
+  };
+
+  const renderDesktopLink = (item: NavItem) => {
+    const target = item.to ?? item.href ?? '/';
+    const isActive = isActiveLink(target);
+
+    if (item.to) {
+      return (
+        <Link key={item.label} to={item.to} data-active={isActive} className="header-pill">
+          {item.label}
+        </Link>
+      );
+    }
+
+    return (
+      <a key={item.label} href={item.href} data-active={isActive} className="header-pill">
+        {item.label}
+      </a>
+    );
   };
 
   return (
@@ -54,8 +80,8 @@ const Header = () => {
       >
         <div className="container mx-auto max-w-[1440px] 2xl:max-w-[1480px] px-5 md:px-8 xl:px-10">
           <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(260px,1fr)_auto_auto] md:gap-5 lg:gap-7">
-            <a
-              href="/"
+            <Link
+              to="/"
               className="inline-flex items-center gap-2.5 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[280px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
             >
               <span
@@ -73,22 +99,10 @@ const Header = () => {
                 </span>
               </span>
               <span className="sr-only">CLARA - Página inicial</span>
-            </a>
+            </Link>
 
             <nav className="hidden md:flex items-center justify-self-center gap-2 lg:gap-2.5 xl:-translate-x-10 2xl:-translate-x-16" aria-label="Navegação principal">
-              {desktopLinks.map((link) => {
-                const isActive = isActiveLink(link.href);
-                return (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    data-active={isActive}
-                    className="header-pill"
-                  >
-                    {link.label}
-                  </a>
-                );
-              })}
+              {desktopLinks.map((link) => renderDesktopLink(link))}
             </nav>
 
             <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-2.5 shrink-0 md:justify-self-end xl:-translate-x-12 2xl:-translate-x-20">
@@ -154,11 +168,12 @@ const Header = () => {
             <div className="space-y-1">
               <p className="px-3 pb-2 text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Home</p>
               {primaryLinks.map((link) => {
-                const isActive = isActiveLink(link.href);
+                const target = link.to ?? link.href ?? '/';
+                const isActive = isActiveLink(target);
                 return (
-                  <a
+                  <Link
                     key={link.label}
-                    href={link.href}
+                    to={link.to ?? '/'}
                     onClick={() => setMenuOpen(false)}
                     className={`group flex flex-col px-3 py-3 rounded-xl border transition-all duration-[150ms]
                       ${isActive
@@ -171,7 +186,7 @@ const Header = () => {
                       {link.label}
                     </span>
                     <span className="text-xs text-muted-foreground mt-1">{link.note}</span>
-                  </a>
+                  </Link>
                 );
               })}
             </div>
@@ -179,18 +194,37 @@ const Header = () => {
             <div className="space-y-1">
               <p className="px-3 pb-2 text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Informações legais</p>
               {secondaryLinks.map((link) => {
-                const isActive = isActiveLink(link.href);
+                const target = link.to ?? link.href ?? '/';
+                const isActive = isActiveLink(target);
+                const className = `group flex flex-col px-3 py-3 rounded-xl border transition-all duration-[150ms]
+                  ${isActive
+                    ? 'border-primary/45 bg-primary/10'
+                    : 'border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.45)] hover:border-primary/30 hover:bg-[hsl(var(--surface-2)/0.72)]'
+                  }
+                `;
+
+                if (link.to) {
+                  return (
+                    <Link
+                      key={link.label}
+                      to={link.to}
+                      onClick={() => setMenuOpen(false)}
+                      className={className}
+                    >
+                      <span className={`text-sm font-semibold ${isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
+                        {link.label}
+                      </span>
+                      <span className="text-xs text-muted-foreground mt-1">{link.note}</span>
+                    </Link>
+                  );
+                }
+
                 return (
                   <a
                     key={link.label}
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`group flex flex-col px-3 py-3 rounded-xl border transition-all duration-[150ms]
-                      ${isActive
-                        ? 'border-primary/45 bg-primary/10'
-                        : 'border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.45)] hover:border-primary/30 hover:bg-[hsl(var(--surface-2)/0.72)]'
-                      }
-                    `}
+                    className={className}
                   >
                     <span className={`text-sm font-semibold ${isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
                       {link.label}

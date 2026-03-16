@@ -1,48 +1,64 @@
-# CLARAINOVA02 — Assistente Inteligente com RAG
+# CLARA
 
-**CLARA** (Consultora Legal e Assistente de Respostas Automatizadas) é uma assistente de IA especializada, construída com arquitetura RAG (Retrieval-Augmented Generation) de última geração.
+CLARA e uma ferramenta web de apoio ao uso do SEI-Rio e a rotinas administrativas. A interface publica prioriza consultas operacionais sobre documentos, assinatura, tramitacao e conferencia de etapas. O backend versionado no repositorio prepara uma base RAG com Supabase, embeddings e telemetria, mas a ligacao ao projeto remoto correto do Supabase ainda esta em regularizacao.
 
-## Stack Tecnológica
+## Stack atual
 
-| Camada | Tecnologia |
-|--------|-----------|
-| **Frontend** | React 19 · TypeScript · Vite 6 · Tailwind CSS 4 · Framer Motion |
-| **Backend** | Lovable Cloud (Supabase) · Deno 2 Edge Functions |
-| **IA** | Google Gemini via `@google/genai` SDK · Embeddings `text-embedding-004` |
-| **Banco Vetorial** | pgvector com índice **HNSW** (Hierarchical Navigable Small World) |
-| **Busca** | Híbrida RRF (Reciprocal Rank Fusion) — semântica + full-text |
-| **Ingestão** | `unpdf` (extração client-side) · LangChain Text Splitter · Rastreabilidade por página |
+- React 19
+- TypeScript 5
+- Vite 8
+- Tailwind CSS 4
+- Motion
+- Supabase Edge Functions
+- Google Gemini via `@google/genai`
 
-## Arquitetura
+## O que existe no repositorio
 
-```
-┌─────────────┐     ┌──────────────┐     ┌───────────────┐
-│  React App  │────▶│ Edge Function│────▶│  Gemini API   │
-│  (Chat UI)  │◀────│  /chat       │◀────│  (streaming)  │
-└─────────────┘     └──────┬───────┘     └───────────────┘
-                           │
-                    ┌──────▼───────┐
-                    │   pgvector   │
-                    │  HNSW Index  │
-                    │ hybrid_search│
-                    └──────────────┘
-```
+- frontend publicado na Vercel;
+- pagina inicial institucional, chat e area administrativa;
+- migrations e edge functions versionadas em [`supabase`](./supabase);
+- ingestao de PDFs no admin com `unpdf` e `@langchain/textsplitters`;
+- testes unitarios voltados ao grounding e ao comportamento do chat.
 
-## Funcionalidades
+## Principios de backend
 
-- 💬 Chat com streaming em tempo real
-- 📄 Ingestão de PDFs com rastreabilidade por página (`[Fonte: doc | Página: N]`)
-- 🔍 Busca híbrida vetorial + full-text com RRF
-- 📊 Painel administrativo com estatísticas de uso
-- 🎨 Design premium com animações e partículas
+- analytics de produto e qualidade, sem rastreamento pessoal do usuario do chat;
+- prioridade para metricas agregadas, ambiguidade, feedback e consumo de API;
+- area admin pensada para evoluir para Google login no desktop e passkeys no celular;
+- ingestao de PDFs simples no uso, mas preparada para crescer com upload robusto e leitura complementar.
 
-## Desenvolvimento
+O detalhamento dessas decisoes esta em [`docs/backend-principios-clara.md`](./docs/backend-principios-clara.md).
 
-```sh
+## Scripts
+
+```bash
 npm install
 npm run dev
+npm run typecheck
+npm run lint
+npm test
+npm run build
 ```
 
-## Licença
+## Ambiente
 
-Projeto privado — todos os direitos reservados.
+Use um arquivo `.env` local com:
+
+```env
+VITE_SUPABASE_PUBLISHABLE_KEY="sua_publishable_key"
+VITE_SUPABASE_URL="https://seu_project_ref.supabase.co"
+```
+
+O exemplo versionado esta em [`.env.example`](./.env.example).
+
+## Estrutura principal
+
+- [`src`](./src): frontend React
+- [`public`](./public): assets estaticos
+- [`supabase/migrations`](./supabase/migrations): schema versionado
+- [`supabase/functions`](./supabase/functions): edge functions
+- [`docs`](./docs): guias operacionais do projeto
+
+## Estado atual
+
+O frontend esta estabilizado em Node 24 + Vite 8 e publicado em producao. A proxima fase tecnica prevista e concluir a conexao com o projeto Supabase correto para aplicar as migrations mais recentes e validar o RAG remoto ponta a ponta.

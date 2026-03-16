@@ -1,8 +1,17 @@
-import { createContext, useCallback, use, useState, type ReactNode } from 'react';
+import { createContext, use, useCallback, useState, type ReactNode } from 'react';
 
-interface ChatMessage {
+import {
+  buildMockStructuredResponse,
+  renderStructuredResponseToPlainText,
+  safeParseClaraStructuredEnvelope,
+  tryParseClaraStructuredEnvelopeFromText,
+  type ClaraStructuredResponse,
+} from '@/lib/clara-response';
+
+export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  structuredResponse?: ClaraStructuredResponse | null;
 }
 
 interface ChatState {
@@ -17,58 +26,75 @@ interface ChatState {
   clearMessages: () => void;
 }
 
+type ChatRequestResult =
+  | {
+      kind: 'structured';
+      response: ClaraStructuredResponse;
+      plainText: string;
+    }
+  | {
+      kind: 'stream';
+      response: Response;
+    }
+  | {
+      kind: 'text';
+      text: string;
+    };
+
 const ChatContext = createContext<ChatState | null>(null);
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-// Fallback mock for when no backend is configured
-function getMockResponse(): Promise<string> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(`Olá! Sou a **CLARA**.
-
-Posso ajudar com:
-- 📋 Procedimentos no **SEI-Rio**
-- 🔄 Fluxos de **tramitação**, envio e retorno
-- ✍️ Uso de **blocos de assinatura** e documentos
-- ✅ **Conferência** de etapas antes do encaminhamento
-
-Como posso ajudar você hoje?`);
-    }, 800 + Math.random() * 600);
-  });
-}
-
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function streamTextContent(
-  text: string,
-  onDelta: (token: string) => void,
-  onDone: () => void,
-  onError: (msg: string) => void,
+function replaceLastAssistantMessage(
+  messages: ChatMessage[],
+  nextAssistant: ChatMessage,
 ) {
-  try {
-    const tokens = text.match(/\S+\s*/g) ?? [text];
-
-    for (const token of tokens) {
-      onDelta(token);
-      await wait(10);
-    }
-
-    onDone();
-  } catch {
-    onError('Falha ao montar a resposta local. Tente novamente.');
+  const updated = [...messages];
+  const last = updated[updated.length - 1];
+  if (last?.role === 'assistant') {
+    updated[updated.length - 1] = nextAssistant;
+    return updated;
   }
+
+  updated.push(nextAssistant);
+  return updated;
 }
 
-async function streamChat(
-  messages: ChatMessage[],
-  onDelta: (token: string) => void,
-  onDone: () => void,
-  onError: (msg: string) => void,
-) {
+function appendAssistantToken(messages: ChatMessage[], token: string) {
+  const updated = [...messages];
+  const last = updated[updated.length - 1];
+  if (last?.role === 'assistant') {
+    updated[updated.length - 1] = {
+      ...last,
+      structuredResponse: null,
+      content: last.content + token,
+    };
+    return updated;
+  }
+
+  updated.push({ role: 'assistant', content: token, structuredResponse: null });
+  return updated;
+}
+
+function getMockResult(question: string): Promise<ChatRequestResult> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const response = buildMockStructuredResponse(question);
+      resolve({
+        kind: 'structured',
+        response,
+        plainText: renderStructuredResponseToPlainText(response),
+      });
+    }, 650 + Math.random() * 450);
+  });
+}
+
+async function requestChat(messages: ChatMessage[]): Promise<ChatRequestResult> {
   const url = `${SUPABASE_URL}/functions/v1/chat`;
 
   let res: Response;
@@ -80,21 +106,84 @@ async function streamChat(
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'apikey': SUPABASE_ANON_KEY,
       },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages: messages.map((message) => ({ role: message.role, content: message.content })) }),
     });
-  } catch (networkErr) {
-    onError('Falha de conexão. Verifique sua internet e tente novamente.');
-    return;
+  } catch {
+    throw new Error('Falha de conexão. Verifique sua internet e tente novamente.');
   }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    const errorMsg = body.error || `Erro ${res.status}. Tente novamente.`;
-    onError(errorMsg);
-    return;
+    throw new Error(body.error || `Erro ${res.status}. Tente novamente.`);
   }
 
-  const reader = res.body?.getReader();
+  const contentType = res.headers.get('content-type') ?? '';
+
+  if (contentType.includes('application/json')) {
+    const body = await res.json().catch(() => null);
+    const structured = safeParseClaraStructuredEnvelope(body);
+
+    if (structured) {
+      return {
+        kind: 'structured',
+        response: structured.response,
+        plainText: structured.plainText ?? renderStructuredResponseToPlainText(structured.response),
+      };
+    }
+
+    if (typeof body?.answer === 'string') {
+      const embedded = tryParseClaraStructuredEnvelopeFromText(body.answer);
+      if (embedded) {
+        return {
+          kind: 'structured',
+          response: embedded.response,
+          plainText: embedded.plainText ?? renderStructuredResponseToPlainText(embedded.response),
+        };
+      }
+
+      return { kind: 'text', text: body.answer };
+    }
+
+    if (typeof body?.response === 'string') {
+      const embedded = tryParseClaraStructuredEnvelopeFromText(body.response);
+      if (embedded) {
+        return {
+          kind: 'structured',
+          response: embedded.response,
+          plainText: embedded.plainText ?? renderStructuredResponseToPlainText(embedded.response),
+        };
+      }
+
+      return { kind: 'text', text: body.response };
+    }
+
+    throw new Error('A CLARA respondeu em um formato inesperado.');
+  }
+
+  if (contentType.includes('text/event-stream')) {
+    return { kind: 'stream', response: res };
+  }
+
+  const text = await res.text();
+  const structured = tryParseClaraStructuredEnvelopeFromText(text);
+  if (structured) {
+    return {
+      kind: 'structured',
+      response: structured.response,
+      plainText: structured.plainText ?? renderStructuredResponseToPlainText(structured.response),
+    };
+  }
+
+  return { kind: 'text', text };
+}
+
+async function streamChatResponse(
+  response: Response,
+  onDelta: (token: string) => void,
+  onDone: () => void,
+  onError: (msg: string) => void,
+) {
+  const reader = response.body?.getReader();
   if (!reader) {
     onError('Stream não disponível.');
     return;
@@ -127,11 +216,11 @@ async function streamChat(
           const token = parsed.choices?.[0]?.delta?.content;
           if (token) onDelta(token);
         } catch {
-          // skip malformed chunks
+          // ignore malformed SSE chunks
         }
       }
     }
-  } catch (streamErr) {
+  } catch {
     onError('Conexão interrompida durante a resposta. Tente novamente.');
     return;
   }
@@ -163,28 +252,38 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     setPendingQuestion(null);
     const userMsg: ChatMessage = { role: 'user', content: trimmed };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg, { role: 'assistant', content: '', structuredResponse: null }]);
     setIsLoading(true);
+    setIsStreaming(false);
 
+    const allMessages = [...messages, userMsg];
     const hasBackend = !!SUPABASE_URL;
 
     try {
-      // Create empty assistant message for streaming
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+      const handleStructuredResult = (response: ClaraStructuredResponse, plainText: string) => {
+        setMessages((prev) =>
+          replaceLastAssistantMessage(prev, {
+            role: 'assistant',
+            content: plainText,
+            structuredResponse: response,
+          }),
+        );
+      };
 
-      const allMessages = [...messages, userMsg];
+      const handlePlainTextResult = (textContent: string) => {
+        setMessages((prev) =>
+          replaceLastAssistantMessage(prev, {
+            role: 'assistant',
+            content: textContent,
+            structuredResponse: null,
+          }),
+        );
+      };
 
       const handleDelta = (token: string) => {
         setIsLoading(false);
         setIsStreaming(true);
-        setMessages((prev) => {
-          const updated = [...prev];
-          const last = updated[updated.length - 1];
-          if (last?.role === 'assistant') {
-            updated[updated.length - 1] = { ...last, content: last.content + token };
-          }
-          return updated;
-        });
+        setMessages((prev) => appendAssistantToken(prev, token));
       };
 
       const handleDone = () => {
@@ -192,44 +291,42 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       };
 
       const handleError = (errorMsg: string) => {
-        setMessages((prev) => {
-          const updated = [...prev];
-          const last = updated[updated.length - 1];
-          if (last?.role === 'assistant') {
-            updated[updated.length - 1] = { ...last, content: errorMsg };
-          }
-          return updated;
-        });
+        setIsStreaming(false);
+        setMessages((prev) =>
+          replaceLastAssistantMessage(prev, {
+            role: 'assistant',
+            content: errorMsg,
+            structuredResponse: null,
+          }),
+        );
       };
 
-      if (hasBackend) {
-        await streamChat(allMessages, handleDelta, handleDone, handleError);
+      const result = hasBackend ? await requestChat(allMessages) : await getMockResult(trimmed);
+
+      if (result.kind === 'structured') {
+        setIsLoading(false);
+        handleStructuredResult(result.response, result.plainText);
         return;
       }
 
-      const mockResponse = await getMockResponse();
-      setIsLoading(false);
-      setMessages((prev) => {
-        const updated = [...prev];
-        const last = updated[updated.length - 1];
-        if (last?.role === 'assistant') {
-          updated[updated.length - 1] = { ...last, content: mockResponse };
-        }
-        return updated;
-      });
+      if (result.kind === 'text') {
+        setIsLoading(false);
+        handlePlainTextResult(result.text);
+        return;
+      }
+
+      await streamChatResponse(result.response, handleDelta, handleDone, handleError);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Erro ao conectar. Tente novamente.';
-      setMessages((prev) => {
-        const updated = [...prev];
-        const last = updated[updated.length - 1];
-        if (last?.role === 'assistant' && last.content === '') {
-          updated[updated.length - 1] = { ...last, content: errorMsg };
-        } else {
-          updated.push({ role: 'assistant', content: errorMsg });
-        }
-        return updated;
-      });
+      setMessages((prev) =>
+        replaceLastAssistantMessage(prev, {
+          role: 'assistant',
+          content: errorMsg,
+          structuredResponse: null,
+        }),
+      );
     } finally {
+      await wait(0);
       setIsLoading(false);
       setIsStreaming(false);
     }

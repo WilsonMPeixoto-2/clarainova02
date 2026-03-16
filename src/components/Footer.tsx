@@ -1,4 +1,5 @@
 import { Mail, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -25,9 +26,9 @@ const Footer = () => {
           </div>
 
           <nav className="flex flex-wrap justify-start md:justify-center gap-6 md:gap-8" aria-label="Links do rodapé">
-            <a href="/#conhecimento" className="footer-link">Funcionalidades</a>
-            <a href="/termos" className="footer-link">Termos de Serviço</a>
-            <a href="/privacidade" className="footer-link">Política de Privacidade</a>
+            <Link to="/#conhecimento" className="footer-link">Funcionalidades</Link>
+            <Link to="/termos" className="footer-link">Termos de Serviço</Link>
+            <Link to="/privacidade" className="footer-link">Política de Privacidade</Link>
             <a href="mailto:wilsonmp2@gmail.com" className="footer-link">Contato</a>
           </nav>
         </div>

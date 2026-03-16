@@ -1,7 +1,13 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import { GoogleGenAI } from "npm:@google/genai";
+import { createClient } from "npm:@supabase/supabase-js@2.99.1";
+import { GoogleGenAI } from "npm:@google/genai@1.45.0";
 
 import { prepareKnowledgeDecision, type RetrievedChunk } from "./knowledge.ts";
+import {
+  claraResponseJsonSchema,
+  parseStructuredResponsePayload,
+  renderStructuredResponseToPlainText,
+  type ClaraStructuredResponse,
+} from "./response-schema.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,38 +85,45 @@ ESCOPO REAL DA CLARA
 
 IDENTIDADE E TOM
 - Escreva de forma clara, amigável, pedagógica e institucional.
+- Seja calorosa, dialogica, respeitosa e humana, inclusive quando precisar alertar, pedir esclarecimento ou reconhecer incerteza.
 - Prefira linguagem objetiva, sem tom publicitário.
 - Sempre que a pergunta envolver procedimento, responda em passo a passo.
 - Evite jargão desnecessário; quando usar termo técnico, explique.
 - Não seja seca, impaciente ou excessivamente telegráfica.
+
+TRATAMENTO DE AMBIGUIDADE
+- Diferencie três tipos de incerteza: duvida sobre o que o usuario quis dizer, variacao entre fontes internas e baixa aderencia mesmo apos ampliar a analise.
+- Se a pergunta do usuario estiver ambigua, faca uma pergunta curta e gentil antes de tentar responder com certeza artificial.
+- Se as fontes internas tiverem pequenas variacoes, compare-as e priorize o que melhor se aplica ao SEI-Rio e ao material mais atual.
+- Se a base interna continuar ambigua, registre isso com transparencia e sinalize que uma validacao externa oficial pode ser necessaria.
+- Se precisar de validacao externa, use apenas fontes oficiais e deixe isso claro em processStates, userNotice ou cautionNotice.
+- Nunca force uma resposta assertiva quando o melhor caminho for pedir esclarecimento ou declarar cautela.
 
 POLÍTICA DE FONTES
 - A base documental interna é a fonte prioritária.
 - Quando houver base suficiente, formule a resposta a partir dela.
 - Quando houver mais de um trecho útil, consolide as informações de forma coerente.
 - Se houver diferença entre manuais ou versões, explique isso com cautela.
+- Priorize explicitamente as fontes mais aderentes ao SEI-Rio, mais atuais e de maior autoridade documental.
 - Se a base interna for insuficiente, você pode complementar com conhecimento geral do modelo, mas deve sinalizar isso com transparência.
 - Nunca apresente conhecimento geral como se fosse fonte documental.
 
 ESTRUTURA DA RESPOSTA
-Sempre que possível, organize a resposta nesta ordem:
-
-### Síntese
-- Abra com 1 ou 2 frases diretas explicando o que o usuário precisa saber.
-
-### Passo a passo
-- Use lista numerada.
-- Cada etapa deve ser operacional e clara.
-
-### Observações importantes
-- Use marcadores para alertas, exceções, limites e cuidados.
-- Quando algo exigir atenção especial, destaque com blockquote.
-
-### Fontes
-- As fontes devem aparecer sempre no final.
-- Use o formato: Nome do documento - Página X.
-- Se a página não estiver disponível, diga isso com honestidade.
+- Organize a resposta em blocos curtos e altamente escaneáveis.
+- Quando a pergunta for operacional, a resposta deve nascer em passo a passo.
+- Pense a resposta para renderização em cards de etapas.
+- Mantenha observações importantes separadas do corpo principal.
+- As fontes devem ficar sempre ao final, com marcações numéricas discretas no corpo da resposta.
 - Nunca invente nome de documento, página ou seção.
+- Quando houver ambiguidade, descreva isso em linguagem acolhedora e útil ao usuario.
+- Quando pedir esclarecimento, explique brevemente por que esta pedindo esse complemento.
+
+JSON E CAMPOS DE DECISAO
+- Preencha sempre o objeto analiseDaResposta.
+- Use analiseDaResposta.clarificationRequested=true quando precisar de um esclarecimento para seguir com seguranca.
+- Use analiseDaResposta.webFallbackUsed=true somente quando houver justificativa real para consulta oficial externa.
+- Use analiseDaResposta.processStates para narrar o processo em tom humano, como "Pesquisando na base interna", "Comparando orientacoes e versoes" ou "Iniciando busca na web oficial".
+- Em userNotice e cautionNotice, fale como uma colega cuidadosa e educada, sem soar robotica.
 
 FORMATAÇÃO
 - Use títulos curtos com ###.
@@ -217,6 +230,85 @@ function averageScore(chunks: HybridSearchChunk[]): number | null {
   return sum / chunks.length;
 }
 
+function buildFallbackProcessStates(
+  retrievalMode: "model_grounded" | "model_only",
+  retrievalSources: string[],
+  searchResultCount: number,
+) {
+  const states: Array<{ id: string; titulo: string; descricao: string; status: "informativo" | "concluido" | "cautela" | "web" }> = [];
+
+  if (retrievalMode === "model_grounded" && searchResultCount > 0) {
+    states.push({
+      id: "internal-search",
+      titulo: "Pesquisando na base interna",
+      descricao: "Reuni os trechos mais proximos da sua pergunta dentro da documentacao interna.",
+      status: "concluido",
+    });
+  } else {
+    states.push({
+      id: "internal-search",
+      titulo: "Pesquisando na base interna",
+      descricao: "A base interna nao trouxe elementos suficientes para sustentar a resposta com a mesma seguranca.",
+      status: "informativo",
+    });
+  }
+
+  if (retrievalSources.length > 1) {
+    states.push({
+      id: "comparison",
+      titulo: "Comparando orientacoes e versoes",
+      descricao: "Comparei mais de uma fonte para priorizar a orientacao mais aderente ao SEI-Rio.",
+      status: "cautela",
+    });
+  }
+
+  return states;
+}
+
+function enrichStructuredResponse(
+  response: ClaraStructuredResponse,
+  retrievalMode: "model_grounded" | "model_only",
+  retrievalSources: string[],
+  searchResultCount: number,
+): ClaraStructuredResponse {
+  const analysis = response.analiseDaResposta ?? {
+    answerScopeMatch: "exact",
+    ambiguityInUserQuestion: false,
+    ambiguityInSources: false,
+    clarificationRequested: false,
+    internalExpansionPerformed: false,
+    webFallbackUsed: false,
+    comparedSources: [],
+    prioritizedSources: [],
+    processStates: [],
+  };
+
+  const comparedSources = analysis.comparedSources.length > 0
+    ? analysis.comparedSources
+    : retrievalSources;
+  const prioritizedSources = analysis.prioritizedSources.length > 0
+    ? analysis.prioritizedSources
+    : retrievalSources.slice(0, 1);
+  const ambiguityInSources = analysis.ambiguityInSources || retrievalSources.length > 1;
+  const fallbackProcessStates = buildFallbackProcessStates(retrievalMode, retrievalSources, searchResultCount);
+
+  return {
+    ...response,
+    analiseDaResposta: {
+      ...analysis,
+      comparedSources,
+      prioritizedSources,
+      ambiguityInSources,
+      userNotice:
+        analysis.userNotice ??
+        (retrievalMode === "model_grounded"
+          ? "Consultei a base interna antes de montar a resposta, para tentar te orientar com mais seguranca."
+          : "A base interna ajudou apenas parcialmente, entao tratei a resposta com a cautela necessaria."),
+      processStates: analysis.processStates.length > 0 ? analysis.processStates : fallbackProcessStates,
+    },
+  };
+}
+
 function estimateTokenCount(value: string): number {
   return Math.max(1, Math.ceil(value.length / 4));
 }
@@ -269,10 +361,7 @@ async function streamWithGenAI(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
 ): Promise<ReadableStream<Uint8Array>> {
-  const contents = messages.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }],
-  }));
+  const contents = buildModelContents(messages);
 
   const response = await ai.models.generateContentStream({
     model,
@@ -307,6 +396,54 @@ async function streamWithGenAI(
       }
     },
   });
+}
+
+function buildModelContents(messages: Array<{ role: string; content: string }>) {
+  return messages.map((message) => ({
+    role: message.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: message.content }],
+  }));
+}
+
+async function generateStructuredWithFallback(
+  ai: GoogleGenAI,
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+): Promise<{ response: ClaraStructuredResponse; plainText: string; model: string } | null> {
+  const contents = buildModelContents(messages);
+
+  for (const model of GEMINI_MODELS) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction: systemPrompt,
+          maxOutputTokens: 4096,
+          temperature: 0.1,
+          topP: 0.8,
+          responseMimeType: 'application/json',
+          responseJsonSchema: claraResponseJsonSchema,
+        },
+      });
+
+      const parsed = parseStructuredResponsePayload(response.text);
+      if (!parsed) {
+        console.warn(`Structured output for ${model} did not validate. Falling back to stream.`);
+        continue;
+      }
+
+      return {
+        response: parsed,
+        plainText: renderStructuredResponseToPlainText(parsed),
+        model,
+      };
+    } catch (err: unknown) {
+      console.warn(`Structured generation failed for ${model}: ${getErrorMessage(err, String(err ?? ''))}`);
+    }
+  }
+
+  return null;
 }
 
 async function callGeminiWithFallback(
@@ -529,6 +666,120 @@ Deno.serve(async (req) => {
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: m.content,
     }));
+
+    const structuredResult = await generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages);
+
+    if (structuredResult && lastUserMessage) {
+      const structuredResponse = enrichStructuredResponse(
+        structuredResult.response,
+        retrievalMode,
+        retrievalSources,
+        searchResultCount,
+      );
+      const structuredPlainText = renderStructuredResponseToPlainText(structuredResponse);
+      const responseStatus = retrievalMode === 'model_grounded' ? 'answered' : 'partial';
+      const usedRag = retrievalMode === 'model_grounded';
+      const totalLatency = Date.now() - requestStartedAt;
+      const promptEstimate = estimateTokenCount(
+        `${systemPromptWithContext}\n${chatMessages.map((message) => message.content).join('\n')}`
+      );
+      const responseEstimate = estimateTokenCount(structuredPlainText);
+
+      const { data: chatMetricRow, error: chatMetricError } = await supabase
+        .from('chat_metrics')
+        .insert({
+          request_id: requestId,
+          query_text: lastUserMessage.content,
+          normalized_query: normalizedQuery,
+          response_text: structuredPlainText,
+          response_status: responseStatus,
+          used_rag: usedRag,
+          used_external_web: false,
+          used_model_general_knowledge: !usedRag,
+          rag_confidence_score: retrievalTopScore || null,
+          search_result_count: searchResultCount,
+          chunks_selected_count: selectedChunkIds.length,
+          citations_count: structuredResponse.referenciasFinais.length,
+          model_name: structuredResult.model,
+          prompt_tokens_estimate: promptEstimate,
+          response_tokens_estimate: responseEstimate,
+          latency_ms: totalLatency,
+          search_metric_id: searchMetricId,
+          metadata_json: {
+            request_id: requestId,
+            retrieval_mode: retrievalMode,
+            sources: retrievalSources,
+            selected_document_ids: selectedDocumentIds,
+            selected_chunk_ids: selectedChunkIds,
+            output_mode: 'structured',
+          },
+        })
+        .select('id')
+        .single();
+
+      if (chatMetricError) {
+        console.error('chat_metrics structured insert error:', chatMetricError);
+      }
+
+      const { error: analyticsError } = await supabase.from('query_analytics').insert({
+        request_id: requestId,
+        query_text: lastUserMessage.content,
+        normalized_query: normalizedQuery,
+        intent_label: intentLabel,
+        topic_label: topicLabel,
+        subtopic_label: subtopicLabel,
+        is_answered_satisfactorily: usedRag ? true : null,
+        needs_content_gap_review: !usedRag,
+        gap_reason: usedRag ? null : 'sem_cobertura_documental',
+        used_rag: usedRag,
+        used_external_web: false,
+        chat_metric_id: chatMetricRow?.id ?? null,
+      });
+
+      if (analyticsError) {
+        console.error('query_analytics structured insert error:', analyticsError);
+      }
+
+      const logEntries: { event_type: string; metadata?: Record<string, unknown> }[] = [
+        {
+          event_type: 'chat_message',
+          metadata: {
+            request_id: requestId,
+            model: structuredResult.model,
+            retrieval_mode: retrievalMode,
+            top_score: retrievalTopScore,
+            source_count: retrievalSources.length,
+            response_status: responseStatus,
+            output_mode: 'structured',
+          },
+        },
+      ];
+
+      if (knowledgeContext) {
+        logEntries.push({
+          event_type: 'embedding_query',
+          metadata: {
+            request_id: requestId,
+            retrieval_mode: retrievalMode,
+            sources: retrievalSources,
+          },
+        });
+      }
+
+      const { error: logErr } = await supabase.from('usage_logs').insert(logEntries);
+      if (logErr) {
+        console.error('Usage log error:', logErr);
+      }
+
+      return new Response(
+        JSON.stringify({
+          kind: 'clara_structured_response',
+          response: structuredResponse,
+          plainText: structuredPlainText,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // --- CALL GEMINI WITH FALLBACK ---
     let result: { stream: ReadableStream<Uint8Array>; model: string };

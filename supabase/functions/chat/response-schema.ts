@@ -1,0 +1,373 @@
+import { z } from "npm:zod@4.3.6";
+
+export const claraReferenceSchema = z.object({
+  id: z.number().int().positive(),
+  tipo: z.enum(["manual", "norma", "pagina_web", "pdf", "guia", "outro"]),
+  autorEntidade: z.string().min(1),
+  titulo: z.string().min(1),
+  subtitulo: z.string().nullable().optional(),
+  local: z.string().nullable().optional(),
+  editoraOuOrgao: z.string().nullable().optional(),
+  ano: z.string().nullable().optional(),
+  paginas: z.string().nullable().optional(),
+  url: z.string().nullable().optional(),
+  dataAcesso: z.string().nullable().optional(),
+});
+
+export const claraHighlightSchema = z.object({
+  texto: z.string().min(1),
+  tipo: z.enum(["conceito", "botao", "icone", "atencao", "norma", "prazo", "menu", "acao"]),
+});
+
+export const claraProcessStateSchema = z.object({
+  id: z.string().min(1),
+  titulo: z.string().min(1),
+  descricao: z.string().min(1),
+  status: z.enum(["informativo", "concluido", "cautela", "web"]),
+});
+
+export const claraStepSchema = z.object({
+  numero: z.number().int().positive(),
+  titulo: z.string().min(1),
+  conteudo: z.string().min(1),
+  itens: z.array(z.string()).default([]),
+  destaques: z.array(z.string()).default([]),
+  alerta: z.string().nullable().optional(),
+  citacoes: z.array(z.number().int().positive()).default([]),
+});
+
+const DEFAULT_RESPONSE_ANALYSIS = {
+  questionUnderstandingConfidence: null,
+  finalConfidence: null,
+  answerScopeMatch: "exact" as const,
+  ambiguityInUserQuestion: false,
+  ambiguityInSources: false,
+  clarificationRequested: false,
+  clarificationQuestion: null,
+  clarificationReason: null,
+  internalExpansionPerformed: false,
+  webFallbackUsed: false,
+  userNotice: null,
+  cautionNotice: null,
+  ambiguityReason: null,
+  comparedSources: [],
+  prioritizedSources: [],
+  processStates: [],
+};
+
+export const claraResponseAnalysisSchema = z.object({
+  questionUnderstandingConfidence: z.number().min(0).max(1).nullable().default(null),
+  finalConfidence: z.number().min(0).max(1).nullable().default(null),
+  answerScopeMatch: z.enum(["exact", "probable", "weak", "insufficient"]).default("exact"),
+  ambiguityInUserQuestion: z.boolean().default(false),
+  ambiguityInSources: z.boolean().default(false),
+  clarificationRequested: z.boolean().default(false),
+  clarificationQuestion: z.string().nullable().default(null),
+  clarificationReason: z.string().nullable().default(null),
+  internalExpansionPerformed: z.boolean().default(false),
+  webFallbackUsed: z.boolean().default(false),
+  userNotice: z.string().nullable().default(null),
+  cautionNotice: z.string().nullable().default(null),
+  ambiguityReason: z.string().nullable().default(null),
+  comparedSources: z.array(z.string()).default([]),
+  prioritizedSources: z.array(z.string()).default([]),
+  processStates: z.array(claraProcessStateSchema).default([]),
+});
+
+export const claraStructuredResponseSchema = z.object({
+  tituloCurto: z.string().min(1),
+  resumoInicial: z.string().min(1),
+  resumoCitacoes: z.array(z.number().int().positive()).default([]),
+  modoResposta: z.enum(["passo_a_passo", "explicacao", "checklist", "combinado"]),
+  etapas: z.array(claraStepSchema).default([]),
+  observacoesFinais: z.array(z.string()).default([]),
+  termosDestacados: z.array(claraHighlightSchema).default([]),
+  referenciasFinais: z.array(claraReferenceSchema).default([]),
+  analiseDaResposta: claraResponseAnalysisSchema.default(DEFAULT_RESPONSE_ANALYSIS),
+});
+
+export type ClaraStructuredResponse = z.infer<typeof claraStructuredResponseSchema>;
+
+export const claraResponseJsonSchema = {
+  type: "object",
+  properties: {
+    tituloCurto: { type: "string" },
+    resumoInicial: { type: "string" },
+    resumoCitacoes: {
+      type: "array",
+      items: { type: "integer" },
+    },
+    modoResposta: {
+      type: "string",
+      enum: ["passo_a_passo", "explicacao", "checklist", "combinado"],
+    },
+    etapas: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          numero: { type: "integer" },
+          titulo: { type: "string" },
+          conteudo: { type: "string" },
+          itens: {
+            type: "array",
+            items: { type: "string" },
+          },
+          destaques: {
+            type: "array",
+            items: { type: "string" },
+          },
+          alerta: { type: ["string", "null"] },
+          citacoes: {
+            type: "array",
+            items: { type: "integer" },
+          },
+        },
+        required: ["numero", "titulo", "conteudo", "itens", "destaques", "citacoes"],
+      },
+    },
+    observacoesFinais: {
+      type: "array",
+      items: { type: "string" },
+    },
+    termosDestacados: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          texto: { type: "string" },
+          tipo: {
+            type: "string",
+            enum: ["conceito", "botao", "icone", "atencao", "norma", "prazo", "menu", "acao"],
+          },
+        },
+        required: ["texto", "tipo"],
+      },
+    },
+    referenciasFinais: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "integer" },
+          tipo: {
+            type: "string",
+            enum: ["manual", "norma", "pagina_web", "pdf", "guia", "outro"],
+          },
+          autorEntidade: { type: "string" },
+          titulo: { type: "string" },
+          subtitulo: { type: ["string", "null"] },
+          local: { type: ["string", "null"] },
+          editoraOuOrgao: { type: ["string", "null"] },
+          ano: { type: ["string", "null"] },
+          paginas: { type: ["string", "null"] },
+          url: { type: ["string", "null"] },
+          dataAcesso: { type: ["string", "null"] },
+        },
+        required: ["id", "tipo", "autorEntidade", "titulo"],
+      },
+    },
+    analiseDaResposta: {
+      type: "object",
+      properties: {
+        questionUnderstandingConfidence: { type: ["number", "null"] },
+        finalConfidence: { type: ["number", "null"] },
+        answerScopeMatch: {
+          type: "string",
+          enum: ["exact", "probable", "weak", "insufficient"],
+        },
+        ambiguityInUserQuestion: { type: "boolean" },
+        ambiguityInSources: { type: "boolean" },
+        clarificationRequested: { type: "boolean" },
+        clarificationQuestion: { type: ["string", "null"] },
+        clarificationReason: { type: ["string", "null"] },
+        internalExpansionPerformed: { type: "boolean" },
+        webFallbackUsed: { type: "boolean" },
+        userNotice: { type: ["string", "null"] },
+        cautionNotice: { type: ["string", "null"] },
+        ambiguityReason: { type: ["string", "null"] },
+        comparedSources: {
+          type: "array",
+          items: { type: "string" },
+        },
+        prioritizedSources: {
+          type: "array",
+          items: { type: "string" },
+        },
+        processStates: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              titulo: { type: "string" },
+              descricao: { type: "string" },
+              status: {
+                type: "string",
+                enum: ["informativo", "concluido", "cautela", "web"],
+              },
+            },
+            required: ["id", "titulo", "descricao", "status"],
+          },
+        },
+      },
+      required: [
+        "answerScopeMatch",
+        "ambiguityInUserQuestion",
+        "ambiguityInSources",
+        "clarificationRequested",
+        "internalExpansionPerformed",
+        "webFallbackUsed",
+        "comparedSources",
+        "prioritizedSources",
+        "processStates",
+      ],
+    },
+  },
+  required: [
+    "tituloCurto",
+    "resumoInicial",
+    "modoResposta",
+    "etapas",
+    "observacoesFinais",
+    "termosDestacados",
+    "referenciasFinais",
+    "analiseDaResposta",
+  ],
+} as const;
+
+function buildConfidenceLabel(value: number | null) {
+  if (value == null) return null;
+  if (value >= 0.86) return "confianca alta";
+  if (value >= 0.66) return "confianca boa";
+  if (value >= 0.45) return "confianca moderada";
+  return "confianca reduzida";
+}
+
+export function formatReferenceAbnt(reference: ClaraStructuredResponse["referenciasFinais"][number]) {
+  const parts: string[] = [];
+
+  parts.push(`${reference.autorEntidade}.`);
+  parts.push(reference.subtitulo ? `${reference.titulo}: ${reference.subtitulo}.` : `${reference.titulo}.`);
+
+  const placeAndPublisher = [reference.local, reference.editoraOuOrgao].filter(Boolean).join(": ");
+  if (placeAndPublisher && reference.ano) {
+    parts.push(`${placeAndPublisher}, ${reference.ano}.`);
+  } else if (placeAndPublisher) {
+    parts.push(`${placeAndPublisher}.`);
+  } else if (reference.ano) {
+    parts.push(`${reference.ano}.`);
+  }
+
+  if (reference.paginas) parts.push(`p. ${reference.paginas}.`);
+  if (reference.url) parts.push(`Disponivel em: ${reference.url}.`);
+  if (reference.dataAcesso) parts.push(`Acesso em: ${reference.dataAcesso}.`);
+
+  return parts.join(" ").replace(/\s+/g, " ").trim();
+}
+
+export function renderStructuredResponseToPlainText(response: ClaraStructuredResponse) {
+  const lines: string[] = [response.tituloCurto, "", response.resumoInicial];
+  const analysis = response.analiseDaResposta;
+
+  if (analysis.userNotice) {
+    lines.push("", `Contexto: ${analysis.userNotice}`);
+  }
+
+  if (analysis.clarificationRequested && analysis.clarificationQuestion) {
+    lines.push("", "Antes de seguir");
+    if (analysis.clarificationReason) {
+      lines.push(analysis.clarificationReason);
+    }
+    lines.push(analysis.clarificationQuestion);
+  }
+
+  if (response.etapas.length > 0) {
+    lines.push("", "Passo a passo");
+    for (const step of response.etapas) {
+      lines.push(`${step.numero}. ${step.titulo}`);
+      lines.push(step.conteudo);
+      for (const item of step.itens) {
+        lines.push(`- ${item}`);
+      }
+      if (step.alerta) {
+        lines.push(`Observacao: ${step.alerta}`);
+      }
+      if (step.citacoes.length > 0) {
+        lines.push(`Referencias relacionadas: ${step.citacoes.join(", ")}`);
+      }
+      lines.push("");
+    }
+  }
+
+  if (response.observacoesFinais.length > 0) {
+    lines.push("Observacoes finais");
+    for (const observation of response.observacoesFinais) {
+      lines.push(`- ${observation}`);
+    }
+    lines.push("");
+  }
+
+  if (analysis.cautionNotice) {
+    lines.push("Aviso importante");
+    lines.push(analysis.cautionNotice);
+    lines.push("");
+  }
+
+  if (analysis.processStates.length > 0) {
+    lines.push("Como cheguei a esta resposta");
+    for (const state of analysis.processStates) {
+      lines.push(`- ${state.titulo}: ${state.descricao}`);
+    }
+    lines.push("");
+  }
+
+  if (analysis.comparedSources.length > 0) {
+    lines.push("Fontes comparadas");
+    for (const source of analysis.comparedSources) {
+      lines.push(`- ${source}`);
+    }
+    lines.push("");
+  }
+
+  if (analysis.prioritizedSources.length > 0) {
+    lines.push("Fontes priorizadas");
+    for (const source of analysis.prioritizedSources) {
+      lines.push(`- ${source}`);
+    }
+    lines.push("");
+  }
+
+  const confidenceLabel = buildConfidenceLabel(analysis.finalConfidence);
+  if (confidenceLabel || analysis.answerScopeMatch !== "exact") {
+    lines.push("Leitura de confianca");
+    if (confidenceLabel) {
+      lines.push(`- ${confidenceLabel}`);
+    }
+    lines.push(`- aderencia ao pedido: ${analysis.answerScopeMatch}`);
+    lines.push("");
+  }
+
+  if (response.referenciasFinais.length > 0) {
+    lines.push("Referencias");
+    for (const reference of response.referenciasFinais) {
+      lines.push(`[${reference.id}] ${formatReferenceAbnt(reference)}`);
+    }
+  }
+
+  return lines.join("\n").trim();
+}
+
+export function parseStructuredResponsePayload(value: unknown): ClaraStructuredResponse | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    const result = claraStructuredResponseSchema.safeParse(parsed);
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
+}

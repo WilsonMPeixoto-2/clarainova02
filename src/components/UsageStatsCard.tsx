@@ -47,7 +47,7 @@ export default function UsageStatsCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Activity className="h-5 w-5" />
-          Monitoramento de Uso
+          Metricas agregadas da CLARA
         </CardTitle>
         {stats && (
           <CardDescription className="capitalize">{monthLabel}</CardDescription>
@@ -74,10 +74,13 @@ export default function UsageStatsCard() {
             </div>
             <div className="space-y-1 pt-2 border-t">
               <p className="text-xs text-muted-foreground">
-                ✅ Backend Functions: incluídas no plano Lovable Cloud
+                ✅ Painel voltado para monitoramento tecnico e evolucao da base
               </p>
               <p className="text-xs text-muted-foreground">
-                ✅ API Gemini: uso gratuito via Google AI Studio
+                ✅ Os numeros exibidos dependem da telemetria disponivel no backend ativo
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ✅ A proposta e acompanhar sinais agregados do produto, sem identificar quem fez cada pergunta
               </p>
             </div>
           </>

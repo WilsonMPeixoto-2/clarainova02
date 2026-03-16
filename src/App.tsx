@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ChatProvider } from "@/hooks/useChatStore";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -51,29 +52,31 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <SmoothScrollProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/privacidade" element={<Privacidade />} />
-                <Route path="/termos" element={<Termos />} />
-                <Route
-                  path="/admin"
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <AdminAuth>
-                        <Admin />
-                      </AdminAuth>
-                    </Suspense>
-                  }
-                />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
+          <ChatProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/privacidade" element={<Privacidade />} />
+                  <Route path="/termos" element={<Termos />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <AdminAuth>
+                          <Admin />
+                        </AdminAuth>
+                      </Suspense>
+                    }
+                  />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </ChatProvider>
         </SmoothScrollProvider>
       </TooltipProvider>
     </QueryClientProvider>

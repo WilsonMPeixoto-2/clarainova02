@@ -1,10 +1,8 @@
-import { useSyncExternalStore } from 'react';
 import { motion } from 'motion/react';
 import { FileSearch, MessagesSquare, BookCheck, ArrowUpRight, ShieldCheck, Route, FileCheck2, Files, Signature, ClipboardList } from 'lucide-react';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
 import { useChat } from '@/hooks/useChatStore';
-import { getUhdDisplaySnapshot, subscribeToUhdDisplay } from '@/lib/displayProfile';
 
 const features = [
   {
@@ -45,25 +43,16 @@ const bentoCards = [
 
 const FeaturesSection = () => {
   const { openChat } = useChat();
-  const isUhdDisplay = useSyncExternalStore(
-    subscribeToUhdDisplay,
-    getUhdDisplaySnapshot,
-    () => false,
-  );
-  const knowledgeVideoSrc = isUhdDisplay ? '/videos/energy-flow-4k.mp4' : '/videos/energy-flow.mp4';
 
   return (
     <section id="conhecimento" className="knowledge-section py-20 md:py-28 relative overflow-hidden" aria-labelledby="features-heading">
       <div className="knowledge-ambient-media" aria-hidden="true">
-        <video
+        <img
           className="knowledge-ambient-video"
-          src={knowledgeVideoSrc}
-          poster="/videos/energy-flow-poster-4k.jpg"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
+          src="/videos/energy-flow-poster-4k.jpg"
+          alt=""
+          loading="lazy"
+          decoding="async"
         />
       </div>
       <div id="features" className="absolute -top-20" aria-hidden="true" />

@@ -1,19 +1,17 @@
 import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
 import { ArrowLeft, MessageCircle, AlertCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 const NotFound = () => {
   const location = useLocation();
-
-  useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-  }, [location.pathname]);
+  useDocumentMeta({
+    title: "Página não encontrada — CLARA",
+    description: "A rota solicitada não foi encontrada. Volte para a home da CLARA ou abra o chat para continuar a navegação.",
+  });
 
   return (
-    <>
-    <title>Página não encontrada — CLARA</title>
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
@@ -42,7 +40,6 @@ const NotFound = () => {
 
       <Footer />
     </div>
-    </>
   );
 };
 

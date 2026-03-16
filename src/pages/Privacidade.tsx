@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 
 const Privacidade = () => {
+  useDocumentMeta({
+    title: "Política de Privacidade — CLARA",
+    description:
+      "Política de Privacidade da CLARA, ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas, com informações sobre dados tratados e limites de uso.",
+  });
+
   return (
-    <>
-    <title>Política de Privacidade — CLARA</title>
-    <meta name="description" content="Política de Privacidade da CLARA - Consultora de Legislação e Apoio a Rotinas Administrativas, em conformidade com a LGPD." />
     <div className="min-h-screen bg-background text-foreground">
       <nav className="flex items-center justify-center gap-6 py-6 text-sm text-muted-foreground">
         <Link to="/" className="hover:text-foreground transition-colors">← Voltar para CLARA</Link>
@@ -14,50 +18,86 @@ const Privacidade = () => {
       <div className="max-w-3xl mx-auto px-6 pb-24">
         <h1 className="font-display text-4xl font-bold text-center mb-2">Política de Privacidade</h1>
         <p className="text-center text-primary font-medium mb-1">CLARA - Inteligência Administrativa</p>
-        <p className="text-center text-sm text-muted-foreground mb-12">Última atualização: 25 de janeiro de 2026</p>
+        <p className="text-center text-sm text-muted-foreground mb-12">Última atualização: 15 de março de 2026</p>
 
         <div className="space-y-8">
           {[
             {
-              title: "1. Introdução",
+              title: "1. Escopo desta política",
               content: (
                 <>
-                  <p>A CLARA (Consultora de Legislação e Apoio a Rotinas Administrativas) é um assistente virtual especializado em orientações sobre legislação e procedimentos administrativos. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações pessoais quando você utiliza nosso serviço.</p>
-                  <p className="mt-4">Estamos comprometidos com a proteção da sua privacidade e com o cumprimento da Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).</p>
+                  <p>A CLARA é uma ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas. Esta política descreve quais dados podem ser tratados durante o uso do site, do chat e da área administrativa, bem como a finalidade desse tratamento.</p>
+                  <p className="mt-4">A proposta do serviço é orientar tarefas operacionais, com foco em documentos, assinatura, tramitação e conferência de etapas. O uso do sistema deve sempre respeitar a LGPD, as normas internas da sua unidade e os documentos oficiais aplicáveis.</p>
                 </>
               ),
             },
             {
-              title: "2. Dados Coletados",
+              title: "2. Dados que podem ser tratados",
               content: (
                 <>
-                  <p>Ao utilizar a CLARA com autenticação via Google, coletamos os seguintes dados:</p>
+                  <p>Dependendo da funcionalidade utilizada, a CLARA pode tratar:</p>
                   <ul className="list-disc pl-6 mt-3 space-y-2">
-                    <li><strong>Nome:</strong> Seu nome de exibição do perfil Google</li>
-                    <li><strong>Email:</strong> Seu endereço de email do Google</li>
-                    <li><strong>Foto do perfil:</strong> Sua foto de perfil do Google (opcional)</li>
-                    <li><strong>Histórico de conversas:</strong> As mensagens trocadas com a CLARA</li>
+                    <li><strong>Mensagens do chat:</strong> perguntas e contexto digitados pelo usuário para receber orientação operacional.</li>
+                    <li><strong>Metadados técnicos:</strong> registros mínimos de uso, desempenho e falhas necessários ao funcionamento e ao monitoramento do serviço.</li>
+                    <li><strong>Dados de autenticação administrativa:</strong> email e sessão de acesso, quando houver login na área administrativa.</li>
+                    <li><strong>Arquivos enviados na administração:</strong> documentos inseridos manualmente para ingestão e organização da base.</li>
                   </ul>
-                  <p className="mt-4"><strong>Nota:</strong> Você pode utilizar a CLARA sem autenticação, porém o histórico de conversas não será salvo entre sessões.</p>
+                  <p className="mt-4"><strong>Orientação importante:</strong> evite inserir dados pessoais, sigilosos ou sensíveis que não sejam estritamente necessários para formular a dúvida.</p>
                 </>
               ),
             },
             {
-              title: "3. Uso dos Dados",
+              title: "3. Finalidade do tratamento",
               content: (
-                <p>Usamos seus dados exclusivamente para fornecer os serviços que você solicitou, incluindo personalização da experiência, manutenção do histórico de conversas e melhoria contínua do serviço.</p>
+                <>
+                  <p>Os dados tratados pela CLARA são usados para:</p>
+                  <ul className="list-disc pl-6 mt-3 space-y-2">
+                    <li>gerar respostas relacionadas ao uso do SEI-Rio e a rotinas administrativas;</li>
+                    <li>manter a operação técnica do site, do chat e da área administrativa;</li>
+                    <li>monitorar qualidade, desempenho e eventuais falhas do serviço;</li>
+                    <li>administrar a base documental utilizada no apoio às respostas.</li>
+                  </ul>
+                </>
               ),
             },
             {
-              title: "4. Seus Direitos",
+              title: "4. Infraestrutura e processamento",
               content: (
                 <>
-                  <p>Conforme a LGPD, você tem direito a:</p>
+                  <p>A CLARA utiliza infraestrutura de terceiros para operação do frontend, armazenamento e processamento das respostas, incluindo Vercel, Supabase e Google Gemini.</p>
+                  <p className="mt-4">Esses serviços atuam como parte da infraestrutura técnica do projeto. O envio de perguntas ao chat pode envolver processamento automatizado por esses provedores para que a resposta seja gerada.</p>
+                </>
+              ),
+            },
+            {
+              title: "5. Retenção e revisão",
+              content: (
+                <>
+                  <p>Os registros operacionais e dados administrativos podem ser mantidos pelo tempo necessário para funcionamento, segurança, auditoria técnica e manutenção da base.</p>
+                  <p className="mt-4">Solicitações de revisão, esclarecimento ou exclusão devem ser avaliadas conforme a natureza dos dados, o contexto institucional e a legislação aplicável.</p>
+                </>
+              ),
+            },
+            {
+              title: "6. Boas práticas de uso",
+              content: (
+                <>
+                  <p>Para reduzir riscos, prefira formular perguntas com foco em procedimento e evite reproduzir dados pessoais, sigilosos ou informações processuais desnecessárias.</p>
                   <ul className="list-disc pl-6 mt-3 space-y-2">
-                    <li>Acessar seus dados pessoais</li>
-                    <li>Corrigir dados incompletos ou desatualizados</li>
-                    <li>Solicitar a exclusão dos seus dados</li>
-                    <li>Revogar seu consentimento a qualquer momento</li>
+                    <li>use exemplos genéricos sempre que possível;</li>
+                    <li>valide orientações com os documentos oficiais da sua unidade;</li>
+                    <li>não trate a CLARA como repositório permanente de informações sensíveis.</li>
+                  </ul>
+                </>
+              ),
+            },
+            {
+              title: "7. Contato",
+              content: (
+                <>
+                  <p>Em caso de dúvida sobre esta política ou sobre o tratamento de dados no projeto, utilize o contato informado na própria aplicação.</p>
+                  <ul className="list-disc pl-6 mt-3 space-y-2">
+                    <li><strong>Email:</strong> wilsonmp2@gmail.com</li>
                   </ul>
                 </>
               ),
@@ -73,7 +113,6 @@ const Privacidade = () => {
         </div>
       </div>
     </div>
-    </>
   );
 };
 

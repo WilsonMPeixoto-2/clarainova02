@@ -9,7 +9,7 @@ const faqItems = [
   { id: 'faq-2', question: 'Posso usar para processos em andamento no SEI-Rio?', answer: 'Sim. A CLARA pode ajudar a revisar etapas, organizar documentos, entender encaminhamentos, conferir blocos e preparar a próxima ação antes de operar no processo.' },
   { id: 'faq-3', question: 'Como funciona o modo Direto e o Didático?', answer: 'No modo Direto, a resposta vem curta e objetiva para consulta rápida. No modo Didático, a explicação é organizada em etapas para quem precisa executar o procedimento com mais segurança.' },
   { id: 'faq-4', question: 'As respostas trazem base documental?', answer: 'Quando a base local encontra respaldo para a pergunta, a resposta pode indicar os documentos consultados. Ainda assim, a validação final deve considerar os materiais oficiais usados pela sua unidade.' },
-  { id: 'faq-5', question: 'A CLARA funciona em celular e desktop?', answer: 'Sim. O layout foi otimizado para ambos. No desktop, o chat é redimensionável; no mobile, funciona como sheet com pontos de ajuste.' },
+  { id: 'faq-5', question: 'A CLARA funciona em celular e desktop?', answer: 'Sim. O layout foi ajustado para ambos. No desktop, o chat abre em painel lateral; no mobile, funciona como sheet com foco na leitura e no envio da pergunta.' },
 ];
 
 const FAQSection = () => {
