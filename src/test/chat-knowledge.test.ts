@@ -58,7 +58,7 @@ describe("prepareKnowledgeDecision", () => {
     const decision = prepareKnowledgeDecision("Como solicitar assinatura de outra unidade?", [
       {
         document_name: "Manual SEI-Rio.pdf",
-        similarity: 0.007,
+        similarity: 0.005,
         content:
           "[Fonte: Manual SEI-Rio.pdf | Página: 9]\n\nA parametrizacao inicial do sistema e realizada pela administracao central da plataforma.",
       },
@@ -67,5 +67,32 @@ describe("prepareKnowledgeDecision", () => {
     expect(decision.relevantChunks).toHaveLength(0);
     expect(decision.sources).toHaveLength(0);
     expect(decision.knowledgeContext).toBe("");
+  });
+
+  it("includes 'sei' as a protected token in tokenization", () => {
+    const decision = prepareKnowledgeDecision("Como usar o SEI?", [
+      {
+        document_name: "Manual SEI.pdf",
+        similarity: 0.008,
+        content:
+          "[Fonte: Manual SEI.pdf | Página: 1]\n\nO SEI e o sistema de processos eletronicos utilizado para tramitacao e gestao documental.",
+      },
+    ]);
+
+    expect(decision.relevantChunks).toHaveLength(1);
+    expect(decision.sources).toContain("Manual SEI.pdf - Página 1");
+  });
+
+  it("accepts strong semantic chunks even without lexical overlap", () => {
+    const decision = prepareKnowledgeDecision("Como incluir arquivo no processo?", [
+      {
+        document_name: "Manual SEI-Rio.pdf",
+        similarity: 0.015,
+        content:
+          "Para anexar documentos no sistema eletronico, abra o procedimento desejado e selecione a opcao correspondente no menu lateral.",
+      },
+    ]);
+
+    expect(decision.relevantChunks).toHaveLength(1);
   });
 });
