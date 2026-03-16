@@ -27,6 +27,12 @@ const MIN_RRF_SCORE = 0.006;
 const STRONG_RRF_SCORE = 0.012;
 const MAX_SELECTED_CHUNKS = 6;
 
+/** Tokens below this length are discarded UNLESS they are domain-critical. */
+const MIN_TOKEN_LENGTH = 3;
+
+/** Domain-critical tokens that must never be filtered out regardless of length. */
+const PROTECTED_TOKENS = new Set(["sei", "rio", "pdf", "rls", "tus"]);
+
 const STOP_WORDS = new Set([
   "a", "ao", "aos", "as", "com", "como", "da", "das", "de", "do", "dos",
   "e", "em", "na", "nas", "no", "nos", "o", "os", "ou", "para", "por",
@@ -45,7 +51,10 @@ function tokenizeQuestion(question: string): string[] {
     new Set(
       normalizeText(question)
         .split(/[^a-z0-9]+/)
-        .filter((token) => token.length >= 4 && !STOP_WORDS.has(token))
+        .filter((token) =>
+          !STOP_WORDS.has(token) &&
+          (token.length >= MIN_TOKEN_LENGTH || PROTECTED_TOKENS.has(token))
+        )
     )
   );
 }
@@ -113,8 +122,10 @@ export function prepareKnowledgeDecision(
     .map(parseChunk)
     .filter((chunk, index) => {
       const overlap = lexicalOverlap(questionTokens, chunk.content);
+      // Accept chunks with both semantic and lexical relevance
       if (chunk.similarity >= MIN_RRF_SCORE && overlap > 0) return true;
-      if (index === 0 && chunk.similarity >= STRONG_RRF_SCORE) return true;
+      // Accept top chunks with strong semantic score even without lexical overlap
+      if (chunk.similarity >= STRONG_RRF_SCORE && index < 3) return true;
       return false;
     })
     .slice(0, MAX_SELECTED_CHUNKS);

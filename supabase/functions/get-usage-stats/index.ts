@@ -8,9 +8,9 @@ const corsHeaders = {
 
 async function countRecentRows(
   supabase: ReturnType<typeof createClient>,
-  table: "chat_metrics" | "search_metrics" | "ingestion_jobs",
+  table: string,
   monthStart: string,
-  applyFilters?: (query: ReturnType<typeof supabase.from>) => ReturnType<typeof supabase.from>,
+  applyFilters?: (query: any) => any,
 ): Promise<number | null> {
   let query = supabase
     .from(table)
