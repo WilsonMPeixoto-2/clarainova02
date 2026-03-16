@@ -27,6 +27,12 @@ const MIN_RRF_SCORE = 0.006;
 const STRONG_RRF_SCORE = 0.012;
 const MAX_SELECTED_CHUNKS = 6;
 
+/** Tokens below this length are discarded UNLESS they are domain-critical. */
+const MIN_TOKEN_LENGTH = 3;
+
+/** Domain-critical tokens that must never be filtered out regardless of length. */
+const PROTECTED_TOKENS = new Set(["sei", "rio", "pdf", "rls", "tus"]);
+
 const STOP_WORDS = new Set([
   "a", "ao", "aos", "as", "com", "como", "da", "das", "de", "do", "dos",
   "e", "em", "na", "nas", "no", "nos", "o", "os", "ou", "para", "por",
