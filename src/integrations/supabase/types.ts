@@ -16,71 +16,28 @@ export type Database = {
     Tables: {
       document_chunks: {
         Row: {
-          char_count: number | null
-          chunk_metadata_json: Json
           chunk_index: number
           content: string
           created_at: string
           document_id: string
-          embedded_at: string | null
-          embedding_dim: number | null
-          embedding_model: string | null
           embedding: string | null
           id: string
-          is_active: boolean
-          keyword_tsv: unknown | null
-          keyword_weight: number
-          page_end: number | null
-          page_start: number | null
-          section_title: string | null
-          semantic_weight: number
-          text_hash: string | null
-          token_count_estimate: number | null
-          updated_at: string
         }
         Insert: {
-          char_count?: number | null
-          chunk_metadata_json?: Json
           chunk_index?: number
           content: string
           created_at?: string
           document_id: string
-          embedded_at?: string | null
-          embedding_dim?: number | null
-          embedding_model?: string | null
           embedding?: string | null
           id?: string
-          is_active?: boolean
-          keyword_weight?: number
-          page_end?: number | null
-          page_start?: number | null
-          section_title?: string | null
-          semantic_weight?: number
-          text_hash?: string | null
-          token_count_estimate?: number | null
-          updated_at?: string
         }
         Update: {
-          char_count?: number | null
-          chunk_metadata_json?: Json
           chunk_index?: number
           content?: string
           created_at?: string
           document_id?: string
-          embedded_at?: string | null
-          embedding_dim?: number | null
-          embedding_model?: string | null
           embedding?: string | null
           id?: string
-          is_active?: boolean
-          keyword_weight?: number
-          page_end?: number | null
-          page_start?: number | null
-          section_title?: string | null
-          semantic_weight?: number
-          text_hash?: string | null
-          token_count_estimate?: number | null
-          updated_at?: string
         }
         Relationships: [
           {
@@ -95,344 +52,26 @@ export type Database = {
       documents: {
         Row: {
           created_at: string
-          document_hash: string | null
-          failed_at: string | null
-          failure_reason: string | null
-          file_name: string | null
           file_path: string
           id: string
-          is_active: boolean
-          jurisdiction_scope: string | null
-          language_code: string | null
-          last_reviewed_at: string | null
-          metadata_json: Json
-          mime_type: string | null
           name: string
-          page_count: number | null
-          processed_at: string | null
-          published_at: string | null
-          source_name: string | null
-          source_type: string | null
-          source_url: string | null
           status: string
-          storage_path: string | null
-          summary: string | null
-          text_char_count: number | null
-          topic_scope: string | null
-          updated_at: string
-          version_label: string | null
         }
         Insert: {
           created_at?: string
-          document_hash?: string | null
-          failed_at?: string | null
-          failure_reason?: string | null
-          file_name?: string | null
           file_path: string
           id?: string
-          is_active?: boolean
-          jurisdiction_scope?: string | null
-          language_code?: string | null
-          last_reviewed_at?: string | null
-          metadata_json?: Json
-          mime_type?: string | null
           name: string
-          page_count?: number | null
-          processed_at?: string | null
-          published_at?: string | null
-          source_name?: string | null
-          source_type?: string | null
-          source_url?: string | null
           status?: string
-          storage_path?: string | null
-          summary?: string | null
-          text_char_count?: number | null
-          topic_scope?: string | null
-          updated_at?: string
-          version_label?: string | null
         }
         Update: {
           created_at?: string
-          document_hash?: string | null
-          failed_at?: string | null
-          failure_reason?: string | null
-          file_name?: string | null
           file_path?: string
           id?: string
-          is_active?: boolean
-          jurisdiction_scope?: string | null
-          language_code?: string | null
-          last_reviewed_at?: string | null
-          metadata_json?: Json
-          mime_type?: string | null
           name?: string
-          page_count?: number | null
-          processed_at?: string | null
-          published_at?: string | null
-          source_name?: string | null
-          source_type?: string | null
-          source_url?: string | null
           status?: string
-          storage_path?: string | null
-          summary?: string | null
-          text_char_count?: number | null
-          topic_scope?: string | null
-          updated_at?: string
-          version_label?: string | null
         }
         Relationships: []
-      }
-      document_processing_events: {
-        Row: {
-          created_at: string
-          details_json: Json
-          document_id: string | null
-          event_level: string
-          event_type: string
-          id: string
-          ingestion_job_id: string | null
-          message: string
-        }
-        Insert: {
-          created_at?: string
-          details_json?: Json
-          document_id?: string | null
-          event_level?: string
-          event_type: string
-          id?: string
-          ingestion_job_id?: string | null
-          message: string
-        }
-        Update: {
-          created_at?: string
-          details_json?: Json
-          document_id?: string | null
-          event_level?: string
-          event_type?: string
-          id?: string
-          ingestion_job_id?: string | null
-          message?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "document_processing_events_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "documents"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "document_processing_events_ingestion_job_id_fkey"
-            columns: ["ingestion_job_id"]
-            isOneToOne: false
-            referencedRelation: "ingestion_jobs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ingestion_jobs: {
-        Row: {
-          attempt_number: number
-          completed_at: string | null
-          created_at: string
-          document_id: string | null
-          error_code: string | null
-          error_message: string | null
-          failed_at: string | null
-          id: string
-          job_type: string
-          payload_json: Json
-          result_json: Json
-          started_at: string | null
-          status: string
-          trigger_source: string
-          updated_at: string
-        }
-        Insert: {
-          attempt_number?: number
-          completed_at?: string | null
-          created_at?: string
-          document_id?: string | null
-          error_code?: string | null
-          error_message?: string | null
-          failed_at?: string | null
-          id?: string
-          job_type: string
-          payload_json?: Json
-          result_json?: Json
-          started_at?: string | null
-          status?: string
-          trigger_source?: string
-          updated_at?: string
-        }
-        Update: {
-          attempt_number?: number
-          completed_at?: string | null
-          created_at?: string
-          document_id?: string | null
-          error_code?: string | null
-          error_message?: string | null
-          failed_at?: string | null
-          id?: string
-          job_type?: string
-          payload_json?: Json
-          result_json?: Json
-          started_at?: string | null
-          status?: string
-          trigger_source?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ingestion_jobs_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "documents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      chat_metrics: {
-        Row: {
-          chunks_selected_count: number
-          citations_count: number
-          created_at: string
-          error_code: string | null
-          error_message: string | null
-          id: string
-          latency_ms: number | null
-          metadata_json: Json
-          model_name: string | null
-          normalized_query: string | null
-          prompt_tokens_estimate: number | null
-          query_text: string
-          rag_confidence_score: number | null
-          request_id: string | null
-          response_status: string
-          response_text: string | null
-          response_tokens_estimate: number | null
-          search_metric_id: string | null
-          search_result_count: number
-          used_external_web: boolean
-          used_model_general_knowledge: boolean
-          used_rag: boolean
-        }
-        Insert: {
-          chunks_selected_count?: number
-          citations_count?: number
-          created_at?: string
-          error_code?: string | null
-          error_message?: string | null
-          id?: string
-          latency_ms?: number | null
-          metadata_json?: Json
-          model_name?: string | null
-          normalized_query?: string | null
-          prompt_tokens_estimate?: number | null
-          query_text: string
-          rag_confidence_score?: number | null
-          request_id?: string | null
-          response_status?: string
-          response_text?: string | null
-          response_tokens_estimate?: number | null
-          search_metric_id?: string | null
-          search_result_count?: number
-          used_external_web?: boolean
-          used_model_general_knowledge?: boolean
-          used_rag?: boolean
-        }
-        Update: {
-          chunks_selected_count?: number
-          citations_count?: number
-          created_at?: string
-          error_code?: string | null
-          error_message?: string | null
-          id?: string
-          latency_ms?: number | null
-          metadata_json?: Json
-          model_name?: string | null
-          normalized_query?: string | null
-          prompt_tokens_estimate?: number | null
-          query_text?: string
-          rag_confidence_score?: number | null
-          request_id?: string | null
-          response_status?: string
-          response_text?: string | null
-          response_tokens_estimate?: number | null
-          search_metric_id?: string | null
-          search_result_count?: number
-          used_external_web?: boolean
-          used_model_general_knowledge?: boolean
-          used_rag?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_metrics_search_metric_id_fkey"
-            columns: ["search_metric_id"]
-            isOneToOne: false
-            referencedRelation: "search_metrics"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      query_analytics: {
-        Row: {
-          chat_metric_id: string | null
-          created_at: string
-          gap_reason: string | null
-          id: string
-          intent_label: string | null
-          is_answered_satisfactorily: boolean | null
-          needs_content_gap_review: boolean
-          normalized_query: string | null
-          query_text: string
-          request_id: string | null
-          subtopic_label: string | null
-          topic_label: string | null
-          used_external_web: boolean
-          used_rag: boolean
-        }
-        Insert: {
-          chat_metric_id?: string | null
-          created_at?: string
-          gap_reason?: string | null
-          id?: string
-          intent_label?: string | null
-          is_answered_satisfactorily?: boolean | null
-          needs_content_gap_review?: boolean
-          normalized_query?: string | null
-          query_text: string
-          request_id?: string | null
-          subtopic_label?: string | null
-          topic_label?: string | null
-          used_external_web?: boolean
-          used_rag?: boolean
-        }
-        Update: {
-          chat_metric_id?: string | null
-          created_at?: string
-          gap_reason?: string | null
-          id?: string
-          intent_label?: string | null
-          is_answered_satisfactorily?: boolean | null
-          needs_content_gap_review?: boolean
-          normalized_query?: string | null
-          query_text?: string
-          request_id?: string | null
-          subtopic_label?: string | null
-          topic_label?: string | null
-          used_external_web?: boolean
-          used_rag?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "query_analytics_chat_metric_id_fkey"
-            columns: ["chat_metric_id"]
-            isOneToOne: false
-            referencedRelation: "chat_metrics"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       rate_limits: {
         Row: {
@@ -449,66 +88,6 @@ export type Database = {
           created_at?: string
           id?: string
           identifier?: string
-        }
-        Relationships: []
-      }
-      search_metrics: {
-        Row: {
-          avg_score: number | null
-          created_at: string
-          id: string
-          keyword_hits_count: number | null
-          keyword_query_text: string | null
-          merged_hits_count: number
-          normalized_query: string | null
-          query_embedding_model: string | null
-          query_text: string
-          request_id: string | null
-          search_latency_ms: number | null
-          search_mode: string
-          selected_chunk_ids: Json
-          selected_document_ids: Json
-          selected_sources: Json
-          semantic_hits_count: number | null
-          top_score: number | null
-        }
-        Insert: {
-          avg_score?: number | null
-          created_at?: string
-          id?: string
-          keyword_hits_count?: number | null
-          keyword_query_text?: string | null
-          merged_hits_count?: number
-          normalized_query?: string | null
-          query_embedding_model?: string | null
-          query_text: string
-          request_id?: string | null
-          search_latency_ms?: number | null
-          search_mode?: string
-          selected_chunk_ids?: Json
-          selected_document_ids?: Json
-          selected_sources?: Json
-          semantic_hits_count?: number | null
-          top_score?: number | null
-        }
-        Update: {
-          avg_score?: number | null
-          created_at?: string
-          id?: string
-          keyword_hits_count?: number | null
-          keyword_query_text?: string | null
-          merged_hits_count?: number
-          normalized_query?: string | null
-          query_embedding_model?: string | null
-          query_text?: string
-          request_id?: string | null
-          search_latency_ms?: number | null
-          search_mode?: string
-          selected_chunk_ids?: Json
-          selected_document_ids?: Json
-          selected_sources?: Json
-          semantic_hits_count?: number | null
-          top_score?: number | null
         }
         Relationships: []
       }
@@ -558,9 +137,6 @@ export type Database = {
           document_id: string
           document_name: string
           id: string
-          page_end: number | null
-          page_start: number | null
-          section_title: string | null
           similarity: number
         }[]
       }
