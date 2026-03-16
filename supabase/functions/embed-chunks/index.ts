@@ -11,28 +11,18 @@ const EMBEDDING_MODEL = "gemini-embedding-001";
 const EMBEDDING_DIM = 768;
 
 function getErrorMessage(error: unknown, fallback = "Erro interno"): string {
-  if (error instanceof Error && error.message.trim()) {
-    return error.message;
-  }
-
-  if (typeof error === "string" && error.trim()) {
-    return error;
-  }
-
+  if (error instanceof Error && error.message.trim()) return error.message;
+  if (typeof error === "string" && error.trim()) return error;
   return fallback;
 }
 
 function getErrorStatus(error: unknown): number | undefined {
-  if (typeof error !== "object" || error === null) {
-    return undefined;
-  }
-
+  if (typeof error !== "object" || error === null) return undefined;
   const statusCandidate = "status" in error
     ? error.status
     : "httpStatusCode" in error
       ? error.httpStatusCode
       : undefined;
-
   return typeof statusCandidate === "number" ? statusCandidate : undefined;
 }
 
@@ -40,14 +30,6 @@ interface ParsedChunkMetadata {
   pageStart: number | null;
   pageEnd: number | null;
   sourceTag: string | null;
-}
-
-async function sha256Hex(value: string): Promise<string> {
-  const encoded = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", encoded);
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
 }
 
 function parseChunkMetadata(content: string): ParsedChunkMetadata {
@@ -62,11 +44,7 @@ function parseChunkMetadata(content: string): ParsedChunkMetadata {
   };
 }
 
-function estimateTokenCount(value: string): number {
-  return Math.max(1, Math.ceil(value.length / 4));
-}
-
-async function logProcessingEvent(
+async function safeLogEvent(
   supabase: ReturnType<typeof createClient>,
   payload: {
     document_id?: string | null;
@@ -77,19 +55,19 @@ async function logProcessingEvent(
     details_json?: Record<string, unknown>;
   }
 ) {
-  const { error } = await supabase
-    .from("document_processing_events")
-    .insert({
-      document_id: payload.document_id ?? null,
-      ingestion_job_id: payload.ingestion_job_id ?? null,
-      event_type: payload.event_type,
-      event_level: payload.event_level ?? "info",
-      message: payload.message,
-      details_json: payload.details_json ?? {},
-    });
-
-  if (error) {
-    console.warn("Could not log document processing event:", error.message);
+  try {
+    await supabase
+      .from("document_processing_events")
+      .insert({
+        document_id: payload.document_id ?? null,
+        ingestion_job_id: payload.ingestion_job_id ?? null,
+        event_type: payload.event_type,
+        event_level: payload.event_level ?? "info",
+        message: payload.message,
+        details_json: payload.details_json ?? {},
+      });
+  } catch {
+    // non-critical, don't block main flow
   }
 }
 
@@ -138,19 +116,15 @@ Deno.serve(async (req) => {
     const ai = new GoogleGenAI({ apiKey: geminiKey });
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    await logProcessingEvent(supabase, {
+    await safeLogEvent(supabase, {
       document_id,
       ingestion_job_id,
       event_type: "embedding_request_received",
       message: "Lote recebido pela edge function de embeddings.",
-      details_json: {
-        start_index,
-        requested_chunks: chunks.length,
-        valid_chunks: validChunks.length,
-      },
+      details_json: { start_index, requested_chunks: chunks.length, valid_chunks: validChunks.length },
     });
 
-    // Generate embeddings using @google/genai SDK
+    // Generate embeddings
     const embeddingStart = Date.now();
     const embeddingPromises = validChunks.map(async (text: string) => {
       try {
@@ -173,30 +147,18 @@ Deno.serve(async (req) => {
     const embeddings = await Promise.all(embeddingPromises);
     const embedding_ms = Date.now() - embeddingStart;
 
-    const rows = await Promise.all(
-      validChunks.map(async (content: string, i: number) => {
-        const { pageStart, pageEnd, sourceTag } = parseChunkMetadata(content);
-
-        return {
-          document_id,
-          content,
-          embedding: embeddings[i] ? JSON.stringify(embeddings[i]) : null,
-          chunk_index: start_index + i,
-          page_start: pageStart,
-          page_end: pageEnd,
-          char_count: content.length,
-          token_count_estimate: estimateTokenCount(content),
-          text_hash: await sha256Hex(content),
-          embedding_model: embeddings[i] ? EMBEDDING_MODEL : null,
-          embedding_dim: embeddings[i] ? EMBEDDING_DIM : null,
-          embedded_at: embeddings[i] ? new Date().toISOString() : null,
-          chunk_metadata_json: {
-            source_tag: sourceTag,
-          },
-          is_active: true,
-        };
-      })
-    );
+    // Build rows using ONLY columns that exist in document_chunks
+    const rows = validChunks.map((content: string, i: number) => {
+      const { pageStart, pageEnd } = parseChunkMetadata(content);
+      return {
+        document_id,
+        content,
+        embedding: embeddings[i] ? JSON.stringify(embeddings[i]) : null,
+        chunk_index: start_index + i,
+        page_start: pageStart,
+        page_end: pageEnd,
+      };
+    });
 
     const dbStart = Date.now();
     const { error: upsertErr } = await supabase
@@ -206,18 +168,13 @@ Deno.serve(async (req) => {
 
     if (upsertErr) {
       console.error("Upsert error:", upsertErr);
-      await logProcessingEvent(supabase, {
+      await safeLogEvent(supabase, {
         document_id,
         ingestion_job_id,
         event_type: "embedding_batch_failed",
         event_level: "error",
         message: "Falha ao persistir o lote de embeddings no banco.",
-        details_json: {
-          start_index,
-          batch_size: validChunks.length,
-          request_id,
-          details: upsertErr.message,
-        },
+        details_json: { start_index, batch_size: validChunks.length, request_id, details: upsertErr.message },
       });
       return new Response(
         JSON.stringify({ ok: false, error: "DB_UPSERT_FAILED", details: upsertErr.message, request_id }),
@@ -225,7 +182,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    await logProcessingEvent(supabase, {
+    await safeLogEvent(supabase, {
       document_id,
       ingestion_job_id,
       event_type: "embedding_batch_saved",
@@ -233,7 +190,7 @@ Deno.serve(async (req) => {
       details_json: {
         start_index,
         batch_size: rows.length,
-        failed_embeddings: embeddings.filter((embedding) => embedding === null).length,
+        failed_embeddings: embeddings.filter((e) => e === null).length,
         request_id,
         embedding_ms,
         db_ms,
@@ -244,7 +201,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         ok: true,
         saved: rows.length,
-        failed_embeddings: embeddings.filter(e => e === null).length,
+        failed_embeddings: embeddings.filter((e) => e === null).length,
         request_id,
         embedding_ms,
         db_ms,

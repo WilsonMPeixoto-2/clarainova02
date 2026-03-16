@@ -122,8 +122,10 @@ export function prepareKnowledgeDecision(
     .map(parseChunk)
     .filter((chunk, index) => {
       const overlap = lexicalOverlap(questionTokens, chunk.content);
+      // Accept chunks with both semantic and lexical relevance
       if (chunk.similarity >= MIN_RRF_SCORE && overlap > 0) return true;
-      if (index === 0 && chunk.similarity >= STRONG_RRF_SCORE) return true;
+      // Accept top chunks with strong semantic score even without lexical overlap
+      if (chunk.similarity >= STRONG_RRF_SCORE && index < 3) return true;
       return false;
     })
     .slice(0, MAX_SELECTED_CHUNKS);
