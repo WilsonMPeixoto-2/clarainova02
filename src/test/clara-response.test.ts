@@ -61,13 +61,14 @@ describe('clara-response helpers', () => {
     expect(response.etapas).toHaveLength(0);
   });
 
-  it('renders ambiguity and process notices in plain text when present', () => {
+  it('plain text does NOT contain internal diagnostic sections', () => {
     const response = buildMockStructuredResponse('Como requisitar ferias no sistema?');
     const plainText = renderStructuredResponseToPlainText(response);
 
-    expect(plainText).toContain('Aviso importante');
-    expect(plainText).toContain('Como cheguei a esta resposta');
-    expect(plainText).toContain('Fontes comparadas');
-    expect(plainText).toContain('aderencia ao pedido: insufficient');
+    expect(plainText).not.toContain('Como cheguei a esta resposta');
+    expect(plainText).not.toContain('Fontes comparadas');
+    expect(plainText).not.toContain('Fontes priorizadas');
+    expect(plainText).not.toContain('Leitura de confianca');
+    expect(plainText).not.toContain('Aviso importante');
   });
 });
