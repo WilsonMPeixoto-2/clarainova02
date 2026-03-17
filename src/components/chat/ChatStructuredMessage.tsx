@@ -66,12 +66,6 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
   const [showReferences, setShowReferences] = useState(true);
   const analysis = response.analiseDaResposta;
   const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
-  const showDecisionSummary =
-    analysis.finalConfidence != null ||
-    analysis.answerScopeMatch !== 'exact' ||
-    analysis.ambiguityInUserQuestion ||
-    analysis.ambiguityInSources ||
-    analysis.webFallbackUsed;
 
   return (
     <div className="chat-structured-response">
