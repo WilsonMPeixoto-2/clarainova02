@@ -80,14 +80,6 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
           <CitationList citations={response.resumoCitacoes} />
         </p>
 
-        {analysis.userNotice && (
-          <NoticeCard
-            title="Como eu conduzi esta resposta"
-            icon={<Lightbulb size={15} />}
-            body={analysis.userNotice}
-            tone="warm"
-          />
-        )}
 
         {analysis.clarificationRequested && analysis.clarificationQuestion && (
           <section className="chat-clarification-card" aria-label="Pedido de esclarecimento">
