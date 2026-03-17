@@ -1,13 +1,8 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
-  CircleAlert,
-  Compass,
-  ExternalLink,
   FileText,
-  GitCompareArrows,
-  Lightbulb,
   MessageCircleQuestion,
   ShieldAlert,
 } from 'lucide-react';
