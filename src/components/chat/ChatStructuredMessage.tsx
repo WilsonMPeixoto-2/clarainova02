@@ -153,7 +153,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
       {response.observacoesFinais.length > 0 && (
         <section className="chat-observation-card" aria-label="Observacoes finais">
           <div className="chat-observation-title">
-            <Lightbulb size={15} />
+            <FileText size={15} />
             Observacoes finais
           </div>
           <ul className="chat-observation-list">
