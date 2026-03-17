@@ -164,60 +164,6 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         </section>
       )}
 
-      {analysis.cautionNotice && (
-        <NoticeCard
-          title="Ponto de atencao"
-          icon={<ShieldAlert size={15} />}
-          body={analysis.cautionNotice}
-          tone="caution"
-        />
-      )}
-
-      {showDecisionSummary && (
-        <section className="chat-decision-card" aria-label="Leitura de confianca">
-          <div className="chat-decision-title">
-            <CircleAlert size={15} />
-            Leitura de confianca
-          </div>
-          <ul className="chat-decision-list">
-            <li>{scopeMatchLabel(analysis.answerScopeMatch)}</li>
-            {analysis.finalConfidence != null && (
-              <li>Confianca estimada da resposta: {Math.round(analysis.finalConfidence * 100)}%</li>
-            )}
-            {analysis.ambiguityInSources && <li>Houve comparacao entre fontes proximas antes de consolidar a orientacao.</li>}
-            {analysis.webFallbackUsed && <li>Foi necessario apoio de fonte oficial externa para reduzir a ambiguidade.</li>}
-          </ul>
-        </section>
-      )}
-
-      {(analysis.comparedSources.length > 0 || analysis.prioritizedSources.length > 0) && (
-        <section className="chat-source-trace-card" aria-label="Rastreabilidade das fontes">
-          <div className="chat-source-trace-title">
-            <GitCompareArrows size={15} />
-            Fontes comparadas e priorizadas
-          </div>
-          {analysis.comparedSources.length > 0 && (
-            <div className="chat-source-block">
-              <h4>Fontes comparadas</h4>
-              <ul>
-                {analysis.comparedSources.map((source) => (
-                  <li key={`compared-${source}`}>{source}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {analysis.prioritizedSources.length > 0 && (
-            <div className="chat-source-block">
-              <h4>Fontes priorizadas</h4>
-              <ul>
-                {analysis.prioritizedSources.map((source) => (
-                  <li key={`prioritized-${source}`}>{source}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </section>
-      )}
 
       {response.referenciasFinais.length > 0 && (
         <section className="chat-references-card" aria-label="Referencias">
