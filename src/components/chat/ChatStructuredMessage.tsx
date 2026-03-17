@@ -9,7 +9,6 @@ import {
 
 import {
   type ClaraHighlight,
-  type ClaraProcessState,
   type ClaraReference,
   type ClaraStructuredResponse,
   formatReferenceAbnt,
