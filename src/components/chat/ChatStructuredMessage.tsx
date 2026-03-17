@@ -106,27 +106,6 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         )}
       </div>
 
-      {analysis.processStates.length > 0 && (
-        <section className="chat-process-card" aria-label="Etapas do processo de analise">
-          <div className="chat-process-title">
-            <Compass size={15} />
-            O que a CLARA fez para chegar aqui
-          </div>
-          <div className="chat-process-list">
-            {analysis.processStates.map((state) => (
-              <article key={state.id} className={`chat-process-item chat-process-${state.status}`}>
-                <div className="chat-process-icon">
-                  <ProcessStateIcon state={state} />
-                </div>
-                <div className="chat-process-copy">
-                  <h4>{state.titulo}</h4>
-                  <p>{state.descricao}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
 
       {response.etapas.length > 0 && (
         <div className="chat-step-grid" role="list" aria-label="Etapas sugeridas">
