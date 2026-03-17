@@ -170,57 +170,17 @@ export const claraResponseJsonSchema = {
     analiseDaResposta: {
       type: "object",
       properties: {
-        questionUnderstandingConfidence: { type: ["number", "null"] },
-        finalConfidence: { type: ["number", "null"] },
         answerScopeMatch: {
           type: "string",
           enum: ["exact", "probable", "weak", "insufficient"],
         },
-        ambiguityInUserQuestion: { type: "boolean" },
-        ambiguityInSources: { type: "boolean" },
         clarificationRequested: { type: "boolean" },
         clarificationQuestion: { type: ["string", "null"] },
         clarificationReason: { type: ["string", "null"] },
-        internalExpansionPerformed: { type: "boolean" },
-        webFallbackUsed: { type: "boolean" },
-        userNotice: { type: ["string", "null"] },
-        cautionNotice: { type: ["string", "null"] },
-        ambiguityReason: { type: ["string", "null"] },
-        comparedSources: {
-          type: "array",
-          items: { type: "string" },
-        },
-        prioritizedSources: {
-          type: "array",
-          items: { type: "string" },
-        },
-        processStates: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              id: { type: "string" },
-              titulo: { type: "string" },
-              descricao: { type: "string" },
-              status: {
-                type: "string",
-                enum: ["informativo", "concluido", "cautela", "web"],
-              },
-            },
-            required: ["id", "titulo", "descricao", "status"],
-          },
-        },
       },
       required: [
         "answerScopeMatch",
-        "ambiguityInUserQuestion",
-        "ambiguityInSources",
         "clarificationRequested",
-        "internalExpansionPerformed",
-        "webFallbackUsed",
-        "comparedSources",
-        "prioritizedSources",
-        "processStates",
       ],
     },
   },
