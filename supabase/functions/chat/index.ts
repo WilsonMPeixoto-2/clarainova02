@@ -591,12 +591,7 @@ Deno.serve(async (req) => {
     const structuredResult = await generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages);
 
     if (structuredResult && lastUserMessage) {
-      const structuredResponse = enrichStructuredResponse(
-        structuredResult.response,
-        retrievalMode,
-        retrievalSources,
-        searchResultCount,
-      );
+      const structuredResponse = structuredResult.response;
       const structuredPlainText = renderStructuredResponseToPlainText(structuredResponse);
       const responseStatus = retrievalMode === 'model_grounded' ? 'answered' : 'partial';
       const usedRag = retrievalMode === 'model_grounded';

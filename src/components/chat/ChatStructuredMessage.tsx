@@ -61,43 +61,6 @@ function ReferenceItem({ reference }: { reference: ClaraReference }) {
   );
 }
 
-function ProcessStateIcon({ state }: { state: ClaraProcessState }) {
-  if (state.status === 'web') {
-    return <ExternalLink size={15} />;
-  }
-
-  if (state.status === 'cautela') {
-    return <GitCompareArrows size={15} />;
-  }
-
-  if (state.status === 'concluido') {
-    return <Compass size={15} />;
-  }
-
-  return <CircleAlert size={15} />;
-}
-
-function NoticeCard({
-  title,
-  icon,
-  body,
-  tone = 'informative',
-}: {
-  title: string;
-  icon: ReactNode;
-  body: string;
-  tone?: 'informative' | 'warm' | 'caution';
-}) {
-  return (
-    <section className={`chat-notice-card chat-notice-${tone}`}>
-      <div className="chat-notice-title">
-        {icon}
-        <span>{title}</span>
-      </div>
-      <p className="chat-notice-body">{body}</p>
-    </section>
-  );
-}
 
 export function ChatStructuredMessage({ response }: { response: ClaraStructuredResponse }) {
   const [showReferences, setShowReferences] = useState(true);
