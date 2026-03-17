@@ -176,10 +176,6 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
   const lines: string[] = [response.tituloCurto, '', response.resumoInicial];
   const analysis = response.analiseDaResposta;
 
-  if (analysis.userNotice) {
-    lines.push('', `Contexto: ${analysis.userNotice}`);
-  }
-
   if (analysis.clarificationRequested && analysis.clarificationQuestion) {
     lines.push('', 'Antes de seguir');
     if (analysis.clarificationReason) {
@@ -202,10 +198,6 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
         lines.push(`Observacao: ${step.alerta}`);
       }
 
-      if (step.citacoes.length > 0) {
-        lines.push(`Referencias relacionadas: ${step.citacoes.join(', ')}`);
-      }
-
       lines.push('');
     });
   }
@@ -215,46 +207,6 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
     response.observacoesFinais.forEach((observation) => {
       lines.push(`- ${observation}`);
     });
-    lines.push('');
-  }
-
-  if (analysis.cautionNotice) {
-    lines.push('Aviso importante');
-    lines.push(analysis.cautionNotice);
-    lines.push('');
-  }
-
-  if (analysis.processStates.length > 0) {
-    lines.push('Como cheguei a esta resposta');
-    analysis.processStates.forEach((state) => {
-      lines.push(`- ${state.titulo}: ${state.descricao}`);
-    });
-    lines.push('');
-  }
-
-  if (analysis.comparedSources.length > 0) {
-    lines.push('Fontes comparadas');
-    analysis.comparedSources.forEach((source) => {
-      lines.push(`- ${source}`);
-    });
-    lines.push('');
-  }
-
-  if (analysis.prioritizedSources.length > 0) {
-    lines.push('Fontes priorizadas');
-    analysis.prioritizedSources.forEach((source) => {
-      lines.push(`- ${source}`);
-    });
-    lines.push('');
-  }
-
-  const confidenceLabel = buildConfidenceLabel(analysis.finalConfidence);
-  if (confidenceLabel || analysis.answerScopeMatch !== 'exact') {
-    lines.push('Leitura de confianca');
-    if (confidenceLabel) {
-      lines.push(`- ${confidenceLabel}`);
-    }
-    lines.push(`- aderencia ao pedido: ${analysis.answerScopeMatch}`);
     lines.push('');
   }
 

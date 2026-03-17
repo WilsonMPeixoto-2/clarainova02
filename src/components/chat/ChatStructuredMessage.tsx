@@ -1,20 +1,14 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
-  CircleAlert,
-  Compass,
-  ExternalLink,
   FileText,
-  GitCompareArrows,
-  Lightbulb,
   MessageCircleQuestion,
   ShieldAlert,
 } from 'lucide-react';
 
 import {
   type ClaraHighlight,
-  type ClaraProcessState,
   type ClaraReference,
   type ClaraStructuredResponse,
   formatReferenceAbnt,
@@ -41,18 +35,6 @@ function highlightLabel(highlight: ClaraHighlight) {
   }
 }
 
-function scopeMatchLabel(value: ClaraStructuredResponse['analiseDaResposta']['answerScopeMatch']) {
-  switch (value) {
-    case 'probable':
-      return 'Aderencia provavel ao que voce pediu';
-    case 'weak':
-      return 'Aderencia ainda parcial ao seu pedido';
-    case 'insufficient':
-      return 'Aderencia insuficiente para uma resposta segura';
-    default:
-      return 'Aderencia alta ao seu pedido';
-  }
-}
 
 function CitationList({ citations }: { citations: number[] }) {
   if (citations.length === 0) {
@@ -79,54 +61,11 @@ function ReferenceItem({ reference }: { reference: ClaraReference }) {
   );
 }
 
-function ProcessStateIcon({ state }: { state: ClaraProcessState }) {
-  if (state.status === 'web') {
-    return <ExternalLink size={15} />;
-  }
-
-  if (state.status === 'cautela') {
-    return <GitCompareArrows size={15} />;
-  }
-
-  if (state.status === 'concluido') {
-    return <Compass size={15} />;
-  }
-
-  return <CircleAlert size={15} />;
-}
-
-function NoticeCard({
-  title,
-  icon,
-  body,
-  tone = 'informative',
-}: {
-  title: string;
-  icon: ReactNode;
-  body: string;
-  tone?: 'informative' | 'warm' | 'caution';
-}) {
-  return (
-    <section className={`chat-notice-card chat-notice-${tone}`}>
-      <div className="chat-notice-title">
-        {icon}
-        <span>{title}</span>
-      </div>
-      <p className="chat-notice-body">{body}</p>
-    </section>
-  );
-}
 
 export function ChatStructuredMessage({ response }: { response: ClaraStructuredResponse }) {
   const [showReferences, setShowReferences] = useState(true);
   const analysis = response.analiseDaResposta;
   const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
-  const showDecisionSummary =
-    analysis.finalConfidence != null ||
-    analysis.answerScopeMatch !== 'exact' ||
-    analysis.ambiguityInUserQuestion ||
-    analysis.ambiguityInSources ||
-    analysis.webFallbackUsed;
 
   return (
     <div className="chat-structured-response">
@@ -141,14 +80,6 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
           <CitationList citations={response.resumoCitacoes} />
         </p>
 
-        {analysis.userNotice && (
-          <NoticeCard
-            title="Como eu conduzi esta resposta"
-            icon={<Lightbulb size={15} />}
-            body={analysis.userNotice}
-            tone="warm"
-          />
-        )}
 
         {analysis.clarificationRequested && analysis.clarificationQuestion && (
           <section className="chat-clarification-card" aria-label="Pedido de esclarecimento">
@@ -175,27 +106,6 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         )}
       </div>
 
-      {analysis.processStates.length > 0 && (
-        <section className="chat-process-card" aria-label="Etapas do processo de analise">
-          <div className="chat-process-title">
-            <Compass size={15} />
-            O que a CLARA fez para chegar aqui
-          </div>
-          <div className="chat-process-list">
-            {analysis.processStates.map((state) => (
-              <article key={state.id} className={`chat-process-item chat-process-${state.status}`}>
-                <div className="chat-process-icon">
-                  <ProcessStateIcon state={state} />
-                </div>
-                <div className="chat-process-copy">
-                  <h4>{state.titulo}</h4>
-                  <p>{state.descricao}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
 
       {response.etapas.length > 0 && (
         <div className="chat-step-grid" role="list" aria-label="Etapas sugeridas">
@@ -243,7 +153,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
       {response.observacoesFinais.length > 0 && (
         <section className="chat-observation-card" aria-label="Observacoes finais">
           <div className="chat-observation-title">
-            <Lightbulb size={15} />
+            <FileText size={15} />
             Observacoes finais
           </div>
           <ul className="chat-observation-list">
@@ -254,60 +164,6 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         </section>
       )}
 
-      {analysis.cautionNotice && (
-        <NoticeCard
-          title="Ponto de atencao"
-          icon={<ShieldAlert size={15} />}
-          body={analysis.cautionNotice}
-          tone="caution"
-        />
-      )}
-
-      {showDecisionSummary && (
-        <section className="chat-decision-card" aria-label="Leitura de confianca">
-          <div className="chat-decision-title">
-            <CircleAlert size={15} />
-            Leitura de confianca
-          </div>
-          <ul className="chat-decision-list">
-            <li>{scopeMatchLabel(analysis.answerScopeMatch)}</li>
-            {analysis.finalConfidence != null && (
-              <li>Confianca estimada da resposta: {Math.round(analysis.finalConfidence * 100)}%</li>
-            )}
-            {analysis.ambiguityInSources && <li>Houve comparacao entre fontes proximas antes de consolidar a orientacao.</li>}
-            {analysis.webFallbackUsed && <li>Foi necessario apoio de fonte oficial externa para reduzir a ambiguidade.</li>}
-          </ul>
-        </section>
-      )}
-
-      {(analysis.comparedSources.length > 0 || analysis.prioritizedSources.length > 0) && (
-        <section className="chat-source-trace-card" aria-label="Rastreabilidade das fontes">
-          <div className="chat-source-trace-title">
-            <GitCompareArrows size={15} />
-            Fontes comparadas e priorizadas
-          </div>
-          {analysis.comparedSources.length > 0 && (
-            <div className="chat-source-block">
-              <h4>Fontes comparadas</h4>
-              <ul>
-                {analysis.comparedSources.map((source) => (
-                  <li key={`compared-${source}`}>{source}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {analysis.prioritizedSources.length > 0 && (
-            <div className="chat-source-block">
-              <h4>Fontes priorizadas</h4>
-              <ul>
-                {analysis.prioritizedSources.map((source) => (
-                  <li key={`prioritized-${source}`}>{source}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </section>
-      )}
 
       {response.referenciasFinais.length > 0 && (
         <section className="chat-references-card" aria-label="Referencias">

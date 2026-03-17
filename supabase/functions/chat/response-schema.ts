@@ -170,57 +170,17 @@ export const claraResponseJsonSchema = {
     analiseDaResposta: {
       type: "object",
       properties: {
-        questionUnderstandingConfidence: { type: ["number", "null"] },
-        finalConfidence: { type: ["number", "null"] },
         answerScopeMatch: {
           type: "string",
           enum: ["exact", "probable", "weak", "insufficient"],
         },
-        ambiguityInUserQuestion: { type: "boolean" },
-        ambiguityInSources: { type: "boolean" },
         clarificationRequested: { type: "boolean" },
         clarificationQuestion: { type: ["string", "null"] },
         clarificationReason: { type: ["string", "null"] },
-        internalExpansionPerformed: { type: "boolean" },
-        webFallbackUsed: { type: "boolean" },
-        userNotice: { type: ["string", "null"] },
-        cautionNotice: { type: ["string", "null"] },
-        ambiguityReason: { type: ["string", "null"] },
-        comparedSources: {
-          type: "array",
-          items: { type: "string" },
-        },
-        prioritizedSources: {
-          type: "array",
-          items: { type: "string" },
-        },
-        processStates: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              id: { type: "string" },
-              titulo: { type: "string" },
-              descricao: { type: "string" },
-              status: {
-                type: "string",
-                enum: ["informativo", "concluido", "cautela", "web"],
-              },
-            },
-            required: ["id", "titulo", "descricao", "status"],
-          },
-        },
       },
       required: [
         "answerScopeMatch",
-        "ambiguityInUserQuestion",
-        "ambiguityInSources",
         "clarificationRequested",
-        "internalExpansionPerformed",
-        "webFallbackUsed",
-        "comparedSources",
-        "prioritizedSources",
-        "processStates",
       ],
     },
   },
@@ -270,10 +230,6 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
   const lines: string[] = [response.tituloCurto, "", response.resumoInicial];
   const analysis = response.analiseDaResposta;
 
-  if (analysis.userNotice) {
-    lines.push("", `Contexto: ${analysis.userNotice}`);
-  }
-
   if (analysis.clarificationRequested && analysis.clarificationQuestion) {
     lines.push("", "Antes de seguir");
     if (analysis.clarificationReason) {
@@ -293,9 +249,6 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
       if (step.alerta) {
         lines.push(`Observacao: ${step.alerta}`);
       }
-      if (step.citacoes.length > 0) {
-        lines.push(`Referencias relacionadas: ${step.citacoes.join(", ")}`);
-      }
       lines.push("");
     }
   }
@@ -305,46 +258,6 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
     for (const observation of response.observacoesFinais) {
       lines.push(`- ${observation}`);
     }
-    lines.push("");
-  }
-
-  if (analysis.cautionNotice) {
-    lines.push("Aviso importante");
-    lines.push(analysis.cautionNotice);
-    lines.push("");
-  }
-
-  if (analysis.processStates.length > 0) {
-    lines.push("Como cheguei a esta resposta");
-    for (const state of analysis.processStates) {
-      lines.push(`- ${state.titulo}: ${state.descricao}`);
-    }
-    lines.push("");
-  }
-
-  if (analysis.comparedSources.length > 0) {
-    lines.push("Fontes comparadas");
-    for (const source of analysis.comparedSources) {
-      lines.push(`- ${source}`);
-    }
-    lines.push("");
-  }
-
-  if (analysis.prioritizedSources.length > 0) {
-    lines.push("Fontes priorizadas");
-    for (const source of analysis.prioritizedSources) {
-      lines.push(`- ${source}`);
-    }
-    lines.push("");
-  }
-
-  const confidenceLabel = buildConfidenceLabel(analysis.finalConfidence);
-  if (confidenceLabel || analysis.answerScopeMatch !== "exact") {
-    lines.push("Leitura de confianca");
-    if (confidenceLabel) {
-      lines.push(`- ${confidenceLabel}`);
-    }
-    lines.push(`- aderencia ao pedido: ${analysis.answerScopeMatch}`);
     lines.push("");
   }
 

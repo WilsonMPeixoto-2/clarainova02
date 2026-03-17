@@ -121,9 +121,7 @@ ESTRUTURA DA RESPOSTA
 JSON E CAMPOS DE DECISAO
 - Preencha sempre o objeto analiseDaResposta.
 - Use analiseDaResposta.clarificationRequested=true quando precisar de um esclarecimento para seguir com seguranca.
-- Use analiseDaResposta.webFallbackUsed=true somente quando houver justificativa real para consulta oficial externa.
-- Use analiseDaResposta.processStates para narrar o processo em tom humano, como "Pesquisando na base interna", "Comparando orientacoes e versoes" ou "Iniciando busca na web oficial".
-- Em userNotice e cautionNotice, fale como uma colega cuidadosa e educada, sem soar robotica.
+- Use analiseDaResposta.clarificationRequested e clarificationQuestion apenas quando precisar de esclarecimento real do usuario.
 
 FORMATAÇÃO
 - Use títulos curtos com ###.
@@ -230,84 +228,7 @@ function averageScore(chunks: HybridSearchChunk[]): number | null {
   return sum / chunks.length;
 }
 
-function buildFallbackProcessStates(
-  retrievalMode: "model_grounded" | "model_only",
-  retrievalSources: string[],
-  searchResultCount: number,
-) {
-  const states: Array<{ id: string; titulo: string; descricao: string; status: "informativo" | "concluido" | "cautela" | "web" }> = [];
-
-  if (retrievalMode === "model_grounded" && searchResultCount > 0) {
-    states.push({
-      id: "internal-search",
-      titulo: "Pesquisando na base interna",
-      descricao: "Reuni os trechos mais proximos da sua pergunta dentro da documentacao interna.",
-      status: "concluido",
-    });
-  } else {
-    states.push({
-      id: "internal-search",
-      titulo: "Pesquisando na base interna",
-      descricao: "A base interna nao trouxe elementos suficientes para sustentar a resposta com a mesma seguranca.",
-      status: "informativo",
-    });
-  }
-
-  if (retrievalSources.length > 1) {
-    states.push({
-      id: "comparison",
-      titulo: "Comparando orientacoes e versoes",
-      descricao: "Comparei mais de uma fonte para priorizar a orientacao mais aderente ao SEI-Rio.",
-      status: "cautela",
-    });
-  }
-
-  return states;
-}
-
-function enrichStructuredResponse(
-  response: ClaraStructuredResponse,
-  retrievalMode: "model_grounded" | "model_only",
-  retrievalSources: string[],
-  searchResultCount: number,
-): ClaraStructuredResponse {
-  const analysis = response.analiseDaResposta ?? {
-    answerScopeMatch: "exact",
-    ambiguityInUserQuestion: false,
-    ambiguityInSources: false,
-    clarificationRequested: false,
-    internalExpansionPerformed: false,
-    webFallbackUsed: false,
-    comparedSources: [],
-    prioritizedSources: [],
-    processStates: [],
-  };
-
-  const comparedSources = analysis.comparedSources.length > 0
-    ? analysis.comparedSources
-    : retrievalSources;
-  const prioritizedSources = analysis.prioritizedSources.length > 0
-    ? analysis.prioritizedSources
-    : retrievalSources.slice(0, 1);
-  const ambiguityInSources = analysis.ambiguityInSources || retrievalSources.length > 1;
-  const fallbackProcessStates = buildFallbackProcessStates(retrievalMode, retrievalSources, searchResultCount);
-
-  return {
-    ...response,
-    analiseDaResposta: {
-      ...analysis,
-      comparedSources,
-      prioritizedSources,
-      ambiguityInSources,
-      userNotice:
-        analysis.userNotice ??
-        (retrievalMode === "model_grounded"
-          ? "Consultei a base interna antes de montar a resposta, para tentar te orientar com mais seguranca."
-          : "A base interna ajudou apenas parcialmente, entao tratei a resposta com a cautela necessaria."),
-      processStates: analysis.processStates.length > 0 ? analysis.processStates : fallbackProcessStates,
-    },
-  };
-}
+// enrichStructuredResponse and buildFallbackProcessStates removed — diagnostics stay in metrics only
 
 function estimateTokenCount(value: string): number {
   return Math.max(1, Math.ceil(value.length / 4));
@@ -670,12 +591,7 @@ Deno.serve(async (req) => {
     const structuredResult = await generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages);
 
     if (structuredResult && lastUserMessage) {
-      const structuredResponse = enrichStructuredResponse(
-        structuredResult.response,
-        retrievalMode,
-        retrievalSources,
-        searchResultCount,
-      );
+      const structuredResponse = structuredResult.response;
       const structuredPlainText = renderStructuredResponseToPlainText(structuredResponse);
       const responseStatus = retrievalMode === 'model_grounded' ? 'answered' : 'partial';
       const usedRag = retrievalMode === 'model_grounded';
