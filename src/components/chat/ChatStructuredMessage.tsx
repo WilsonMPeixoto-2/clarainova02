@@ -35,18 +35,6 @@ function highlightLabel(highlight: ClaraHighlight) {
   }
 }
 
-function scopeMatchLabel(value: ClaraStructuredResponse['analiseDaResposta']['answerScopeMatch']) {
-  switch (value) {
-    case 'probable':
-      return 'Aderencia provavel ao que voce pediu';
-    case 'weak':
-      return 'Aderencia ainda parcial ao seu pedido';
-    case 'insufficient':
-      return 'Aderencia insuficiente para uma resposta segura';
-    default:
-      return 'Aderencia alta ao seu pedido';
-  }
-}
 
 function CitationList({ citations }: { citations: number[] }) {
   if (citations.length === 0) {
