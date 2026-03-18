@@ -10,27 +10,27 @@ const features = [
     id: 'question',
     icon: FileSearch,
     title: 'Pergunte do seu jeito',
-    subtitle: 'Dúvidas de rotina em linguagem natural',
-    description: 'Descreva a tarefa como você explicaria para um colega. A CLARA organiza a resposta com foco na ação que precisa ser feita no SEI-Rio.',
-    points: ['Consultas sobre telas, etapas e comandos do sistema', 'Continuidade de contexto dentro da conversa', 'Menos necessidade de traduzir a dúvida para linguagem técnica'],
+    subtitle: 'Dúvidas operacionais em linguagem natural',
+    description: 'Você pode escrever a pergunta de forma simples, sem precisar usar termos técnicos do sistema.',
+    points: ['Perguntas sobre telas, etapas e comandos', 'Consultas sobre documentos e tramitação', 'Uso de linguagem simples'],
     prompt: 'Como incluir um documento externo no SEI-Rio?',
   },
   {
     id: 'answers',
     icon: MessagesSquare,
-    title: 'Resposta direta ou passo a passo',
-    subtitle: 'Do resumo rápido ao modo didático',
-    description: 'Você pode pedir uma resposta curta para consulta imediata ou uma explicação em etapas quando precisar executar o procedimento com mais calma.',
-    points: ['Modo Direto para consultas rápidas', 'Modo Didático com sequência de etapas', 'Indicação das fontes da base quando houver respaldo'],
+    title: 'Respostas organizadas',
+    subtitle: 'Consulta rápida ou explicação em etapas',
+    description: 'A resposta pode ser mais curta para consulta imediata ou mais detalhada quando a tarefa exigir sequência.',
+    points: ['Resumo objetivo', 'Explicação passo a passo quando aplicável', 'Texto pensado para leitura rápida'],
     prompt: 'Explique em passo a passo como usar um bloco de assinatura no SEI-Rio.',
   },
   {
     id: 'workflow',
     icon: BookCheck,
-    title: 'Apoio à execução processual',
-    subtitle: 'Documentos, assinatura e tramitação com mais clareza',
-    description: 'A CLARA ajuda a revisar o fluxo antes da ação, reduzindo dúvidas sobre anexos, encaminhamentos, atribuições e conferências operacionais.',
-    points: ['Organização de documentos e anexos', 'Apoio ao uso de blocos e encaminhamentos', 'Checagem operacional antes do envio'],
+    title: 'Rotinas frequentes',
+    subtitle: 'Documentos, assinatura e tramitação',
+    description: 'A ferramenta foi pensada para apoiar tarefas recorrentes do uso do SEI-Rio.',
+    points: ['Inclusão de documentos', 'Blocos de assinatura', 'Encaminhamento e conferência de etapas'],
     prompt: 'Quais etapas devo conferir antes de encaminhar um processo no SEI-Rio?',
   },
 ];
@@ -45,13 +45,13 @@ const bentoCards = [
 const servicePanels = [
   {
     icon: ShieldCheck,
-    title: 'Leitura objetiva',
-    description: 'A resposta é organizada para facilitar consulta rápida e reduzir dúvidas na execução da tarefa.',
+    title: 'Uso simples',
+    description: 'A proposta é facilitar a consulta de dúvidas frequentes sobre o sistema.',
   },
   {
     icon: FileCheck2,
-    title: 'Próxima ação mais clara',
-    description: 'A CLARA ajuda a transformar perguntas abertas em orientações práticas para o uso do SEI-Rio.',
+    title: 'Foco operacional',
+    description: 'O conteúdo é voltado ao uso do SEI-Rio e a tarefas administrativas do dia a dia.',
   },
 ];
 
@@ -78,11 +78,11 @@ const FeaturesSection = () => {
               Funcionalidades da CLARA
             </span>
             <h2 id="features-heading" className="text-h2 mt-4">
-              <Balancer>Apoio prático para tarefas frequentes no SEI-Rio.</Balancer>
+              <Balancer>O que a CLARA pode apoiar no uso do SEI-Rio.</Balancer>
             </h2>
             <p className="text-body text-lg max-w-3xl mx-auto mt-4">
               <Balancer>
-                A CLARA organiza respostas sobre documentos, assinatura, tramitação e conferência de etapas com linguagem clara e foco na rotina administrativa.
+                A CLARA foi pensada para apoiar dúvidas frequentes de uso do sistema com texto claro e organização simples.
               </Balancer>
             </p>
           </div>
@@ -110,7 +110,7 @@ const FeaturesSection = () => {
             <div className="text-center md:text-left mb-5 md:mb-6">
               <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Funcionalidades centrais</p>
               <h3 className="text-h3 mt-2">
-                <Balancer>Situações em que a CLARA pode ajudar</Balancer>
+                <Balancer>Tarefas recorrentes</Balancer>
               </h3>
             </div>
             <div className="bento-services-grid">
@@ -148,14 +148,14 @@ const FeaturesSection = () => {
             <div className="space-y-3">
               <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Próximo passo</p>
               <h3 className="text-h3">
-                <Balancer>Leve uma tarefa real para o chat e veja como a CLARA organiza a orientação.</Balancer>
+                <Balancer>Teste uma dúvida real no chat.</Balancer>
               </h3>
               <p className="text-body max-w-2xl">
-                Você pode começar por uma dúvida simples do dia a dia e avaliar se a resposta ajuda no fluxo de trabalho.
+                Comece por uma pergunta frequente da sua rotina e veja como a CLARA responde.
               </p>
             </div>
             <button type="button" className="btn-clara-primary type-label inline-flex items-center justify-center gap-2" onClick={() => openChat('Como incluir um documento externo no SEI-Rio?')}>
-              Testar um fluxo completo
+              Abrir exemplo no chat
               <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>

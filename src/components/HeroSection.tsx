@@ -5,10 +5,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  FileCheck2,
   MessageCircle,
-  Route,
-  ShieldCheck,
 } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
@@ -23,31 +20,10 @@ const QUICK_QUESTIONS = [
   'Como incluir um documento externo no SEI-Rio?',
   'Como organizar um bloco de assinatura para outra unidade?',
   'Como enviar um processo para mais de uma unidade?',
-  'Como atribuir um processo a um servidor da unidade?',
 ];
 
 const QUICK_SCROLL_DISTANCE = 320;
 const HERO_MOBILE_QUERY = '(max-width: 1023px)';
-
-const HERO_PANEL_ITEMS = [
-  {
-    icon: FileCheck2,
-    title: 'Documentos e anexos',
-    description: 'Inclusão de documento interno ou externo e revisão dos campos principais.',
-  },
-  {
-    icon: Route,
-    title: 'Tramitação e acompanhamento',
-    description: 'Encaminhamento, retorno programado e entendimento do fluxo entre unidades.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Assinatura e conferência',
-    description: 'Blocos de assinatura, revisão de etapas e checagens antes do envio.',
-  },
-];
-
-const HERO_RESPONSE_MODES = ['Resposta direta', 'Passo a passo', 'Base disponível'];
 
 function subscribeToHeroViewport(onChange: () => void) {
   if (typeof window === 'undefined' || !window.matchMedia) {
@@ -225,24 +201,20 @@ const HeroSection = () => {
             >
               <motion.div variants={itemVariants} className="hero-chip-row">
                 <span className="badge-chip">Apoio ao SEI-Rio</span>
-                <span className="maintenance-chip">
-                  <span className="maintenance-dot" aria-hidden="true" />
-                  Base documental disponível
-                </span>
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-editorial-stack">
-                <p className="hero-label-line">Inovação pública aplicada à rotina administrativa</p>
+                <p className="hero-label-line">Ferramenta de apoio à rotina administrativa</p>
                 <p className="hero-brand-wordmark">CLARA</p>
                 <h1 className="hero-editorial-headline">
                   <Balancer>
-                    Apoio claro para documentos, assinatura e tramitação no SEI-Rio.
+                    Tire dúvidas sobre o uso do SEI-Rio.
                   </Balancer>
                 </h1>
                 <p className="hero-description text-body">
                   <Balancer>
-                    A CLARA ajuda a responder dúvidas operacionais do dia a dia com linguagem direta,
-                    passo a passo quando necessário e foco no uso real do sistema.
+                    A CLARA responde perguntas sobre documentos, assinatura, tramitação
+                    e etapas operacionais do sistema.
                   </Balancer>
                 </p>
               </motion.div>
@@ -268,7 +240,7 @@ const HeroSection = () => {
                   onMouseLeave={handleMagneticLeave}
                 >
                   <BookOpen size={18} aria-hidden="true" />
-                  Conhecer funcionalidades
+                  Ver funcionalidades
                 </button>
               </motion.div>
 
@@ -283,6 +255,9 @@ const HeroSection = () => {
                 <div className="hero-prompt-toolbar">
                   <div className="space-y-1">
                     <p className="text-caption text-muted-foreground">Exemplos de perguntas</p>
+                    <p className="hero-prompt-lead">
+                      Consultas frequentes que a CLARA pode apoiar.
+                    </p>
                   </div>
                   <div className="hero-prompt-actions">
                     <div className="hero-carousel-controls" aria-label="Navegação das perguntas rápidas">
@@ -341,53 +316,6 @@ const HeroSection = () => {
               </motion.div>
             </motion.div>
           </div>
-
-          <motion.div
-            className="hero-visual-column"
-            initial={shouldAnimate ? { opacity: 0, x: 28 } : false}
-            animate={{ opacity: 1, x: 0 }}
-            transition={shouldAnimate ? { duration: 0.9, delay: 0.16, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
-            aria-hidden="true"
-          >
-            <div className="hero-visual-shell">
-              <div className="hero-visual-halo" />
-
-              <div className="hero-functional-panel">
-                <div className="hero-functional-header">
-                  <p className="hero-functional-kicker">Como a CLARA ajuda</p>
-                  <p className="hero-functional-title">Consultas frequentes do dia a dia no SEI-Rio</p>
-                </div>
-
-                <div className="hero-functional-list" aria-label="Áreas de apoio da CLARA">
-                  {HERO_PANEL_ITEMS.map(({ icon: Icon, title, description }) => (
-                    <article key={title} className="hero-functional-item">
-                      <span className="hero-functional-icon" aria-hidden="true">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <p className="hero-functional-item-title">{title}</p>
-                        <p className="hero-functional-item-description">{description}</p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-
-                <div className="hero-functional-example">
-                  <p className="hero-functional-example-label">Exemplo de uso</p>
-                  <p className="hero-functional-example-question">
-                    Como incluir um documento externo no SEI-Rio?
-                  </p>
-                  <div className="hero-functional-tags">
-                    {HERO_RESPONSE_MODES.map((mode) => (
-                      <span key={mode} className="hero-inline-status">
-                        {mode}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
     </section>

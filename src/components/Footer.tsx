@@ -12,10 +12,7 @@ const Footer = () => {
             <p className="footer-brand-kicker">CLARA / apoio ao SEI-Rio</p>
             <span className="footer-brand-title">CLARA</span>
             <p className="text-sm text-muted-foreground max-w-xl">
-              Ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas, com foco em orientação operacional clara, acesso simples e linguagem institucional.
-            </p>
-            <p className="text-xs text-muted-foreground/80">
-              Uso gratuito, voltado a apoio informacional e inovação aplicada ao serviço público.
+              Ferramenta de apoio para dúvidas frequentes sobre o uso do SEI-Rio.
             </p>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">

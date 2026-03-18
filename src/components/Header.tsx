@@ -98,7 +98,7 @@ const Header = () => {
                   CLARA
                 </span>
                 <span className="hidden md:block header-brand-subtitle">
-                  Assistente para dúvidas operacionais sobre documentos, assinatura e tramitação no SEI-Rio.
+                  Assistente para dúvidas sobre o uso do SEI-Rio.
                 </span>
               </span>
               <span className="sr-only">CLARA - Página inicial</span>
