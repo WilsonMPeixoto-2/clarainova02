@@ -28,7 +28,7 @@ const FAQSection = () => {
                     Dúvidas Frequentes
                   </span>
                   <h2 id="faq-heading" className="text-h2 mt-4">
-                    <Balancer>Perguntas frequentes sobre uso, limites e percepção de confiança da CLARA</Balancer>
+                    <Balancer>Perguntas frequentes sobre uso e limites da CLARA</Balancer>
                   </h2>
                   <p className="text-body mt-3 max-w-3xl">
                     <Balancer>
@@ -41,7 +41,7 @@ const FAQSection = () => {
                   <p className="faq-note-kicker">Leitura rápida</p>
                   <ul className="faq-note-list">
                     <li>A CLARA apoia o uso do SEI-Rio, mas não substitui validação formal da unidade.</li>
-                    <li>O foco está em tarefas operacionais e em respostas mais claras, bonitas e fáceis de seguir.</li>
+                    <li>O foco está em tarefas operacionais e em respostas claras, organizadas e fáceis de seguir.</li>
                     <li>Quando houver dúvida normativa, a orientação oficial continua sendo a fonte final de validação.</li>
                   </ul>
                   <button type="button" className="btn-clara-primary type-label inline-flex items-center justify-center gap-2 w-full sm:w-auto" onClick={() => openChat('A CLARA substitui análise jurídica?')}>

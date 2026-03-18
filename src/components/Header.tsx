@@ -92,13 +92,13 @@ const Header = () => {
               </span>
               <span className="hidden sm:flex flex-col gap-0.5">
                 <span className="header-brand-overline">
-                  Experiência premium · apoio institucional
+                  Inovação pública · apoio ao SEI-Rio
                 </span>
                 <span className="header-brand-title">
                   CLARA
                 </span>
                 <span className="hidden md:block header-brand-subtitle">
-                  Clareza para documentos, assinatura, tramitação e conferência operacional no SEI-Rio.
+                  Assistente para dúvidas operacionais sobre documentos, assinatura e tramitação no SEI-Rio.
                 </span>
               </span>
               <span className="sr-only">CLARA - Página inicial</span>
@@ -245,7 +245,7 @@ const Header = () => {
               Chat com CLARA
             </button>
             <p className="text-hint text-center mt-3 leading-relaxed">
-              Acesse funcionalidades, perguntas frequentes e o chat em um só lugar.
+              Acesse o chat e as informações principais da ferramenta em um só lugar.
             </p>
           </div>
         </div>

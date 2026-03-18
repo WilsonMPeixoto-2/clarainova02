@@ -9,13 +9,13 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         <div className="footer-premium-grid">
           <div className="footer-brand-card">
-            <p className="footer-brand-kicker">CLARA / premium interface</p>
+            <p className="footer-brand-kicker">CLARA / apoio ao SEI-Rio</p>
             <span className="footer-brand-title">CLARA</span>
             <p className="text-sm text-muted-foreground max-w-xl">
-              Ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas, agora com direção visual mais forte, leitura mais nobre e presença de produto mais madura.
+              Ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas, com foco em orientação operacional clara, acesso simples e linguagem institucional.
             </p>
             <p className="text-xs text-muted-foreground/80">
-              Uso gratuito, com foco em orientação operacional, confiança visual e apoio à execução.
+              Uso gratuito, voltado a apoio informacional e inovação aplicada ao serviço público.
             </p>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
@@ -29,14 +29,14 @@ const Footer = () => {
           </div>
 
           <div className="footer-link-columns">
-            <nav className="footer-link-group" aria-label="Produto">
-              <p className="footer-link-heading">Produto</p>
+            <nav className="footer-link-group" aria-label="Navegação">
+              <p className="footer-link-heading">Navegação</p>
               <Link to="/#conhecimento" className="footer-link">Funcionalidades</Link>
               <Link to="/#faq" className="footer-link">Perguntas frequentes</Link>
             </nav>
-            <nav className="footer-link-group" aria-label="Governança">
-              <p className="footer-link-heading">Governança</p>
-              <Link to="/termos" className="footer-link">Termos de Serviço</Link>
+            <nav className="footer-link-group" aria-label="Transparência">
+              <p className="footer-link-heading">Transparência</p>
+              <Link to="/termos" className="footer-link">Termos de Uso</Link>
               <Link to="/privacidade" className="footer-link">Política de Privacidade</Link>
             </nav>
             <nav className="footer-link-group" aria-label="Contato">

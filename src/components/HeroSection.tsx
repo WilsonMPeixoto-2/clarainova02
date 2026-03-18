@@ -9,7 +9,6 @@ import {
   MessageCircle,
   Route,
   ShieldCheck,
-  Sparkles,
 } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
@@ -18,8 +17,6 @@ import claraHeroFallback from '@/assets/clara-hero.jpg';
 import claraHeroFallback4k from '@/assets/clara-hero-4k.jpg';
 import claraHeroPremiumAvif from '@/assets/generated/clara-hero-premium.avif';
 import claraHeroPremiumWebp from '@/assets/generated/clara-hero-premium.webp';
-import claraHeroPortraitAvif from '@/assets/generated/clara-hero-portrait.avif';
-import claraHeroPortraitWebp from '@/assets/generated/clara-hero-portrait.webp';
 import { getUhdDisplaySnapshot, subscribeToUhdDisplay } from '@/lib/displayProfile';
 
 const QUICK_QUESTIONS = [
@@ -27,43 +24,30 @@ const QUICK_QUESTIONS = [
   'Como organizar um bloco de assinatura para outra unidade?',
   'Como enviar um processo para mais de uma unidade?',
   'Como atribuir um processo a um servidor da unidade?',
-  'Como acompanhar um retorno programado no SEI-Rio?',
-  'Como anexar um processo a outro processo no SEI-Rio?',
-  'Como incluir comentário ou anotação em um processo?',
-  'Como receber e assinar documentos em um bloco de assinatura?',
 ];
 
 const QUICK_SCROLL_DISTANCE = 320;
 const HERO_MOBILE_QUERY = '(max-width: 1023px)';
 
-const HERO_SIGNAL_ITEMS = [
+const HERO_PANEL_ITEMS = [
   {
-    icon: ShieldCheck,
-    label: 'Tom institucional',
-    value: 'Respostas claras, elegantes e focadas na execução real do fluxo.',
+    icon: FileCheck2,
+    title: 'Documentos e anexos',
+    description: 'Inclusão de documento interno ou externo e revisão dos campos principais.',
   },
   {
     icon: Route,
-    label: 'Fluxo orientado',
-    value: 'Documentos, assinatura e tramitação em um percurso fácil de seguir.',
+    title: 'Tramitação e acompanhamento',
+    description: 'Encaminhamento, retorno programado e entendimento do fluxo entre unidades.',
   },
   {
-    icon: FileCheck2,
-    label: 'Saída estruturada',
-    value: 'Resumo executivo, etapas acionáveis e referências quando houver base.',
+    icon: ShieldCheck,
+    title: 'Assinatura e conferência',
+    description: 'Blocos de assinatura, revisão de etapas e checagens antes do envio.',
   },
 ];
 
-const HERO_FLOATING_NOTES = [
-  {
-    title: 'Pergunta natural',
-    description: 'Você descreve a situação do seu jeito. A CLARA transforma isso em uma resposta com acabamento profissional.',
-  },
-  {
-    title: 'Próxima ação nítida',
-    description: 'A resposta já nasce pronta para consulta rápida ou passo a passo completo, conforme a tarefa.',
-  },
-];
+const HERO_RESPONSE_MODES = ['Resposta direta', 'Passo a passo', 'Base disponível'];
 
 function subscribeToHeroViewport(onChange: () => void) {
   if (typeof window === 'undefined' || !window.matchMedia) {
@@ -240,44 +224,27 @@ const HeroSection = () => {
               className="hero-copy-surface"
             >
               <motion.div variants={itemVariants} className="hero-chip-row">
-                <span className="badge-chip">
-                  <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                  Design premium para apoio institucional
-                </span>
+                <span className="badge-chip">Apoio ao SEI-Rio</span>
                 <span className="maintenance-chip">
                   <span className="maintenance-dot" aria-hidden="true" />
-                  Base documental priorizada
+                  Base documental disponível
                 </span>
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-editorial-stack">
-                <p className="hero-label-line">CLARA / apoio ao SEI-Rio com acabamento editorial</p>
+                <p className="hero-label-line">Inovação pública aplicada à rotina administrativa</p>
                 <p className="hero-brand-wordmark">CLARA</p>
                 <h1 className="hero-editorial-headline">
                   <Balancer>
-                    Clareza institucional para operar o SEI-Rio com mais contexto, segurança e elegância.
+                    Apoio claro para documentos, assinatura e tramitação no SEI-Rio.
                   </Balancer>
                 </h1>
                 <p className="hero-description text-body">
                   <Balancer>
-                    A CLARA transforma dúvidas operacionais em respostas explicativas sobre documentos,
-                    assinatura, tramitação e conferência de etapas, com visual mais nobre e leitura mais agradável.
+                    A CLARA ajuda a responder dúvidas operacionais do dia a dia com linguagem direta,
+                    passo a passo quando necessário e foco no uso real do sistema.
                   </Balancer>
                 </p>
-              </motion.div>
-
-              <motion.div variants={itemVariants} className="hero-proof-grid" aria-label="Sinais da experiência CLARA">
-                {HERO_SIGNAL_ITEMS.map(({ icon: Icon, label, value }) => (
-                  <article key={label} className="hero-proof-card">
-                    <span className="hero-proof-icon" aria-hidden="true">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <div>
-                      <p className="hero-proof-label">{label}</p>
-                      <p className="hero-proof-value">{value}</p>
-                    </div>
-                  </article>
-                ))}
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-actions flex flex-col sm:flex-row gap-4 pt-1">
@@ -301,7 +268,7 @@ const HeroSection = () => {
                   onMouseLeave={handleMagneticLeave}
                 >
                   <BookOpen size={18} aria-hidden="true" />
-                  Explorar a experiência
+                  Conhecer funcionalidades
                 </button>
               </motion.div>
 
@@ -312,24 +279,12 @@ const HeroSection = () => {
                 <span className="hero-inline-status">Conferência operacional</span>
               </motion.div>
 
-              <motion.p variants={itemVariants} className="hero-privacy text-caption">
-                Ao usar a CLARA, você concorda com nossa{' '}
-                <a href="/privacidade" className="text-primary hover:underline font-medium transition-colors duration-150">
-                  Política de Privacidade
-                </a>
-                .
-              </motion.p>
-
               <motion.div variants={itemVariants} className="hero-prompt-cluster">
                 <div className="hero-prompt-toolbar">
                   <div className="space-y-1">
-                    <p className="text-caption text-muted-foreground">Consultas em destaque</p>
-                    <p className="hero-prompt-lead">
-                      Exemplos reais do tipo de pergunta que a CLARA já foi desenhada para responder com excelência.
-                    </p>
+                    <p className="text-caption text-muted-foreground">Exemplos de perguntas</p>
                   </div>
                   <div className="hero-prompt-actions">
-                    <span className="hero-inline-status">Pronto para testar</span>
                     <div className="hero-carousel-controls" aria-label="Navegação das perguntas rápidas">
                       <button
                         type="button"
@@ -397,37 +352,38 @@ const HeroSection = () => {
             <div className="hero-visual-shell">
               <div className="hero-visual-halo" />
 
-              <article className="hero-floating-note hero-floating-note-top">
-                <p className="hero-floating-title">{HERO_FLOATING_NOTES[0]?.title}</p>
-                <p className="hero-floating-description">{HERO_FLOATING_NOTES[0]?.description}</p>
-              </article>
-
-              <article className="hero-floating-note hero-floating-note-bottom">
-                <p className="hero-floating-title">{HERO_FLOATING_NOTES[1]?.title}</p>
-                <p className="hero-floating-description">{HERO_FLOATING_NOTES[1]?.description}</p>
-              </article>
-
-              <div className="hero-portrait-card">
-                <div className="hero-portrait-toolbar">
-                  <span>CLARA visual system</span>
-                  <span>SEI-Rio focus</span>
+              <div className="hero-functional-panel">
+                <div className="hero-functional-header">
+                  <p className="hero-functional-kicker">Como a CLARA ajuda</p>
+                  <p className="hero-functional-title">Consultas frequentes do dia a dia no SEI-Rio</p>
                 </div>
-                <picture className="hero-portrait-picture">
-                  <source type="image/avif" srcSet={claraHeroPortraitAvif} />
-                  <source type="image/webp" srcSet={claraHeroPortraitWebp} />
-                  <img
-                    src={heroPoster}
-                    alt=""
-                    loading="eager"
-                    decoding="async"
-                    className="hero-portrait-image"
-                  />
-                </picture>
-                <div className="hero-portrait-caption">
-                  <p className="hero-portrait-kicker">Assistente institucional</p>
-                  <p className="hero-portrait-copy">
-                    Uma presença visual mais sofisticada para apresentar a CLARA como produto de confiança e alto valor percebido.
+
+                <div className="hero-functional-list" aria-label="Áreas de apoio da CLARA">
+                  {HERO_PANEL_ITEMS.map(({ icon: Icon, title, description }) => (
+                    <article key={title} className="hero-functional-item">
+                      <span className="hero-functional-icon" aria-hidden="true">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <div>
+                        <p className="hero-functional-item-title">{title}</p>
+                        <p className="hero-functional-item-description">{description}</p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="hero-functional-example">
+                  <p className="hero-functional-example-label">Exemplo de uso</p>
+                  <p className="hero-functional-example-question">
+                    Como incluir um documento externo no SEI-Rio?
                   </p>
+                  <div className="hero-functional-tags">
+                    {HERO_RESPONSE_MODES.map((mode) => (
+                      <span key={mode} className="hero-inline-status">
+                        {mode}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
