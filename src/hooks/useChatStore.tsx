@@ -1,12 +1,11 @@
-import { createContext, use, useCallback, useState, type ReactNode } from 'react';
+import { createContext, startTransition, use, useCallback, useState, type ReactNode } from 'react';
 
+import type { ClaraStructuredResponse } from '@/lib/clara-response';
 import {
-  buildMockStructuredResponse,
-  renderStructuredResponseToPlainText,
-  safeParseClaraStructuredEnvelope,
-  tryParseClaraStructuredEnvelopeFromText,
-  type ClaraStructuredResponse,
-} from '@/lib/clara-response';
+  getDefaultChatApiConfig,
+  requestChat,
+  streamChatResponse,
+} from '@/lib/chat-api';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -26,25 +25,8 @@ interface ChatState {
   clearMessages: () => void;
 }
 
-type ChatRequestResult =
-  | {
-      kind: 'structured';
-      response: ClaraStructuredResponse;
-      plainText: string;
-    }
-  | {
-      kind: 'stream';
-      response: Response;
-    }
-  | {
-      kind: 'text';
-      text: string;
-    };
-
 const ChatContext = createContext<ChatState | null>(null);
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const CHAT_API_CONFIG = getDefaultChatApiConfig();
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -81,153 +63,6 @@ function appendAssistantToken(messages: ChatMessage[], token: string) {
   return updated;
 }
 
-function getMockResult(question: string): Promise<ChatRequestResult> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const response = buildMockStructuredResponse(question);
-      resolve({
-        kind: 'structured',
-        response,
-        plainText: renderStructuredResponseToPlainText(response),
-      });
-    }, 650 + Math.random() * 450);
-  });
-}
-
-async function requestChat(messages: ChatMessage[]): Promise<ChatRequestResult> {
-  const url = `${SUPABASE_URL}/functions/v1/chat`;
-
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'apikey': SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ messages: messages.map((message) => ({ role: message.role, content: message.content })) }),
-    });
-  } catch {
-    throw new Error('Falha de conexão. Verifique sua internet e tente novamente.');
-  }
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Erro ${res.status}. Tente novamente.`);
-  }
-
-  const contentType = res.headers.get('content-type') ?? '';
-
-  if (contentType.includes('application/json')) {
-    const body = await res.json().catch(() => null);
-    const structured = safeParseClaraStructuredEnvelope(body);
-
-    if (structured) {
-      return {
-        kind: 'structured',
-        response: structured.response,
-        plainText: structured.plainText ?? renderStructuredResponseToPlainText(structured.response),
-      };
-    }
-
-    if (typeof body?.answer === 'string') {
-      const embedded = tryParseClaraStructuredEnvelopeFromText(body.answer);
-      if (embedded) {
-        return {
-          kind: 'structured',
-          response: embedded.response,
-          plainText: embedded.plainText ?? renderStructuredResponseToPlainText(embedded.response),
-        };
-      }
-
-      return { kind: 'text', text: body.answer };
-    }
-
-    if (typeof body?.response === 'string') {
-      const embedded = tryParseClaraStructuredEnvelopeFromText(body.response);
-      if (embedded) {
-        return {
-          kind: 'structured',
-          response: embedded.response,
-          plainText: embedded.plainText ?? renderStructuredResponseToPlainText(embedded.response),
-        };
-      }
-
-      return { kind: 'text', text: body.response };
-    }
-
-    throw new Error('A CLARA respondeu em um formato inesperado.');
-  }
-
-  if (contentType.includes('text/event-stream')) {
-    return { kind: 'stream', response: res };
-  }
-
-  const text = await res.text();
-  const structured = tryParseClaraStructuredEnvelopeFromText(text);
-  if (structured) {
-    return {
-      kind: 'structured',
-      response: structured.response,
-      plainText: structured.plainText ?? renderStructuredResponseToPlainText(structured.response),
-    };
-  }
-
-  return { kind: 'text', text };
-}
-
-async function streamChatResponse(
-  response: Response,
-  onDelta: (token: string) => void,
-  onDone: () => void,
-  onError: (msg: string) => void,
-) {
-  const reader = response.body?.getReader();
-  if (!reader) {
-    onError('Stream não disponível.');
-    return;
-  }
-
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || !trimmed.startsWith('data: ')) continue;
-
-        const data = trimmed.slice(6);
-        if (data === '[DONE]') {
-          onDone();
-          return;
-        }
-
-        try {
-          const parsed = JSON.parse(data);
-          const token = parsed.choices?.[0]?.delta?.content;
-          if (token) onDelta(token);
-        } catch {
-          // ignore malformed SSE chunks
-        }
-      }
-    }
-  } catch {
-    onError('Conexão interrompida durante a resposta. Tente novamente.');
-    return;
-  }
-
-  onDone();
-}
-
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -257,33 +92,37 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setIsStreaming(false);
 
     const allMessages = [...messages, userMsg];
-    const hasBackend = !!SUPABASE_URL;
-
     try {
       const handleStructuredResult = (response: ClaraStructuredResponse, plainText: string) => {
-        setMessages((prev) =>
-          replaceLastAssistantMessage(prev, {
-            role: 'assistant',
-            content: plainText,
-            structuredResponse: response,
-          }),
-        );
+        startTransition(() => {
+          setMessages((prev) =>
+            replaceLastAssistantMessage(prev, {
+              role: 'assistant',
+              content: plainText,
+              structuredResponse: response,
+            }),
+          );
+        });
       };
 
       const handlePlainTextResult = (textContent: string) => {
-        setMessages((prev) =>
-          replaceLastAssistantMessage(prev, {
-            role: 'assistant',
-            content: textContent,
-            structuredResponse: null,
-          }),
-        );
+        startTransition(() => {
+          setMessages((prev) =>
+            replaceLastAssistantMessage(prev, {
+              role: 'assistant',
+              content: textContent,
+              structuredResponse: null,
+            }),
+          );
+        });
       };
 
       const handleDelta = (token: string) => {
         setIsLoading(false);
         setIsStreaming(true);
-        setMessages((prev) => appendAssistantToken(prev, token));
+        startTransition(() => {
+          setMessages((prev) => appendAssistantToken(prev, token));
+        });
       };
 
       const handleDone = () => {
@@ -292,16 +131,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       const handleError = (errorMsg: string) => {
         setIsStreaming(false);
-        setMessages((prev) =>
-          replaceLastAssistantMessage(prev, {
-            role: 'assistant',
-            content: errorMsg,
-            structuredResponse: null,
-          }),
-        );
+        startTransition(() => {
+          setMessages((prev) =>
+            replaceLastAssistantMessage(prev, {
+              role: 'assistant',
+              content: errorMsg,
+              structuredResponse: null,
+            }),
+          );
+        });
       };
 
-      const result = hasBackend ? await requestChat(allMessages) : await getMockResult(trimmed);
+      const result = await requestChat(allMessages, CHAT_API_CONFIG);
 
       if (result.kind === 'structured') {
         setIsLoading(false);
@@ -318,13 +159,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       await streamChatResponse(result.response, handleDelta, handleDone, handleError);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Erro ao conectar. Tente novamente.';
-      setMessages((prev) =>
-        replaceLastAssistantMessage(prev, {
-          role: 'assistant',
-          content: errorMsg,
-          structuredResponse: null,
-        }),
-      );
+      startTransition(() => {
+        setMessages((prev) =>
+          replaceLastAssistantMessage(prev, {
+            role: 'assistant',
+            content: errorMsg,
+            structuredResponse: null,
+          }),
+        );
+      });
     } finally {
       await wait(0);
       setIsLoading(false);

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SmoothScrollProvider from "@/components/providers/SmoothScrollProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ChatSheetHost } from "@/components/chat/ChatSheetHost";
 import { ChatProvider } from "@/hooks/useChatStore";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const Privacidade = lazyWithRetry(() => import("./pages/Privacidade"));
 const Termos = lazyWithRetry(() => import("./pages/Termos"));
 const Admin = lazyWithRetry(() => import("./pages/Admin"));
 const AdminAuth = lazyWithRetry(() => import("./components/AdminAuth"));
+const AuthCallback = lazyWithRetry(() => import("./pages/AuthCallback"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +61,7 @@ const App = () => (
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/privacidade" element={<Privacidade />} />
                   <Route path="/termos" element={<Termos />} />
                   <Route
@@ -76,6 +79,7 @@ const App = () => (
                 </Routes>
               </Suspense>
             </BrowserRouter>
+            <ChatSheetHost />
           </ChatProvider>
         </SmoothScrollProvider>
       </TooltipProvider>

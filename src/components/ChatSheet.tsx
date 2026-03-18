@@ -56,30 +56,6 @@ function formatSessionTitle(question: string) {
   return `${trimmed.slice(0, 73).trimEnd()}...`;
 }
 
-function buildPdfFileName(sessionTitle: string, generatedAt: Date) {
-  const stamp = new Intl.DateTimeFormat('sv-SE', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-    .format(generatedAt)
-    .replace(/-/g, '')
-    .replace(' ', '-')
-    .replace(':', 'h');
-
-  const slug = sessionTitle
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 50);
-
-  return `clara-sessao-${slug || 'atendimento'}-${stamp}.pdf`;
-}
-
 const ChatSheet = () => {
   const { isOpen, messages, pendingQuestion, isLoading, isStreaming, closeChat, sendMessage, clearMessages } = useChat();
   const { toast } = useToast();
@@ -171,30 +147,13 @@ const ChatSheet = () => {
 
     setIsExportingPdf(true);
     try {
-      const [{ pdf }, { ChatSessionPdfDocument }] = await Promise.all([
-        import('@react-pdf/renderer'),
-        import('@/components/chat/ChatSessionPdfDocument'),
-      ]);
+      const { exportChatSessionPdf } = await import('@/components/chat/chat-session-pdf-export');
 
-      const generatedAt = new Date();
-      const pdfDocument = (
-        <ChatSessionPdfDocument
-          messages={exportableMessages}
-          generatedAt={generatedAt}
-          sessionTitle={sessionTitle}
-          logoSrc={typeof window !== 'undefined' ? `${window.location.origin}/favicon.png` : null}
-        />
-      );
-
-      const blob = await pdf(pdfDocument).toBlob();
-      const downloadUrl = URL.createObjectURL(blob);
-      const anchor = window.document.createElement('a');
-      anchor.href = downloadUrl;
-      anchor.download = buildPdfFileName(sessionTitle, generatedAt);
-      window.document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(downloadUrl);
+      await exportChatSessionPdf({
+        messages: exportableMessages,
+        sessionTitle,
+        logoSrc: typeof window !== 'undefined' ? `${window.location.origin}/favicon.png` : null,
+      });
 
       toast({
         title: 'PDF gerado',

@@ -6,11 +6,15 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+type CountQueryLike = {
+  eq: (column: string, value: string) => CountQueryLike;
+};
+
 async function countRecentRows(
   supabase: ReturnType<typeof createClient>,
   table: string,
   monthStart: string,
-  applyFilters?: (query: any) => any,
+  applyFilters?: (query: CountQueryLike) => CountQueryLike,
 ): Promise<number | null> {
   let query = supabase
     .from(table)
@@ -18,7 +22,7 @@ async function countRecentRows(
     .gte("created_at", monthStart);
 
   if (applyFilters) {
-    query = applyFilters(query);
+    query = applyFilters(query as unknown as CountQueryLike) as typeof query;
   }
 
   const { count, error } = await query;

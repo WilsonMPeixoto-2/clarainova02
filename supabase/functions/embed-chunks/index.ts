@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
         console.error(`Embedding error:`, getErrorMessage(err));
         const status = getErrorStatus(err);
         if (status === 429 || (status && status >= 500)) {
-          throw new Error(`GEMINI_${status}`);
+          throw new Error(`GEMINI_${status}`, { cause: err });
         }
         return null;
       }

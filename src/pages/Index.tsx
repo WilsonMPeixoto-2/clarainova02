@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
@@ -7,8 +7,6 @@ import Footer from "@/components/Footer";
 import { useChat } from "@/hooks/useChatStore";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { useLocation } from "react-router-dom";
-
-const ChatSheet = lazy(() => import("@/components/ChatSheet"));
 
 const IndexContent = () => {
   const { openChat } = useChat();
@@ -48,9 +46,6 @@ const IndexContent = () => {
         <FAQSection />
       </main>
       <Footer />
-      <Suspense fallback={null}>
-        <ChatSheet />
-      </Suspense>
     </div>
   );
 };

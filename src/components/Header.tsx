@@ -73,7 +73,7 @@ const Header = () => {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-[220ms] ${
           isScrolled
-            ? 'bg-[linear-gradient(180deg,hsl(var(--surface-1)/0.9),hsl(var(--surface-1)/0.72))] backdrop-blur-xl border-b border-[hsl(var(--border-subtle))] shadow-[0_20px_50px_hsl(var(--shadow)/0.32)]'
+            ? 'bg-[linear-gradient(180deg,hsl(var(--surface-1)/0.92),hsl(var(--surface-1)/0.78))] backdrop-blur-xl border-b border-[hsl(var(--border-subtle))] shadow-[0_20px_50px_hsl(var(--shadow)/0.32)]'
             : 'bg-transparent border-b border-transparent'
         }`}
         role="banner"
@@ -82,20 +82,23 @@ const Header = () => {
           <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(260px,1fr)_auto_auto] md:gap-5 lg:gap-7">
             <Link
               to="/"
-              className="inline-flex items-center gap-2.5 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[280px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
+              className="inline-flex items-center gap-3 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[320px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
             >
               <span
-                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-primary/35 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--gold-2)/0.55),transparent_55%),linear-gradient(135deg,hsl(var(--gold-1)/0.18),hsl(var(--gold-2)/0.28))] text-primary text-lg font-bold tracking-tight shadow-[0_0_24px_hsl(var(--glow)/0.18)]"
+                className="inline-flex items-center justify-center w-10 h-10 rounded-[1.15rem] border border-primary/35 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--gold-2)/0.58),transparent_55%),linear-gradient(135deg,hsl(var(--gold-1)/0.18),hsl(var(--gold-2)/0.28))] text-primary text-lg font-bold tracking-tight shadow-[0_0_24px_hsl(var(--glow)/0.18)]"
                 aria-hidden="true"
               >
                 C
               </span>
-              <span className="hidden sm:block">
-                <span className="block text-[0.66rem] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
+              <span className="hidden sm:flex flex-col gap-0.5">
+                <span className="header-brand-overline">
+                  Experiência premium · apoio institucional
+                </span>
+                <span className="header-brand-title">
                   CLARA
                 </span>
-                <span className="hidden md:block text-[0.64rem] font-medium tracking-[0.03em] text-muted-foreground/85 mt-0.5 max-w-[28ch] leading-tight">
-                  Apoio ao uso do SEI-Rio e a rotinas administrativas
+                <span className="hidden md:block header-brand-subtitle">
+                  Clareza para documentos, assinatura, tramitação e conferência operacional no SEI-Rio.
                 </span>
               </span>
               <span className="sr-only">CLARA - Página inicial</span>
@@ -112,7 +115,7 @@ const Header = () => {
                 onClick={() => openChat()}
               >
                 <MessageCircle size={16} aria-hidden="true" />
-                Chat
+                Abrir CLARA
               </button>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}

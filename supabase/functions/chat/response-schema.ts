@@ -1,4 +1,5 @@
 import { z } from "npm:zod@4.3.6";
+import type { KnowledgeReference } from "./knowledge.ts";
 
 export const claraReferenceSchema = z.object({
   id: z.number().int().positive(),
@@ -283,4 +284,88 @@ export function parseStructuredResponsePayload(value: unknown): ClaraStructuredR
   } catch {
     return null;
   }
+}
+
+const INTERNAL_PROCESS_LEAK_PATTERNS = [
+  /\bbase interna\b/i,
+  /\banalise interna\b/i,
+  /\bcomparei\b/i,
+  /\bcomparando\b/i,
+  /\brag\b/i,
+  /\bbackend\b/i,
+  /\bembedding/i,
+  /\bsupabase\b/i,
+  /\btelemetri/i,
+  /\bweb fallback\b/i,
+  /\bprompt\b/i,
+  /\bschema\b/i,
+  /\bjson\b/i,
+];
+
+function inferReferenceType(documentName: string): ClaraStructuredResponse["referenciasFinais"][number]["tipo"] {
+  const normalized = documentName.toLowerCase();
+  if (normalized.includes("manual")) return "manual";
+  if (normalized.includes("guia")) return "guia";
+  if (normalized.endsWith(".pdf")) return "pdf";
+  return "outro";
+}
+
+function inferReferenceTypeFromMetadata(reference: KnowledgeReference): ClaraStructuredResponse["referenciasFinais"][number]["tipo"] {
+  if (reference.documentKind === "manual") return "manual";
+  if (reference.documentKind === "guia") return "guia";
+  if (reference.documentKind === "norma") return "norma";
+  return inferReferenceType(reference.documentName);
+}
+
+function filterCitationIds(values: number[], validIds: Set<number>) {
+  return Array.from(new Set(values.filter((value) => validIds.has(value))));
+}
+
+export function buildGroundedReferences(
+  references: KnowledgeReference[],
+): ClaraStructuredResponse["referenciasFinais"] {
+  return references.map((reference) => ({
+    id: reference.id,
+    tipo: inferReferenceTypeFromMetadata(reference),
+    autorEntidade: "Base documental CLARA",
+    titulo: reference.documentName,
+    subtitulo: reference.sectionTitle ?? null,
+    local: null,
+    editoraOuOrgao: null,
+    ano: null,
+    paginas: reference.pageLabel ?? null,
+    url: null,
+    dataAcesso: null,
+  }));
+}
+
+export function sanitizeStructuredResponse(
+  response: ClaraStructuredResponse,
+  options: {
+    groundedReferences: ClaraStructuredResponse["referenciasFinais"];
+    usedRag: boolean;
+  },
+): ClaraStructuredResponse {
+  const validIds = new Set(options.groundedReferences.map((reference) => reference.id));
+
+  return {
+    ...response,
+    resumoCitacoes: options.usedRag ? filterCitationIds(response.resumoCitacoes, validIds) : [],
+    etapas: response.etapas.map((step) => ({
+      ...step,
+      citacoes: options.usedRag ? filterCitationIds(step.citacoes, validIds) : [],
+    })),
+    referenciasFinais: options.usedRag ? options.groundedReferences : [],
+  };
+}
+
+export function responseHasInternalProcessLeakage(response: ClaraStructuredResponse) {
+  const texts = [
+    response.tituloCurto,
+    response.resumoInicial,
+    ...response.etapas.flatMap((step) => [step.titulo, step.conteudo, ...step.itens, ...step.destaques, step.alerta ?? ""]),
+    ...response.observacoesFinais,
+  ];
+
+  return texts.some((text) => INTERNAL_PROCESS_LEAK_PATTERNS.some((pattern) => pattern.test(text)));
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
+import { lazy, Suspense, useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,35 @@ import {
 } from "@/components/ui/table";
 import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw, X, AlertTriangle, Brain, ShieldCheck, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  classifyKnowledgeDocument,
+  KNOWLEDGE_AUTHORITY_LEVEL_LABELS,
+  KNOWLEDGE_DOCUMENT_KIND_LABELS,
+  KNOWLEDGE_TOPIC_SCOPE_LABELS,
+  type KnowledgeAuthorityLevel,
+  type KnowledgeDocumentKind,
+  type KnowledgeTopicScope,
+} from "@/lib/knowledge-document-classifier";
 import { Link } from "react-router-dom";
-import UsageStatsCard from "@/components/UsageStatsCard";
 
 type Document = Tables<"documents">;
 type IngestionJobInsert = TablesInsert<"ingestion_jobs">;
 type IngestionJobUpdate = TablesUpdate<"ingestion_jobs">;
 type ProcessingEventInsert = TablesInsert<"document_processing_events">;
+type AdminDocumentMetadata = {
+  authority_level?: KnowledgeAuthorityLevel;
+  document_kind?: KnowledgeDocumentKind;
+  excluded_from_chat_reason?: string | null;
+  tags?: string[];
+};
+type AdminDocument = Document & {
+  file_name?: string | null;
+  is_active?: boolean | null;
+  metadata_json?: AdminDocumentMetadata | null;
+  topic_scope?: KnowledgeTopicScope | null;
+};
+
+const UsageStatsCard = lazy(() => import("@/components/UsageStatsCard"));
 
 type IngestionStatus = "idle" | "extracting" | "vectorizing" | "verifying" | "done" | "partial" | "failed" | "canceled";
 
@@ -152,6 +174,40 @@ function isTransientError(error: unknown): boolean {
 
 function isValidationError(errorCode?: string): boolean {
   return !!errorCode && errorCode.startsWith("VALIDATION:");
+}
+
+function getDocumentMetadata(doc: AdminDocument): AdminDocumentMetadata {
+  if (!doc.metadata_json || typeof doc.metadata_json !== "object") {
+    return {};
+  }
+
+  return doc.metadata_json;
+}
+
+function getDocumentTopicScope(doc: AdminDocument): KnowledgeTopicScope {
+  return doc.topic_scope ?? "material_apoio";
+}
+
+function getDocumentKindLabel(doc: AdminDocument) {
+  const metadata = getDocumentMetadata(doc);
+  return metadata.document_kind ? KNOWLEDGE_DOCUMENT_KIND_LABELS[metadata.document_kind] : null;
+}
+
+function getDocumentAuthorityLabel(doc: AdminDocument) {
+  const metadata = getDocumentMetadata(doc);
+  return metadata.authority_level ? KNOWLEDGE_AUTHORITY_LEVEL_LABELS[metadata.authority_level] : null;
+}
+
+function getChatVisibilityLabel(doc: AdminDocument) {
+  const metadata = getDocumentMetadata(doc);
+
+  if (doc.is_active === false) {
+    return metadata.excluded_from_chat_reason === "internal_technical"
+      ? "Fora do chat por ser tecnico"
+      : "Fora do chat";
+  }
+
+  return "Elegivel no chat";
 }
 
 async function withRetry<T>(
@@ -305,7 +361,7 @@ async function getNextAttemptNumber(documentId: string): Promise<number> {
 }
 
 export default function Admin() {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<AdminDocument[]>([]);
   const [ingestions, setIngestions] = useState<IngestionState[]>([]);
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [processingTimers, setProcessingTimers] = useState<Record<string, number>>({});
@@ -317,7 +373,7 @@ export default function Admin() {
       .from("documents")
       .select("*")
       .order("created_at", { ascending: false });
-      if (data) setDocuments(data);
+      if (data) setDocuments(data as AdminDocument[]);
   }, []);
 
   // Polling
@@ -597,6 +653,14 @@ export default function Admin() {
       if (fullText.length < 50) {
         throw new Error("PDF parece estar vazio ou conter apenas imagens (sem texto extraível).");
       }
+      const classification = classifyKnowledgeDocument(file.name, fullText);
+
+      if (classification.warning) {
+        toast({
+          title: "Arquivo salvo como material interno",
+          description: classification.warning,
+        });
+      }
 
       await safeLogProcessingEvent({
         ingestion_job_id: ingestionJobId,
@@ -699,12 +763,26 @@ export default function Admin() {
           source_name: "Painel administrativo CLARA",
           language_code: "pt-BR",
           jurisdiction_scope: "municipal_rj",
-          topic_scope: "sei_rio",
+          topic_scope: classification.topicScope,
           page_count: pages.length,
           text_char_count: fullText.length,
+          is_active: classification.shouldIndex,
           metadata_json: {
             ingestion_source: "admin_panel",
             extraction_mode: "client_side",
+            auto_topic_scope: classification.topicScope,
+            document_kind: classification.documentKind,
+            authority_level: classification.authorityLevel,
+            technical_score: classification.technicalScore,
+            procedural_score: classification.proceduralScore,
+            official_score: classification.officialScore,
+            faq_score: classification.faqScore,
+            guide_score: classification.guideScore,
+            normative_score: classification.normativeScore,
+            manual_score: classification.manualScore,
+            search_weight: classification.searchWeight,
+            tags: classification.tags,
+            excluded_from_chat_reason: classification.excludedFromChatReason,
           },
           status: "processing",
         })
@@ -1407,6 +1485,8 @@ export default function Admin() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead className="w-[230px]">Classificacao</TableHead>
+                    <TableHead className="w-[180px]">Busca</TableHead>
                     <TableHead className="w-[220px]">Status</TableHead>
                     <TableHead className="w-[100px]" />
                   </TableRow>
@@ -1414,7 +1494,60 @@ export default function Admin() {
                 <TableBody>
                   {documents.map((doc) => (
                     <TableRow key={doc.id}>
-                      <TableCell className="font-medium">{doc.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="space-y-2">
+                          <p>{doc.name}</p>
+                          {getDocumentMetadata(doc).tags?.length ? (
+                            <div className="flex flex-wrap gap-1">
+                              {getDocumentMetadata(doc).tags?.slice(0, 3).map((tag) => (
+                                <span
+                                  key={`${doc.id}-${tag}`}
+                                  className="rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                            {KNOWLEDGE_TOPIC_SCOPE_LABELS[getDocumentTopicScope(doc)]}
+                          </span>
+                          {getDocumentKindLabel(doc) ? (
+                            <span className="rounded-full border border-border bg-muted px-2 py-1 text-xs text-muted-foreground">
+                              {getDocumentKindLabel(doc)}
+                            </span>
+                          ) : null}
+                          {getDocumentAuthorityLabel(doc) ? (
+                            <span className="rounded-full border border-border bg-background px-2 py-1 text-xs text-foreground/80">
+                              {getDocumentAuthorityLabel(doc)}
+                            </span>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <p
+                            className={`text-sm font-medium ${
+                              doc.is_active === false ? "text-amber-700 dark:text-amber-400" : "text-emerald-700 dark:text-emerald-400"
+                            }`}
+                          >
+                            {getChatVisibilityLabel(doc)}
+                          </p>
+                          {getDocumentMetadata(doc).excluded_from_chat_reason ? (
+                            <p className="text-xs text-muted-foreground">
+                              Motivo: {getDocumentMetadata(doc).excluded_from_chat_reason}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">
+                              Prioridade definida pela classificacao automatica do acervo.
+                            </p>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <span
                           className={`flex items-center gap-2 text-sm ${
@@ -1498,7 +1631,20 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        <UsageStatsCard />
+        <Suspense
+          fallback={
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Metricas agregadas da CLARA</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Carregando painel analitico...</p>
+              </CardContent>
+            </Card>
+          }
+        >
+          <UsageStatsCard />
+        </Suspense>
       </div>
     </div>
   );

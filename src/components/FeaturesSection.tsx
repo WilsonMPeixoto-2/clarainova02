@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { FileSearch, MessagesSquare, BookCheck, ArrowUpRight, ShieldCheck, Route, FileCheck2, Files, Signature, ClipboardList } from 'lucide-react';
+import Balancer from 'react-wrap-balancer';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
 import { useChat } from '@/hooks/useChatStore';
@@ -41,6 +42,19 @@ const bentoCards = [
   { title: 'Conferência da instrução', description: 'Apoia a revisão de anexos, comentários, atribuição e outros pontos operacionais antes do envio.', icon: ClipboardList, variant: 'default' as const },
 ];
 
+const premiumPanels = [
+  {
+    icon: ShieldCheck,
+    title: 'Orientação com acabamento editorial',
+    description: 'A nova camada visual foi pensada para deixar a consulta mais nobre, mais escaneável e mais confiável na primeira leitura.',
+  },
+  {
+    icon: FileCheck2,
+    title: 'Da dúvida à próxima ação',
+    description: 'A CLARA foi desenhada para reduzir atrito operacional e transformar perguntas abertas em passos claros, bem compostos e fáceis de executar.',
+  },
+];
+
 const FeaturesSection = () => {
   const { openChat } = useChat();
 
@@ -63,8 +77,30 @@ const FeaturesSection = () => {
               <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
               Funcionalidades da CLARA
             </span>
-            <h2 id="features-heading" className="text-h2 mt-4">Apoio prático para rotinas no SEI-Rio</h2>
-            <p className="text-body text-lg max-w-3xl mx-auto mt-4">A CLARA foi desenhada para orientar tarefas frequentes do sistema, com foco em documentos, assinatura, tramitação e conferência de etapas.</p>
+            <h2 id="features-heading" className="text-h2 mt-4">
+              <Balancer>Apoio prático para rotinas no SEI-Rio, com leitura mais premium e valor percebido mais alto.</Balancer>
+            </h2>
+            <p className="text-body text-lg max-w-3xl mx-auto mt-4">
+              <Balancer>
+                A CLARA foi redesenhada para parecer mais madura, mais elegante e mais preparada para orientar tarefas de documentos, assinatura, tramitação e conferência operacional.
+              </Balancer>
+            </p>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.02}>
+          <div className="knowledge-insight-grid max-w-5xl mx-auto mb-10 md:mb-14">
+            {premiumPanels.map((panel) => (
+              <article key={panel.title} className="knowledge-insight-card">
+                <span className="knowledge-insight-icon" aria-hidden="true">
+                  <panel.icon className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="knowledge-insight-title">{panel.title}</p>
+                  <p className="knowledge-insight-description">{panel.description}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </ScrollReveal>
 
@@ -73,7 +109,9 @@ const FeaturesSection = () => {
             <div className="bento-divider mb-7 md:mb-8" aria-hidden="true" />
             <div className="text-center md:text-left mb-5 md:mb-6">
               <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Funcionalidades centrais</p>
-              <h3 className="text-h3 mt-2">Onde a CLARA ajuda hoje</h3>
+              <h3 className="text-h3 mt-2">
+                <Balancer>Onde a CLARA já entrega uma experiência mais forte</Balancer>
+              </h3>
             </div>
             <div className="bento-services-grid">
               {bentoCards.map((card) => (
@@ -104,6 +142,24 @@ const FeaturesSection = () => {
             </ScrollReveal>
           ))}
         </div>
+
+        <ScrollReveal delay={0.1}>
+          <div className="knowledge-bottom-cta max-w-6xl mx-auto mt-12 md:mt-16">
+            <div className="space-y-3">
+              <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Próximo passo</p>
+              <h3 className="text-h3">
+                <Balancer>Leve uma tarefa real para o chat e veja a CLARA responder com o novo acabamento visual e narrativo.</Balancer>
+              </h3>
+              <p className="text-body max-w-2xl">
+                A nova direção de arte foi pensada para fazer a ferramenta parecer tão sólida quanto a resposta que ela entrega.
+              </p>
+            </div>
+            <button type="button" className="btn-clara-primary type-label inline-flex items-center justify-center gap-2" onClick={() => openChat('Como incluir um documento externo no SEI-Rio?')}>
+              Testar um fluxo completo
+              <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

@@ -34,7 +34,8 @@ describe("prepareKnowledgeDecision", () => {
       },
     ]);
 
-    expect(decision.knowledgeContext).toContain("[Fonte Oficial: Guia Pratico.pdf");
+    expect(decision.knowledgeContext).toContain("REFERENCIAS AUTORIZADAS");
+    expect(decision.knowledgeContext).toContain("[Referencia 1: Guia Pratico.pdf - Página 22]");
   });
 
   it("prefers explicit section and page metadata when available", () => {
@@ -94,5 +95,81 @@ describe("prepareKnowledgeDecision", () => {
     ]);
 
     expect(decision.relevantChunks).toHaveLength(1);
+  });
+
+  it("rejects internal technical chunks for procedural SEI questions", () => {
+    const decision = prepareKnowledgeDecision("Como incluir documento externo no SEI-Rio?", [
+      {
+        document_name: "backend-principios-clara.pdf",
+        similarity: 0.018,
+        content:
+          "O backend da CLARA usa Supabase, embeddings, telemetria, schema JSON e funcoes edge para processar o RAG.",
+      },
+      {
+        document_name: "Manual SEI-Rio.pdf",
+        similarity: 0.013,
+        content:
+          "[Fonte: Manual SEI-Rio.pdf | Página: 21]\n\nPara incluir documento externo, abra o processo, acesse Incluir Documento, escolha Documento Externo e preencha os campos obrigatorios antes de confirmar.",
+      },
+    ]);
+
+    expect(decision.relevantChunks).toHaveLength(1);
+    expect(decision.sources).toEqual(["Manual SEI-Rio.pdf - Página 21"]);
+    expect(decision.knowledgeContext).not.toContain("backend da CLARA");
+  });
+
+  it("builds numbered references for grounded citation use", () => {
+    const decision = prepareKnowledgeDecision("Como montar um bloco de assinatura no SEI-Rio?", [
+      {
+        document_name: "Guia SEI-Rio.pdf",
+        similarity: 0.017,
+        page_start: 44,
+        page_end: 45,
+        section_title: "Bloco de assinatura",
+        content:
+          "Para incluir documentos em bloco de assinatura, abra o processo, selecione a opcao do bloco e escolha as unidades participantes.",
+      },
+    ]);
+
+    expect(decision.references).toEqual([
+      {
+        id: 1,
+        sourceLabel: "Guia SEI-Rio.pdf - Bloco de assinatura - Página 44-45",
+        documentName: "Guia SEI-Rio.pdf",
+        documentKind: null,
+        pageLabel: "44-45",
+        sectionTitle: "Bloco de assinatura",
+      },
+    ]);
+    expect(decision.knowledgeContext).toContain("REFERENCIAS AUTORIZADAS");
+    expect(decision.knowledgeContext).toContain("1. Guia SEI-Rio.pdf - Bloco de assinatura - Página 44-45");
+  });
+
+  it("prioritizes official manuals over weaker support material", () => {
+    const decision = prepareKnowledgeDecision("Como incluir documento externo no SEI-Rio?", [
+      {
+        document_name: "Apoio rapido.pdf",
+        document_kind: "apoio",
+        document_authority_level: "supporting",
+        document_search_weight: 0.8,
+        document_topic_scope: "material_apoio",
+        similarity: 0.017,
+        content:
+          "Material resumido sobre documento externo no sistema, sem detalhamento oficial das etapas obrigatorias.",
+      },
+      {
+        document_name: "Manual SEI-Rio.pdf",
+        document_kind: "manual",
+        document_authority_level: "official",
+        document_search_weight: 1.3,
+        document_topic_scope: "sei_rio_manual",
+        similarity: 0.015,
+        content:
+          "[Fonte: Manual SEI-Rio.pdf | Página: 21]\n\nPara incluir documento externo, abra o processo, acesse Incluir Documento, escolha Documento Externo e preencha os campos obrigatorios antes de confirmar.",
+      },
+    ]);
+
+    expect(decision.references[0]?.documentName).toBe("Manual SEI-Rio.pdf");
+    expect(decision.sources[0]).toContain("Manual SEI-Rio.pdf");
   });
 });
