@@ -28,14 +28,6 @@ const Header = () => {
     { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com', note: 'wilsonmp2@gmail.com' },
   ];
 
-  const desktopLinks: NavItem[] = [
-    { label: 'Funcionalidades', to: '/#conhecimento' },
-    { label: 'FAQ', to: '/#faq' },
-    { label: 'Privacidade', to: '/privacidade' },
-    { label: 'Termos', to: '/termos' },
-    { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com' },
-  ];
-
   const isActiveLink = (target: string) => {
     if (target.includes('#')) {
       const [path, hash] = target.split('#');
@@ -49,25 +41,6 @@ const Header = () => {
     return false;
   };
 
-  const renderDesktopLink = (item: NavItem) => {
-    const target = item.to ?? item.href ?? '/';
-    const isActive = isActiveLink(target);
-
-    if (item.to) {
-      return (
-        <Link key={item.label} to={item.to} data-active={isActive} className="header-pill">
-          {item.label}
-        </Link>
-      );
-    }
-
-    return (
-      <a key={item.label} href={item.href} data-active={isActive} className="header-pill">
-        {item.label}
-      </a>
-    );
-  };
-
   return (
     <>
       <header
@@ -78,11 +51,11 @@ const Header = () => {
         }`}
         role="banner"
       >
-        <div className="container mx-auto max-w-[1440px] 2xl:max-w-[1480px] px-5 md:px-8 xl:px-10">
-          <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(260px,1fr)_auto_auto] md:gap-5 lg:gap-7">
+        <div className="container mx-auto max-w-[1580px] px-4 md:px-6 xl:px-8">
+          <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(260px,1fr)_auto] md:gap-5">
             <Link
               to="/"
-              className="inline-flex items-center gap-3 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[320px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
+              className="header-brand-link inline-flex items-center gap-3 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[320px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
             >
               <span
                 className="inline-flex items-center justify-center w-10 h-10 rounded-[1.15rem] border border-primary/35 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--gold-2)/0.58),transparent_55%),linear-gradient(135deg,hsl(var(--gold-1)/0.18),hsl(var(--gold-2)/0.28))] text-primary text-lg font-bold tracking-tight shadow-[0_0_24px_hsl(var(--glow)/0.18)]"
@@ -90,7 +63,7 @@ const Header = () => {
               >
                 C
               </span>
-              <span className="hidden sm:flex flex-col gap-0.5">
+              <span className="header-brand-block hidden sm:grid">
                 <span className="header-brand-overline">
                   Inovação pública · apoio ao SEI-Rio
                 </span>
@@ -104,18 +77,14 @@ const Header = () => {
               <span className="sr-only">CLARA - Página inicial</span>
             </Link>
 
-            <nav className="hidden md:flex items-center justify-self-center gap-2 lg:gap-2.5 xl:-translate-x-10 2xl:-translate-x-16" aria-label="Navegação principal">
-              {desktopLinks.map((link) => renderDesktopLink(link))}
-            </nav>
-
-            <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-2.5 shrink-0 md:justify-self-end xl:-translate-x-12 2xl:-translate-x-20">
+            <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-2.5 shrink-0 md:justify-self-end">
               <button
                 type="button"
                 className="header-pill header-pill-action"
                 onClick={() => openChat()}
               >
                 <MessageCircle size={16} aria-hidden="true" />
-                Abrir CLARA
+                Iniciar chat
               </button>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}

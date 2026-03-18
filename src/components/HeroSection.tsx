@@ -8,6 +8,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
+import { Link } from 'react-router-dom';
 
 import { useChat } from '@/hooks/useChatStore';
 import claraHeroFallback from '@/assets/clara-hero.jpg';
@@ -24,6 +25,14 @@ const QUICK_QUESTIONS = [
 
 const QUICK_SCROLL_DISTANCE = 320;
 const HERO_MOBILE_QUERY = '(max-width: 1023px)';
+
+const HERO_SIDE_LINKS = [
+  { label: 'Funcionalidades', to: '/#conhecimento' },
+  { label: 'FAQ', to: '/#faq' },
+  { label: 'Privacidade', to: '/privacidade' },
+  { label: 'Termos', to: '/termos' },
+  { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com' },
+];
 
 function subscribeToHeroViewport(onChange: () => void) {
   if (typeof window === 'undefined' || !window.matchMedia) {
@@ -204,7 +213,7 @@ const HeroSection = () => {
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-editorial-stack">
-                <p className="hero-label-line">Ferramenta de apoio à rotina administrativa</p>
+                <p className="hero-label-line">Ferramenta de apoio ao SEI-Rio</p>
                 <p className="hero-brand-wordmark">CLARA</p>
                 <h1 className="hero-editorial-headline">
                   <Balancer>
@@ -213,21 +222,20 @@ const HeroSection = () => {
                 </h1>
                 <p className="hero-description text-body">
                   <Balancer>
-                    A CLARA responde perguntas sobre documentos, assinatura, tramitação
-                    e etapas operacionais do sistema.
+                    A CLARA responde perguntas sobre documentos, assinatura, tramitação e etapas do sistema.
                   </Balancer>
                 </p>
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-actions flex flex-col sm:flex-row gap-4 pt-1">
                 <button
-                  className="btn-cinematic-glow hero-cta-button hero-cta-primary type-label flex items-center justify-center gap-2"
+                  className="btn-cinematic-glow hero-cta-button hero-cta-primary type-label flex items-center justify-center gap-2 sm:whitespace-nowrap"
                   onClick={() => openChat()}
                   onMouseMove={handleMagneticMove}
                   onMouseLeave={handleMagneticLeave}
                 >
                   <MessageCircle size={18} aria-hidden="true" />
-                  Abrir a CLARA
+                  Iniciar chat com a CLARA
                   <ArrowRight size={18} aria-hidden="true" />
                 </button>
                 <button
@@ -254,9 +262,9 @@ const HeroSection = () => {
               <motion.div variants={itemVariants} className="hero-prompt-cluster">
                 <div className="hero-prompt-toolbar">
                   <div className="space-y-1">
-                    <p className="text-caption text-muted-foreground">Exemplos de perguntas</p>
+                    <p className="text-caption text-muted-foreground">Exemplos de consulta</p>
                     <p className="hero-prompt-lead">
-                      Consultas frequentes que a CLARA pode apoiar.
+                      Casos comuns de uso.
                     </p>
                   </div>
                   <div className="hero-prompt-actions">
@@ -317,6 +325,20 @@ const HeroSection = () => {
             </motion.div>
           </div>
         </motion.div>
+
+        <nav className="hero-side-nav" aria-label="Atalhos da página">
+          {HERO_SIDE_LINKS.map((item) => (
+            item.to ? (
+              <Link key={item.label} to={item.to} className="hero-side-link">
+                {item.label}
+              </Link>
+            ) : (
+              <a key={item.label} href={item.href} className="hero-side-link">
+                {item.label}
+              </a>
+            )
+          ))}
+        </nav>
       </div>
     </section>
   );

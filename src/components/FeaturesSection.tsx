@@ -1,9 +1,8 @@
 import { motion } from 'motion/react';
-import { FileSearch, MessagesSquare, BookCheck, ArrowUpRight, ShieldCheck, Route, FileCheck2, Files, Signature, ClipboardList } from 'lucide-react';
+import { FileSearch, MessagesSquare, BookCheck, ShieldCheck, Route, FileCheck2, Files, Signature, ClipboardList } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
-import { useChat } from '@/hooks/useChatStore';
 
 const features = [
   {
@@ -46,7 +45,7 @@ const servicePanels = [
   {
     icon: ShieldCheck,
     title: 'Uso simples',
-    description: 'A proposta é facilitar a consulta de dúvidas frequentes sobre o sistema.',
+    description: 'A proposta é facilitar a consulta sobre o sistema com linguagem direta.',
   },
   {
     icon: FileCheck2,
@@ -56,8 +55,6 @@ const servicePanels = [
 ];
 
 const FeaturesSection = () => {
-  const { openChat } = useChat();
-
   return (
     <section id="conhecimento" className="knowledge-section py-20 md:py-28 relative overflow-hidden" aria-labelledby="features-heading">
       <div className="knowledge-ambient-media" aria-hidden="true">
@@ -82,7 +79,7 @@ const FeaturesSection = () => {
             </h2>
             <p className="text-body text-lg max-w-3xl mx-auto mt-4">
               <Balancer>
-                A CLARA foi pensada para apoiar dúvidas frequentes de uso do sistema com texto claro e organização simples.
+                A CLARA foi pensada para apoiar o uso do sistema com texto claro e organização simples.
               </Balancer>
             </p>
           </div>
@@ -135,31 +132,10 @@ const FeaturesSection = () => {
                 <ul className="knowledge-points" aria-label={`Diferenciais de ${feature.title}`}>
                   {feature.points.map((point) => (<li key={point}>{point}</li>))}
                 </ul>
-                <motion.button type="button" className="knowledge-cta" whileHover={{ x: 2 }} whileTap={{ scale: 0.98 }} onClick={() => openChat(feature.prompt)}>
-                  Levar essa tarefa ao chat <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-                </motion.button>
               </motion.article>
             </ScrollReveal>
           ))}
         </div>
-
-        <ScrollReveal delay={0.1}>
-          <div className="knowledge-bottom-cta max-w-6xl mx-auto mt-12 md:mt-16">
-            <div className="space-y-3">
-              <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Próximo passo</p>
-              <h3 className="text-h3">
-                <Balancer>Teste uma dúvida real no chat.</Balancer>
-              </h3>
-              <p className="text-body max-w-2xl">
-                Comece por uma pergunta frequente da sua rotina e veja como a CLARA responde.
-              </p>
-            </div>
-            <button type="button" className="btn-clara-primary type-label inline-flex items-center justify-center gap-2" onClick={() => openChat('Como incluir um documento externo no SEI-Rio?')}>
-              Abrir exemplo no chat
-              <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </div>
-        </ScrollReveal>
       </div>
     </section>
   );

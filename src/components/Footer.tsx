@@ -29,7 +29,7 @@ const Footer = () => {
             <nav className="footer-link-group" aria-label="Navegação">
               <p className="footer-link-heading">Navegação</p>
               <Link to="/#conhecimento" className="footer-link">Funcionalidades</Link>
-              <Link to="/#faq" className="footer-link">Perguntas frequentes</Link>
+              <Link to="/#faq" className="footer-link">FAQ</Link>
             </nav>
             <nav className="footer-link-group" aria-label="Transparência">
               <p className="footer-link-heading">Transparência</p>
@@ -44,10 +44,12 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 pt-8 border-t border-[hsl(var(--border-subtle))]">
-          <p className="text-xs text-muted-foreground text-center max-w-3xl mx-auto leading-relaxed inline-flex items-center justify-center gap-2 w-full" role="note">
+          <div className="footer-note" role="note">
             <ShieldCheck className="w-3.5 h-3.5 text-primary flex-shrink-0" aria-hidden="true" />
-            A CLARA auxilia consultas operacionais e não substitui a leitura dos documentos oficiais nem a validação interna necessária em cada processo.
-          </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              A CLARA auxilia consultas operacionais e não substitui a leitura dos documentos oficiais nem a validação interna necessária em cada processo.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
