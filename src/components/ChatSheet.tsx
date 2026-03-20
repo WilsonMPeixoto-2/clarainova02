@@ -17,7 +17,7 @@ import { ChatStructuredMessage } from '@/components/chat/ChatStructuredMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChat } from '@/hooks/useChatStore';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const STARTER_PROMPTS = [
   'Como incluir um documento externo no SEI-Rio?',
@@ -58,7 +58,6 @@ function formatSessionTitle(question: string) {
 
 const ChatSheet = () => {
   const { isOpen, messages, pendingQuestion, isLoading, isStreaming, closeChat, sendMessage, clearMessages } = useChat();
-  const { toast } = useToast();
   const isMobile = useIsMobile();
   const [input, setInput] = useState('');
   const [panelMode, setPanelMode] = useState<ChatPanelMode>('default');
@@ -155,16 +154,13 @@ const ChatSheet = () => {
         logoSrc: typeof window !== 'undefined' ? `${window.location.origin}/favicon.png` : null,
       });
 
-      toast({
-        title: 'PDF gerado',
+      toast.success('PDF gerado', {
         description: 'A sessao atual foi exportada para consulta posterior.',
       });
     } catch (error) {
       console.error('PDF export error:', error);
-      toast({
-        title: 'Nao foi possivel gerar o PDF',
+      toast.error('Nao foi possivel gerar o PDF', {
         description: 'Tente novamente em alguns instantes.',
-        variant: 'destructive',
       });
     } finally {
       setIsExportingPdf(false);

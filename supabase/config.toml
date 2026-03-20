@@ -1,10 +1,10 @@
-project_id = "replace-with-your-supabase-project-ref"
+project_id = "replace-with-your-project-ref"
 
 [functions.embed-chunks]
-verify_jwt = true
+verify_jwt = false
 
 [functions.chat]
 verify_jwt = false
 
 [functions.get-usage-stats]
-verify_jwt = true
+verify_jwt = false

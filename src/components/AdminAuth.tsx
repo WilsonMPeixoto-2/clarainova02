@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chrome, Fingerprint, Lock, Loader2, Eye, EyeOff } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   getAdminAuthCallbackUrl,
   getPasskeyPreparationMessage,
@@ -24,7 +24,6 @@ export default function AdminAuth({ children }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { toast } = useToast();
   const passkeySupported = useMemo(() => isPasskeySupported(), []);
 
   useEffect(() => {
@@ -46,7 +45,7 @@ export default function AdminAuth({ children }: Props) {
     setSubmitting(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      toast({ title: "Erro no login", description: error.message, variant: "destructive" });
+      toast.error("Erro no login", { description: error.message });
     }
     setSubmitting(false);
   };
@@ -65,18 +64,13 @@ export default function AdminAuth({ children }: Props) {
     });
 
     if (error) {
-      toast({
-        title: "Erro no login com Google",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Erro no login com Google", { description: error.message });
       setGoogleSubmitting(false);
     }
   };
 
   const handlePasskeyInfo = () => {
-    toast({
-      title: passkeySupported ? "Passkeys em preparação" : "Passkeys ainda indisponíveis neste navegador",
+    toast(passkeySupported ? "Passkeys em preparação" : "Passkeys ainda indisponíveis neste navegador", {
       description: getPasskeyPreparationMessage(),
     });
   };

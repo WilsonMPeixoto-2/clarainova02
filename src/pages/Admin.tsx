@@ -1,10 +1,8 @@
-import { lazy, Suspense, useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import type { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import {
   Table,
   TableBody,
@@ -14,36 +12,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw, X, AlertTriangle, Brain, ShieldCheck, AlertCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import {
-  classifyKnowledgeDocument,
-  KNOWLEDGE_AUTHORITY_LEVEL_LABELS,
-  KNOWLEDGE_DOCUMENT_KIND_LABELS,
-  KNOWLEDGE_TOPIC_SCOPE_LABELS,
-  type KnowledgeAuthorityLevel,
-  type KnowledgeDocumentKind,
-  type KnowledgeTopicScope,
-} from "@/lib/knowledge-document-classifier";
+import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import UsageStatsCard from "@/components/UsageStatsCard";
+import { extractText, getDocumentProxy } from "unpdf";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-type Document = Tables<"documents">;
-type IngestionJobInsert = TablesInsert<"ingestion_jobs">;
-type IngestionJobUpdate = TablesUpdate<"ingestion_jobs">;
-type ProcessingEventInsert = TablesInsert<"document_processing_events">;
-type AdminDocumentMetadata = {
-  authority_level?: KnowledgeAuthorityLevel;
-  document_kind?: KnowledgeDocumentKind;
-  excluded_from_chat_reason?: string | null;
-  tags?: string[];
-};
-type AdminDocument = Document & {
-  file_name?: string | null;
-  is_active?: boolean | null;
-  metadata_json?: AdminDocumentMetadata | null;
-  topic_scope?: KnowledgeTopicScope | null;
-};
-
-const UsageStatsCard = lazy(() => import("@/components/UsageStatsCard"));
+interface Document {
+  id: string;
+  name: string;
+  file_path: string;
+  status: string;
+  created_at: string;
+}
 
 type IngestionStatus = "idle" | "extracting" | "vectorizing" | "verifying" | "done" | "partial" | "failed" | "canceled";
 
@@ -67,41 +48,17 @@ interface IngestionState {
   abortController?: AbortController;
 }
 
-function getErrorMessage(error: unknown, fallback = "Falha desconhecida"): string {
-  if (error instanceof Error && error.message.trim()) {
-    return error.message;
-  }
-
-  if (typeof error === "string" && error.trim()) {
-    return error;
-  }
-
-  return fallback;
-}
-
 // ─── Semantic text chunking via LangChain ───────────────────────────────────
 
-let langChainSplitterPromise: Promise<RecursiveCharacterTextSplitter> | null = null;
-
-function getLangChainSplitter() {
-  if (!langChainSplitterPromise) {
-    langChainSplitterPromise = import("@langchain/textsplitters").then(
-      ({ RecursiveCharacterTextSplitter }) =>
-        new RecursiveCharacterTextSplitter({
-          chunkSize: 1000,
-          chunkOverlap: 200,
-          separators: ["\n\n", "\n", " ", ""],
-        })
-    );
-  }
-
-  return langChainSplitterPromise;
-}
+const langChainSplitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 1000,
+  chunkOverlap: 200,
+  separators: ["\n\n", "\n", " ", ""],
+});
 
 async function splitWithLangChain(rawText: string): Promise<string[]> {
-  const splitter = await getLangChainSplitter();
-  const normalized = rawText.replace(/\0/g, "").trim();
-  const chunks = await splitter.splitText(normalized);
+  const normalized = rawText.replace(/\u0000/g, "").trim();
+  const chunks = await langChainSplitter.splitText(normalized);
   return chunks.filter((c) => c.trim().length >= 3);
 }
 
@@ -115,14 +72,6 @@ function sanitizeFileName(name: string): string {
     .replace(/_+/g, "_");
 }
 
-async function computeFileHash(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  const digest = await crypto.subtle.digest("SHA-256", buffer);
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 // ─── Client-side PDF text extraction via unpdf ──────────────────────────────
 
 interface PageText {
@@ -134,7 +83,6 @@ async function extractTextFromPDF(
   file: File,
   onProgress?: (pagesRead: number, totalPages: number) => void
 ): Promise<PageText[]> {
-  const { extractText, getDocumentProxy } = await import("unpdf");
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
   const totalPages = pdf.numPages;
@@ -156,8 +104,8 @@ async function extractTextFromPDF(
 
 const RETRY_DELAYS = [500, 1500, 3000];
 
-function isTransientError(error: unknown): boolean {
-  const msg = getErrorMessage(error, String(error ?? "")).toLowerCase();
+function isTransientError(error: any): boolean {
+  const msg = String(error?.message || error || "").toLowerCase();
   // Network failures
   if (msg.includes("fetch") || msg.includes("network") || msg.includes("failed to fetch") || msg.includes("aborted")) {
     return true;
@@ -176,62 +124,28 @@ function isValidationError(errorCode?: string): boolean {
   return !!errorCode && errorCode.startsWith("VALIDATION:");
 }
 
-function getDocumentMetadata(doc: AdminDocument): AdminDocumentMetadata {
-  if (!doc.metadata_json || typeof doc.metadata_json !== "object") {
-    return {};
-  }
-
-  return doc.metadata_json;
-}
-
-function getDocumentTopicScope(doc: AdminDocument): KnowledgeTopicScope {
-  return doc.topic_scope ?? "material_apoio";
-}
-
-function getDocumentKindLabel(doc: AdminDocument) {
-  const metadata = getDocumentMetadata(doc);
-  return metadata.document_kind ? KNOWLEDGE_DOCUMENT_KIND_LABELS[metadata.document_kind] : null;
-}
-
-function getDocumentAuthorityLabel(doc: AdminDocument) {
-  const metadata = getDocumentMetadata(doc);
-  return metadata.authority_level ? KNOWLEDGE_AUTHORITY_LEVEL_LABELS[metadata.authority_level] : null;
-}
-
-function getChatVisibilityLabel(doc: AdminDocument) {
-  const metadata = getDocumentMetadata(doc);
-
-  if (doc.is_active === false) {
-    return metadata.excluded_from_chat_reason === "internal_technical"
-      ? "Fora do chat por ser tecnico"
-      : "Fora do chat";
-  }
-
-  return "Elegivel no chat";
-}
-
 async function withRetry<T>(
   fn: () => Promise<T>,
   opts: { retries?: number; signal?: AbortSignal } = {}
 ): Promise<T> {
   const { retries = 3, signal } = opts;
-  let lastErr: unknown;
+  let lastErr: any;
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (signal?.aborted) throw new Error("Cancelado pelo usuário");
     try {
       return await fn();
-    } catch (err: unknown) {
+    } catch (err: any) {
       lastErr = err;
       if (attempt < retries && isTransientError(err) && !signal?.aborted) {
         const delay = RETRY_DELAYS[attempt] || 3000;
-        console.warn(`Retry ${attempt + 1}/${retries} after ${delay}ms:`, getErrorMessage(err));
+        console.warn(`Retry ${attempt + 1}/${retries} after ${delay}ms:`, err.message);
         await new Promise((r) => setTimeout(r, delay));
       } else {
         throw err;
       }
     }
   }
-  throw (lastErr instanceof Error ? lastErr : new Error(getErrorMessage(lastErr)));
+  throw lastErr;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -251,17 +165,11 @@ async function embedBatchWithRetry(
   documentId: string,
   batch: string[],
   startIndex: number,
-  ingestionJobId?: string | null,
   signal?: AbortSignal
-): Promise<{ saved: number; requestId?: string; failedEmbeddings: number }> {
+): Promise<{ saved: number; requestId?: string }> {
   return withRetry(async () => {
     const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
-      body: {
-        document_id: documentId,
-        chunks: batch,
-        start_index: startIndex,
-        ingestion_job_id: ingestionJobId ?? null,
-      },
+      body: { document_id: documentId, chunks: batch, start_index: startIndex },
     });
 
     // Transport-level error (network, 5xx relay)
@@ -274,16 +182,14 @@ async function embedBatchWithRetry(
       const code = fnData?.error || "UNKNOWN";
       if (isValidationError(code)) {
         // Don't retry validation errors
-        throw new Error(`Validação: ${code}`);
+        const err = new Error(`Validação: ${code}`);
+        (err as any).noRetry = true;
+        throw err;
       }
       throw new Error(`EMBED_APP_ERROR: ${code} (req: ${fnData?.request_id || "?"})`);
     }
 
-    return {
-      saved: fnData?.saved || batch.length,
-      requestId: fnData?.request_id,
-      failedEmbeddings: fnData?.failed_embeddings || 0,
-    };
+    return { saved: fnData?.saved || batch.length, requestId: fnData?.request_id };
   }, { retries: 3, signal });
 }
 
@@ -302,78 +208,22 @@ async function getExistingChunkIndexes(documentId: string): Promise<Set<number>>
     .from("document_chunks")
     .select("chunk_index")
     .eq("document_id", documentId);
-  return new Set((data || []).map((row) => row.chunk_index));
-}
-
-async function safeCreateIngestionJob(payload: IngestionJobInsert): Promise<string | null> {
-  const { data, error } = await supabase
-    .from("ingestion_jobs")
-    .insert(payload)
-    .select("id")
-    .maybeSingle();
-
-  if (error) {
-    console.warn("Could not create ingestion job:", error.message);
-    return null;
-  }
-
-  return data?.id ?? null;
-}
-
-async function safeUpdateIngestionJob(jobId: string | null | undefined, payload: IngestionJobUpdate): Promise<void> {
-  if (!jobId) return;
-
-  const { error } = await supabase
-    .from("ingestion_jobs")
-    .update(payload)
-    .eq("id", jobId);
-
-  if (error) {
-    console.warn("Could not update ingestion job:", error.message);
-  }
-}
-
-async function safeLogProcessingEvent(payload: ProcessingEventInsert): Promise<void> {
-  const { error } = await supabase
-    .from("document_processing_events")
-    .insert(payload);
-
-  if (error) {
-    console.warn("Could not log processing event:", error.message);
-  }
-}
-
-async function getNextAttemptNumber(documentId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from("ingestion_jobs")
-    .select("attempt_number")
-    .eq("document_id", documentId)
-    .order("attempt_number", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.warn("Could not determine ingestion attempt number:", error.message);
-    return 1;
-  }
-
-  return (data?.attempt_number ?? 0) + 1;
+  return new Set((data || []).map((r: any) => r.chunk_index));
 }
 
 export default function Admin() {
-  const [documents, setDocuments] = useState<AdminDocument[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [ingestions, setIngestions] = useState<IngestionState[]>([]);
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [processingTimers, setProcessingTimers] = useState<Record<string, number>>({});
   const prevStatusRef = useRef<Record<string, string>>({});
-  const { toast } = useToast();
 
   const fetchDocuments = useCallback(async () => {
     const { data } = await supabase
       .from("documents")
       .select("*")
       .order("created_at", { ascending: false });
-      if (data) setDocuments(data as AdminDocument[]);
+    if (data) setDocuments(data as unknown as Document[]);
   }, []);
 
   // Polling
@@ -390,14 +240,14 @@ export default function Admin() {
       const oldStatus = prev[doc.id];
       if (oldStatus && oldStatus !== doc.status) {
         if (doc.status === "processed") {
-          toast({ title: "✅ Documento pronto", description: `"${doc.name}" foi processado com sucesso.` });
+          toast.success("Documento pronto", { description: `"${doc.name}" foi processado com sucesso.` });
         } else if (doc.status === "error") {
-          toast({ title: "❌ Erro no processamento", description: `"${doc.name}" falhou. Use o botão reprocessar.`, variant: "destructive" });
+          toast.error("Erro no processamento", { description: `"${doc.name}" falhou. Use o botão reprocessar.` });
         }
       }
     }
     prevStatusRef.current = Object.fromEntries(documents.map((d) => [d.id, d.status]));
-  }, [documents, toast]);
+  }, [documents]);
 
   // Processing timers for legacy server-side processing docs
   useEffect(() => {
@@ -439,8 +289,7 @@ export default function Admin() {
     chunks: string[],
     fileName: string,
     abortSignal: AbortSignal,
-    skipIndexes?: Set<number>,
-    ingestionJobId?: string | null
+    skipIndexes?: Set<number>
   ): Promise<{ insertedChunks: number; status: IngestionStatus }> => {
     const totalChunks = chunks.length;
     const chunksToSend: { chunk: string; index: number }[] = [];
@@ -457,19 +306,6 @@ export default function Admin() {
     }
 
     let processedCount = skipIndexes ? (totalChunks - chunksToSend.length) : 0;
-    let failedEmbeddings = 0;
-
-    await safeLogProcessingEvent({
-      document_id: documentId,
-      ingestion_job_id: ingestionJobId ?? null,
-      event_type: "embedding_batches_started",
-      message: `Vetorizacao iniciada para ${chunksToSend.length} fragmentos pendentes.`,
-      details_json: {
-        total_chunks: totalChunks,
-        pending_chunks: chunksToSend.length,
-        skipped_chunks: processedCount,
-      },
-    });
 
     updateIngestion(fileName, {
       status: "vectorizing",
@@ -490,16 +326,14 @@ export default function Admin() {
       const batchStartIndex = batchItems[0].index;
 
       try {
-        const batchResult = await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, ingestionJobId, abortSignal);
-        failedEmbeddings += batchResult.failedEmbeddings;
-      } catch (err: unknown) {
+        await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
+      } catch (err: any) {
         console.error(`Batch at index ${batchStartIndex} failed after retries:`, err);
-        const message = getErrorMessage(err);
         updateIngestion(fileName, {
           lastError: {
-            message,
+            message: err.message,
             chunkIndex: batchStartIndex,
-            code: message.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
+            code: err.message.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
           },
         });
         // Don't throw — move to verification
@@ -521,67 +355,21 @@ export default function Admin() {
       phaseLabel: "Verificando integridade...",
       progress: 92,
     });
-    await safeLogProcessingEvent({
-      document_id: documentId,
-      ingestion_job_id: ingestionJobId ?? null,
-      event_type: "verification_started",
-      message: "Verificacao de integridade iniciada apos a vetorizacao.",
-      details_json: {
-        total_chunks: totalChunks,
-        processed_chunks: processedCount,
-        failed_embeddings: failedEmbeddings,
-      },
-    });
 
     const insertedChunks = await verifyChunksInDB(documentId);
     updateIngestion(fileName, { insertedChunks });
 
-    if (insertedChunks >= totalChunks && failedEmbeddings === 0) {
-      await safeLogProcessingEvent({
-        document_id: documentId,
-        ingestion_job_id: ingestionJobId ?? null,
-        event_type: "verification_completed",
-        message: "Todos os fragmentos esperados foram confirmados no banco.",
-        details_json: {
-          inserted_chunks: insertedChunks,
-          total_chunks: totalChunks,
-        },
-      });
+    if (insertedChunks >= totalChunks) {
       return { insertedChunks, status: "done" };
     } else if (insertedChunks > 0) {
-      await safeLogProcessingEvent({
-        document_id: documentId,
-        ingestion_job_id: ingestionJobId ?? null,
-        event_type: "verification_partial",
-        event_level: "warning",
-        message: "A verificacao encontrou persistencia parcial dos fragmentos.",
-        details_json: {
-          inserted_chunks: insertedChunks,
-          total_chunks: totalChunks,
-          failed_embeddings: failedEmbeddings,
-        },
-      });
       return { insertedChunks, status: "partial" };
     } else {
-      await safeLogProcessingEvent({
-        document_id: documentId,
-        ingestion_job_id: ingestionJobId ?? null,
-        event_type: "verification_failed",
-        event_level: "error",
-        message: "Nenhum fragmento foi confirmado no banco apos a vetorizacao.",
-        details_json: {
-          inserted_chunks: insertedChunks,
-          total_chunks: totalChunks,
-          failed_embeddings: failedEmbeddings,
-        },
-      });
       return { insertedChunks, status: "failed" };
     }
   };
 
   const processFileClientSide = async (file: File) => {
     const abortController = new AbortController();
-    const startedAt = new Date().toISOString();
     const ingestion: IngestionState = {
       fileName: file.name,
       status: "extracting",
@@ -596,33 +384,7 @@ export default function Admin() {
 
     setIngestions((prev) => [...prev, ingestion]);
 
-    let ingestionJobId: string | null = null;
-    let documentId: string | null = null;
-
     try {
-      ingestionJobId = await safeCreateIngestionJob({
-        job_type: "upload_ingestion",
-        trigger_source: "admin_panel",
-        status: "running",
-        attempt_number: 1,
-        started_at: startedAt,
-        payload_json: {
-          file_name: file.name,
-          mime_type: file.type || "application/pdf",
-          size_bytes: file.size,
-        },
-      });
-
-      await safeLogProcessingEvent({
-        ingestion_job_id: ingestionJobId,
-        event_type: "upload_received",
-        message: `Arquivo ${file.name} recebido para ingestao.`,
-        details_json: {
-          mime_type: file.type || "application/pdf",
-          size_bytes: file.size,
-        },
-      });
-
       // Phase 1: Extract text from PDF in the browser
       updateIngestion(file.name, { status: "extracting", phaseLabel: "Extraindo texto do PDF..." });
 
@@ -633,44 +395,12 @@ export default function Admin() {
         });
       });
 
-      if (abortController.signal.aborted) {
-        const cancelledAt = new Date().toISOString();
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "cancelled",
-          failed_at: cancelledAt,
-          error_message: "Processamento cancelado durante a extracao de texto.",
-        });
-        await safeLogProcessingEvent({
-          ingestion_job_id: ingestionJobId,
-          event_type: "ingestion_cancelled",
-          event_level: "warning",
-          message: "Processamento cancelado durante a extracao de texto.",
-        });
-        return;
-      }
+      if (abortController.signal.aborted) return;
 
       const fullText = pages.map((p) => p.text).join("\n\n");
       if (fullText.length < 50) {
         throw new Error("PDF parece estar vazio ou conter apenas imagens (sem texto extraível).");
       }
-      const classification = classifyKnowledgeDocument(file.name, fullText);
-
-      if (classification.warning) {
-        toast({
-          title: "Arquivo salvo como material interno",
-          description: classification.warning,
-        });
-      }
-
-      await safeLogProcessingEvent({
-        ingestion_job_id: ingestionJobId,
-        event_type: "text_extracted",
-        message: "Texto extraido do PDF no navegador.",
-        details_json: {
-          page_count: pages.length,
-          text_char_count: fullText.length,
-        },
-      });
 
       // Phase 2: Chunk text per page, injecting source tags
       updateIngestion(file.name, {
@@ -696,36 +426,11 @@ export default function Admin() {
         progress: 30,
       });
 
-      await safeLogProcessingEvent({
-        ingestion_job_id: ingestionJobId,
-        event_type: "chunks_generated",
-        message: `${totalChunks} fragmentos gerados a partir do PDF.`,
-        details_json: {
-          total_chunks: totalChunks,
-          page_count: pages.length,
-        },
-      });
-
-      if (abortController.signal.aborted) {
-        const cancelledAt = new Date().toISOString();
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "cancelled",
-          failed_at: cancelledAt,
-          error_message: "Processamento cancelado antes do upload do arquivo.",
-        });
-        await safeLogProcessingEvent({
-          ingestion_job_id: ingestionJobId,
-          event_type: "ingestion_cancelled",
-          event_level: "warning",
-          message: "Processamento cancelado antes do upload do arquivo.",
-        });
-        return;
-      }
+      if (abortController.signal.aborted) return;
 
       // Phase 3: Upload file to storage
       const sanitizedName = sanitizeFileName(file.name);
       const filePath = `${crypto.randomUUID()}_${sanitizedName}`;
-      const documentHash = await computeFileHash(file);
 
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
@@ -740,249 +445,73 @@ export default function Admin() {
 
       if (uploadErr) throw new Error(`Upload falhou: ${uploadErr.message}`);
 
-      await safeLogProcessingEvent({
-        ingestion_job_id: ingestionJobId,
-        event_type: "storage_uploaded",
-        message: "Arquivo salvo no storage da base documental.",
-        details_json: {
-          storage_path: filePath,
-        },
-      });
-
       // Create document record
       const { data: doc, error: docErr } = await supabase
         .from("documents")
-        .insert({
-          name: file.name,
-          file_name: file.name,
-          file_path: filePath,
-          storage_path: filePath,
-          mime_type: file.type || "application/pdf",
-          document_hash: documentHash,
-          source_type: "upload",
-          source_name: "Painel administrativo CLARA",
-          language_code: "pt-BR",
-          jurisdiction_scope: "municipal_rj",
-          topic_scope: classification.topicScope,
-          page_count: pages.length,
-          text_char_count: fullText.length,
-          is_active: classification.shouldIndex,
-          metadata_json: {
-            ingestion_source: "admin_panel",
-            extraction_mode: "client_side",
-            auto_topic_scope: classification.topicScope,
-            document_kind: classification.documentKind,
-            authority_level: classification.authorityLevel,
-            technical_score: classification.technicalScore,
-            procedural_score: classification.proceduralScore,
-            official_score: classification.officialScore,
-            faq_score: classification.faqScore,
-            guide_score: classification.guideScore,
-            normative_score: classification.normativeScore,
-            manual_score: classification.manualScore,
-            search_weight: classification.searchWeight,
-            tags: classification.tags,
-            excluded_from_chat_reason: classification.excludedFromChatReason,
-          },
-          status: "processing",
-        })
+        .insert({ name: file.name, file_path: filePath, status: "processing" })
         .select()
         .single();
 
       if (docErr || !doc) throw new Error("Falha ao registrar documento");
-      documentId = doc.id;
-
-      await safeUpdateIngestionJob(ingestionJobId, {
-        document_id: documentId,
-      });
-
-      await safeLogProcessingEvent({
-        document_id: documentId,
-        ingestion_job_id: ingestionJobId,
-        event_type: "document_registered",
-        message: "Documento registrado no acervo documental.",
-        details_json: {
-          page_count: pages.length,
-          total_chunks: totalChunks,
-          document_hash: documentHash,
-        },
-      });
+      const documentId = (doc as any).id;
 
       if (abortController.signal.aborted) {
-        const cancelledAt = new Date().toISOString();
-        await supabase.from("documents").update({ status: "cancelled", failure_reason: "Processamento cancelado pelo usuário", failed_at: cancelledAt }).eq("id", documentId);
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "cancelled",
-          failed_at: cancelledAt,
-          error_message: "Processamento cancelado pelo usuario antes do envio final dos chunks.",
-        });
-        await safeLogProcessingEvent({
-          document_id: documentId,
-          ingestion_job_id: ingestionJobId,
-          event_type: "ingestion_cancelled",
-          event_level: "warning",
-          message: "Processamento cancelado pelo usuario.",
-        });
+        await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
         return;
       }
 
       // Phase 4: Send chunks with retry + verification
-      const result = await sendChunksInBatches(documentId, chunks, file.name, abortController.signal, undefined, ingestionJobId);
+      const result = await sendChunksInBatches(documentId, chunks, file.name, abortController.signal);
 
       if (result.status === "canceled") {
-        const cancelledAt = new Date().toISOString();
-        await supabase.from("documents").update({ status: "cancelled", failure_reason: "Processamento cancelado pelo usuário", failed_at: cancelledAt }).eq("id", documentId);
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "cancelled",
-          failed_at: cancelledAt,
-          error_message: "Processamento cancelado durante a vetorizacao.",
-          result_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: totalChunks,
-          },
-        });
-        await safeLogProcessingEvent({
-          document_id: documentId,
-          ingestion_job_id: ingestionJobId,
-          event_type: "ingestion_cancelled",
-          event_level: "warning",
-          message: "Processamento cancelado durante a vetorizacao.",
-          details_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: totalChunks,
-          },
-        });
+        await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
         updateIngestion(file.name, { status: "canceled", phaseLabel: "Cancelado" });
         return;
       }
 
       if (result.status === "done") {
-        const processedAt = new Date().toISOString();
-        await supabase.from("documents").update({ status: "processed", processed_at: processedAt, failed_at: null, failure_reason: null }).eq("id", documentId);
+        await supabase.from("documents").update({ status: "processed" }).eq("id", documentId);
         await supabase.from("usage_logs").insert({
           event_type: "client_side_ingestion",
           metadata: { document_id: documentId, chunks_count: totalChunks, text_length: fullText.length },
-        });
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "completed",
-          completed_at: processedAt,
-          failed_at: null,
-          error_code: null,
-          error_message: null,
-          result_json: {
-            inserted_chunks: totalChunks,
-            expected_chunks: totalChunks,
-            text_char_count: fullText.length,
-          },
-        });
-        await safeLogProcessingEvent({
-          document_id: documentId,
-          ingestion_job_id: ingestionJobId,
-          event_type: "ingestion_completed",
-          message: "Documento processado com sucesso e incorporado ao indice vetorial.",
-          details_json: {
-            inserted_chunks: totalChunks,
-            expected_chunks: totalChunks,
-          },
         });
         updateIngestion(file.name, {
           status: "done",
           phaseLabel: `✓ Pronto — ${totalChunks} fragmentos`,
           progress: 100,
         });
-        toast({ title: "✅ Documento processado", description: `"${file.name}" — ${totalChunks} fragmentos indexados.` });
+        toast.success("Documento processado", { description: `"${file.name}" — ${totalChunks} fragmentos indexados.` });
       } else if (result.status === "partial") {
-        const failedAt = new Date().toISOString();
-        const failureReason = "Processamento parcial: parte dos chunks ficou sem embedding ou não foi persistida.";
-        await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: failureReason }).eq("id", documentId);
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "failed",
-          failed_at: failedAt,
-          error_code: "PARTIAL_INGESTION",
-          error_message: failureReason,
-          result_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: totalChunks,
-          },
-        });
-        await safeLogProcessingEvent({
-          document_id: documentId,
-          ingestion_job_id: ingestionJobId,
-          event_type: "ingestion_partial",
-          event_level: "warning",
-          message: failureReason,
-          details_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: totalChunks,
-          },
-        });
+        await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
         updateIngestion(file.name, {
           status: "partial",
           phaseLabel: `⚠ Parcial — ${result.insertedChunks}/${totalChunks} fragmentos`,
           progress: Math.round((result.insertedChunks / totalChunks) * 100),
         });
-        toast({ title: "⚠ Processamento parcial", description: `"${file.name}" — ${result.insertedChunks}/${totalChunks}. Use Retomar.`, variant: "destructive" });
+        toast.error("Processamento parcial", { description: `"${file.name}" — ${result.insertedChunks}/${totalChunks}. Use Retomar.` });
       } else {
-        const failedAt = new Date().toISOString();
-        const failureReason = "Falha total no processamento dos chunks.";
-        await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: failureReason }).eq("id", documentId);
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "failed",
-          failed_at: failedAt,
-          error_code: "INGESTION_FAILED",
-          error_message: failureReason,
-          result_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: totalChunks,
-          },
-        });
-        await safeLogProcessingEvent({
-          document_id: documentId,
-          ingestion_job_id: ingestionJobId,
-          event_type: "ingestion_failed",
-          event_level: "error",
-          message: failureReason,
-          details_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: totalChunks,
-          },
-        });
+        await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
         updateIngestion(file.name, {
           status: "failed",
           phaseLabel: "Falha — nenhum fragmento salvo",
         });
-        toast({ title: "❌ Falha total", description: `"${file.name}" — nenhum fragmento salvo.`, variant: "destructive" });
+        toast.error("Falha total", { description: `"${file.name}" — nenhum fragmento salvo.` });
       }
 
       fetchDocuments();
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error("Client-side ingestion error:", err);
-      const message = getErrorMessage(err);
       updateIngestion(file.name, {
         status: "failed",
-        phaseLabel: `Erro: ${message}`,
-        lastError: { message },
+        phaseLabel: `Erro: ${err.message || "Falha desconhecida"}`,
+        lastError: { message: err.message },
       });
-      const failedAt = new Date().toISOString();
-      await safeUpdateIngestionJob(ingestionJobId, {
-        status: "failed",
-        failed_at: failedAt,
-        error_code: "CLIENT_INGESTION_ERROR",
-        error_message: message,
-      });
-      await safeLogProcessingEvent({
-        document_id: documentId,
-        ingestion_job_id: ingestionJobId,
-        event_type: "ingestion_failed",
-        event_level: "error",
-        message,
-      });
-      toast({ title: "❌ Erro no processamento", description: message, variant: "destructive" });
+      toast.error("Erro no processamento", { description: err.message });
       fetchDocuments();
     }
   };
 
-  const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -992,7 +521,7 @@ export default function Admin() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.type !== "application/pdf") {
-        toast({ title: "Erro", description: `${file.name} não é um PDF`, variant: "destructive" });
+        toast.error("Erro", { description: `${file.name} não é um PDF` });
         continue;
       }
       await processFileClientSide(file);
@@ -1014,36 +543,11 @@ export default function Admin() {
 
   const handleRetry = async (doc: Document) => {
     setRetryingId(doc.id);
-    let ingestionJobId: string | null = null;
     try {
-      const attemptNumber = await getNextAttemptNumber(doc.id);
-      ingestionJobId = await safeCreateIngestionJob({
-        document_id: doc.id,
-        job_type: "reprocess",
-        trigger_source: "admin_panel",
-        status: "running",
-        attempt_number: attemptNumber,
-        started_at: new Date().toISOString(),
-        payload_json: {
-          file_name: doc.name,
-          storage_path: doc.file_path,
-        },
-      });
-
-      await safeLogProcessingEvent({
-        document_id: doc.id,
-        ingestion_job_id: ingestionJobId,
-        event_type: "reprocess_started",
-        message: "Reprocessamento iniciado a partir do painel administrativo.",
-        details_json: {
-          attempt_number: attemptNumber,
-        },
-      });
-
       // Check which chunks already exist (idempotent resume)
       const existingIndexes = await getExistingChunkIndexes(doc.id);
 
-      await supabase.from("documents").update({ status: "processing", failed_at: null, failure_reason: null }).eq("id", doc.id);
+      await supabase.from("documents").update({ status: "processing" }).eq("id", doc.id);
 
       // Download the file from storage and re-process client-side
       const { data: fileData, error: dlErr } = await supabase.storage
@@ -1077,16 +581,6 @@ export default function Admin() {
         });
       });
 
-      await safeLogProcessingEvent({
-        document_id: doc.id,
-        ingestion_job_id: ingestionJobId,
-        event_type: "text_extracted",
-        message: "Texto reextraido do PDF para reprocessamento.",
-        details_json: {
-          page_count: pages.length,
-        },
-      });
-
       const fullText = pages.map((p) => p.text).join("\n\n");
       if (fullText.length < 50) throw new Error("PDF sem texto extraível");
 
@@ -1106,42 +600,11 @@ export default function Admin() {
         progress: 30,
       });
 
-      await safeLogProcessingEvent({
-        document_id: doc.id,
-        ingestion_job_id: ingestionJobId,
-        event_type: "chunks_generated",
-        message: `${chunks.length} fragmentos recalculados para reprocessamento.`,
-        details_json: {
-          total_chunks: chunks.length,
-          existing_chunks: existingIndexes.size,
-        },
-      });
-
       // If all chunks already exist, mark done directly
       if (existingIndexes.size >= chunks.length) {
-        const processedAt = new Date().toISOString();
-        await supabase.from("documents").update({ status: "processed", processed_at: processedAt, failed_at: null, failure_reason: null }).eq("id", doc.id);
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "completed",
-          completed_at: processedAt,
-          result_json: {
-            total_chunks: chunks.length,
-            skipped_chunks: existingIndexes.size,
-            outcome: "already_complete",
-          },
-        });
-        await safeLogProcessingEvent({
-          document_id: doc.id,
-          ingestion_job_id: ingestionJobId,
-          event_type: "reprocess_completed",
-          message: "Reprocessamento concluido sem necessidade de novos embeddings.",
-          details_json: {
-            total_chunks: chunks.length,
-            skipped_chunks: existingIndexes.size,
-          },
-        });
+        await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
         updateIngestion(doc.name, { status: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos (já existiam)` });
-        toast({ title: "✅ Já completo", description: `"${doc.name}" — todos os fragmentos já existiam.` });
+        toast.success("Já completo", { description: `"${doc.name}" — todos os fragmentos já existiam.` });
         fetchDocuments();
         setTimeout(() => {
           setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
@@ -1150,97 +613,23 @@ export default function Admin() {
       }
 
       // Send only missing chunks
-      const result = await sendChunksInBatches(doc.id, chunks, doc.name, abortController.signal, existingIndexes, ingestionJobId);
+      const result = await sendChunksInBatches(doc.id, chunks, doc.name, abortController.signal, existingIndexes);
 
       if (result.status === "done") {
-        const processedAt = new Date().toISOString();
-        await supabase.from("documents").update({ status: "processed", processed_at: processedAt, failed_at: null, failure_reason: null }).eq("id", doc.id);
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "completed",
-          completed_at: processedAt,
-          failed_at: null,
-          error_code: null,
-          error_message: null,
-          result_json: {
-            inserted_chunks: chunks.length,
-            expected_chunks: chunks.length,
-            skipped_chunks: existingIndexes.size,
-          },
-        });
-        await safeLogProcessingEvent({
-          document_id: doc.id,
-          ingestion_job_id: ingestionJobId,
-          event_type: "reprocess_completed",
-          message: "Reprocessamento concluido com sucesso.",
-          details_json: {
-            inserted_chunks: chunks.length,
-            expected_chunks: chunks.length,
-            skipped_chunks: existingIndexes.size,
-          },
-        });
+        await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
         updateIngestion(doc.name, { status: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos` });
-        toast({ title: "✅ Reprocessado", description: `"${doc.name}" pronto.` });
+        toast.success("Reprocessado", { description: `"${doc.name}" pronto.` });
       } else if (result.status === "partial") {
-        const failedAt = new Date().toISOString();
-        const failureReason = "Reprocessamento parcial: parte dos chunks ficou sem embedding ou não foi persistida.";
-        await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: failureReason }).eq("id", doc.id);
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "failed",
-          failed_at: failedAt,
-          error_code: "PARTIAL_REPROCESS",
-          error_message: failureReason,
-          result_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: chunks.length,
-            skipped_chunks: existingIndexes.size,
-          },
-        });
-        await safeLogProcessingEvent({
-          document_id: doc.id,
-          ingestion_job_id: ingestionJobId,
-          event_type: "reprocess_partial",
-          event_level: "warning",
-          message: failureReason,
-          details_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: chunks.length,
-            skipped_chunks: existingIndexes.size,
-          },
-        });
+        await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "partial",
           phaseLabel: `⚠ ${result.insertedChunks}/${chunks.length} — Retome novamente`,
         });
-        toast({ title: "⚠ Parcial", description: `"${doc.name}" — ${result.insertedChunks}/${chunks.length}. Retome.`, variant: "destructive" });
+        toast.error("Parcial", { description: `"${doc.name}" — ${result.insertedChunks}/${chunks.length}. Retome.` });
       } else {
-        const failedAt = new Date().toISOString();
-        const failureReason = "Falha no reprocessamento dos chunks.";
-        await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: failureReason }).eq("id", doc.id);
-        await safeUpdateIngestionJob(ingestionJobId, {
-          status: "failed",
-          failed_at: failedAt,
-          error_code: "REPROCESS_FAILED",
-          error_message: failureReason,
-          result_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: chunks.length,
-            skipped_chunks: existingIndexes.size,
-          },
-        });
-        await safeLogProcessingEvent({
-          document_id: doc.id,
-          ingestion_job_id: ingestionJobId,
-          event_type: "reprocess_failed",
-          event_level: "error",
-          message: failureReason,
-          details_json: {
-            inserted_chunks: result.insertedChunks,
-            expected_chunks: chunks.length,
-            skipped_chunks: existingIndexes.size,
-          },
-        });
+        await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
         updateIngestion(doc.name, { status: "failed", phaseLabel: "Falha no reprocessamento" });
-        toast({ title: "❌ Falha", description: "Reprocessamento falhou.", variant: "destructive" });
+        toast.error("Falha", { description: "Reprocessamento falhou." });
       }
 
       fetchDocuments();
@@ -1248,24 +637,9 @@ export default function Admin() {
       setTimeout(() => {
         setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
       }, 5000);
-    } catch (err: unknown) {
-      const message = getErrorMessage(err);
-      const failedAt = new Date().toISOString();
-      toast({ title: "Erro ao reprocessar", description: message, variant: "destructive" });
-      await supabase.from("documents").update({ status: "error", failed_at: failedAt, failure_reason: message }).eq("id", doc.id);
-      await safeUpdateIngestionJob(ingestionJobId, {
-        status: "failed",
-        failed_at: failedAt,
-        error_code: "REPROCESS_ERROR",
-        error_message: message,
-      });
-      await safeLogProcessingEvent({
-        document_id: doc.id,
-        ingestion_job_id: ingestionJobId,
-        event_type: "reprocess_failed",
-        event_level: "error",
-        message,
-      });
+    } catch (err: any) {
+      toast.error("Erro ao reprocessar", { description: err.message });
+      await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
       fetchDocuments();
     } finally {
       setRetryingId(null);
@@ -1275,17 +649,11 @@ export default function Admin() {
   const handleCancel = async (doc: Document) => {
     try {
       await supabase.from("document_chunks").delete().eq("document_id", doc.id);
-      await supabase.from("documents").update({ status: "cancelled", failed_at: new Date().toISOString(), failure_reason: "Processamento cancelado manualmente." }).eq("id", doc.id);
-      await safeLogProcessingEvent({
-        document_id: doc.id,
-        event_type: "processing_cancelled_manually",
-        event_level: "warning",
-        message: "Processamento cancelado manualmente pelo painel administrativo.",
-      });
+      await supabase.from("documents").update({ status: "cancelled" }).eq("id", doc.id);
       fetchDocuments();
-      toast({ title: "Cancelado", description: `"${doc.name}" foi cancelado.` });
+      toast.success("Cancelado", { description: `"${doc.name}" foi cancelado.` });
     } catch {
-      toast({ title: "Erro ao cancelar", variant: "destructive" });
+      toast.error("Erro ao cancelar");
     }
   };
 
@@ -1295,9 +663,9 @@ export default function Admin() {
       await supabase.storage.from("documents").remove([doc.file_path]);
       await supabase.from("documents").delete().eq("id", doc.id);
       fetchDocuments();
-      toast({ title: "Documento removido" });
+      toast.success("Documento removido");
     } catch {
-      toast({ title: "Erro ao remover", variant: "destructive" });
+      toast.error("Erro ao remover");
     }
   };
 
@@ -1406,10 +774,7 @@ export default function Admin() {
                 Clique ou arraste PDFs aqui
               </span>
               <span className="text-xs text-muted-foreground">
-                PDFs oficiais de diferentes origens, com extracao inicial local no navegador
-              </span>
-              <span className="text-[11px] text-muted-foreground/80 text-center max-w-xl mt-1">
-                Nesta fase, o painel aceita PDFs do jeito mais simples possivel. Na migracao do backend proprio, o fluxo sera preparado para upload mais robusto e leitura complementar quando um arquivo vier com estrutura mais dificil.
+                Apenas arquivos PDF — processamento local no navegador
               </span>
               <input
                 type="file"
@@ -1485,8 +850,6 @@ export default function Admin() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead className="w-[230px]">Classificacao</TableHead>
-                    <TableHead className="w-[180px]">Busca</TableHead>
                     <TableHead className="w-[220px]">Status</TableHead>
                     <TableHead className="w-[100px]" />
                   </TableRow>
@@ -1494,60 +857,7 @@ export default function Admin() {
                 <TableBody>
                   {documents.map((doc) => (
                     <TableRow key={doc.id}>
-                      <TableCell className="font-medium">
-                        <div className="space-y-2">
-                          <p>{doc.name}</p>
-                          {getDocumentMetadata(doc).tags?.length ? (
-                            <div className="flex flex-wrap gap-1">
-                              {getDocumentMetadata(doc).tags?.slice(0, 3).map((tag) => (
-                                <span
-                                  key={`${doc.id}-${tag}`}
-                                  className="rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                            {KNOWLEDGE_TOPIC_SCOPE_LABELS[getDocumentTopicScope(doc)]}
-                          </span>
-                          {getDocumentKindLabel(doc) ? (
-                            <span className="rounded-full border border-border bg-muted px-2 py-1 text-xs text-muted-foreground">
-                              {getDocumentKindLabel(doc)}
-                            </span>
-                          ) : null}
-                          {getDocumentAuthorityLabel(doc) ? (
-                            <span className="rounded-full border border-border bg-background px-2 py-1 text-xs text-foreground/80">
-                              {getDocumentAuthorityLabel(doc)}
-                            </span>
-                          ) : null}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <p
-                            className={`text-sm font-medium ${
-                              doc.is_active === false ? "text-amber-700 dark:text-amber-400" : "text-emerald-700 dark:text-emerald-400"
-                            }`}
-                          >
-                            {getChatVisibilityLabel(doc)}
-                          </p>
-                          {getDocumentMetadata(doc).excluded_from_chat_reason ? (
-                            <p className="text-xs text-muted-foreground">
-                              Motivo: {getDocumentMetadata(doc).excluded_from_chat_reason}
-                            </p>
-                          ) : (
-                            <p className="text-xs text-muted-foreground">
-                              Prioridade definida pela classificacao automatica do acervo.
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
+                      <TableCell className="font-medium">{doc.name}</TableCell>
                       <TableCell>
                         <span
                           className={`flex items-center gap-2 text-sm ${
@@ -1631,20 +941,7 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        <Suspense
-          fallback={
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Metricas agregadas da CLARA</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Carregando painel analitico...</p>
-              </CardContent>
-            </Card>
-          }
-        >
-          <UsageStatsCard />
-        </Suspense>
+        <UsageStatsCard />
       </div>
     </div>
   );

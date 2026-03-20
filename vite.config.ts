@@ -1,8 +1,10 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react-swc";
+import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { componentTagger } from "lovable-tagger";
 
-export default defineConfig(() => ({
+export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
@@ -12,6 +14,8 @@ export default defineConfig(() => ({
   },
   plugins: [
     react(),
+    tailwindcss(),
+    mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -20,64 +24,16 @@ export default defineConfig(() => ({
   },
   build: {
     target: "esnext",
+    minify: "esbuild",
     cssMinify: true,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (!id.includes("node_modules")) {
-            return undefined;
-          }
-
-          if (
-            id.includes("@react-pdf")
-          ) {
-            return "react-pdf-vendor";
-          }
-
-          if (id.includes("pdfjs")) {
-            return "pdfjs-vendor";
-          }
-
-          if (id.includes("unpdf")) {
-            return "unpdf-vendor";
-          }
-
-          if (
-            id.includes("react-dom") ||
-            id.includes("/react/") ||
-            id.includes("react-router-dom")
-          ) {
-            return "react-vendor";
-          }
-
-          if (
-            id.includes("@supabase") ||
-            id.includes("@tanstack") ||
-            id.includes("zod")
-          ) {
-            return "data-vendor";
-          }
-
-          if (id.includes("@radix-ui")) {
-            return "radix-vendor";
-          }
-
-          if (
-            id.includes("motion") ||
-            id.includes("lenis") ||
-            id.includes("lucide-react")
-          ) {
-            return "ui-vendor";
-          }
-
-          if (
-            id.includes("@langchain") ||
-            id.includes("react-markdown")
-          ) {
-            return "content-vendor";
-          }
-
-          return "vendor";
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-ui": ["@radix-ui/react-dialog", "@radix-ui/react-tooltip", "@radix-ui/react-popover"],
+          "vendor-motion": ["motion"],
+          "vendor-query": ["@tanstack/react-query"],
+          "vendor-supabase": ["@supabase/supabase-js"],
         },
       },
     },
