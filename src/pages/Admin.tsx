@@ -57,6 +57,7 @@ const langChainSplitter = new RecursiveCharacterTextSplitter({
 });
 
 async function splitWithLangChain(rawText: string): Promise<string[]> {
+  // eslint-disable-next-line no-control-regex
   const normalized = rawText.replace(/\u0000/g, "").trim();
   const chunks = await langChainSplitter.splitText(normalized);
   return chunks.filter((c) => c.trim().length >= 3);
@@ -104,8 +105,8 @@ async function extractTextFromPDF(
 
 const RETRY_DELAYS = [500, 1500, 3000];
 
-function isTransientError(error: any): boolean {
-  const msg = String(error?.message || error || "").toLowerCase();
+function isTransientError(error: unknown): boolean {
+  const msg = String(error instanceof Error ? error.message : (error || "")).toLowerCase();
   // Network failures
   if (msg.includes("fetch") || msg.includes("network") || msg.includes("failed to fetch") || msg.includes("aborted")) {
     return true;
@@ -129,16 +130,16 @@ async function withRetry<T>(
   opts: { retries?: number; signal?: AbortSignal } = {}
 ): Promise<T> {
   const { retries = 3, signal } = opts;
-  let lastErr: any;
+  let lastErr: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (signal?.aborted) throw new Error("Cancelado pelo usuário");
     try {
       return await fn();
-    } catch (err: any) {
+    } catch (err: unknown) {
       lastErr = err;
       if (attempt < retries && isTransientError(err) && !signal?.aborted) {
         const delay = RETRY_DELAYS[attempt] || 3000;
-        console.warn(`Retry ${attempt + 1}/${retries} after ${delay}ms:`, err.message);
+        console.warn(`Retry ${attempt + 1}/${retries} after ${delay}ms:`, err instanceof Error ? err.message : err);
         await new Promise((r) => setTimeout(r, delay));
       } else {
         throw err;
@@ -182,9 +183,7 @@ async function embedBatchWithRetry(
       const code = fnData?.error || "UNKNOWN";
       if (isValidationError(code)) {
         // Don't retry validation errors
-        const err = new Error(`Validação: ${code}`);
-        (err as any).noRetry = true;
-        throw err;
+        throw new Error(`Validação: ${code}`);
       }
       throw new Error(`EMBED_APP_ERROR: ${code} (req: ${fnData?.request_id || "?"})`);
     }
@@ -208,7 +207,7 @@ async function getExistingChunkIndexes(documentId: string): Promise<Set<number>>
     .from("document_chunks")
     .select("chunk_index")
     .eq("document_id", documentId);
-  return new Set((data || []).map((r: any) => r.chunk_index));
+  return new Set((data || []).map((r: { chunk_index: number }) => r.chunk_index));
 }
 
 export default function Admin() {
@@ -327,13 +326,14 @@ export default function Admin() {
 
       try {
         await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`Batch at index ${batchStartIndex} failed after retries:`, err);
+        const errMsg = err instanceof Error ? err.message : String(err);
         updateIngestion(fileName, {
           lastError: {
-            message: err.message,
+            message: errMsg,
             chunkIndex: batchStartIndex,
-            code: err.message.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
+            code: errMsg.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
           },
         });
         // Don't throw — move to verification
@@ -453,7 +453,7 @@ export default function Admin() {
         .single();
 
       if (docErr || !doc) throw new Error("Falha ao registrar documento");
-      const documentId = (doc as any).id;
+      const documentId = (doc as { id: string }).id;
 
       if (abortController.signal.aborted) {
         await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
@@ -499,14 +499,15 @@ export default function Admin() {
       }
 
       fetchDocuments();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Falha desconhecida";
       console.error("Client-side ingestion error:", err);
       updateIngestion(file.name, {
         status: "failed",
-        phaseLabel: `Erro: ${err.message || "Falha desconhecida"}`,
-        lastError: { message: err.message },
+        phaseLabel: `Erro: ${errMsg}`,
+        lastError: { message: errMsg },
       });
-      toast.error("Erro no processamento", { description: err.message });
+      toast.error("Erro no processamento", { description: errMsg });
       fetchDocuments();
     }
   };
@@ -637,8 +638,8 @@ export default function Admin() {
       setTimeout(() => {
         setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
       }, 5000);
-    } catch (err: any) {
-      toast.error("Erro ao reprocessar", { description: err.message });
+    } catch (err: unknown) {
+      toast.error("Erro ao reprocessar", { description: err instanceof Error ? err.message : "Erro desconhecido" });
       await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
       fetchDocuments();
     } finally {
