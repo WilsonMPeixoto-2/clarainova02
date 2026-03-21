@@ -6,7 +6,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminUploadCard from "@/components/admin/AdminUploadCard";
 import type { Document, IngestionState, IngestionStatus } from "@/components/admin/admin-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from "@/integrations/supabase/client";
 
 const AdminDocumentsCard = lazy(() => import("@/components/admin/AdminDocumentsCard"));
 const UsageStatsCard = lazy(() => import("@/components/UsageStatsCard"));
@@ -144,6 +144,11 @@ export default function Admin() {
   const prevStatusRef = useRef<Record<string, string>>({});
 
   const fetchDocuments = useCallback(async () => {
+    if (!hasSupabaseConfig) {
+      setDocuments([]);
+      return;
+    }
+
     const { data } = await supabase
       .from("documents")
       .select("*")
@@ -153,6 +158,8 @@ export default function Admin() {
   }, []);
 
   useEffect(() => {
+    if (!hasSupabaseConfig) return;
+
     fetchDocuments();
     const interval = setInterval(fetchDocuments, 5000);
     return () => clearInterval(interval);
@@ -647,6 +654,27 @@ export default function Admin() {
   const isBusy = ingestions.some((ingestion) => (
     ingestion.status === "vectorizing" || ingestion.status === "extracting" || ingestion.status === "verifying"
   ));
+
+  if (!hasSupabaseConfig) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <AdminPageHeader onSignOut={() => {}} />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Painel administrativo em preparação</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>{SUPABASE_UNAVAILABLE_MESSAGE}</p>
+              <p>
+                Assim que o novo projeto Supabase estiver ligado, este painel volta a exibir documentos, ingestões, autenticação e métricas reais.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
