@@ -108,6 +108,10 @@ function getCurrentDateString() {
   }).format(new Date());
 }
 
+function getCurrentYearString() {
+  return new Date().getFullYear().toString();
+}
+
 function buildConfidenceLabel(value: number | null) {
   if (value == null) return null;
   if (value >= 0.86) return 'confianca alta';
@@ -578,5 +582,117 @@ export function buildMockStructuredResponse(question: string): ClaraStructuredRe
     termosDestacados: topic.highlights,
     referenciasFinais: topic.references,
     analiseDaResposta: topic.analysis,
+  };
+}
+
+export function buildPreviewStructuredResponse(question: string): ClaraStructuredResponse {
+  const normalizedQuestion = question.trim() || 'Como a CLARA vai operar quando a base estiver religada?';
+  const base = buildMockStructuredResponse(normalizedQuestion);
+
+  return {
+    ...base,
+    tituloCurto: 'Modo de preparacao da CLARA',
+    resumoInicial: `A interface conversacional esta ativa, mas a integracao definitiva com o novo Supabase ainda sera religada. A resposta abaixo funciona como uma demonstracao local do formato que a CLARA vai entregar para a pergunta "${normalizedQuestion}".`,
+    resumoCitacoes: [],
+    etapas: [
+      {
+        numero: 1,
+        titulo: 'Pergunta registrada com sucesso',
+        conteudo: `Sua consulta foi capturada no painel e usada para montar uma resposta demonstrativa da experiencia da CLARA: "${normalizedQuestion}".`,
+        itens: [
+          'A interface continua pronta para receber linguagem natural.',
+          'O foco desta fase e validar layout, ritmo e legibilidade da resposta.',
+        ],
+        destaques: ['Painel ativo', 'Pergunta registrada'],
+        alerta: null,
+        citacoes: [],
+      },
+      {
+        numero: 2,
+        titulo: 'Formato estrutural ja esta valendo',
+        conteudo: 'Mesmo sem a base conectada, a CLARA ja organiza o retorno em blocos, etapas, destaques e observacoes para facilitar leitura operacional.',
+        itens: [
+          'Resumo inicial orientado a leitura rapida.',
+          'Etapas separadas por acao e verificacao.',
+          'Espaco para cautelas, referencias e notas finais.',
+        ],
+        destaques: ['Resposta estruturada', 'Leitura escaneavel', 'UX pronta para RAG'],
+        alerta: 'Quando o Supabase voltar, os blocos passarao a refletir a consulta documental real da base.',
+        citacoes: [],
+      },
+      {
+        numero: 3,
+        titulo: 'Proxima fase: religar a inteligencia documental',
+        conteudo: 'O proximo salto sera acoplar novamente a base semantica, as referencias efetivas e os metadados operacionais ao fluxo visual que voce ja esta vendo agora.',
+        itens: [
+          'Reconectar variaveis e secrets do novo projeto.',
+          'Reativar functions e ingestao documental.',
+          'Validar respostas com referencias finais e telemetria.',
+        ],
+        destaques: ['Supabase', 'Edge functions', 'RAG documental'],
+        alerta: null,
+        citacoes: [],
+      },
+    ],
+    observacoesFinais: [
+      'Modo de preparacao ativo: esta resposta demonstra a forma de interacao da CLARA e nao uma consulta final baseada na base oficial.',
+      'Quando a nova infraestrutura estiver conectada, a CLARA voltara a priorizar documentos reais e referencias aderentes ao contexto.',
+      ...base.observacoesFinais,
+    ],
+    termosDestacados: [
+      { texto: 'Modo de preparacao', tipo: 'atencao' },
+      { texto: 'Experiencia conversacional', tipo: 'conceito' },
+      { texto: 'Religacao do Supabase', tipo: 'acao' },
+      ...base.termosDestacados,
+    ].slice(0, 8),
+    referenciasFinais: [
+      {
+        id: 1,
+        tipo: 'outro',
+        autorEntidade: 'CLARA',
+        titulo: 'Preview local da experiencia conversacional',
+        subtitulo: 'Modo de preparacao antes da religacao do backend',
+        local: 'Web',
+        editoraOuOrgao: 'Projeto CLARA',
+        ano: getCurrentYearString(),
+        paginas: null,
+        url: null,
+        dataAcesso: getCurrentDateString(),
+      },
+    ],
+    analiseDaResposta: {
+      ...base.analiseDaResposta,
+      questionUnderstandingConfidence: null,
+      finalConfidence: null,
+      answerScopeMatch: 'probable',
+      ambiguityInSources: false,
+      internalExpansionPerformed: false,
+      webFallbackUsed: false,
+      userNotice: 'A superficie do produto esta pronta e a resposta foi gerada localmente para demonstrar o comportamento da CLARA enquanto a base definitiva e reconfigurada.',
+      cautionNotice: 'Use este retorno como demonstracao de produto e de UX. A consulta documental final voltara quando o novo backend estiver conectado.',
+      ambiguityReason: null,
+      comparedSources: ['Preview local da experiencia conversacional'],
+      prioritizedSources: ['Preview local da experiencia conversacional'],
+      processStates: [
+        {
+          id: 'preview-mode',
+          titulo: 'Modo de preparacao',
+          descricao: 'A interface esta ativa e a resposta foi montada localmente para validar experiencia, estrutura e legibilidade.',
+          status: 'informativo',
+        },
+        {
+          id: 'surface-ready',
+          titulo: 'Superficie pronta para uso',
+          descricao: 'Hero, navegacao, painel lateral e leitura estruturada ja estao funcionando como produto.',
+          status: 'concluido',
+        },
+        {
+          id: 'backend-next',
+          titulo: 'Religacao do backend como proxima etapa',
+          descricao: 'A proxima acao e reconectar variaveis, functions e base vetorial no novo projeto Supabase.',
+          status: 'cautela',
+        },
+      ],
+    },
   };
 }

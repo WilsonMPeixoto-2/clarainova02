@@ -6,7 +6,10 @@ import {
   MessageCircle,
   Minimize2,
   PanelRightOpen,
+  Radar,
   Send,
+  ShieldCheck,
+  Sparkles,
   Trash2,
   X,
 } from 'lucide-react';
@@ -24,6 +27,24 @@ const STARTER_PROMPTS = [
   'Como montar um bloco de assinatura para outra unidade?',
   'Como enviar um processo para mais de uma unidade?',
   'Quais etapas devo conferir antes de encaminhar um processo?',
+];
+
+const PREVIEW_STATUS_CARDS = [
+  {
+    icon: Sparkles,
+    title: 'Superfície pronta',
+    description: 'Hero, navegação, painel lateral e leitura estruturada já estão ativos.',
+  },
+  {
+    icon: Radar,
+    title: 'Fluxo em preparação',
+    description: 'A experiência está pronta para receber a religação do backend e da base semântica.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Comunicação honesta',
+    description: 'O painel deixa claro quando a resposta é demonstração e quando estiver ligada à base real.',
+  },
 ];
 
 type ChatPanelMode = 'default' | 'expanded' | 'fullscreen';
@@ -57,7 +78,19 @@ function formatSessionTitle(question: string) {
 }
 
 const ChatSheet = () => {
-  const { isOpen, messages, pendingQuestion, isLoading, isStreaming, closeChat, sendMessage, clearMessages } = useChat();
+  const {
+    isOpen,
+    messages,
+    pendingQuestion,
+    isLoading,
+    isStreaming,
+    runtimeMode,
+    runtimeLabel,
+    runtimeDescription,
+    closeChat,
+    sendMessage,
+    clearMessages,
+  } = useChat();
   const isMobile = useIsMobile();
   const [input, setInput] = useState('');
   const [panelMode, setPanelMode] = useState<ChatPanelMode>('default');
@@ -177,6 +210,13 @@ const ChatSheet = () => {
 
   const assistantMessageMaxWidth = isMobile ? 'max-w-[96%]' : 'max-w-[94%]';
   const activeLoadingPhase = LOADING_PHASES[loadingPhaseIndex];
+  const isPreviewMode = runtimeMode === 'preview';
+  const isMockMode = runtimeMode === 'mock';
+  const inputPlaceholder = isPreviewMode
+    ? 'Pergunte e veja a CLARA responder em modo de preparação...'
+    : isMockMode
+      ? 'Pergunte e teste o mock local da CLARA...'
+      : 'Pergunte sobre etapas, documentos ou tramitação...';
 
   return (
     <>
@@ -216,7 +256,7 @@ const ChatSheet = () => {
                   <p className="text-sm font-semibold text-foreground">CLARA</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-[11px] text-muted-foreground">Apoio ao SEI-Rio</p>
-                    <span className="chat-status-pill">Base interna priorizada</span>
+                    <span className="chat-status-pill" data-mode={runtimeMode}>{runtimeLabel}</span>
                   </div>
                 </div>
               </div>
@@ -285,15 +325,45 @@ const ChatSheet = () => {
 
             <ScrollArea className="flex-1">
               <div className="px-4 py-4 space-y-4 md:px-5">
+                {runtimeMode !== 'online' && (
+                  <section className="chat-runtime-banner" data-mode={runtimeMode} aria-label={runtimeLabel}>
+                    <div className="chat-runtime-banner-head">
+                      <span className="chat-runtime-banner-badge">{runtimeLabel}</span>
+                      <span className="chat-runtime-banner-kicker">CLARA / estado atual</span>
+                    </div>
+                    <p className="chat-runtime-banner-copy">{runtimeDescription}</p>
+                  </section>
+                )}
+
                 {messages.length === 0 && !isLoading && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-14 h-14 rounded-full border border-primary/25 bg-primary/5 flex items-center justify-center mb-4">
+                  <div className="chat-empty-state">
+                    <div className="chat-empty-avatar">
                       <MessageCircle className="w-6 h-6 text-primary/60" />
                     </div>
-                    <p className="text-sm font-medium text-foreground mb-1">Ola! Sou a CLARA.</p>
-                    <p className="text-xs text-muted-foreground max-w-[28ch]">
-                      Faca uma pergunta sobre etapas, documentos, assinatura ou tramitacao no SEI-Rio.
+                    <p className="chat-empty-kicker">{runtimeLabel}</p>
+                    <p className="chat-empty-title">CLARA pronta para conversar.</p>
+                    <p className="chat-empty-copy">
+                      {isPreviewMode
+                        ? 'Enquanto a nova integração Supabase é preparada, você já pode explorar o formato de resposta, o ritmo de leitura e a superfície conversacional da CLARA.'
+                        : 'Faça uma pergunta sobre etapas, documentos, assinatura ou tramitação no SEI-Rio.'}
                     </p>
+
+                    {isPreviewMode && (
+                      <div className="chat-empty-status-grid">
+                        {PREVIEW_STATUS_CARDS.map((card) => (
+                          <article key={card.title} className="chat-empty-status-card">
+                            <span className="chat-empty-status-icon" aria-hidden="true">
+                              <card.icon className="w-4 h-4" />
+                            </span>
+                            <div>
+                              <p className="chat-empty-status-title">{card.title}</p>
+                              <p className="chat-empty-status-description">{card.description}</p>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="chat-starter-grid mt-5">
                       {STARTER_PROMPTS.map((prompt) => (
                         <button
@@ -365,7 +435,7 @@ const ChatSheet = () => {
                   type="text"
                   value={input}
                   onChange={(event) => setInput(event.target.value)}
-                  placeholder="Pergunte sobre etapas, documentos ou tramitacao..."
+                  placeholder={inputPlaceholder}
                   className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-2"
                   disabled={isLoading}
                 />
@@ -380,11 +450,13 @@ const ChatSheet = () => {
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                 <p className="text-[10px] text-muted-foreground/60">
-                  Respostas preferencialmente organizadas em blocos, com fontes ao final quando houver base suficiente.
+                  {isPreviewMode
+                    ? 'Modo de preparação: o painel demonstra a experiência conversacional e a estrutura da resposta antes da religação definitiva da base.'
+                    : 'Respostas preferencialmente organizadas em blocos, com fontes ao final quando houver base suficiente.'}
                 </p>
                 {!isMobile && (
                   <span className="text-[10px] text-muted-foreground/50">
-                    Painel padrao: metade da tela
+                    {panelMode === 'default' ? 'Painel padrão: metade da tela' : 'Painel expandido para leitura operacional'}
                   </span>
                 )}
               </div>

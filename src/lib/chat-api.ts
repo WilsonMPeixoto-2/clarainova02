@@ -1,14 +1,16 @@
 import {
   buildMockStructuredResponse,
+  buildPreviewStructuredResponse,
   renderStructuredResponseToPlainText,
   safeParseClaraStructuredEnvelope,
   tryParseClaraStructuredEnvelopeFromText,
   type ClaraStructuredResponse,
 } from '@/lib/clara-response';
 import {
-  getChatConfigurationErrorMessage,
+  getChatRuntimeMode,
   isChatBackendConfigured,
   isChatMockEnabled,
+  type ChatRuntimeMode,
 } from '@/lib/chat-runtime';
 
 export interface ChatTransportMessage {
@@ -36,23 +38,32 @@ export interface ChatApiConfig {
   supabasePublishableKey?: string;
   backendConfigured: boolean;
   mockEnabled: boolean;
+  runtimeMode: ChatRuntimeMode;
   mockDelayMs?: number;
 }
 
 export function getDefaultChatApiConfig(): ChatApiConfig {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const backendConfigured = isChatBackendConfigured({
+    VITE_SUPABASE_URL: supabaseUrl,
+    VITE_SUPABASE_PUBLISHABLE_KEY: supabasePublishableKey,
+  });
+  const mockEnabled = isChatMockEnabled({
+    DEV: import.meta.env.DEV,
+    VITE_ENABLE_CHAT_MOCK: import.meta.env.VITE_ENABLE_CHAT_MOCK,
+  });
 
   return {
     supabaseUrl,
     supabasePublishableKey,
-    backendConfigured: isChatBackendConfigured({
-      VITE_SUPABASE_URL: supabaseUrl,
-      VITE_SUPABASE_PUBLISHABLE_KEY: supabasePublishableKey,
-    }),
-    mockEnabled: isChatMockEnabled({
+    backendConfigured,
+    mockEnabled,
+    runtimeMode: getChatRuntimeMode({
       DEV: import.meta.env.DEV,
       VITE_ENABLE_CHAT_MOCK: import.meta.env.VITE_ENABLE_CHAT_MOCK,
+      VITE_SUPABASE_URL: supabaseUrl,
+      VITE_SUPABASE_PUBLISHABLE_KEY: supabasePublishableKey,
     }),
   };
 }
@@ -70,17 +81,31 @@ export function getMockChatResult(question: string, delayMs = 0): Promise<ChatRe
   });
 }
 
+export function getPreviewChatResult(question: string, delayMs = 0): Promise<ChatRequestResult> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const response = buildPreviewStructuredResponse(question);
+      resolve({
+        kind: 'structured',
+        response,
+        plainText: renderStructuredResponseToPlainText(response),
+      });
+    }, delayMs);
+  });
+}
+
 export async function requestChat(
   messages: ChatTransportMessage[],
   config: ChatApiConfig,
 ): Promise<ChatRequestResult> {
   if (!config.backendConfigured) {
-    if (config.mockEnabled) {
-      const lastQuestion = [...messages].reverse().find((message) => message.role === 'user')?.content ?? '';
+    const lastQuestion = [...messages].reverse().find((message) => message.role === 'user')?.content ?? '';
+
+    if (config.runtimeMode === 'mock') {
       return getMockChatResult(lastQuestion, config.mockDelayMs ?? (650 + Math.random() * 450));
     }
 
-    throw new Error(getChatConfigurationErrorMessage());
+    return getPreviewChatResult(lastQuestion, config.mockDelayMs ?? (780 + Math.random() * 520));
   }
 
   const url = `${config.supabaseUrl}/functions/v1/chat`;

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Menu, X, MessageCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Menu, MessageCircle, Orbit, X } from 'lucide-react';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { Link, useLocation } from 'react-router-dom';
 import { useChat } from '@/hooks/useChatStore';
@@ -18,6 +18,7 @@ const Header = () => {
   const { openChat } = useChat();
 
   const primaryLinks: NavItem[] = [
+    { label: 'Arquitetura', to: '/#sistema', note: 'Como a CLARA organiza a experiência' },
     { label: 'Funcionalidades', to: '/#conhecimento', note: 'O que a CLARA ajuda a fazer' },
     { label: 'Perguntas frequentes', to: '/#faq', note: 'Uso, limites e respostas rápidas' },
   ];
@@ -41,50 +42,79 @@ const Header = () => {
     return false;
   };
 
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [menuOpen]);
+
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-[220ms] ${
           isScrolled
-            ? 'bg-[linear-gradient(180deg,hsl(var(--surface-1)/0.92),hsl(var(--surface-1)/0.78))] backdrop-blur-xl border-b border-[hsl(var(--border-subtle))] shadow-[0_20px_50px_hsl(var(--shadow)/0.32)]'
+            ? 'site-header-frame is-scrolled'
             : 'bg-transparent border-b border-transparent'
         }`}
         role="banner"
       >
         <div className="container mx-auto max-w-[1580px] px-4 md:px-6 xl:px-8">
-          <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(260px,1fr)_auto] md:gap-5">
+          <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(250px,auto)_1fr_auto] md:gap-6">
             <Link
               to="/"
               className="header-brand-link inline-flex items-center gap-3 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[320px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
             >
               <span
-                className="inline-flex items-center justify-center w-10 h-10 rounded-[1.15rem] border border-primary/35 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--gold-2)/0.58),transparent_55%),linear-gradient(135deg,hsl(var(--gold-1)/0.18),hsl(var(--gold-2)/0.28))] text-primary text-lg font-bold tracking-tight shadow-[0_0_24px_hsl(var(--glow)/0.18)]"
+                className="header-brand-mark"
                 aria-hidden="true"
               >
-                C
+                <Orbit size={18} />
               </span>
               <span className="header-brand-block hidden sm:grid">
                 <span className="header-brand-overline">
-                  Inovação pública · apoio ao SEI-Rio
+                  Institucional premium · linguagem futurista
                 </span>
                 <span className="header-brand-title">
                   CLARA
                 </span>
                 <span className="hidden md:block header-brand-subtitle">
-                  Assistente para dúvidas sobre o uso do SEI-Rio.
+                  Camada conversacional para navegar o SEI-Rio com mais clareza.
                 </span>
               </span>
               <span className="sr-only">CLARA - Página inicial</span>
             </Link>
 
+            <nav className="header-desktop-nav" aria-label="Seções principais">
+              {primaryLinks.map((link) => {
+                const target = link.to ?? link.href ?? '/';
+                const isActive = isActiveLink(target);
+
+                return (
+                  <Link
+                    key={link.label}
+                    to={link.to ?? '/'}
+                    className={`header-nav-link ${isActive ? 'is-active' : ''}`}
+                  >
+                    <span className="header-nav-label">{link.label}</span>
+                    <span className="header-nav-note">{link.note}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
             <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-2.5 shrink-0 md:justify-self-end">
               <button
                 type="button"
-                className="header-pill header-pill-action"
+                className="header-pill header-pill-action header-chat-pill"
                 onClick={() => openChat()}
               >
                 <MessageCircle size={16} aria-hidden="true" />
-                Iniciar chat
+                Abrir CLARA
               </button>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
@@ -119,7 +149,7 @@ const Header = () => {
         <div className="drawer-header-surface flex items-center justify-between px-6 py-5 border-b">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-primary/35 bg-primary/10 text-primary text-xs font-semibold" aria-hidden="true">
-              C
+              <Orbit size={15} />
             </span>
             <div>
               <p className="text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Navegação</p>

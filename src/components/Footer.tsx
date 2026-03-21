@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const footerSignals = ['Interface premium', 'Chat lateral', 'Leitura estruturada', 'RAG em próxima etapa'];
 
   return (
     <footer className="footer-premium-shell py-16 md:py-20 border-t border-[hsl(var(--border-subtle))]" role="contentinfo">
@@ -12,8 +13,14 @@ const Footer = () => {
             <p className="footer-brand-kicker">CLARA / apoio ao SEI-Rio</p>
             <span className="footer-brand-title">CLARA</span>
             <p className="text-sm text-muted-foreground max-w-xl">
-              Ferramenta de apoio para dúvidas frequentes sobre o uso do SEI-Rio.
+              Produto conversacional para dúvidas frequentes sobre o uso do SEI-Rio, com linguagem visual própria e leitura operacional.
             </p>
+
+            <div className="footer-signal-row" aria-label="Sinais do produto">
+              {footerSignals.map((signal) => (
+                <span key={signal} className="footer-signal-chip">{signal}</span>
+              ))}
+            </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
               <a href="mailto:wilsonmp2@gmail.com" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">

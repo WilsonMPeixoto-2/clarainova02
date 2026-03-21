@@ -24,21 +24,22 @@ const FAQSection = () => {
                   FAQ
                 </span>
                 <h2 id="faq-heading" className="text-h2 mt-4">
-                  <Balancer>Uso e limites da CLARA</Balancer>
+                  <Balancer>Uso, limites e postura operacional da CLARA</Balancer>
                 </h2>
                 <p className="text-body mt-3 max-w-3xl">
                   <Balancer>
-                    Informações rápidas sobre escopo, funcionamento e cuidados de uso.
+                    A beleza da interface não muda o compromisso central: orientar melhor, sem esconder limites nem substituir validação humana.
                   </Balancer>
                 </p>
               </div>
 
               <div className="faq-note-card">
-                <p className="faq-note-kicker">Importante</p>
+                <p className="faq-note-kicker">Protocolo de uso</p>
+                <p className="faq-note-title">Como obter respostas melhores com segurança</p>
                 <ul className="faq-note-list">
-                  <li>A CLARA apoia o uso do SEI-Rio, mas não substitui validação formal da unidade.</li>
-                  <li>O foco está em tarefas operacionais e em respostas claras e organizadas.</li>
-                  <li>Quando houver dúvida normativa, a orientação oficial continua sendo a referência final.</li>
+                  <li>Descreva a tarefa ou a tela com o máximo de precisão possível.</li>
+                  <li>Use a CLARA para preparar a ação, revisar o caminho e reduzir fricção operacional.</li>
+                  <li>Quando houver dúvida normativa ou decisória, a referência final continua sendo o fluxo oficial da unidade.</li>
                 </ul>
               </div>
             </div>
