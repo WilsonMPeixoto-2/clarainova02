@@ -1,4 +1,4 @@
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -20,7 +20,7 @@ const FAQSection = () => {
             <div className="faq-intro-grid">
               <div className="faq-header">
                 <span className="knowledge-kicker">
-                  <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                  <ShieldCheck weight="duotone" size={14} className="w-3.5 h-3.5" aria-hidden="true" />
                   FAQ
                 </span>
                 <h2 id="faq-heading" className="text-h2 mt-4">

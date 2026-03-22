@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
+import { SoftWaveDivider } from "@/components/animations/SoftWaveDivider";
 import FAQSection from "@/components/FAQSection";
 import Footer from "@/components/Footer";
 import { useChat } from "@/hooks/useChatStore";
@@ -42,6 +43,7 @@ const IndexContent = () => {
       <Header />
       <main id="main-content" className="site-main-canvas">
         <HeroSection />
+        <SoftWaveDivider />
         <FeaturesSection />
         <FAQSection />
       </main>

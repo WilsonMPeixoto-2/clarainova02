@@ -1,12 +1,8 @@
+import HeroBackgroundOGL from '@/components/animations/HeroBackgroundOGL';
+import { AnimatedShinyText } from '@/components/magicui/animated-shiny-text';
 import { useCallback, useEffect, useRef, useSyncExternalStore, type MouseEvent } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
-import {
-  ArrowRight,
-  BookOpen,
-  ChevronLeft,
-  ChevronRight,
-  MessageCircle,
-} from 'lucide-react';
+import { ArrowRight, BookOpen, CaretLeft, CaretRight, ChatCircle } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
 import { Link } from 'react-router-dom';
 
@@ -170,30 +166,7 @@ const HeroSection = () => {
             transition={shouldAnimate ? { duration: 1.08, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
             style={shouldAnimate ? { y: mediaParallaxY } : undefined}
           >
-            {useVideoHero ? (
-              <video
-                src={currentVideoSrc}
-                poster={heroPoster}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="auto"
-                className="hero-video-layer is-active hero-media-backdrop"
-              />
-            ) : (
-              <picture className="hero-backdrop-picture">
-                <source type="image/avif" srcSet={claraHeroPremiumAvif} />
-                <source type="image/webp" srcSet={claraHeroPremiumWebp} />
-                <img
-                  src={heroPoster}
-                  alt=""
-                  className="hero-clara-video hero-media-backdrop"
-                  fetchPriority="high"
-                  decoding="async"
-                />
-              </picture>
-            )}
+            <HeroBackgroundOGL />
           </motion.div>
         </div>
 
@@ -209,7 +182,7 @@ const HeroSection = () => {
               className="hero-copy-surface"
             >
               <motion.div variants={itemVariants} className="hero-chip-row">
-                <span className="badge-chip">Apoio ao SEI-Rio</span>
+                <AnimatedShinyText><span className="badge-chip">Apoio ao SEI-Rio</span></AnimatedShinyText>
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-editorial-stack">
@@ -234,9 +207,9 @@ const HeroSection = () => {
                   onMouseMove={handleMagneticMove}
                   onMouseLeave={handleMagneticLeave}
                 >
-                  <MessageCircle size={18} aria-hidden="true" />
+                  <ChatCircle weight="duotone" size={18} aria-hidden="true" />
                   Iniciar chat com a CLARA
-                  <ArrowRight size={18} aria-hidden="true" />
+                  <ArrowRight weight="bold" size={18} aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => {
@@ -247,7 +220,7 @@ const HeroSection = () => {
                   onMouseMove={handleMagneticMove}
                   onMouseLeave={handleMagneticLeave}
                 >
-                  <BookOpen size={18} aria-hidden="true" />
+                  <BookOpen weight="duotone" size={18} aria-hidden="true" />
                   Ver funcionalidades
                 </button>
               </motion.div>
@@ -275,7 +248,7 @@ const HeroSection = () => {
                         onClick={() => scrollQuickCarousel('prev')}
                         aria-label="Ver pergunta anterior"
                       >
-                        <ChevronLeft size={16} aria-hidden="true" />
+                        <CaretLeft weight="bold" size={16} aria-hidden="true" />
                       </button>
                       <button
                         type="button"
@@ -283,7 +256,7 @@ const HeroSection = () => {
                         onClick={() => scrollQuickCarousel('next')}
                         aria-label="Ver próxima pergunta"
                       >
-                        <ChevronRight size={16} aria-hidden="true" />
+                        <CaretRight weight="bold" size={16} aria-hidden="true" />
                       </button>
                     </div>
                   </div>

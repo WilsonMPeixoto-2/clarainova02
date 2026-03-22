@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, MessageCircle } from 'lucide-react';
+import { List, X, ChatCircle } from '@phosphor-icons/react';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { Link, useLocation } from 'react-router-dom';
 import { useChat } from '@/hooks/useChatStore';
@@ -77,13 +77,41 @@ const Header = () => {
               <span className="sr-only">CLARA - Página inicial</span>
             </Link>
 
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6 justify-self-center">
+              <nav className="flex items-center gap-5">
+                {primaryLinks.filter(l => l.label !== 'Funcionalidades').map((link) => (
+                  <Link
+                    key={link.label}
+                    to={link.to ?? '/'}
+                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors duration-200"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="h-4 w-px bg-border/40" aria-hidden="true" />
+              <nav className="flex items-center gap-4">
+                {secondaryLinks.map((link) => {
+                  const target = link.to ?? link.href ?? '/';
+                  const baseClasses = "text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200";
+                  return link.to ? (
+                    <Link key={link.label} to={link.to} className={baseClasses}>{link.label}</Link>
+                  ) : (
+                    <a key={link.label} href={link.href} className={baseClasses}>{link.label}</a>
+                  );
+                })}
+              </nav>
+            </div>
+  
             <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-2.5 shrink-0 md:justify-self-end">
               <button
                 type="button"
                 className="header-pill header-pill-action"
                 onClick={() => openChat()}
               >
-                <MessageCircle size={16} aria-hidden="true" />
+                <ChatCircle weight="duotone" size={16} aria-hidden="true" />
                 Iniciar chat
               </button>
               <button
@@ -93,7 +121,7 @@ const Header = () => {
                 aria-expanded={menuOpen}
                 aria-controls="site-menu"
               >
-                {menuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+                {menuOpen ? <X size={18} weight="bold" aria-hidden="true" /> : <List weight="bold" size={18} aria-hidden="true" />}
                 <span className="hidden sm:inline text-[11px] uppercase tracking-[0.08em] font-semibold">
                   {menuOpen ? 'Fechar' : 'Menu'}
                 </span>
@@ -131,7 +159,7 @@ const Header = () => {
             className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--surface-3)/0.5)] transition-all duration-[150ms]"
             aria-label="Fechar menu"
           >
-            <X size={20} aria-hidden="true" />
+            <X size={20} weight="bold" aria-hidden="true" />
           </button>
         </div>
 
@@ -210,7 +238,7 @@ const Header = () => {
 
           <div className="drawer-footer-surface px-4 py-5 border-t">
             <button type="button" className="btn-clara-primary type-label w-full gap-2 h-11 inline-flex items-center justify-center" onClick={() => { setMenuOpen(false); openChat(); }}>
-              <MessageCircle size={18} aria-hidden="true" />
+              <ChatCircle weight="duotone" size={18} aria-hidden="true" />
               Chat com CLARA
             </button>
             <p className="text-hint text-center mt-3 leading-relaxed">

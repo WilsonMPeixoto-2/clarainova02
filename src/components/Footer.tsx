@@ -1,4 +1,4 @@
-import { Mail, ShieldCheck } from 'lucide-react';
+import { EnvelopeSimple, ShieldCheck } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -17,7 +17,7 @@ const Footer = () => {
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
               <a href="mailto:wilsonmp2@gmail.com" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
-                <Mail className="w-3.5 h-3.5" aria-hidden="true" />
+                <EnvelopeSimple size={14} className="w-3.5 h-3.5" aria-hidden="true" />
                 wilsonmp2@gmail.com
               </a>
             </div>
@@ -45,7 +45,7 @@ const Footer = () => {
 
         <div className="mt-10 pt-8 border-t border-[hsl(var(--border-subtle))]">
           <div className="footer-note" role="note">
-            <ShieldCheck className="w-3.5 h-3.5 text-primary flex-shrink-0" aria-hidden="true" />
+            <ShieldCheck weight="duotone" size={14} className="text-primary flex-shrink-0" aria-hidden="true" />
             <p className="text-sm text-muted-foreground leading-relaxed">
               A CLARA auxilia consultas operacionais e não substitui a leitura dos documentos oficiais nem a validação interna necessária em cada processo.
             </p>

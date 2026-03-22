@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { FileSearch, MessagesSquare, BookCheck, ShieldCheck, Route, FileCheck2, Files, Signature, ClipboardList } from 'lucide-react';
+import { FileText, MagnifyingGlass, ShieldCheck, ChatCircleText, Clock, CheckCircle, PenNib } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
@@ -7,7 +7,7 @@ import BentoCard from '@/components/BentoCard';
 const features = [
   {
     id: 'question',
-    icon: FileSearch,
+    icon: MagnifyingGlass,
     title: 'Pergunte do seu jeito',
     subtitle: 'Dúvidas operacionais em linguagem natural',
     description: 'Você pode escrever a pergunta de forma simples, sem precisar usar termos técnicos do sistema.',
@@ -16,7 +16,7 @@ const features = [
   },
   {
     id: 'answers',
-    icon: MessagesSquare,
+    icon: ChatCircleText,
     title: 'Respostas organizadas',
     subtitle: 'Consulta rápida ou explicação em etapas',
     description: 'A resposta pode ser mais curta para consulta imediata ou mais detalhada quando a tarefa exigir sequência.',
@@ -25,7 +25,7 @@ const features = [
   },
   {
     id: 'workflow',
-    icon: BookCheck,
+    icon: FileText,
     title: 'Rotinas frequentes',
     subtitle: 'Documentos, assinatura e tramitação',
     description: 'A ferramenta foi pensada para apoiar tarefas recorrentes do uso do SEI-Rio.',
@@ -35,10 +35,10 @@ const features = [
 ];
 
 const bentoCards = [
-  { title: 'Inclusão de documentos', description: 'Ajuda a localizar etapas para incluir documento interno ou externo, preencher campos e revisar a conferência do arquivo.', icon: Files, variant: 'highlight' as const },
-  { title: 'Bloco de assinatura', description: 'Mostra como reunir documentos, disponibilizar para outras unidades e acompanhar o fluxo de assinatura.', icon: Signature, variant: 'default' as const },
-  { title: 'Tramitação e envio', description: 'Orienta sobre encaminhamento, envio para uma ou mais unidades, retorno programado e anexação de processos.', icon: Route, variant: 'default' as const },
-  { title: 'Conferência da instrução', description: 'Apoia a revisão de anexos, comentários, atribuição e outros pontos operacionais antes do envio.', icon: ClipboardList, variant: 'default' as const },
+  { title: 'Inclusão de documentos', description: 'Ajuda a localizar etapas para incluir documento interno ou externo, preencher campos e revisar a conferência do arquivo.', icon: FileText, variant: 'highlight' as const },
+  { title: 'Bloco de assinatura', description: 'Mostra como reunir documentos, disponibilizar para outras unidades e acompanhar o fluxo de assinatura.', icon: PenNib, variant: 'default' as const },
+  { title: 'Tramitação e envio', description: 'Orienta sobre encaminhamento, envio para uma ou mais unidades, retorno programado e anexação de processos.', icon: CheckCircle, variant: 'default' as const },
+  { title: 'Conferência da instrução', description: 'Apoia a revisão de anexos, comentários, atribuição e outros pontos operacionais antes do envio.', icon: FileText, variant: 'default' as const },
 ];
 
 const servicePanels = [
@@ -48,7 +48,7 @@ const servicePanels = [
     description: 'A proposta é facilitar a consulta sobre o sistema com linguagem direta.',
   },
   {
-    icon: FileCheck2,
+    icon: FileText,
     title: 'Foco operacional',
     description: 'O conteúdo é voltado ao uso do SEI-Rio e a tarefas administrativas do dia a dia.',
   },

@@ -1,6 +1,7 @@
 import { type ElementType } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BorderBeam } from "@/components/magicui/border-beam";
 
 type BentoVariant = "default" | "highlight";
 
@@ -33,6 +34,7 @@ export default function BentoCard({
   if (href) {
     return (
       <a href={href} className={cn(baseClasses, interactionClasses, variantClasses, className)}>
+        <BorderBeam size={100} duration={14} delay={9} />
         <div className="flex items-start justify-between gap-3">
           <span className="inline-flex items-center justify-center w-11 h-11 rounded-[0.9rem] border border-[hsl(var(--gold-1)/0.2)] bg-[linear-gradient(145deg,hsl(var(--gold-1)/0.14),hsl(var(--gold-2)/0.06))] text-primary shadow-[0_0_22px_hsl(var(--glow)/0.07)] transition-all duration-300 group-hover:shadow-[0_0_28px_hsl(var(--glow)/0.12)] group-hover:border-[hsl(var(--gold-1)/0.3)]">
             <Icon className="w-5 h-5" aria-hidden="true" />
@@ -51,6 +53,7 @@ export default function BentoCard({
 
   return (
     <article className={cn(baseClasses, variantClasses, className)}>
+      <BorderBeam size={100} duration={14} delay={9} />
       <div className="flex items-start gap-3">
         <span className="inline-flex items-center justify-center w-11 h-11 rounded-[0.9rem] border border-[hsl(var(--gold-1)/0.2)] bg-[linear-gradient(145deg,hsl(var(--gold-1)/0.14),hsl(var(--gold-2)/0.06))] text-primary shadow-[0_0_22px_hsl(var(--glow)/0.07)] transition-all duration-300 group-hover:shadow-[0_0_28px_hsl(var(--glow)/0.12)] group-hover:border-[hsl(var(--gold-1)/0.3)]">
           <Icon className="w-5 h-5" aria-hidden="true" />
