@@ -1,0 +1,93 @@
+
+> clarainova02@0.0.0 build
+> vite build
+
+[36mvite v8.0.1 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...Ô£ô 7310 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                 4.97 kB Ôöé gzip:   1.53 kB
+dist/assets/manrope-vietnamese-wght-normal-usUDDRr7.woff2       8.52 kB
+dist/assets/manrope-greek-wght-normal-DL7QRZyv.woff2            9.44 kB
+dist/assets/fraunces-vietnamese-wght-normal-CnvboYUG.woff2     11.57 kB
+dist/assets/manrope-cyrillic-wght-normal-Dvxsihut.woff2        14.50 kB
+dist/assets/manrope-latin-ext-wght-normal-Ch3YOpNY.woff2       15.12 kB
+dist/assets/manrope-latin-wght-normal-DHIcAJRg.woff2           24.83 kB
+dist/assets/fraunces-latin-ext-wght-normal-Ca2vKHc0.woff2      33.58 kB
+dist/assets/fraunces-latin-wght-normal-ukD16Tqj.woff2          36.62 kB
+dist/assets/clara-hero-4k-YPdlG64P.jpg                        718.22 kB
+dist/assets/clara-hero-Fv6GMBuX.jpg                         1,346.49 kB
+dist/assets/index-ClAYCLQL.css                                155.46 kB Ôöé gzip:  30.92 kB
+dist/assets/chat-pdf-D7IxSHXe.js                                0.09 kB Ôöé gzip:   0.10 kB
+dist/assets/AdminDocumentsCard-B3UaM1PR.js                      0.10 kB Ôöé gzip:   0.11 kB
+dist/assets/chat-pdf-Bo9naraM.js                                0.13 kB Ôöé gzip:   0.13 kB
+dist/assets/UsageStatsCard-C4YFzw-2.js                          0.14 kB Ôöé gzip:   0.13 kB
+dist/assets/vendor-query-CQTDkdh7.js                            0.29 kB Ôöé gzip:   0.22 kB
+dist/assets/shield-check-T9saQU34.js                            0.31 kB Ôöé gzip:   0.24 kB
+dist/assets/chat-pdf-6bAsNI3p.js                                0.78 kB Ôöé gzip:   0.39 kB
+dist/assets/chat-pdf-BsBoGCtI.js                                1.18 kB Ôöé gzip:   0.71 kB
+dist/assets/admin-pdf-runtime-DfrRHXEK.js                       1.19 kB Ôöé gzip:   0.68 kB
+dist/assets/rolldown-runtime-Bhmf7a9N.js                        1.20 kB Ôöé gzip:   0.66 kB
+dist/assets/admin-pdf-BuoCknTJ.js                               1.30 kB Ôöé gzip:   0.71 kB
+dist/assets/LegalPageLayout-DyeyK2hd.js                         1.53 kB Ôöé gzip:   0.57 kB
+dist/assets/chat-pdf-0g3-4PEH.js                                1.89 kB Ôöé gzip:   0.98 kB
+dist/assets/AuthCallback-COd2AyDT.js                            2.98 kB Ôöé gzip:   1.09 kB
+dist/assets/Termos-C8d_OA-r.js                                  4.55 kB Ôöé gzip:   1.69 kB
+dist/assets/Privacidade-DnLU-lDU.js                             5.23 kB Ôöé gzip:   1.84 kB
+dist/assets/admin-ingestion-DDeZ-v-4.js                         6.65 kB Ôöé gzip:   2.58 kB
+dist/assets/AdminAuth-B21HHUqw.js                               7.21 kB Ôöé gzip:   2.86 kB
+dist/assets/chat-session-pdf-export-Clw72VBq.js                12.40 kB Ôöé gzip:   3.45 kB
+dist/assets/Admin-B-1yNuF_.js                                  20.70 kB Ôöé gzip:   7.19 kB
+dist/assets/chat-pdf-CySGGMlc.js                               30.32 kB Ôöé gzip:  10.82 kB
+dist/assets/chat-pdf-CAeqM3Nm.js                               32.43 kB Ôöé gzip:  10.69 kB
+dist/assets/chat-pdf-CV_E8auN.js                               33.14 kB Ôöé gzip:  11.80 kB
+dist/assets/chat-pdf-D9C5W7Me.js                               33.18 kB Ôöé gzip:  10.48 kB
+dist/assets/chunk-LFPYN7LY-D1qBNtd8.js                         38.84 kB Ôöé gzip:  13.82 kB
+dist/assets/admin-panels-v3WxeOTe.js                           39.91 kB Ôöé gzip:  13.55 kB
+dist/assets/vendor-ui-ByyplSio.js                              44.52 kB Ôöé gzip:  16.04 kB
+dist/assets/clara-response-CJVC9ZA-.js                         81.67 kB Ôöé gzip:  22.69 kB
+dist/assets/chat-pdf-CCR63Js6.js                               95.24 kB Ôöé gzip:  29.55 kB
+dist/assets/chat-pdf-srTbnqf9.js                              114.68 kB Ôöé gzip:  44.01 kB
+dist/assets/chat-pdf-rCXG4Yza.js                              119.73 kB Ôöé gzip:  37.30 kB
+dist/assets/chat-pdf-BPWdoYxW.js                              159.26 kB Ôöé gzip:  48.12 kB
+dist/assets/vendor-supabase-CqIx5TI6.js                       165.97 kB Ôöé gzip:  43.20 kB
+dist/assets/chat-pdf-zoHN0whS.js                              170.56 kB Ôöé gzip:  73.68 kB
+dist/assets/chat-pdf-TpF9EUqf.js                              187.90 kB Ôöé gzip:  96.06 kB
+dist/assets/vendor-react-CyuAuCry.js                          189.64 kB Ôöé gzip:  59.64 kB
+dist/assets/chat-pdf-BfdPdaTR.js                              227.34 kB Ôöé gzip:  69.87 kB
+dist/assets/chat-pdf-qIV-0dSV.js                              332.32 kB Ôöé gzip:  73.65 kB
+dist/assets/index-BJl3uZAy.js                                 496.90 kB Ôöé gzip: 149.85 kB
+dist/assets/admin-pdf-runtime-BIvO8bDg.js                   1,352.52 kB Ôöé gzip: 394.55 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+Ô£ù Build failed in 842ms
+error during build:
+Build failed with 1 error:
+
+Error: [vite]: Rolldown failed to resolve import "@langchain/core/documents" from "C:/Users/okidata/Projects/clarainova02/node_modules/@langchain/textsplitters/dist/text_splitter.js".
+This is most likely unintended because it can break your application at runtime.
+If you do want to externalize this module explicitly add it to
+`build.rollupOptions.external`
+    at viteLog (file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/chunks/node.js:32910:57)
+    at file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/chunks/node.js:32946:71
+    at onwarn (file:///C:/Users/okidata/Projects/clarainova02/node_modules/@vitejs/plugin-react/dist/index.js:40:7)
+    at file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/chunks/node.js:32946:28
+    at onRollupLog (file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/chunks/node.js:32941:63)
+    at onLog (file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/chunks/node.js:32711:4)
+    at file:///C:/Users/okidata/Projects/clarainova02/node_modules/rolldown/dist/shared/rolldown-build-yQC7KN8K.mjs:49:26
+    at logger (file:///C:/Users/okidata/Projects/clarainova02/node_modules/rolldown/dist/shared/rolldown-build-yQC7KN8K.mjs:40:3)
+    at onLog (file:///C:/Users/okidata/Projects/clarainova02/node_modules/rolldown/dist/shared/bindingify-input-options-DoaqRULI.mjs:1950:32)
+    at aggregateBindingErrorsIntoJsError (file:///C:/Users/okidata/Projects/clarainova02/node_modules/rolldown/dist/shared/error-BO4SlZV_.mjs:48:18)
+    at unwrapBindingResult (file:///C:/Users/okidata/Projects/clarainova02/node_modules/rolldown/dist/shared/error-BO4SlZV_.mjs:18:128)
+    at #build (file:///C:/Users/okidata/Projects/clarainova02/node_modules/rolldown/dist/shared/rolldown-build-yQC7KN8K.mjs:3311:34)
+    at async buildEnvironment (file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/chunks/node.js:32817:64)
+    at async Object.build (file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/chunks/node.js:33239:19)
+    at async Object.buildApp (file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/chunks/node.js:33236:153)
+    at async CAC.<anonymous> (file:///C:/Users/okidata/Projects/clarainova02/node_modules/vite/dist/node/cli.js:778:3) {
+  errors: [Getter/Setter]
+}
