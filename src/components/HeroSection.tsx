@@ -182,11 +182,7 @@ const HeroSection = () => {
               className="hero-copy-surface"
             >
               <motion.div variants={itemVariants} className="hero-chip-row">
-<<<<<<< HEAD
                 <AnimatedShinyText><span className="badge-chip">Apoio ao SEI-Rio</span></AnimatedShinyText>
-=======
-                <span className="badge-chip">Apoio ao uso do SEI-Rio</span>
->>>>>>> origin/main
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-editorial-stack">
@@ -210,15 +206,9 @@ const HeroSection = () => {
                   onMouseMove={handleMagneticMove}
                   onMouseLeave={handleMagneticLeave}
                 >
-<<<<<<< HEAD
                   <ChatCircle weight="duotone" size={18} aria-hidden="true" />
                   Iniciar chat com a CLARA
                   <ArrowRight weight="bold" size={18} aria-hidden="true" />
-=======
-                  <MessageCircle size={18} aria-hidden="true" />
-                  Abrir chat
-                  <ArrowRight size={18} aria-hidden="true" />
->>>>>>> origin/main
                 </button>
                 <button
                   onClick={() => {

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { EnvelopeSimple, ShieldCheck } from '@phosphor-icons/react';
-=======
-import { Linkedin, Mail, Phone, ShieldCheck } from 'lucide-react';
->>>>>>> origin/main
+import { EnvelopeSimple, ShieldCheck, Phone, LinkedinLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {

@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { useState } from 'react';
-import { List, X, ChatCircle } from '@phosphor-icons/react';
-=======
 import { useEffect, useState } from 'react';
-import { Menu, MessageCircle, X } from 'lucide-react';
->>>>>>> origin/main
+import { List, X, ChatCircle } from '@phosphor-icons/react';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { Link, useLocation } from 'react-router-dom';
 import { useChat } from '@/hooks/useChatStore';
@@ -91,7 +86,6 @@ const Header = () => {
               <span className="sr-only">CLARA - Página inicial</span>
             </Link>
 
-<<<<<<< HEAD
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6 justify-self-center">
@@ -120,38 +114,14 @@ const Header = () => {
               </nav>
             </div>
   
-=======
-            <nav className="header-desktop-nav" aria-label="Seções principais">
-              {primaryLinks.map((link) => {
-                const target = link.to ?? link.href ?? '/';
-                const isActive = isActiveLink(target);
-
-                return (
-                  <Link
-                    key={link.label}
-                    to={link.to ?? '/'}
-                    className={`header-nav-link ${isActive ? 'is-active' : ''}`}
-                  >
-                    <span className="header-nav-label">{link.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-
->>>>>>> origin/main
             <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-2.5 shrink-0 md:justify-self-end">
               <button
                 type="button"
                 className="header-pill header-pill-action header-chat-pill"
                 onClick={() => openChat()}
               >
-<<<<<<< HEAD
                 <ChatCircle weight="duotone" size={16} aria-hidden="true" />
                 Iniciar chat
-=======
-                <MessageCircle size={16} aria-hidden="true" />
-                Abrir CLARA
->>>>>>> origin/main
               </button>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
@@ -160,7 +130,7 @@ const Header = () => {
                 aria-expanded={menuOpen}
                 aria-controls="site-menu"
               >
-                {menuOpen ? <X weight="bold" size={18} weight="bold" aria-hidden="true" /> : <List weight="bold" size={18} aria-hidden="true" />}
+                {menuOpen ? <X weight="bold" size={18} aria-hidden="true" /> : <List weight="bold" size={18} aria-hidden="true" />}
                 <span className="hidden sm:inline text-[11px] uppercase tracking-[0.08em] font-semibold">
                   {menuOpen ? 'Fechar' : 'Menu'}
                 </span>

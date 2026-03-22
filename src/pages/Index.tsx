@@ -60,11 +60,7 @@ const IndexContent = () => {
       <Header />
       <main id="main-content" className="site-main-canvas">
         <HeroSection />
-<<<<<<< HEAD
         <SoftWaveDivider />
-=======
-        <ManifestSection />
->>>>>>> origin/main
         <FeaturesSection />
         <FAQSection />
       </main>

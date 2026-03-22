@@ -1,18 +1,5 @@
 import { motion } from 'motion/react';
-<<<<<<< HEAD
-import { FileText, MagnifyingGlass, ShieldCheck, ChatCircleText, Clock, CheckCircle, PenNib } from '@phosphor-icons/react';
-=======
-import {
-  ArrowRight,
-  ClipboardCheck,
-  FileText,
-  FileSignature,
-  FileSearch,
-  ListChecks,
-  SendHorizontal,
-  ShieldCheck,
-} from 'lucide-react';
->>>>>>> origin/main
+import { FileText, MagnifyingGlass, ShieldCheck, ChatCircleText, Clock, CheckCircle, PenNib, ArrowRight } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
@@ -20,7 +7,6 @@ import { useChat } from '@/hooks/useChatStore';
 
 const features = [
   {
-<<<<<<< HEAD
     id: 'question',
     icon: MagnifyingGlass,
     title: 'Pergunte do seu jeito',
@@ -45,66 +31,21 @@ const features = [
     subtitle: 'Documentos, assinatura e tramitação',
     description: 'A ferramenta foi pensada para apoiar tarefas recorrentes do uso do SEI-Rio.',
     points: ['Inclusão de documentos', 'Blocos de assinatura', 'Encaminhamento e conferência de etapas'],
-=======
-    id: 'consulta',
-    icon: FileSearch,
-    title: 'Consulta rápida',
-    subtitle: 'Onde clicar e como seguir',
-    description: 'Quando a dúvida é objetiva, a CLARA ajuda a localizar a etapa e lembrar o caminho com mais clareza.',
-    points: ['Etapas, botões e caminhos do sistema', 'Perguntas sobre documentos, assinatura e envio'],
-    prompt: 'Como incluir um documento externo no SEI-Rio?',
-  },
-  {
-    id: 'passo-a-passo',
-    icon: ListChecks,
-    title: 'Passo a passo',
-    subtitle: 'Para executar com mais segurança',
-    description: 'Quando a tarefa exige sequência, a resposta organiza o procedimento em etapas claras e mais fáceis de acompanhar.',
-    points: ['Orientação em ordem lógica', 'Resumo do que precisa ser conferido antes de continuar'],
-    prompt: 'Explique em passo a passo como usar um bloco de assinatura no SEI-Rio.',
-  },
-  {
-    id: 'conferencia',
-    icon: ClipboardCheck,
-    title: 'Conferência antes do envio',
-    subtitle: 'Revise o que ainda falta',
-    description: 'A CLARA também ajuda a revisar pendências antes de assinar, encaminhar ou concluir uma rotina no processo.',
-    points: ['Anexos, assinatura e encaminhamento', 'Checagens rápidas antes da próxima ação'],
->>>>>>> origin/main
     prompt: 'Quais etapas devo conferir antes de encaminhar um processo no SEI-Rio?',
   },
 ];
 
 const bentoCards = [
   { title: 'Inclusão de documentos', description: 'Ajuda a localizar etapas para incluir documento interno ou externo, preencher campos e revisar a conferência do arquivo.', icon: FileText, variant: 'highlight' as const },
-<<<<<<< HEAD
   { title: 'Bloco de assinatura', description: 'Mostra como reunir documentos, disponibilizar para outras unidades e acompanhar o fluxo de assinatura.', icon: PenNib, variant: 'default' as const },
   { title: 'Tramitação e envio', description: 'Orienta sobre encaminhamento, envio para uma ou mais unidades, retorno programado e anexação de processos.', icon: CheckCircle, variant: 'default' as const },
   { title: 'Conferência da instrução', description: 'Apoia a revisão de anexos, comentários, atribuição e outros pontos operacionais antes do envio.', icon: FileText, variant: 'default' as const },
-];
-
-const servicePanels = [
-  {
-    icon: ShieldCheck,
-    title: 'Uso simples',
-    description: 'A proposta é facilitar a consulta sobre o sistema com linguagem direta.',
-  },
-  {
-    icon: FileText,
-    title: 'Foco operacional',
-    description: 'O conteúdo é voltado ao uso do SEI-Rio e a tarefas administrativas do dia a dia.',
-  },
-=======
-  { title: 'Bloco de assinatura', description: 'Mostra como reunir documentos, disponibilizar para outras unidades e acompanhar o fluxo de assinatura.', icon: FileSignature, variant: 'default' as const },
-  { title: 'Tramitação e envio', description: 'Orienta sobre encaminhamento, envio para uma ou mais unidades, retorno programado e anexação de processos.', icon: SendHorizontal, variant: 'default' as const },
-  { title: 'Conferência da instrução', description: 'Apoia a revisão de anexos, comentários, atribuição e outros pontos operacionais antes do envio.', icon: ClipboardCheck, variant: 'default' as const },
 ];
 
 const promptBank = [
   'Como montar um bloco de assinatura para outra unidade?',
   'Como conferir documentos antes de encaminhar um processo?',
   'O que preciso revisar antes de assinar no SEI-Rio?',
->>>>>>> origin/main
 ];
 
 const FeaturesSection = () => {
