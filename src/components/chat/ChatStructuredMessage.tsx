@@ -1,14 +1,20 @@
 import { useMemo, useState } from 'react';
 import {
+  AlertTriangle,
+  CheckCircle2,
+  CircleDashed,
   ChevronDown,
   ChevronUp,
   FileText,
+  Globe,
+  Info,
   MessageCircleQuestion,
   ShieldAlert,
 } from 'lucide-react';
 
 import {
   type ClaraHighlight,
+  type ClaraProcessState,
   type ClaraReference,
   type ClaraStructuredResponse,
   formatReferenceAbnt,
@@ -32,6 +38,35 @@ function highlightLabel(highlight: ClaraHighlight) {
       return 'Acao';
     default:
       return 'Conceito';
+  }
+}
+
+function getProcessStateMeta(state: ClaraProcessState) {
+  switch (state.status) {
+    case 'concluido':
+      return {
+        label: 'Concluido',
+        icon: CheckCircle2,
+        className: 'chat-process-state is-complete',
+      };
+    case 'cautela':
+      return {
+        label: 'Cautela',
+        icon: AlertTriangle,
+        className: 'chat-process-state is-caution',
+      };
+    case 'web':
+      return {
+        label: 'Web',
+        icon: Globe,
+        className: 'chat-process-state is-web',
+      };
+    default:
+      return {
+        label: 'Informativo',
+        icon: CircleDashed,
+        className: 'chat-process-state is-info',
+      };
   }
 }
 
@@ -66,6 +101,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
   const [showReferences, setShowReferences] = useState(true);
   const analysis = response.analiseDaResposta;
   const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
+  const processStates = useMemo(() => analysis.processStates.slice(0, 4), [analysis.processStates]);
 
   return (
     <div className="chat-structured-response">
@@ -91,6 +127,52 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
               <p className="chat-clarification-body">{analysis.clarificationReason}</p>
             )}
             <p className="chat-clarification-question">{analysis.clarificationQuestion}</p>
+          </section>
+        )}
+
+        {(analysis.userNotice || analysis.cautionNotice) && (
+          <div className="chat-analysis-stack">
+            {analysis.userNotice && (
+              <section className="chat-analysis-card" aria-label="Leitura da resposta">
+                <div className="chat-analysis-title">
+                  <Info size={15} />
+                  Leitura da resposta
+                </div>
+                <p className="chat-analysis-body">{analysis.userNotice}</p>
+              </section>
+            )}
+
+            {analysis.cautionNotice && (
+              <section className="chat-analysis-card is-caution" aria-label="Cautela">
+                <div className="chat-analysis-title">
+                  <AlertTriangle size={15} />
+                  Cautela
+                </div>
+                <p className="chat-analysis-body">{analysis.cautionNotice}</p>
+              </section>
+            )}
+          </div>
+        )}
+
+        {processStates.length > 0 && (
+          <section className="chat-process-rail" aria-label="Estados da resposta">
+            {processStates.map((state) => {
+              const meta = getProcessStateMeta(state);
+              const Icon = meta.icon;
+
+              return (
+                <article key={state.id} className={meta.className}>
+                  <div className="chat-process-state-head">
+                    <span className="chat-process-state-icon" aria-hidden="true">
+                      <Icon size={14} />
+                    </span>
+                    <span className="chat-process-state-label">{meta.label}</span>
+                  </div>
+                  <p className="chat-process-state-title">{state.titulo}</p>
+                  <p className="chat-process-state-copy">{state.descricao}</p>
+                </article>
+              );
+            })}
           </section>
         )}
 

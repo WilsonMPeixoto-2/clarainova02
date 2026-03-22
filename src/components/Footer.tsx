@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 import { EnvelopeSimple, ShieldCheck } from '@phosphor-icons/react';
+=======
+import { Linkedin, Mail, Phone, ShieldCheck } from 'lucide-react';
+>>>>>>> origin/main
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const footerSignals = ['Documentos', 'Assinatura', 'Tramitação', 'Consultas rápidas'];
 
   return (
     <footer className="footer-premium-shell py-16 md:py-20 border-t border-[hsl(var(--border-subtle))]" role="contentinfo">
@@ -12,13 +17,33 @@ const Footer = () => {
             <p className="footer-brand-kicker">CLARA / apoio ao SEI-Rio</p>
             <span className="footer-brand-title">CLARA</span>
             <p className="text-sm text-muted-foreground max-w-xl">
-              Ferramenta de apoio para dúvidas frequentes sobre o uso do SEI-Rio.
+              Desenvolvido por <span className="text-foreground font-medium">Wilson M. Peixoto</span> - SME/RJ
             </p>
+            <p className="text-xs text-muted-foreground/80">Inovação para a Gestão Pública</p>
+
+            <div className="footer-signal-row" aria-label="Temas frequentes">
+              {footerSignals.map((signal) => (
+                <span key={signal} className="footer-signal-chip">{signal}</span>
+              ))}
+            </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
+              <a href="tel:+5521994974132" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
+                <Phone weight="duotone" className="w-3.5 h-3.5" aria-hidden="true" />
+                (21) 99497-4132
+              </a>
               <a href="mailto:wilsonmp2@gmail.com" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
                 <EnvelopeSimple size={14} className="w-3.5 h-3.5" aria-hidden="true" />
                 wilsonmp2@gmail.com
+              </a>
+              <a
+                href="https://www.linkedin.com/in/wilsonmalafaia/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 hover:text-primary transition-colors"
+              >
+                <LinkedinLogo weight="duotone" className="w-3.5 h-3.5" aria-hidden="true" />
+                LinkedIn
               </a>
             </div>
 

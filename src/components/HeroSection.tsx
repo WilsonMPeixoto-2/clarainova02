@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useSyncExternalStore, type MouseEvent }
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, BookOpen, CaretLeft, CaretRight, ChatCircle } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
-import { Link } from 'react-router-dom';
 
 import { useChat } from '@/hooks/useChatStore';
 import claraHeroFallback from '@/assets/clara-hero.jpg';
@@ -21,14 +20,6 @@ const QUICK_QUESTIONS = [
 
 const QUICK_SCROLL_DISTANCE = 320;
 const HERO_MOBILE_QUERY = '(max-width: 1023px)';
-
-const HERO_SIDE_LINKS = [
-  { label: 'Funcionalidades', to: '/#conhecimento' },
-  { label: 'FAQ', to: '/#faq' },
-  { label: 'Privacidade', to: '/privacidade' },
-  { label: 'Termos', to: '/termos' },
-  { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com' },
-];
 
 function subscribeToHeroViewport(onChange: () => void) {
   if (typeof window === 'undefined' || !window.matchMedia) {
@@ -116,6 +107,15 @@ const HeroSection = () => {
     });
   }, []);
 
+  const scrollToSection = useCallback((sectionId: string) => {
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+
+    const headerOffset = 104;
+    const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }, []);
+
   const handleMagneticMove = useCallback((event: MouseEvent<HTMLButtonElement>) => {
     if (!shouldAnimate || isHeroMobile || !window.matchMedia('(pointer:fine)').matches) return;
 
@@ -182,20 +182,23 @@ const HeroSection = () => {
               className="hero-copy-surface"
             >
               <motion.div variants={itemVariants} className="hero-chip-row">
+<<<<<<< HEAD
                 <AnimatedShinyText><span className="badge-chip">Apoio ao SEI-Rio</span></AnimatedShinyText>
+=======
+                <span className="badge-chip">Apoio ao uso do SEI-Rio</span>
+>>>>>>> origin/main
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-editorial-stack">
-                <p className="hero-label-line">Ferramenta de apoio ao SEI-Rio</p>
-                <p className="hero-brand-wordmark">CLARA</p>
-                <h1 className="hero-editorial-headline">
+                <h1 className="hero-brand-display">CLARA</h1>
+                <p className="hero-support-headline">
                   <Balancer>
-                    Tire dúvidas sobre o uso do SEI-Rio.
+                    Orientação clara para documentos, assinatura e tramitação no SEI-Rio.
                   </Balancer>
-                </h1>
+                </p>
                 <p className="hero-description text-body">
                   <Balancer>
-                    A CLARA responde perguntas sobre documentos, assinatura, tramitação e etapas do sistema.
+                    Tire dúvidas sobre etapas, revise o que falta conferir e organize a próxima ação com mais segurança nas rotinas administrativas.
                   </Balancer>
                 </p>
               </motion.div>
@@ -207,14 +210,19 @@ const HeroSection = () => {
                   onMouseMove={handleMagneticMove}
                   onMouseLeave={handleMagneticLeave}
                 >
+<<<<<<< HEAD
                   <ChatCircle weight="duotone" size={18} aria-hidden="true" />
                   Iniciar chat com a CLARA
                   <ArrowRight weight="bold" size={18} aria-hidden="true" />
+=======
+                  <MessageCircle size={18} aria-hidden="true" />
+                  Abrir chat
+                  <ArrowRight size={18} aria-hidden="true" />
+>>>>>>> origin/main
                 </button>
                 <button
                   onClick={() => {
-                    const featuresSection = document.getElementById('conhecimento') ?? document.getElementById('features');
-                    featuresSection?.scrollIntoView({ behavior: 'smooth' });
+                    scrollToSection('sistema');
                   }}
                   className="btn-clara-secondary hero-cta-button hero-cta-secondary type-label flex items-center justify-center gap-2"
                   onMouseMove={handleMagneticMove}
@@ -225,19 +233,12 @@ const HeroSection = () => {
                 </button>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="hero-trust-line">
-                <span className="hero-inline-status">Documentos</span>
-                <span className="hero-inline-status">Assinatura</span>
-                <span className="hero-inline-status">Tramitação</span>
-                <span className="hero-inline-status">Conferência operacional</span>
-              </motion.div>
-
               <motion.div variants={itemVariants} className="hero-prompt-cluster">
                 <div className="hero-prompt-toolbar">
                   <div className="space-y-1">
-                    <p className="text-caption text-muted-foreground">Exemplos de consulta</p>
+                    <p className="text-caption text-muted-foreground">Perguntas frequentes</p>
                     <p className="hero-prompt-lead">
-                      Casos comuns de uso.
+                      Exemplos de perguntas sobre tarefas comuns no SEI-Rio.
                     </p>
                   </div>
                   <div className="hero-prompt-actions">
@@ -298,20 +299,6 @@ const HeroSection = () => {
             </motion.div>
           </div>
         </motion.div>
-
-        <nav className="hero-side-nav" aria-label="Atalhos da página">
-          {HERO_SIDE_LINKS.map((item) => (
-            item.to ? (
-              <Link key={item.label} to={item.to} className="hero-side-link">
-                {item.label}
-              </Link>
-            ) : (
-              <a key={item.label} href={item.href} className="hero-side-link">
-                {item.label}
-              </a>
-            )
-          ))}
-        </nav>
       </div>
     </section>
   );

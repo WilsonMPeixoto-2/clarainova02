@@ -8,6 +8,7 @@ const baseConfig: ChatApiConfig = {
   supabasePublishableKey: "anon-key",
   backendConfigured: true,
   mockEnabled: false,
+  runtimeMode: "online",
 };
 
 afterEach(() => {
@@ -85,6 +86,7 @@ describe("chat api transport", () => {
       {
         backendConfigured: false,
         mockEnabled: true,
+        runtimeMode: "mock",
         mockDelayMs: 0,
       },
     );
@@ -92,16 +94,24 @@ describe("chat api transport", () => {
     expect(result.kind).toBe("structured");
   });
 
-  it("rejects when backend is absent and mock mode is disabled", async () => {
-    await expect(
-      requestChat(
-        [{ role: "user", content: "Como incluir anexo?" }],
-        {
-          backendConfigured: false,
-          mockEnabled: false,
-        },
-      ),
-    ).rejects.toThrow("sem conexão com o backend");
+  it("returns the preview responder when backend is absent and mock mode is disabled", async () => {
+    const result = await requestChat(
+      [{ role: "user", content: "Como incluir anexo?" }],
+      {
+        backendConfigured: false,
+        mockEnabled: false,
+        runtimeMode: "preview",
+        mockDelayMs: 0,
+      },
+    );
+
+    expect(result.kind).toBe("structured");
+    if (result.kind !== "structured") {
+      throw new Error("Expected structured preview result");
+    }
+
+    expect(result.response.tituloCurto).toBe("Resposta de teste da CLARA");
+    expect(result.plainText).toContain("Resposta de teste da CLARA");
   });
 
   it("streams SSE deltas into the UI callback", async () => {

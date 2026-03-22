@@ -108,6 +108,10 @@ function getCurrentDateString() {
   }).format(new Date());
 }
 
+function getCurrentYearString() {
+  return new Date().getFullYear().toString();
+}
+
 function buildConfidenceLabel(value: number | null) {
   if (value == null) return null;
   if (value >= 0.86) return 'confianca alta';
@@ -578,5 +582,117 @@ export function buildMockStructuredResponse(question: string): ClaraStructuredRe
     termosDestacados: topic.highlights,
     referenciasFinais: topic.references,
     analiseDaResposta: topic.analysis,
+  };
+}
+
+export function buildPreviewStructuredResponse(question: string): ClaraStructuredResponse {
+  const normalizedQuestion = question.trim() || 'Como a CLARA vai operar quando a base estiver religada?';
+  const base = buildMockStructuredResponse(normalizedQuestion);
+
+  return {
+    ...base,
+    tituloCurto: 'Resposta de teste da CLARA',
+    resumoInicial: `A nova base ainda esta em configuracao. Por enquanto, esta resposta mostra o formato das orientacoes para a pergunta "${normalizedQuestion}".`,
+    resumoCitacoes: [],
+    etapas: [
+      {
+        numero: 1,
+        titulo: 'Pergunta recebida',
+        conteudo: `Sua pergunta foi registrada e usada para montar uma resposta de teste: "${normalizedQuestion}".`,
+        itens: [
+          'O chat continua aceitando perguntas em linguagem natural.',
+          'Nesta fase, o foco e revisar o formato da resposta.',
+        ],
+        destaques: ['Pergunta registrada', 'Teste local'],
+        alerta: null,
+        citacoes: [],
+      },
+      {
+        numero: 2,
+        titulo: 'Formato da resposta',
+        conteudo: 'Mesmo sem a base conectada, a resposta ja aparece em blocos, etapas, destaques e observacoes para facilitar a leitura.',
+        itens: [
+          'Resumo inicial para leitura rapida.',
+          'Etapas separadas por acao e verificacao.',
+          'Espaco para cautelas, referencias e notas finais.',
+        ],
+        destaques: ['Resposta estruturada', 'Etapas', 'Notas finais'],
+        alerta: 'Quando a nova base voltar, os blocos passarao a refletir a consulta documental real.',
+        citacoes: [],
+      },
+      {
+        numero: 3,
+        titulo: 'Proxima etapa',
+        conteudo: 'O proximo passo e religar a base documental e as referencias reais ao fluxo que ja esta visivel no chat.',
+        itens: [
+          'Reconectar variaveis e secrets do novo projeto.',
+          'Reativar functions e ingestao documental.',
+          'Validar respostas com referencias finais.',
+        ],
+        destaques: ['Nova base', 'Functions', 'Referencias'],
+        alerta: null,
+        citacoes: [],
+      },
+    ],
+    observacoesFinais: [
+      'Esta resposta e apenas um teste de formato e nao uma consulta final baseada na base oficial.',
+      'Quando a nova infraestrutura estiver conectada, a CLARA voltara a priorizar documentos reais e referencias aderentes ao contexto.',
+      ...base.observacoesFinais,
+    ],
+    termosDestacados: [
+      { texto: 'Modo de teste', tipo: 'atencao' },
+      { texto: 'Resposta estruturada', tipo: 'conceito' },
+      { texto: 'Religacao da base', tipo: 'acao' },
+      ...base.termosDestacados,
+    ].slice(0, 8),
+    referenciasFinais: [
+      {
+        id: 1,
+        tipo: 'outro',
+        autorEntidade: 'CLARA',
+        titulo: 'Preview local do chat',
+        subtitulo: 'Modo de teste antes da religacao do backend',
+        local: 'Web',
+        editoraOuOrgao: 'Projeto CLARA',
+        ano: getCurrentYearString(),
+        paginas: null,
+        url: null,
+        dataAcesso: getCurrentDateString(),
+      },
+    ],
+    analiseDaResposta: {
+      ...base.analiseDaResposta,
+      questionUnderstandingConfidence: null,
+      finalConfidence: null,
+      answerScopeMatch: 'probable',
+      ambiguityInSources: false,
+      internalExpansionPerformed: false,
+      webFallbackUsed: false,
+      userNotice: 'A resposta foi gerada localmente para demonstrar o formato do atendimento enquanto a base definitiva e reconfigurada.',
+      cautionNotice: 'Use este retorno apenas como teste. A consulta documental final voltara quando o novo backend estiver conectado.',
+      ambiguityReason: null,
+      comparedSources: ['Preview local do chat'],
+      prioritizedSources: ['Preview local do chat'],
+      processStates: [
+        {
+          id: 'preview-mode',
+          titulo: 'Modo de teste',
+          descricao: 'A interface esta ativa e a resposta foi montada localmente para validar estrutura e legibilidade.',
+          status: 'informativo',
+        },
+        {
+          id: 'chat-ready',
+          titulo: 'Chat pronto para revisao',
+          descricao: 'Painel lateral, envio de pergunta e leitura estruturada ja estao funcionando.',
+          status: 'concluido',
+        },
+        {
+          id: 'backend-next',
+          titulo: 'Religacao da base como proxima etapa',
+          descricao: 'A proxima acao e reconectar variaveis, functions e base vetorial no novo projeto Supabase.',
+          status: 'cautela',
+        },
+      ],
+    },
   };
 }

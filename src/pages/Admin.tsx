@@ -1,117 +1,50 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Upload, Trash2, FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, LogOut, RefreshCw, X, AlertTriangle, Brain, ShieldCheck, AlertCircle } from "lucide-react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { AlertTriangle, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
-import UsageStatsCard from "@/components/UsageStatsCard";
-import { extractText, getDocumentProxy } from "unpdf";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-interface Document {
-  id: string;
-  name: string;
-  file_path: string;
-  status: string;
-  created_at: string;
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminUploadCard from "@/components/admin/AdminUploadCard";
+import type { Document, IngestionState, IngestionStatus } from "@/components/admin/admin-types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from "@/integrations/supabase/client";
+
+const AdminDocumentsCard = lazy(() => import("@/components/admin/AdminDocumentsCard"));
+const UsageStatsCard = lazy(() => import("@/components/UsageStatsCard"));
+
+let adminIngestionModulePromise: Promise<typeof import("@/lib/admin-ingestion")> | null = null;
+
+function loadAdminIngestionModule() {
+  if (!adminIngestionModulePromise) {
+    adminIngestionModulePromise = import("@/lib/admin-ingestion");
+  }
+
+  return adminIngestionModulePromise;
 }
 
-type IngestionStatus = "idle" | "extracting" | "vectorizing" | "verifying" | "done" | "partial" | "failed" | "canceled";
-
-interface IngestionLastError {
-  message: string;
-  requestId?: string;
-  chunkIndex?: number;
-  code?: string;
+function AdminPanelFallback({ title }: { title: string }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+          Carregando painel...
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
-
-interface IngestionState {
-  fileName: string;
-  status: IngestionStatus;
-  phaseLabel: string;
-  progress: number; // 0-100
-  totalChunks: number;
-  processedChunks: number;
-  expectedChunks: number;
-  insertedChunks: number;
-  lastError?: IngestionLastError;
-  abortController?: AbortController;
-}
-
-// ─── Semantic text chunking via LangChain ───────────────────────────────────
-
-const langChainSplitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 1000,
-  chunkOverlap: 200,
-  separators: ["\n\n", "\n", " ", ""],
-});
-
-async function splitWithLangChain(rawText: string): Promise<string[]> {
-  // eslint-disable-next-line no-control-regex
-  const normalized = rawText.replace(/\u0000/g, "").trim();
-  const chunks = await langChainSplitter.splitText(normalized);
-  return chunks.filter((c) => c.trim().length >= 3);
-}
-
-// ─── Sanitize file name for Supabase Storage ────────────────────────────────
-
-function sanitizeFileName(name: string): string {
-  return name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9._-]/g, "_")
-    .replace(/_+/g, "_");
-}
-
-// ─── Client-side PDF text extraction via unpdf ──────────────────────────────
-
-interface PageText {
-  pageNumber: number;
-  text: string;
-}
-
-async function extractTextFromPDF(
-  file: File,
-  onProgress?: (pagesRead: number, totalPages: number) => void
-): Promise<PageText[]> {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
-  const totalPages = pdf.numPages;
-  
-  onProgress?.(0, totalPages);
-  
-  const result = await extractText(pdf, { mergePages: false });
-  const pageTexts = result.text as unknown as string[];
-  
-  onProgress?.(totalPages, totalPages);
-
-  return pageTexts.map((text, index) => ({
-    pageNumber: index + 1,
-    text,
-  }));
-}
-
-// ─── Retry helper with exponential backoff ──────────────────────────────────
 
 const RETRY_DELAYS = [500, 1500, 3000];
+const EMBED_BATCH_SIZE = 10;
+const TIMEOUT_SECONDS = 300;
 
 function isTransientError(error: unknown): boolean {
-  const msg = String(error instanceof Error ? error.message : (error || "")).toLowerCase();
-  // Network failures
+  const msg = String(error instanceof Error ? error.message : error || "").toLowerCase();
   if (msg.includes("fetch") || msg.includes("network") || msg.includes("failed to fetch") || msg.includes("aborted")) {
     return true;
   }
-  // Edge function relay errors (supabase wraps status in the error)
   if (msg.includes("429") || msg.includes("503") || msg.includes("500") || msg.includes("502") || msg.includes("504")) {
     return true;
   }
@@ -127,12 +60,14 @@ function isValidationError(errorCode?: string): boolean {
 
 async function withRetry<T>(
   fn: () => Promise<T>,
-  opts: { retries?: number; signal?: AbortSignal } = {}
+  opts: { retries?: number; signal?: AbortSignal } = {},
 ): Promise<T> {
   const { retries = 3, signal } = opts;
   let lastErr: unknown;
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (signal?.aborted) throw new Error("Cancelado pelo usuário");
+
     try {
       return await fn();
     } catch (err: unknown) {
@@ -140,49 +75,40 @@ async function withRetry<T>(
       if (attempt < retries && isTransientError(err) && !signal?.aborted) {
         const delay = RETRY_DELAYS[attempt] || 3000;
         console.warn(`Retry ${attempt + 1}/${retries} after ${delay}ms:`, err instanceof Error ? err.message : err);
-        await new Promise((r) => setTimeout(r, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
         throw err;
       }
     }
   }
+
   throw lastErr;
 }
 
-// ─── Constants ──────────────────────────────────────────────────────────────
-
-const EMBED_BATCH_SIZE = 10; // max accepted by edge function
-const TIMEOUT_SECONDS = 300;
-
 function formatTimer(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return m > 0 ? `${m}m${s.toString().padStart(2, "0")}s` : `${s}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return minutes > 0 ? `${minutes}m${remainingSeconds.toString().padStart(2, "0")}s` : `${remainingSeconds}s`;
 }
-
-// ─── Embed a batch with retry + response validation ─────────────────────────
 
 async function embedBatchWithRetry(
   documentId: string,
   batch: string[],
   startIndex: number,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<{ saved: number; requestId?: string }> {
   return withRetry(async () => {
     const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
       body: { document_id: documentId, chunks: batch, start_index: startIndex },
     });
 
-    // Transport-level error (network, 5xx relay)
     if (fnErr) {
       throw new Error(`EMBED_TRANSPORT: ${fnErr.message}`);
     }
 
-    // Application-level error in response body
     if (fnData?.ok === false || fnData?.error) {
       const code = fnData?.error || "UNKNOWN";
       if (isValidationError(code)) {
-        // Don't retry validation errors
         throw new Error(`Validação: ${code}`);
       }
       throw new Error(`EMBED_APP_ERROR: ${code} (req: ${fnData?.request_id || "?"})`);
@@ -192,13 +118,12 @@ async function embedBatchWithRetry(
   }, { retries: 3, signal });
 }
 
-// ─── Verify chunks in DB ────────────────────────────────────────────────────
-
 async function verifyChunksInDB(documentId: string): Promise<number> {
   const { count } = await supabase
     .from("document_chunks")
     .select("*", { count: "exact", head: true })
     .eq("document_id", documentId);
+
   return count || 0;
 }
 
@@ -207,7 +132,8 @@ async function getExistingChunkIndexes(documentId: string): Promise<Set<number>>
     .from("document_chunks")
     .select("chunk_index")
     .eq("document_id", documentId);
-  return new Set((data || []).map((r: { chunk_index: number }) => r.chunk_index));
+
+  return new Set((data || []).map((row: { chunk_index: number }) => row.chunk_index));
 }
 
 export default function Admin() {
@@ -218,21 +144,27 @@ export default function Admin() {
   const prevStatusRef = useRef<Record<string, string>>({});
 
   const fetchDocuments = useCallback(async () => {
+    if (!hasSupabaseConfig) {
+      setDocuments([]);
+      return;
+    }
+
     const { data } = await supabase
       .from("documents")
       .select("*")
       .order("created_at", { ascending: false });
+
     if (data) setDocuments(data as unknown as Document[]);
   }, []);
 
-  // Polling
   useEffect(() => {
+    if (!hasSupabaseConfig) return;
+
     fetchDocuments();
     const interval = setInterval(fetchDocuments, 5000);
     return () => clearInterval(interval);
   }, [fetchDocuments]);
 
-  // Detect status changes → toasts
   useEffect(() => {
     const prev = prevStatusRef.current;
     for (const doc of documents) {
@@ -245,16 +177,16 @@ export default function Admin() {
         }
       }
     }
-    prevStatusRef.current = Object.fromEntries(documents.map((d) => [d.id, d.status]));
+    prevStatusRef.current = Object.fromEntries(documents.map((doc) => [doc.id, doc.status]));
   }, [documents]);
 
-  // Processing timers for legacy server-side processing docs
   useEffect(() => {
-    const processingDocs = documents.filter((d) => d.status === "processing" || d.status === "pending");
+    const processingDocs = documents.filter((doc) => doc.status === "processing" || doc.status === "pending");
     if (processingDocs.length === 0) {
       setProcessingTimers({});
       return;
     }
+
     const interval = setInterval(() => {
       setProcessingTimers((prev) => {
         const next = { ...prev };
@@ -268,39 +200,67 @@ export default function Admin() {
         return next;
       });
     }, 1000);
+
     return () => clearInterval(interval);
   }, [documents]);
 
-  // ─── Client-side ingestion pipeline ─────────────────────────────────────
-
   const updateIngestion = (fileName: string, updates: Partial<IngestionState>) => {
     setIngestions((prev) =>
-      prev.map((ing) => (ing.fileName === fileName ? { ...ing, ...updates } : ing))
+      prev.map((ingestion) => (
+        ingestion.fileName === fileName ? { ...ingestion, ...updates } : ingestion
+      )),
     );
   };
 
-  /**
-   * Send chunks in batches with retry, verification, and idempotency.
-   * Returns { insertedChunks, status }.
-   */
+  const preparePdfPayload = async (file: File, fileName: string) => {
+    updateIngestion(fileName, {
+      status: "extracting",
+      phaseLabel: "Carregando motor de ingestão...",
+      progress: 2,
+    });
+
+    const { preparePdfIngestion } = await loadAdminIngestionModule();
+
+    updateIngestion(fileName, {
+      status: "extracting",
+      phaseLabel: "Extraindo texto do PDF...",
+      progress: 4,
+    });
+
+    const prepared = await preparePdfIngestion(file, (pagesRead, totalPages) => {
+      updateIngestion(fileName, {
+        progress: Math.round((pagesRead / totalPages) * 25),
+        phaseLabel: `Extraindo texto... página ${pagesRead}/${totalPages}`,
+      });
+    });
+
+    updateIngestion(fileName, {
+      totalChunks: prepared.chunks.length,
+      expectedChunks: prepared.chunks.length,
+      phaseLabel: `${prepared.chunks.length} fragmentos criados`,
+      progress: 30,
+    });
+
+    return prepared;
+  };
+
   const sendChunksInBatches = async (
     documentId: string,
     chunks: string[],
     fileName: string,
     abortSignal: AbortSignal,
-    skipIndexes?: Set<number>
+    skipIndexes?: Set<number>,
   ): Promise<{ insertedChunks: number; status: IngestionStatus }> => {
     const totalChunks = chunks.length;
     const chunksToSend: { chunk: string; index: number }[] = [];
 
-    for (let i = 0; i < chunks.length; i++) {
-      if (!skipIndexes || !skipIndexes.has(i)) {
-        chunksToSend.push({ chunk: chunks[i], index: i });
+    for (let index = 0; index < chunks.length; index++) {
+      if (!skipIndexes || !skipIndexes.has(index)) {
+        chunksToSend.push({ chunk: chunks[index], index });
       }
     }
 
     if (chunksToSend.length === 0) {
-      // All chunks already exist
       return { insertedChunks: totalChunks, status: "done" };
     }
 
@@ -314,29 +274,27 @@ export default function Admin() {
       progress: 30 + Math.round((processedCount / totalChunks) * 60),
     });
 
-    // Process in batches of EMBED_BATCH_SIZE
-    for (let i = 0; i < chunksToSend.length; i += EMBED_BATCH_SIZE) {
+    for (let index = 0; index < chunksToSend.length; index += EMBED_BATCH_SIZE) {
       if (abortSignal.aborted) {
         return { insertedChunks: processedCount, status: "canceled" };
       }
 
-      const batchItems = chunksToSend.slice(i, i + EMBED_BATCH_SIZE);
-      const batchChunks = batchItems.map((b) => b.chunk);
+      const batchItems = chunksToSend.slice(index, index + EMBED_BATCH_SIZE);
+      const batchChunks = batchItems.map((item) => item.chunk);
       const batchStartIndex = batchItems[0].index;
 
       try {
         await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
       } catch (err: unknown) {
         console.error(`Batch at index ${batchStartIndex} failed after retries:`, err);
-        const errMsg = err instanceof Error ? err.message : String(err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
         updateIngestion(fileName, {
           lastError: {
-            message: errMsg,
+            message: errorMessage,
             chunkIndex: batchStartIndex,
-            code: errMsg.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
+            code: errorMessage.includes("VALIDATION") ? "VALIDATION" : "TRANSIENT",
           },
         });
-        // Don't throw — move to verification
         break;
       }
 
@@ -349,7 +307,6 @@ export default function Admin() {
       });
     }
 
-    // Verification phase
     updateIngestion(fileName, {
       status: "verifying",
       phaseLabel: "Verificando integridade...",
@@ -361,11 +318,12 @@ export default function Admin() {
 
     if (insertedChunks >= totalChunks) {
       return { insertedChunks, status: "done" };
-    } else if (insertedChunks > 0) {
-      return { insertedChunks, status: "partial" };
-    } else {
-      return { insertedChunks, status: "failed" };
     }
+    if (insertedChunks > 0) {
+      return { insertedChunks, status: "partial" };
+    }
+
+    return { insertedChunks, status: "failed" };
   };
 
   const processFileClientSide = async (file: File) => {
@@ -373,7 +331,7 @@ export default function Admin() {
     const ingestion: IngestionState = {
       fileName: file.name,
       status: "extracting",
-      phaseLabel: "Lendo PDF...",
+      phaseLabel: "Preparando ingestão...",
       progress: 0,
       totalChunks: 0,
       processedChunks: 0,
@@ -385,50 +343,11 @@ export default function Admin() {
     setIngestions((prev) => [...prev, ingestion]);
 
     try {
-      // Phase 1: Extract text from PDF in the browser
-      updateIngestion(file.name, { status: "extracting", phaseLabel: "Extraindo texto do PDF..." });
-
-      const pages = await extractTextFromPDF(file, (pagesRead, totalPages) => {
-        updateIngestion(file.name, {
-          progress: Math.round((pagesRead / totalPages) * 25),
-          phaseLabel: `Extraindo texto... página ${pagesRead}/${totalPages}`,
-        });
-      });
+      const prepared = await preparePdfPayload(file, file.name);
 
       if (abortController.signal.aborted) return;
 
-      const fullText = pages.map((p) => p.text).join("\n\n");
-      if (fullText.length < 50) {
-        throw new Error("PDF parece estar vazio ou conter apenas imagens (sem texto extraível).");
-      }
-
-      // Phase 2: Chunk text per page, injecting source tags
-      updateIngestion(file.name, {
-        phaseLabel: "Fatiando texto em fragmentos...",
-        progress: 25,
-      });
-
-      const allChunks: string[] = [];
-      for (const page of pages) {
-        if (!page.text.trim()) continue;
-        const pageChunks = await splitWithLangChain(page.text);
-        for (const chunk of pageChunks) {
-          allChunks.push(`[Fonte: ${file.name} | Página: ${page.pageNumber}]\n\n${chunk}`);
-        }
-      }
-      const chunks = allChunks;
-      const totalChunks = chunks.length;
-
-      updateIngestion(file.name, {
-        totalChunks,
-        expectedChunks: totalChunks,
-        phaseLabel: `${totalChunks} fragmentos criados`,
-        progress: 30,
-      });
-
-      if (abortController.signal.aborted) return;
-
-      // Phase 3: Upload file to storage
+      const { sanitizeFileName } = await loadAdminIngestionModule();
       const sanitizedName = sanitizeFileName(file.name);
       const filePath = `${crypto.randomUUID()}_${sanitizedName}`;
 
@@ -445,7 +364,6 @@ export default function Admin() {
 
       if (uploadErr) throw new Error(`Upload falhou: ${uploadErr.message}`);
 
-      // Create document record
       const { data: doc, error: docErr } = await supabase
         .from("documents")
         .insert({ name: file.name, file_path: filePath, status: "processing" })
@@ -460,8 +378,12 @@ export default function Admin() {
         return;
       }
 
-      // Phase 4: Send chunks with retry + verification
-      const result = await sendChunksInBatches(documentId, chunks, file.name, abortController.signal);
+      const result = await sendChunksInBatches(
+        documentId,
+        prepared.chunks,
+        file.name,
+        abortController.signal,
+      );
 
       if (result.status === "canceled") {
         await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
@@ -473,54 +395,67 @@ export default function Admin() {
         await supabase.from("documents").update({ status: "processed" }).eq("id", documentId);
         await supabase.from("usage_logs").insert({
           event_type: "client_side_ingestion",
-          metadata: { document_id: documentId, chunks_count: totalChunks, text_length: fullText.length },
+          metadata: {
+            document_id: documentId,
+            chunks_count: prepared.chunks.length,
+            text_length: prepared.fullText.length,
+          },
         });
         updateIngestion(file.name, {
           status: "done",
-          phaseLabel: `✓ Pronto — ${totalChunks} fragmentos`,
+          phaseLabel: `✓ Pronto — ${prepared.chunks.length} fragmentos`,
           progress: 100,
         });
-        toast.success("Documento processado", { description: `"${file.name}" — ${totalChunks} fragmentos indexados.` });
+        toast.success("Documento processado", {
+          description: `"${file.name}" — ${prepared.chunks.length} fragmentos indexados.`,
+        });
       } else if (result.status === "partial") {
         await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
         updateIngestion(file.name, {
           status: "partial",
-          phaseLabel: `⚠ Parcial — ${result.insertedChunks}/${totalChunks} fragmentos`,
-          progress: Math.round((result.insertedChunks / totalChunks) * 100),
+          phaseLabel: `⚠ Parcial — ${result.insertedChunks}/${prepared.chunks.length} fragmentos`,
+          progress: Math.round((result.insertedChunks / prepared.chunks.length) * 100),
         });
-        toast.error("Processamento parcial", { description: `"${file.name}" — ${result.insertedChunks}/${totalChunks}. Use Retomar.` });
+        toast.error("Processamento parcial", {
+          description: `"${file.name}" — ${result.insertedChunks}/${prepared.chunks.length}. Use Retomar.`,
+        });
       } else {
         await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
         updateIngestion(file.name, {
           status: "failed",
           phaseLabel: "Falha — nenhum fragmento salvo",
         });
-        toast.error("Falha total", { description: `"${file.name}" — nenhum fragmento salvo.` });
+        toast.error("Falha total", {
+          description: `"${file.name}" — nenhum fragmento salvo.`,
+        });
       }
 
       fetchDocuments();
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "Falha desconhecida";
+      const errorMessage = err instanceof Error ? err.message : "Falha desconhecida";
       console.error("Client-side ingestion error:", err);
       updateIngestion(file.name, {
         status: "failed",
-        phaseLabel: `Erro: ${errMsg}`,
-        lastError: { message: errMsg },
+        phaseLabel: `Erro: ${errorMessage}`,
+        lastError: { message: errorMessage },
       });
-      toast.error("Erro no processamento", { description: errMsg });
+      toast.error("Erro no processamento", { description: errorMessage });
       fetchDocuments();
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    // Clear completed/errored ingestions
-    setIngestions((prev) => prev.filter((ing) => ing.status === "vectorizing" || ing.status === "extracting" || ing.status === "verifying"));
+    setIngestions((prev) =>
+      prev.filter((ingestion) => (
+        ingestion.status === "vectorizing" || ingestion.status === "extracting" || ingestion.status === "verifying"
+      )),
+    );
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
       if (file.type !== "application/pdf") {
         toast.error("Erro", { description: `${file.name} não é um PDF` });
         continue;
@@ -528,44 +463,46 @@ export default function Admin() {
       await processFileClientSide(file);
     }
 
-    e.target.value = "";
+    event.target.value = "";
     setTimeout(() => {
-      setIngestions((prev) => prev.filter((ing) => ing.status !== "done"));
+      setIngestions((prev) => prev.filter((ingestion) => ingestion.status !== "done"));
     }, 5000);
   };
 
   const handleCancelIngestion = (fileName: string) => {
     setIngestions((prev) => {
-      const ing = prev.find((i) => i.fileName === fileName);
-      ing?.abortController?.abort();
-      return prev.map((i) => i.fileName === fileName ? { ...i, status: "canceled" as IngestionStatus, phaseLabel: "Cancelado" } : i);
+      const ingestion = prev.find((item) => item.fileName === fileName);
+      ingestion?.abortController?.abort();
+      return prev.map((item) => (
+        item.fileName === fileName
+          ? { ...item, status: "canceled" as IngestionStatus, phaseLabel: "Cancelado" }
+          : item
+      ));
     });
   };
 
   const handleRetry = async (doc: Document) => {
     setRetryingId(doc.id);
-    try {
-      // Check which chunks already exist (idempotent resume)
-      const existingIndexes = await getExistingChunkIndexes(doc.id);
 
+    try {
+      const existingIndexes = await getExistingChunkIndexes(doc.id);
       await supabase.from("documents").update({ status: "processing" }).eq("id", doc.id);
 
-      // Download the file from storage and re-process client-side
-      const { data: fileData, error: dlErr } = await supabase.storage
+      const { data: fileData, error: downloadErr } = await supabase.storage
         .from("documents")
         .download(doc.file_path);
 
-      if (dlErr || !fileData) {
+      if (downloadErr || !fileData) {
         throw new Error("Não foi possível baixar o arquivo do storage");
       }
 
       const file = new File([fileData], doc.name, { type: "application/pdf" });
-
       const abortController = new AbortController();
+
       const ingestion: IngestionState = {
         fileName: doc.name,
         status: "extracting",
-        phaseLabel: "Re-extraindo texto...",
+        phaseLabel: "Preparando reprocessamento...",
         progress: 0,
         totalChunks: 0,
         processedChunks: 0,
@@ -573,60 +510,53 @@ export default function Admin() {
         insertedChunks: 0,
         abortController,
       };
-      setIngestions((prev) => [...prev.filter((i) => i.fileName !== doc.name), ingestion]);
 
-      const pages = await extractTextFromPDF(file, (pagesRead, totalPages) => {
-        updateIngestion(doc.name, {
-          progress: Math.round((pagesRead / totalPages) * 25),
-          phaseLabel: `Extraindo... ${pagesRead}/${totalPages}`,
-        });
-      });
+      setIngestions((prev) => [...prev.filter((item) => item.fileName !== doc.name), ingestion]);
 
-      const fullText = pages.map((p) => p.text).join("\n\n");
-      if (fullText.length < 50) throw new Error("PDF sem texto extraível");
+      const prepared = await preparePdfPayload(file, doc.name);
 
-      const allChunks: string[] = [];
-      for (const page of pages) {
-        if (!page.text.trim()) continue;
-        const pageChunks = await splitWithLangChain(page.text);
-        for (const chunk of pageChunks) {
-          allChunks.push(`[Fonte: ${doc.name} | Página: ${page.pageNumber}]\n\n${chunk}`);
-        }
-      }
-      const chunks = allChunks;
-
-      updateIngestion(doc.name, {
-        totalChunks: chunks.length,
-        expectedChunks: chunks.length,
-        progress: 30,
-      });
-
-      // If all chunks already exist, mark done directly
-      if (existingIndexes.size >= chunks.length) {
+      if (existingIndexes.size >= prepared.chunks.length) {
         await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
-        updateIngestion(doc.name, { status: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos (já existiam)` });
-        toast.success("Já completo", { description: `"${doc.name}" — todos os fragmentos já existiam.` });
+        updateIngestion(doc.name, {
+          status: "done",
+          progress: 100,
+          phaseLabel: `✓ ${prepared.chunks.length} fragmentos (já existiam)`,
+        });
+        toast.success("Já completo", {
+          description: `"${doc.name}" — todos os fragmentos já existiam.`,
+        });
         fetchDocuments();
         setTimeout(() => {
-          setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
+          setIngestions((prev) => prev.filter((ingestionItem) => ingestionItem.fileName !== doc.name));
         }, 5000);
         return;
       }
 
-      // Send only missing chunks
-      const result = await sendChunksInBatches(doc.id, chunks, doc.name, abortController.signal, existingIndexes);
+      const result = await sendChunksInBatches(
+        doc.id,
+        prepared.chunks,
+        doc.name,
+        abortController.signal,
+        existingIndexes,
+      );
 
       if (result.status === "done") {
         await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
-        updateIngestion(doc.name, { status: "done", progress: 100, phaseLabel: `✓ ${chunks.length} fragmentos` });
+        updateIngestion(doc.name, {
+          status: "done",
+          progress: 100,
+          phaseLabel: `✓ ${prepared.chunks.length} fragmentos`,
+        });
         toast.success("Reprocessado", { description: `"${doc.name}" pronto.` });
       } else if (result.status === "partial") {
         await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "partial",
-          phaseLabel: `⚠ ${result.insertedChunks}/${chunks.length} — Retome novamente`,
+          phaseLabel: `⚠ ${result.insertedChunks}/${prepared.chunks.length} — Retome novamente`,
         });
-        toast.error("Parcial", { description: `"${doc.name}" — ${result.insertedChunks}/${chunks.length}. Retome.` });
+        toast.error("Parcial", {
+          description: `"${doc.name}" — ${result.insertedChunks}/${prepared.chunks.length}. Retome.`,
+        });
       } else {
         await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
         updateIngestion(doc.name, { status: "failed", phaseLabel: "Falha no reprocessamento" });
@@ -636,10 +566,12 @@ export default function Admin() {
       fetchDocuments();
 
       setTimeout(() => {
-        setIngestions((prev) => prev.filter((ing) => ing.fileName !== doc.name));
+        setIngestions((prev) => prev.filter((ingestionItem) => ingestionItem.fileName !== doc.name));
       }, 5000);
     } catch (err: unknown) {
-      toast.error("Erro ao reprocessar", { description: err instanceof Error ? err.message : "Erro desconhecido" });
+      toast.error("Erro ao reprocessar", {
+        description: err instanceof Error ? err.message : "Erro desconhecido",
+      });
       await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
       fetchDocuments();
     } finally {
@@ -677,6 +609,7 @@ export default function Admin() {
 
   const statusIcon = (doc: Document) => {
     if (isTimedOut(doc.id)) return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+
     switch (doc.status) {
       case "processed":
         return <CheckCircle2 className="h-4 w-4 text-primary" />;
@@ -686,7 +619,7 @@ export default function Admin() {
       case "error":
         return <XCircle className="h-4 w-4 text-destructive" />;
       case "cancelled":
-        return <X className="h-4 w-4 text-muted-foreground" />;
+        return <XCircle className="h-4 w-4 text-muted-foreground" />;
       default:
         return null;
     }
@@ -694,6 +627,7 @@ export default function Admin() {
 
   const statusLabel = (doc: Document) => {
     if (isTimedOut(doc.id)) return "Possível falha — tente reprocessar";
+
     const map: Record<string, string> = {
       pending: "Na fila",
       processing: "Processando",
@@ -701,11 +635,13 @@ export default function Admin() {
       error: "Erro",
       cancelled: "Cancelado",
     };
+
     const label = map[doc.status] || doc.status;
     const timer = processingTimers[doc.id];
     if ((doc.status === "processing" || doc.status === "pending") && timer !== undefined) {
       return `${label}... ${formatTimer(timer)}`;
     }
+
     return label;
   };
 
@@ -715,234 +651,61 @@ export default function Admin() {
   const canCancel = (doc: Document) =>
     (doc.status === "processing" || doc.status === "pending") && !isTimedOut(doc.id);
 
-  const phaseColor = (status: IngestionStatus) => {
-    switch (status) {
-      case "done": return "text-primary";
-      case "failed": return "text-destructive";
-      case "partial": return "text-yellow-600 dark:text-yellow-400";
-      case "canceled": return "text-muted-foreground";
-      case "verifying": return "text-blue-500";
-      default: return "text-muted-foreground";
-    }
-  };
+  const isBusy = ingestions.some((ingestion) => (
+    ingestion.status === "vectorizing" || ingestion.status === "extracting" || ingestion.status === "verifying"
+  ));
 
-  const phaseIcon = (status: IngestionStatus) => {
-    switch (status) {
-      case "vectorizing": return <Brain className="inline h-3 w-3 mr-1" />;
-      case "verifying": return <ShieldCheck className="inline h-3 w-3 mr-1" />;
-      case "partial": return <AlertCircle className="inline h-3 w-3 mr-1" />;
-      default: return null;
-    }
-  };
+  if (!hasSupabaseConfig) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <AdminPageHeader onSignOut={() => {}} />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Painel administrativo em preparação</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>{SUPABASE_UNAVAILABLE_MESSAGE}</p>
+              <p>
+                Assim que o novo projeto Supabase estiver ligado, este painel volta a exibir documentos, ingestões, autenticação e métricas reais.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Base de Conhecimento — CLARA
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Faça upload de PDFs para alimentar a base de conhecimento da assistente.
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" onClick={() => supabase.auth.signOut()} title="Sair">
-            <LogOut className="h-5 w-5" />
-          </Button>
-        </div>
+        <AdminPageHeader onSignOut={() => { void supabase.auth.signOut(); }} />
 
-        {/* Upload Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Upload className="h-5 w-5" />
-              Upload de Documentos
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 transition-colors hover:border-primary/50 hover:bg-muted/50">
-              <FileText className="mb-2 h-10 w-10 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">
-                Clique ou arraste PDFs aqui
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Apenas arquivos PDF — processamento local no navegador
-              </span>
-              <input
-                type="file"
-                accept=".pdf"
-                multiple
-                className="hidden"
-                onChange={handleUpload}
-                disabled={ingestions.some((i) => i.status === "vectorizing" || i.status === "extracting" || i.status === "verifying")}
-              />
-            </label>
+        <AdminUploadCard
+          ingestions={ingestions}
+          isBusy={isBusy}
+          onUpload={handleUpload}
+          onCancelIngestion={handleCancelIngestion}
+        />
 
-            {/* Ingestion progress */}
-            {ingestions.length > 0 && (
-              <div className="space-y-3">
-                {ingestions.map((ing) => (
-                  <div key={ing.fileName} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground truncate max-w-[60%]">
-                        {ing.fileName}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${phaseColor(ing.status)}`}>
-                          {phaseIcon(ing.status)}
-                          {ing.phaseLabel}
-                        </span>
-                        {(ing.status === "vectorizing" || ing.status === "extracting" || ing.status === "verifying") && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => handleCancelIngestion(ing.fileName)}
-                            title="Cancelar"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    {ing.status !== "done" && ing.status !== "failed" && ing.status !== "canceled" && ing.status !== "partial" && (
-                      <Progress value={ing.progress} className="h-2" />
-                    )}
-                    {ing.status === "done" && (
-                      <Progress value={100} className="h-2" />
-                    )}
-                    {ing.status === "partial" && (
-                      <Progress value={ing.progress} className="h-2" />
-                    )}
-                    {ing.lastError && (
-                      <p className="text-xs text-destructive mt-1">
-                        {ing.lastError.message}
-                        {ing.lastError.chunkIndex !== undefined && ` (chunk #${ing.lastError.chunkIndex})`}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <Suspense fallback={<AdminPanelFallback title="Documentos" />}>
+          <AdminDocumentsCard
+            documents={documents}
+            retryingId={retryingId}
+            isTimedOut={isTimedOut}
+            canRetry={canRetry}
+            canCancel={canCancel}
+            statusIcon={statusIcon}
+            statusLabel={statusLabel}
+            onRetry={(doc) => { void handleRetry(doc); }}
+            onCancel={(doc) => { void handleCancel(doc); }}
+            onDelete={(doc) => { void handleDelete(doc); }}
+          />
+        </Suspense>
 
-        {/* Documents Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Documentos ({documents.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {documents.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                Nenhum documento na base de conhecimento.
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead className="w-[220px]">Status</TableHead>
-                    <TableHead className="w-[100px]" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {documents.map((doc) => (
-                    <TableRow key={doc.id}>
-                      <TableCell className="font-medium">{doc.name}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`flex items-center gap-2 text-sm ${
-                            isTimedOut(doc.id)
-                              ? "text-yellow-600 dark:text-yellow-400 font-medium"
-                              : doc.status === "error"
-                              ? "text-destructive"
-                              : ""
-                          }`}
-                        >
-                          {statusIcon(doc)}
-                          {statusLabel(doc)}
-                        </span>
-                        {canRetry(doc) && (
-                          <div className="flex gap-2 mt-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRetry(doc)}
-                              disabled={retryingId === doc.id}
-                              className="h-7 text-xs"
-                            >
-                              <RefreshCw className={`h-3 w-3 mr-1 ${retryingId === doc.id ? "animate-spin" : ""}`} />
-                              Retomar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDelete(doc)}
-                              className="h-7 text-xs text-destructive"
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Excluir
-                            </Button>
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {canCancel(doc) && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleCancel(doc)}
-                              title="Cancelar processamento"
-                            >
-                              <X className="h-4 w-4 text-muted-foreground" />
-                            </Button>
-                          )}
-                          {canRetry(doc) && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRetry(doc)}
-                              disabled={retryingId === doc.id}
-                              title="Retomar"
-                            >
-                              <RefreshCw className={`h-4 w-4 text-muted-foreground ${retryingId === doc.id ? "animate-spin" : ""}`} />
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(doc)}
-                            title="Remover documento"
-                            className={
-                              doc.status === "error" || doc.status === "cancelled" || isTimedOut(doc.id)
-                                ? "opacity-100"
-                                : "opacity-60 hover:opacity-100"
-                            }
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        <UsageStatsCard />
+        <Suspense fallback={<AdminPanelFallback title="Métricas agregadas da CLARA" />}>
+          <UsageStatsCard />
+        </Suspense>
       </div>
     </div>
   );

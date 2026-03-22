@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MessageSquare, Search, FileText, Activity } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { hasSupabaseConfig, supabase } from "@/integrations/supabase/client";
 
 interface UsageStats {
   month: string;
@@ -12,9 +12,14 @@ interface UsageStats {
 
 export default function UsageStatsCard() {
   const [stats, setStats] = useState<UsageStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(hasSupabaseConfig);
 
   useEffect(() => {
+    if (!hasSupabaseConfig) {
+      setLoading(false);
+      return;
+    }
+
     const fetchStats = async () => {
       try {
         const { data, error } = await supabase.functions.invoke("get-usage-stats");
@@ -54,7 +59,11 @@ export default function UsageStatsCard() {
         )}
       </CardHeader>
       <CardContent className="space-y-4">
-        {loading ? (
+        {!hasSupabaseConfig ? (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            As métricas agregadas voltam a aparecer assim que o novo Supabase for conectado.
+          </p>
+        ) : loading ? (
           <p className="text-sm text-muted-foreground text-center py-4">Carregando...</p>
         ) : !stats ? (
           <p className="text-sm text-muted-foreground text-center py-4">Erro ao carregar dados</p>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { supabase } from '@/integrations/supabase/client';
+import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from '@/integrations/supabase/client';
 
 type CallbackStatus = 'loading' | 'success' | 'error';
 
@@ -19,6 +19,8 @@ export default function AuthCallback() {
   }, [location.search]);
 
   useEffect(() => {
+    if (!hasSupabaseConfig) return;
+
     let cancelled = false;
 
     const finishAuth = async () => {
@@ -70,6 +72,20 @@ export default function AuthCallback() {
       subscription.unsubscribe();
     };
   }, [navigate, nextPath]);
+
+  if (!hasSupabaseConfig) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+          <TriangleAlert className="mx-auto h-8 w-8 text-destructive" />
+          <h1 className="mt-4 text-lg font-semibold text-foreground">Login administrativo indisponível</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {SUPABASE_UNAVAILABLE_MESSAGE}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

@@ -5,7 +5,9 @@ import {
   getDefaultChatApiConfig,
   requestChat,
   streamChatResponse,
+  type ChatApiConfig,
 } from '@/lib/chat-api';
+import type { ChatRuntimeMode } from '@/lib/chat-runtime';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -19,6 +21,9 @@ interface ChatState {
   pendingQuestion: string | null;
   isLoading: boolean;
   isStreaming: boolean;
+  runtimeMode: ChatRuntimeMode;
+  runtimeLabel: string;
+  runtimeDescription: string;
   openChat: (question?: string) => void;
   closeChat: () => void;
   sendMessage: (text: string) => void;
@@ -27,6 +32,27 @@ interface ChatState {
 
 const ChatContext = createContext<ChatState | null>(null);
 const CHAT_API_CONFIG = getDefaultChatApiConfig();
+
+function getRuntimePresentation(config: ChatApiConfig) {
+  if (config.runtimeMode === 'online') {
+    return {
+      runtimeLabel: 'Base interna conectada',
+      runtimeDescription: 'A CLARA está consultando a base configurada do projeto.',
+    };
+  }
+
+  if (config.runtimeMode === 'mock') {
+    return {
+      runtimeLabel: 'Mock local em desenvolvimento',
+      runtimeDescription: 'As respostas estão vindo de um mock local para testes de interface.',
+    };
+  }
+
+  return {
+    runtimeLabel: 'Modo de preparação',
+    runtimeDescription: 'A interface conversacional está ativa enquanto a nova integração Supabase é preparada.',
+  };
+}
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -69,6 +95,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const { runtimeLabel, runtimeDescription } = getRuntimePresentation(CHAT_API_CONFIG);
 
   const openChat = useCallback((question?: string) => {
     setIsOpen(true);
@@ -182,7 +209,20 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   return (
     <ChatContext.Provider
-      value={{ isOpen, messages, pendingQuestion, isLoading, isStreaming, openChat, closeChat, sendMessage, clearMessages }}
+      value={{
+        isOpen,
+        messages,
+        pendingQuestion,
+        isLoading,
+        isStreaming,
+        runtimeMode: CHAT_API_CONFIG.runtimeMode,
+        runtimeLabel,
+        runtimeDescription,
+        openChat,
+        closeChat,
+        sendMessage,
+        clearMessages,
+      }}
     >
       {children}
     </ChatContext.Provider>

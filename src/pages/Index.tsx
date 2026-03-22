@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
+import ManifestSection from "@/components/ManifestSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import { SoftWaveDivider } from "@/components/animations/SoftWaveDivider";
 import FAQSection from "@/components/FAQSection";
@@ -31,6 +32,22 @@ const IndexContent = () => {
     openChat(prefixedQuestion || undefined);
   }, [location.search, openChat]);
 
+  useEffect(() => {
+    if (!location.hash) return;
+
+    const id = location.hash.replace("#", "");
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      const headerOffset = 104;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top, behavior: "smooth" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [location.hash]);
+
   return (
     <div className="min-h-screen bg-background">
       <a
@@ -43,7 +60,11 @@ const IndexContent = () => {
       <Header />
       <main id="main-content" className="site-main-canvas">
         <HeroSection />
+<<<<<<< HEAD
         <SoftWaveDivider />
+=======
+        <ManifestSection />
+>>>>>>> origin/main
         <FeaturesSection />
         <FAQSection />
       </main>
