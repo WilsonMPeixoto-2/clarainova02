@@ -163,6 +163,7 @@ const HeroSection = () => {
 
       <div className="hero-shell" data-hero-mode={heroMode}>
         <div className="hero-media-stage" aria-hidden="true">
+          <div className="hero-media-backplate" />
           <motion.div
             className="hero-media-motion"
             initial={shouldAnimate ? { opacity: 0 } : false}
@@ -171,6 +172,33 @@ const HeroSection = () => {
             style={shouldAnimate ? { y: mediaParallaxY } : undefined}
           >
             <HeroBackgroundOGL />
+            <div className="hero-video-shell absolute inset-0 z-10">
+              {useVideoHero ? (
+                <video
+                  src={currentVideoSrc}
+                  poster={heroPoster}
+                  autoPlay
+                  disablePictureInPicture
+                  loop
+                  muted
+                  playsInline
+                  className="hero-clara-video w-full h-full object-cover object-right opacity-90"
+                />
+              ) : (
+                <picture className="hero-clara-video w-full h-full block">
+                  <source srcSet={claraHeroPremiumAvif} type="image/avif" />
+                  <source srcSet={claraHeroPremiumWebp} type="image/webp" />
+                  <img
+                    src={heroPoster}
+                    alt="CLARA IA Avatar"
+                    className="w-full h-full object-cover object-right"
+                    fetchPriority="high"
+                  />
+                </picture>
+              )}
+              <div className="hero-video-vignette absolute inset-0 bg-gradient-to-l from-transparent via-background/20 to-background/95" aria-hidden="true" />
+              <div className="hero-video-frame absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" aria-hidden="true" />
+            </div>
           </motion.div>
         </div>
 
