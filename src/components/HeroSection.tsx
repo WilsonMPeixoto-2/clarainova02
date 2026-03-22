@@ -1,6 +1,6 @@
 import HeroBackgroundOGL from '@/components/animations/HeroBackgroundOGL';
 import { AnimatedShinyText } from '@/components/magicui/animated-shiny-text';
-import { useCallback, useEffect, useRef, useSyncExternalStore, type MouseEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, BookOpen, CaretLeft, CaretRight, ChatCircle } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
@@ -63,9 +63,13 @@ const HeroSection = () => {
     () => false,
   );
 
-  const heroMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('hero') === 'video'
-    ? 'video'
-    : 'image';
+  const [heroMode, setHeroMode] = useState<'video' | 'image'>(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('hero') === 'video') {
+      return 'video';
+    }
+    return 'image';
+  });
+
   const useVideoHero = heroMode === 'video' && !isHeroMobile && !prefersReducedMotion;
   const heroPoster = isUhdDisplay ? claraHeroFallback4k : claraHeroFallback;
   const currentVideoSrc = isUhdDisplay ? '/videos/clara-hero-4k.mp4' : '/videos/clara-hero.mp4';

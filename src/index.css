@@ -129,10 +129,10 @@
     --ring: var(--gold-1);
 
     /* Typography pairings */
-    --font-heading: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-brand: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
-    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-heading: 'Fraunces Variable', Georgia, serif;
+    --font-body: 'Manrope Variable', system-ui, -apple-system, sans-serif;
+    --font-brand: 'Fraunces Variable', Georgia, serif;
+    --font-display: 'Fraunces Variable', Georgia, serif;
 
     --type-h1-size: clamp(3.2rem, 7.8vw, 8rem);
     --type-h1-line: 0.92;
