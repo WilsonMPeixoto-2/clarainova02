@@ -1,4 +1,4 @@
-import { ArrowRight, BrainCircuit, FileStack, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ClipboardList, ShieldCheck } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
 import ScrollReveal from '@/components/animations/ScrollReveal';
@@ -6,57 +6,44 @@ import { useChat } from '@/hooks/useChatStore';
 
 const manifestoCards = [
   {
-    icon: Sparkles,
-    eyebrow: 'Superfície',
-    title: 'Produto com presença própria',
+    icon: ClipboardList,
+    eyebrow: 'Entenda o caminho',
+    title: 'Saiba por onde começar',
     description:
-      'A CLARA não foi desenhada como um site burocrático. A linguagem visual assume sofisticação, atmosfera e ritmo de produto digital.',
+      'Receba orientação sobre etapas, caminhos e verificações comuns em tarefas do SEI-Rio.',
   },
   {
-    icon: Workflow,
-    eyebrow: 'Fluxo',
-    title: 'Pergunta natural, leitura operacional',
+    icon: CheckCircle2,
+    eyebrow: 'Confira antes de agir',
+    title: 'Revise o que ainda falta',
     description:
-      'A experiência nasce para transformar dúvidas em leitura rápida, etapas claras, cautelas e próximos movimentos.',
+      'Use a resposta para revisar documentos, anexos, assinatura e encaminhamento antes de seguir.',
   },
   {
     icon: ShieldCheck,
-    eyebrow: 'Controle',
-    title: 'Autonomia com validação humana',
+    eyebrow: 'Use com segurança',
+    title: 'Valide quando for necessário',
     description:
-      'A CLARA acelera entendimento e preparo, mas mantém explícito quando a checagem institucional continua indispensável.',
+      'Quando houver exceção, dúvida normativa ou decisão formal, a conferência final continua com a sua unidade.',
   },
 ];
 
 const protocolSteps = [
   {
-    title: 'Entrada conversacional',
-    description: 'A pergunta chega em linguagem natural, sem exigir jargão técnico ou nomes exatos de menu.',
+    title: 'Descreva a dúvida',
+    description: 'Explique a tarefa, a tela ou o problema do jeito que você faria para um colega.',
   },
   {
-    title: 'Triagem semântica',
-    description: 'A arquitetura de RAG organiza contexto, prioriza materiais e separa o que é apoio do que exige cautela.',
+    title: 'Leia a resposta',
+    description: 'Use a orientação para localizar etapas, botões, documentos e verificações importantes.',
   },
   {
-    title: 'Resposta estruturada',
-    description: 'O retorno aparece em blocos escaneáveis, com etapas, observações, sinais de risco e referências.',
+    title: 'Confira a próxima ação',
+    description: 'Revise o que precisa ser anexado, assinado, enviado ou confirmado antes de continuar.',
   },
   {
-    title: 'Validação final',
-    description: 'A decisão operacional continua humana, só que agora melhor informada e com menos fricção.',
-  },
-];
-
-const signalFacts = [
-  {
-    icon: BrainCircuit,
-    label: 'Camada inteligente',
-    value: 'RAG orientado por procedimento',
-  },
-  {
-    icon: FileStack,
-    label: 'Superfície visual',
-    value: 'Landing, chat e leitura pensados como produto',
+    title: 'Valide na rotina da unidade',
+    description: 'Se houver exceção ou dúvida normativa, confirme com o procedimento oficial aplicável.',
   },
 ];
 
@@ -70,34 +57,19 @@ const ManifestSection = () => {
           <div className="manifest-shell">
             <div className="manifest-copy">
               <span className="manifest-kicker">
-                <BrainCircuit className="w-3.5 h-3.5" aria-hidden="true" />
-                Conceito do produto
+                <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                Como funciona
               </span>
               <h2 id="manifest-heading" className="text-h2 mt-4">
                 <Balancer>
-                  CLARA como ferramenta institucional premium e experiência futurista ao mesmo tempo.
+                  Entenda a proxima etapa com mais rapidez.
                 </Balancer>
               </h2>
               <p className="manifest-lead">
                 <Balancer>
-                  A proposta não é imitar um portal administrativo. É criar uma interface própria, elegante e avançada para
-                  uma tarefa institucional concreta: entender o SEI-Rio com mais clareza.
+                  Consulte etapas frequentes sobre documentos, assinatura, envio e organizacao de processos no SEI-Rio.
                 </Balancer>
               </p>
-            </div>
-
-            <div className="manifest-signal-band" aria-label="Sinais da CLARA">
-              {signalFacts.map((fact) => (
-                <article key={fact.label} className="manifest-signal-card">
-                  <span className="manifest-signal-icon" aria-hidden="true">
-                    <fact.icon className="w-4 h-4" />
-                  </span>
-                  <div>
-                    <p className="manifest-signal-label">{fact.label}</p>
-                    <p className="manifest-signal-value">{fact.value}</p>
-                  </div>
-                </article>
-              ))}
             </div>
 
             <div className="manifest-grid">
@@ -115,20 +87,20 @@ const ManifestSection = () => {
 
             <div className="manifest-protocol">
               <div className="manifest-protocol-copy">
-                <p className="manifest-protocol-kicker">Arquitetura da experiência</p>
+                <p className="manifest-protocol-kicker">Como usar</p>
                 <h3 className="manifest-protocol-title">
-                  <Balancer>Da pergunta ao próximo passo, a CLARA precisa parecer produto de verdade.</Balancer>
+                  <Balancer>Pergunte, leia e confira a proxima acao.</Balancer>
                 </h3>
                 <p className="manifest-protocol-description">
-                  Por isso a navegação, o chat lateral, os modos de leitura e a resposta estruturada precisam conversar entre si.
+                  A resposta organiza a execucao da tarefa, sem substituir a conferencia oficial do seu fluxo de trabalho.
                 </p>
                 <button type="button" className="manifest-cta" onClick={() => openChat()}>
-                  Abrir o painel conversacional
+                  Abrir o chat
                   <ArrowRight size={16} aria-hidden="true" />
                 </button>
               </div>
 
-              <ol className="manifest-protocol-list" aria-label="Etapas da experiência">
+              <ol className="manifest-protocol-list" aria-label="Etapas de uso">
                 {protocolSteps.map((step, index) => (
                   <li key={step.title} className="manifest-protocol-step">
                     <span className="manifest-protocol-index">{String(index + 1).padStart(2, '0')}</span>

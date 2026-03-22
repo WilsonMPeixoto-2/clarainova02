@@ -2,14 +2,10 @@ import { useCallback, useEffect, useRef, useSyncExternalStore, type MouseEvent }
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import {
   ArrowRight,
-  BrainCircuit,
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Orbit,
   MessageCircle,
-  Radar,
-  ShieldCheck,
 } from 'lucide-react';
 import Balancer from 'react-wrap-balancer';
 
@@ -28,46 +24,6 @@ const QUICK_QUESTIONS = [
 
 const QUICK_SCROLL_DISTANCE = 320;
 const HERO_MOBILE_QUERY = '(max-width: 1023px)';
-
-const HERO_SIDE_LINKS = [
-  {
-    icon: Orbit,
-    label: 'Superfície premium',
-    description: 'Atmosfera, ritmo e navegação com linguagem própria.',
-  },
-  {
-    icon: BrainCircuit,
-    label: 'Camada conversacional',
-    description: 'Chat lateral, respostas estruturadas e exportação.',
-  },
-  {
-    icon: Radar,
-    label: 'RAG em próxima etapa',
-    description: 'Base documental, scoring e priorização prontos para religação.',
-  },
-];
-
-const HERO_PROTOCOL_STEPS = [
-  {
-    title: 'Pergunte como você pensa',
-    description: 'A CLARA nasce para receber dúvida operacional em linguagem natural.',
-  },
-  {
-    title: 'Receba leitura guiada',
-    description: 'O retorno precisa parecer uma interface de trabalho, não um bloco de texto cru.',
-  },
-  {
-    title: 'Decida com mais clareza',
-    description: 'A inteligência acelera entendimento sem apagar a validação institucional.',
-  },
-];
-
-const HERO_VALUE_POINTS = [
-  'Chat lateral com modos de leitura',
-  'Passo a passo estruturado',
-  'Tom institucional com linguagem de produto',
-  'Visual premium e futurista',
-];
 
 function subscribeToHeroViewport(onChange: () => void) {
   if (typeof window === 'undefined' || !window.matchMedia) {
@@ -253,21 +209,19 @@ const HeroSection = () => {
               className="hero-copy-surface"
             >
               <motion.div variants={itemVariants} className="hero-chip-row">
-                <span className="badge-chip">Apoio ao SEI-Rio</span>
-                <span className="badge-chip is-secondary">Produto independente</span>
+                <span className="badge-chip">Apoio ao uso do SEI-Rio</span>
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-editorial-stack">
-                <p className="hero-label-line">Produto conversacional para rotinas administrativas</p>
-                <p className="hero-brand-wordmark">CLARA</p>
-                <h1 className="hero-editorial-headline">
+                <h1 className="hero-brand-display">CLARA</h1>
+                <p className="hero-support-headline">
                   <Balancer>
-                    Inteligência conversacional para navegar o SEI-Rio com clareza.
+                    Orientação clara para documentos, assinatura e tramitação no SEI-Rio.
                   </Balancer>
-                </h1>
+                </p>
                 <p className="hero-description text-body">
                   <Balancer>
-                    Uma experiência premium e futurista para orientar documentos, assinatura, tramitação e leitura operacional sem cair no visual burocrático de sempre.
+                    Tire dúvidas sobre etapas, revise o que falta conferir e organize a próxima ação com mais segurança nas rotinas administrativas.
                   </Balancer>
                 </p>
               </motion.div>
@@ -280,7 +234,7 @@ const HeroSection = () => {
                   onMouseLeave={handleMagneticLeave}
                 >
                   <MessageCircle size={18} aria-hidden="true" />
-                  Iniciar chat com a CLARA
+                  Abrir chat
                   <ArrowRight size={18} aria-hidden="true" />
                 </button>
                 <button
@@ -292,22 +246,16 @@ const HeroSection = () => {
                   onMouseLeave={handleMagneticLeave}
                 >
                   <BookOpen size={18} aria-hidden="true" />
-                  Explorar a arquitetura
+                  Ver funcionalidades
                 </button>
-              </motion.div>
-
-              <motion.div variants={itemVariants} className="hero-trust-line">
-                {HERO_VALUE_POINTS.map((item) => (
-                  <span key={item} className="hero-inline-status">{item}</span>
-                ))}
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-prompt-cluster">
                 <div className="hero-prompt-toolbar">
                   <div className="space-y-1">
-                    <p className="text-caption text-muted-foreground">Consultas de demonstração</p>
+                    <p className="text-caption text-muted-foreground">Perguntas frequentes</p>
                     <p className="hero-prompt-lead">
-                      Casos em que a CLARA precisa parecer produto de verdade.
+                      Exemplos de perguntas sobre tarefas comuns no SEI-Rio.
                     </p>
                   </div>
                   <div className="hero-prompt-actions">
@@ -367,55 +315,6 @@ const HeroSection = () => {
               </motion.div>
             </motion.div>
           </div>
-
-          <motion.aside
-            className="hero-intelligence-panel"
-            initial={shouldAnimate ? { opacity: 0, x: 28 } : false}
-            animate={{ opacity: 1, x: 0 }}
-            transition={shouldAnimate ? { duration: 0.78, delay: 0.18, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
-          >
-            <div className="hero-panel-frame">
-              <div className="hero-panel-header">
-                <div>
-                  <p className="hero-panel-kicker">CLARA / experience layer</p>
-                  <h2 className="hero-panel-title">Institucional na função. Futurista na presença.</h2>
-                </div>
-                <span className="hero-panel-badge">Beta independente</span>
-              </div>
-
-              <div className="hero-signal-grid">
-                {HERO_SIDE_LINKS.map((item) => (
-                  <article key={item.label} className="hero-signal-card">
-                    <span className="hero-signal-icon" aria-hidden="true">
-                      <item.icon className="w-4 h-4" />
-                    </span>
-                    <div>
-                      <p className="hero-signal-label">{item.label}</p>
-                      <p className="hero-signal-description">{item.description}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              <div className="hero-protocol-card">
-                <div className="hero-protocol-header">
-                  <p className="hero-protocol-kicker">Da pergunta à decisão</p>
-                  <p className="hero-protocol-caption">Como a superfície precisa funcionar.</p>
-                </div>
-                <ol className="hero-protocol-list" aria-label="Fluxo da CLARA">
-                  {HERO_PROTOCOL_STEPS.map((step, index) => (
-                    <li key={step.title} className="hero-protocol-step">
-                      <span className="hero-protocol-index">{String(index + 1).padStart(2, '0')}</span>
-                      <div>
-                        <p className="hero-protocol-step-title">{step.title}</p>
-                        <p className="hero-protocol-step-description">{step.description}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-          </motion.aside>
         </motion.div>
       </div>
     </section>

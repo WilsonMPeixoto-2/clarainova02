@@ -95,7 +95,7 @@ const Privacidade = () => {
     <LegalPageLayout
       kicker="Política de Privacidade"
       title="Privacidade com transparência operacional"
-      description="Como a CLARA trata dados, quais limites orientam o uso do projeto e quais cuidados continuam valendo mesmo em uma experiência visual mais ousada."
+      description="Como a CLARA trata dados, quais limites orientam o uso do serviço e quais cuidados continuam valendo no uso do site e do chat."
       updatedAt="Última atualização: 15 de março de 2026"
       sections={sections}
     />

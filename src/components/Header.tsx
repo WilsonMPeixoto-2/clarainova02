@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Menu, MessageCircle, Orbit, X } from 'lucide-react';
+import { Menu, MessageCircle, X } from 'lucide-react';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { Link, useLocation } from 'react-router-dom';
 import { useChat } from '@/hooks/useChatStore';
@@ -18,9 +18,9 @@ const Header = () => {
   const { openChat } = useChat();
 
   const primaryLinks: NavItem[] = [
-    { label: 'Arquitetura', to: '/#sistema', note: 'Como a CLARA organiza a experiência' },
-    { label: 'Funcionalidades', to: '/#conhecimento', note: 'O que a CLARA ajuda a fazer' },
-    { label: 'Perguntas frequentes', to: '/#faq', note: 'Uso, limites e respostas rápidas' },
+    { label: 'Como funciona', to: '/#sistema' },
+    { label: 'Funcionalidades', to: '/#conhecimento' },
+    { label: 'Perguntas frequentes', to: '/#faq' },
   ];
 
   const secondaryLinks: NavItem[] = [
@@ -73,17 +73,14 @@ const Header = () => {
                 className="header-brand-mark"
                 aria-hidden="true"
               >
-                <Orbit size={18} />
+                C
               </span>
               <span className="header-brand-block hidden sm:grid">
-                <span className="header-brand-overline">
-                  Institucional premium · linguagem futurista
-                </span>
                 <span className="header-brand-title">
                   CLARA
                 </span>
                 <span className="hidden md:block header-brand-subtitle">
-                  Camada conversacional para navegar o SEI-Rio com mais clareza.
+                  Apoio ao uso do SEI-Rio
                 </span>
               </span>
               <span className="sr-only">CLARA - Página inicial</span>
@@ -101,7 +98,6 @@ const Header = () => {
                     className={`header-nav-link ${isActive ? 'is-active' : ''}`}
                   >
                     <span className="header-nav-label">{link.label}</span>
-                    <span className="header-nav-note">{link.note}</span>
                   </Link>
                 );
               })}
@@ -149,7 +145,7 @@ const Header = () => {
         <div className="drawer-header-surface flex items-center justify-between px-6 py-5 border-b">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-primary/35 bg-primary/10 text-primary text-xs font-semibold" aria-hidden="true">
-              <Orbit size={15} />
+              C
             </span>
             <div>
               <p className="text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Navegação</p>
@@ -187,7 +183,7 @@ const Header = () => {
                     <span className={`text-sm font-semibold ${isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
                       {link.label}
                     </span>
-                    <span className="text-xs text-muted-foreground mt-1">{link.note}</span>
+                    {link.note ? <span className="text-xs text-muted-foreground mt-1">{link.note}</span> : null}
                   </Link>
                 );
               })}
@@ -244,7 +240,7 @@ const Header = () => {
               Chat com CLARA
             </button>
             <p className="text-hint text-center mt-3 leading-relaxed">
-              Acesse o chat e as informações principais da ferramenta em um só lugar.
+              Abra o chat para fazer uma pergunta.
             </p>
           </div>
         </div>

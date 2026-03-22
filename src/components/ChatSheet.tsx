@@ -6,10 +6,7 @@ import {
   MessageCircle,
   Minimize2,
   PanelRightOpen,
-  Radar,
   Send,
-  ShieldCheck,
-  Sparkles,
   Trash2,
   X,
 } from 'lucide-react';
@@ -27,24 +24,6 @@ const STARTER_PROMPTS = [
   'Como montar um bloco de assinatura para outra unidade?',
   'Como enviar um processo para mais de uma unidade?',
   'Quais etapas devo conferir antes de encaminhar um processo?',
-];
-
-const PREVIEW_STATUS_CARDS = [
-  {
-    icon: Sparkles,
-    title: 'Superfície pronta',
-    description: 'Hero, navegação, painel lateral e leitura estruturada já estão ativos.',
-  },
-  {
-    icon: Radar,
-    title: 'Fluxo em preparação',
-    description: 'A experiência está pronta para receber a religação do backend e da base semântica.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Comunicação honesta',
-    description: 'O painel deixa claro quando a resposta é demonstração e quando estiver ligada à base real.',
-  },
 ];
 
 type ChatPanelMode = 'default' | 'expanded' | 'fullscreen';
@@ -213,7 +192,7 @@ const ChatSheet = () => {
   const isPreviewMode = runtimeMode === 'preview';
   const isMockMode = runtimeMode === 'mock';
   const inputPlaceholder = isPreviewMode
-    ? 'Pergunte e veja a CLARA responder em modo de preparação...'
+    ? 'Pergunte e teste o formato da resposta enquanto a nova base e preparada...'
     : isMockMode
       ? 'Pergunte e teste o mock local da CLARA...'
       : 'Pergunte sobre etapas, documentos ou tramitação...';
@@ -344,25 +323,9 @@ const ChatSheet = () => {
                     <p className="chat-empty-title">CLARA pronta para conversar.</p>
                     <p className="chat-empty-copy">
                       {isPreviewMode
-                        ? 'Enquanto a nova integração Supabase é preparada, você já pode explorar o formato de resposta, o ritmo de leitura e a superfície conversacional da CLARA.'
+                        ? 'Enquanto a nova base e configurada, voce ja pode testar perguntas e ver como a resposta sera organizada.'
                         : 'Faça uma pergunta sobre etapas, documentos, assinatura ou tramitação no SEI-Rio.'}
                     </p>
-
-                    {isPreviewMode && (
-                      <div className="chat-empty-status-grid">
-                        {PREVIEW_STATUS_CARDS.map((card) => (
-                          <article key={card.title} className="chat-empty-status-card">
-                            <span className="chat-empty-status-icon" aria-hidden="true">
-                              <card.icon className="w-4 h-4" />
-                            </span>
-                            <div>
-                              <p className="chat-empty-status-title">{card.title}</p>
-                              <p className="chat-empty-status-description">{card.description}</p>
-                            </div>
-                          </article>
-                        ))}
-                      </div>
-                    )}
 
                     <div className="chat-starter-grid mt-5">
                       {STARTER_PROMPTS.map((prompt) => (
@@ -451,7 +414,7 @@ const ChatSheet = () => {
               <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                 <p className="text-[10px] text-muted-foreground/60">
                   {isPreviewMode
-                    ? 'Modo de preparação: o painel demonstra a experiência conversacional e a estrutura da resposta antes da religação definitiva da base.'
+                    ? 'Modo de preparacao: voce pode testar perguntas e visualizar o formato da resposta antes da reconexao definitiva da base.'
                     : 'Respostas preferencialmente organizadas em blocos, com fontes ao final quando houver base suficiente.'}
                 </p>
                 {!isMobile && (

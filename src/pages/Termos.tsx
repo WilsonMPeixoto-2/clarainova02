@@ -88,8 +88,8 @@ const Termos = () => {
   return (
     <LegalPageLayout
       kicker="Termos de Serviço"
-      title="Termos claros para um produto em evolução"
-      description="Escopo, limites e responsabilidade de uso da CLARA enquanto o projeto evolui como produto conversacional voltado ao universo administrativo."
+      title="Termos claros para o uso da CLARA"
+      description="Escopo, limites e responsabilidade de uso da CLARA como ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas."
       updatedAt="Última atualização: 15 de março de 2026"
       sections={sections}
     />

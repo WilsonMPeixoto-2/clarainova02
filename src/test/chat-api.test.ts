@@ -110,8 +110,8 @@ describe("chat api transport", () => {
       throw new Error("Expected structured preview result");
     }
 
-    expect(result.response.tituloCurto).toBe("Modo de preparacao da CLARA");
-    expect(result.plainText).toContain("Modo de preparacao da CLARA");
+    expect(result.response.tituloCurto).toBe("Resposta de teste da CLARA");
+    expect(result.plainText).toContain("Resposta de teste da CLARA");
   });
 
   it("streams SSE deltas into the UI callback", async () => {
