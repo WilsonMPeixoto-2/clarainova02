@@ -164,9 +164,9 @@ REGRAS DE SEGURANÇA
 // ============================================================
 
 const GEMINI_MODELS = [
-  'gemini-3.1-flash',
-  'gemini-3-flash',
-  'gemini-2.5-flash',
+  'gemini-3.1-flash-latest',
+  'gemini-3-flash-latest',
+  'gemini-2.5-flash-latest',
 ];
 
 type HybridSearchChunk = {
