@@ -164,9 +164,9 @@ REGRAS DE SEGURANÇA
 // ============================================================
 
 const GEMINI_MODELS = [
+  'gemini-3.1-flash',
+  'gemini-3-flash',
   'gemini-2.5-flash',
-  'gemini-3-flash-preview',
-  'gemini-2.5-flash-lite',
 ];
 
 type HybridSearchChunk = {
@@ -525,7 +525,7 @@ Deno.serve(async (req) => {
       try {
         const searchStartedAt = Date.now();
         const embeddingResult = await ai.models.embedContent({
-          model: 'gemini-embedding-001',
+          model: 'text-embedding-004',
           contents: lastUserMessage.content,
           config: { outputDimensionality: 768 },
         });
@@ -575,7 +575,7 @@ Deno.serve(async (req) => {
           request_id: requestId,
           query_text: lastUserMessage.content,
           normalized_query: normalizedQuery,
-          query_embedding_model: 'gemini-embedding-001',
+          query_embedding_model: 'text-embedding-004',
           keyword_query_text: lastUserMessage.content,
           search_mode: 'hybrid',
           merged_hits_count: searchResultCount,
