@@ -5,6 +5,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
 import { ArrowRight, BookOpen, CaretLeft, CaretRight, ChatCircle } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
 import { Tilt3D } from '@/components/animations/Tilt3D';
+import ClaraParticles3D from '@/components/animations/ClaraParticles3D';
 
 import { useChat } from '@/hooks/useChatStore';
 import claraHeroFallback from '@/assets/clara-hero.jpg';
@@ -201,6 +202,7 @@ const HeroSection = () => {
               <div className="hero-video-frame absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" aria-hidden="true" />
             </div>
           </motion.div>
+          <ClaraParticles3D />
         </div>
 
         <motion.div
@@ -325,13 +327,13 @@ const HeroSection = () => {
                   </div>
                 </div>
               </div>
-            </Tilt3D>
-          </motion.div>
+                </Tilt3D>
+              </motion.div>
+            </motion.div>
+          </div>
         </motion.div>
       </div>
-    </motion.div>
-  </div>
-</section>
+    </section>
   );
 };
 
