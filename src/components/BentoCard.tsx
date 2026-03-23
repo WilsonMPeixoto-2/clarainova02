@@ -24,7 +24,7 @@ export default function BentoCard({
   className,
 }: BentoCardProps) {
   const baseClasses =
-    "group relative @container rounded-[1.8rem] border border-[hsl(var(--stroke)/0.56)] bg-[linear-gradient(160deg,hsl(var(--surface-2)/0.84),hsl(var(--surface-1)/0.68))] backdrop-blur-xl px-5 py-5 md:px-6 md:py-6 shadow-[0_20px_44px_hsl(var(--shadow)/0.22),inset_0_1px_0_hsl(0_0%_100%/0.03)] transition-all duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[0_26px_52px_hsl(var(--shadow)/0.3),0_0_24px_hsl(var(--glow)/0.06)]";
+    "group relative @container rounded-[1.8rem] border border-[hsl(var(--stroke)/0.56)] bg-[linear-gradient(160deg,hsl(var(--surface-2)/0.84),hsl(var(--surface-1)/0.68))] backdrop-blur-xl px-5 py-5 md:px-6 md:py-6 shadow-[0_20px_44px_hsl(var(--shadow)/0.22),inset_0_1px_0_hsl(0_0%_100%/0.03)] transition-[box-shadow,background] duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:shadow-[0_26px_52px_hsl(var(--shadow)/0.3),0_0_24px_hsl(var(--glow)/0.06)]";
   const interactionClasses =
     "hover:border-[hsl(var(--gold-1)/0.22)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
   const variantClasses =

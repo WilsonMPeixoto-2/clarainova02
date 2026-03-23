@@ -62,8 +62,8 @@ export function Tilt3D({ children, className = '', depth = 25, glare = true }: T
       style={{
         rotateX,
         rotateY,
+        transformPerspective: 1200,
         transformStyle: 'preserve-3d',
-        perspective: '1200px' // Define a perspectiva container 3D
       }}
       className={`relative will-change-transform ${className}`}
     >
