@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type Mo
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, BookOpen, CaretLeft, CaretRight, ChatCircle } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
+import { Tilt3D } from '@/components/animations/Tilt3D';
 
 import { useChat } from '@/hooks/useChatStore';
 import claraHeroFallback from '@/assets/clara-hero.jpg';
@@ -255,11 +256,17 @@ const HeroSection = () => {
                 </button>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="hero-prompt-cluster">
-                <div className="hero-prompt-toolbar">
-                  <div className="space-y-1">
-                    <p className="text-caption text-muted-foreground">Perguntas frequentes</p>
-                    <p className="hero-prompt-lead">
+              <motion.div variants={itemVariants} className="mt-12 w-full max-w-2xl">
+                <Tilt3D depth={35} glare={true} className="w-full">
+                  <div className="hero-prompt-cluster glass-card p-6 md:p-8 relative overflow-hidden group">
+                    {/* Subtle contextual glow that matches Clara's cyan/gold */}
+                    <div className="absolute -inset-24 bg-gradient-to-r from-[hsl(var(--gold-1)/0.15)] to-[hsl(var(--teal-1)/0.15)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none" />
+                    
+                    <div className="hero-prompt-toolbar relative z-10">
+                    <div className="space-y-1.5">
+                      <p className="text-caption text-[hsl(var(--gold-1))] font-semibold uppercase tracking-wider">Perguntas frequentes</p>
+                      <p className="text-sm text-white/80 max-w-[40ch]">
+
                       Exemplos de perguntas sobre tarefas comuns no SEI-Rio.
                     </p>
                   </div>
@@ -317,12 +324,14 @@ const HeroSection = () => {
                     ))}
                   </div>
                 </div>
-              </motion.div>
-            </motion.div>
-          </div>
+              </div>
+            </Tilt3D>
+          </motion.div>
         </motion.div>
       </div>
-    </section>
+    </motion.div>
+  </div>
+</section>
   );
 };
 
