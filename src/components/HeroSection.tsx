@@ -6,6 +6,7 @@ import { ArrowRight, BookOpen, CaretLeft, CaretRight, ChatCircle } from '@phosph
 import Balancer from 'react-wrap-balancer';
 import { Tilt3D } from '@/components/animations/Tilt3D';
 import ClaraParticles3D from '@/components/animations/ClaraParticles3D';
+import NeuralParticleSystem from '@/components/animations/NeuralParticleSystem';
 
 import { useChat } from '@/hooks/useChatStore';
 import claraHeroFallback from '@/assets/clara-hero.jpg';
@@ -161,6 +162,8 @@ const HeroSection = () => {
       <div className="hero-base-layer" aria-hidden="true">
         <div className="hero-energy-glow" />
         <div className="cinematic-noise" />
+        <div className="scanline" />
+        <NeuralParticleSystem />
       </div>
 
       <div className="hero-shell" data-hero-mode={heroMode}>
@@ -221,7 +224,7 @@ const HeroSection = () => {
               </motion.div>
 
               <motion.div variants={itemVariants} className="hero-editorial-stack">
-                <h1 className="hero-brand-display">CLARA</h1>
+                <h1 className="hero-brand-display animate-flicker">CLARA</h1>
                 <p className="hero-support-headline">
                   <Balancer>
                     Orientação clara para documentos, assinatura e tramitação no SEI-Rio.
@@ -259,7 +262,7 @@ const HeroSection = () => {
               </motion.div>
 
               <motion.div variants={itemVariants} className="mt-12 w-full max-w-2xl">
-                <Tilt3D depth={35} glare={true} className="w-full">
+                <Tilt3D depth={10} glare={true} className="w-full">
                   <div className="hero-prompt-cluster glass-card p-6 md:p-8 relative overflow-hidden group">
                     {/* Subtle contextual glow that matches Clara's cyan/gold */}
                     <div className="absolute -inset-24 bg-gradient-to-r from-[hsl(var(--gold-1)/0.15)] to-[hsl(var(--teal-1)/0.15)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none" />
