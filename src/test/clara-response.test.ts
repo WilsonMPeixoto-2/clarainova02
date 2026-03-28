@@ -48,7 +48,7 @@ describe('clara-response helpers', () => {
 
     expect(plainText).toContain('Passo a passo');
     expect(plainText).toContain('1. Abra a area correta do processo');
-    expect(plainText).toContain('Referencias');
+    expect(plainText).toContain('Referências');
     expect(plainText).toContain('[1]');
   });
 
@@ -56,7 +56,7 @@ describe('clara-response helpers', () => {
     const response = buildMockStructuredResponse('Como faco isso naquela tela?');
 
     expect(response.analiseDaResposta.clarificationRequested).toBe(true);
-    expect(response.analiseDaResposta.clarificationQuestion).toContain('Voce pode me contar');
+    expect(response.analiseDaResposta.clarificationQuestion).toContain('Você pode me contar');
     expect(response.analiseDaResposta.answerScopeMatch).toBe('weak');
     expect(response.etapas).toHaveLength(0);
   });
