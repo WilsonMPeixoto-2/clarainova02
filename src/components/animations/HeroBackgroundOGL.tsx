@@ -7,6 +7,7 @@ export default function HeroBackgroundOGL() {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const renderer = new Renderer({ alpha: true, dpr: 2 });
     const gl = renderer.gl;
     containerRef.current.appendChild(gl.canvas);

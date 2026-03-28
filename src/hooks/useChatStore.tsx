@@ -32,6 +32,29 @@ interface ChatState {
 
 const ChatContext = createContext<ChatState | null>(null);
 const CHAT_API_CONFIG = getDefaultChatApiConfig();
+const CHAT_STORAGE_KEY = 'clara-chat-history';
+const MAX_PERSISTED_MESSAGES = 50;
+
+function loadPersistedMessages(): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.slice(-MAX_PERSISTED_MESSAGES);
+  } catch {
+    return [];
+  }
+}
+
+function persistMessages(messages: ChatMessage[]) {
+  try {
+    const toSave = messages.slice(-MAX_PERSISTED_MESSAGES);
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
+  } catch {
+    // Storage full or unavailable — silently ignore
+  }
+}
 
 function getRuntimePresentation(config: ChatApiConfig) {
   if (config.runtimeMode === 'online') {
@@ -91,7 +114,17 @@ function appendAssistantToken(messages: ChatMessage[], token: string) {
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessagesRaw] = useState<ChatMessage[]>(loadPersistedMessages);
+  const setMessages = useCallback(
+    (update: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
+      setMessagesRaw((prev) => {
+        const next = typeof update === 'function' ? update(prev) : update;
+        persistMessages(next);
+        return next;
+      });
+    },
+    [],
+  );
   const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -202,12 +235,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setIsStreaming(false);
     }
-  }, [isLoading]);
+  }, [isLoading, setMessages]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
     setPendingQuestion(null);
-  }, []);
+    try { localStorage.removeItem(CHAT_STORAGE_KEY); } catch { /* ignore */ }
+  }, [setMessages]);
 
   return (
     <ChatContext.Provider

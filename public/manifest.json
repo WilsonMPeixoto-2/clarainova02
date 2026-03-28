@@ -1,0 +1,19 @@
+{
+  "name": "CLARA — Apoio ao SEI-Rio",
+  "short_name": "CLARA",
+  "description": "Ferramenta de apoio para dúvidas sobre uso do SEI-Rio, documentos, tramitação, assinatura e etapas operacionais.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#00e5ff",
+  "orientation": "any",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

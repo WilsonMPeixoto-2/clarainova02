@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion, useMotionValue, useSpring, useTransform, MotionValue } from 'motion/react';
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, MotionValue } from 'motion/react';
 
 const PARTICLE_COUNT = 40;
 
@@ -54,6 +54,7 @@ const ParticleItem = ({ p, mouseX, mouseY }: { p: Particle, mouseX: MotionValue<
 };
 
 export default function ClaraParticles3D() {
+  const prefersReducedMotion = useReducedMotion();
   const [particles, setParticles] = useState<Particle[]>([]);
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
@@ -94,6 +95,8 @@ export default function ClaraParticles3D() {
     }));
     setParticles(newParticles);
   }, []);
+
+  if (prefersReducedMotion) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-20 mix-blend-screen" style={{ perspective: '1200px' }}>

@@ -18,6 +18,7 @@ import { ChatStructuredMessage } from '@/components/chat/ChatStructuredMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChat } from '@/hooks/useChatStore';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from 'sonner';
 
 const STARTER_PROMPTS = [
@@ -72,6 +73,7 @@ const ChatSheet = () => {
     clearMessages,
   } = useChat();
   const isMobile = useIsMobile();
+  const isOnline = useOnlineStatus();
   const [input, setInput] = useState('');
   const [panelMode, setPanelMode] = useState<ChatPanelMode>('default');
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -417,6 +419,11 @@ const ChatSheet = () => {
               </div>
             </ScrollArea>
 
+            {!isOnline && (
+              <div className="px-4 py-2 bg-yellow-900/30 border-t border-yellow-600/30 text-center" role="alert">
+                <p className="text-xs text-yellow-400 font-medium">Sem conexão — verifique sua internet para enviar mensagens.</p>
+              </div>
+            )}
             <form
               onSubmit={handleSubmit}
               className="px-4 py-3 border-t border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1))]"
@@ -431,11 +438,11 @@ const ChatSheet = () => {
                   maxLength={2000}
                   aria-label="Sua pergunta para a CLARA"
                   className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-2"
-                  disabled={isLoading}
+                  disabled={isLoading || !isOnline}
                 />
                 <button
                   type="submit"
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim() || isLoading || !isOnline}
                   className="p-2 rounded-lg text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   aria-label="Enviar mensagem"
                 >
