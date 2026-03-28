@@ -20,9 +20,15 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  esbuild: {
+    drop: ["debugger"],
+    legalComments: "none",
+  },
   build: {
     target: "esnext",
+    sourcemap: false,
     rolldownOptions: {
+      treeshake: true,
       output: {
         codeSplitting: {
           groups: [

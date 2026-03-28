@@ -2,6 +2,29 @@ import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, MotionValue } from 'motion/react';
 
 const PARTICLE_COUNT = 40;
+const PARTICLE_COLORS = [
+  'rgba(255, 220, 100, 0.9)',
+  'rgba(0, 240, 255, 0.65)',
+  'rgba(255, 160, 40, 0.95)',
+  'rgba(255, 255, 255, 0.45)',
+  'rgba(200, 180, 255, 0.5)',
+];
+
+function generateParticles(): Particle[] {
+  return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
+    id: i,
+    size: Math.random() * 5 + 1.5,
+    x: Math.random() * 55 + 42,
+    y: Math.random() * 100,
+    z: Math.random() * 400 - 150,
+    color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
+    duration: Math.random() * 18 + 10,
+    delay: Math.random() * -12,
+    opacityPeak: Math.random() * 0.45 + 0.35,
+    driftY: Math.random() * 280 + 120,
+    driftX: (Math.random() - 0.5) * 130,
+  }));
+}
 
 interface Particle {
   id: number;
@@ -55,7 +78,7 @@ const ParticleItem = ({ p, mouseX, mouseY }: { p: Particle, mouseX: MotionValue<
 
 export default function ClaraParticles3D() {
   const prefersReducedMotion = useReducedMotion();
-  const [particles, setParticles] = useState<Particle[]>([]);
+  const [particles] = useState<Particle[]>(generateParticles);
   const mouseX = useMotionValue(0.5);
   const mouseY = useMotionValue(0.5);
 
@@ -72,29 +95,8 @@ export default function ClaraParticles3D() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [mouseX, mouseY]);
 
-  useEffect(() => {
-    const colors = [
-      'rgba(255, 220, 100, 0.9)',
-      'rgba(0, 240, 255, 0.65)',
-      'rgba(255, 160, 40, 0.95)',
-      'rgba(255, 255, 255, 0.45)',
-      'rgba(200, 180, 255, 0.5)',
-    ];
-    const newParticles: Particle[] = Array.from({ length: PARTICLE_COUNT }).map((_, i) => ({
-      id: i,
-      size: Math.random() * 5 + 1.5,
-      x: Math.random() * 55 + 42,
-      y: Math.random() * 100,
-      z: Math.random() * 400 - 150,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      duration: Math.random() * 18 + 10,
-      delay: Math.random() * -12,
-      opacityPeak: Math.random() * 0.45 + 0.35,
-      driftY: Math.random() * 280 + 120,
-      driftX: (Math.random() - 0.5) * 130,
-    }));
-    setParticles(newParticles);
-  }, []);
+  const glowLeft = useTransform(smoothMouseX, [0, 1], ['55%', '75%']);
+  const glowTop = useTransform(smoothMouseY, [0, 1], ['30%', '60%']);
 
   if (prefersReducedMotion) return null;
 
@@ -104,12 +106,12 @@ export default function ClaraParticles3D() {
         <ParticleItem key={p.id} p={p} mouseX={smoothMouseX} mouseY={smoothMouseY} />
       ))}
 
-      <motion.div 
+      <motion.div
         className="absolute w-[800px] h-[800px] rounded-full blur-[150px] mix-blend-plus-lighter opacity-40"
         style={{
             background: 'radial-gradient(circle, rgba(255,200,50,0.2) 0%, rgba(0,255,255,0.05) 40%, transparent 75%)',
-            left: useTransform(smoothMouseX, [0, 1], ['55%', '75%']),
-            top: useTransform(smoothMouseY, [0, 1], ['30%', '60%']),
+            left: glowLeft,
+            top: glowTop,
             transform: 'translate(-50%, -50%)',
         }}
       />

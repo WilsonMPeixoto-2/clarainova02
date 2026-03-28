@@ -25,18 +25,17 @@ describe('chat persistence (localStorage)', () => {
   it('handles corrupt localStorage gracefully', () => {
     localStorage.setItem(STORAGE_KEY, 'not-valid-json');
 
-    let result: unknown[] = [];
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) { result = []; }
-      else {
+    function loadSafe(): unknown[] {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
         const parsed = JSON.parse(raw);
-        result = Array.isArray(parsed) ? parsed : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
       }
-    } catch {
-      result = [];
     }
-    expect(result).toEqual([]);
+    expect(loadSafe()).toEqual([]);
   });
 
   it('respects max persisted messages limit', () => {

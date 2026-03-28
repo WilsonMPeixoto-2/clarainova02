@@ -79,7 +79,7 @@ const INJECTION_PATTERNS: RegExp[] = [
   /\bbypass\s+(filter|safety|restriction)/i,
   /print\s+(your\s+)?(initial|first|original)\s+(prompt|instruction)/i,
   /\[\s*SYSTEM\s*\]/i,
-  /\<\s*\/?system\s*\>/i,
+  /<\s*\/?system\s*>/i,
 ];
 
 function checkGuardrails(message: string): { blocked: boolean; reason?: string } {
