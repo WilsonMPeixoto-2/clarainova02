@@ -12,10 +12,26 @@ import {
   type ClaraStructuredResponse,
 } from "./response-schema.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+const ALLOWED_ORIGINS = [
+  'https://clarainova02.vercel.app',
+  'https://clara.sme.rio', // futuro domínio customizado
+];
+
+function getCorsOrigin(req: Request): string {
+  const origin = req.headers.get('origin') ?? '';
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  // Permite localhost em desenvolvimento
+  if (origin.startsWith('http://localhost:')) return origin;
+  return ALLOWED_ORIGINS[0];
+}
+
+function buildCorsHeaders(req: Request) {
+  return {
+    'Access-Control-Allow-Origin': getCorsOrigin(req),
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+    'Vary': 'Origin',
+  };
+}
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_CONVERSATION_MESSAGES = 20;
@@ -551,7 +567,7 @@ async function callGeminiWithFallback(
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -560,14 +576,14 @@ Deno.serve(async (req) => {
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Mensagens são obrigatórias.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (messages.length > MAX_CONVERSATION_MESSAGES) {
       return new Response(
         JSON.stringify({ error: 'Conversa muito longa. Inicie uma nova conversa.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -575,13 +591,13 @@ Deno.serve(async (req) => {
       if (typeof msg.content !== 'string' || typeof msg.role !== 'string') {
         return new Response(
           JSON.stringify({ error: 'Formato de mensagem inválido.' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
       if (msg.content.length > MAX_MESSAGE_LENGTH) {
         return new Response(
           JSON.stringify({ error: 'Mensagem muito longa. Tente ser mais conciso.' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
     }
@@ -593,7 +609,7 @@ Deno.serve(async (req) => {
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'Chave da API não configurada.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -620,7 +636,7 @@ Deno.serve(async (req) => {
     } else if (!allowed) {
       return new Response(
         JSON.stringify({ error: 'Muitas mensagens em pouco tempo. Aguarde um momento e tente novamente. ⏳' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 429, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -672,7 +688,7 @@ Deno.serve(async (req) => {
         });
         const blockedResponse = `data: ${JSON.stringify({ choices: [{ delta: { content: GUARDRAIL_RESPONSE } }] })}\n\ndata: [DONE]\n\n`;
         return new Response(blockedResponse, {
-          headers: { ...corsHeaders, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
         });
       }
     }
@@ -847,7 +863,7 @@ REESCRITA OBRIGATORIA:
           response: structuredResponse,
           plainText: structuredPlainText,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -902,7 +918,7 @@ REESCRITA OBRIGATORIA:
       }
       return new Response(
         JSON.stringify({ error: errorMsg }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -934,7 +950,7 @@ REESCRITA OBRIGATORIA:
 
     return new Response(responseStream, {
       headers: {
-        ...corsHeaders,
+        ...buildCorsHeaders(req),
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
@@ -944,7 +960,7 @@ REESCRITA OBRIGATORIA:
     console.error('Chat function error:', error);
     return new Response(
       JSON.stringify({ error: 'Erro interno do servidor.' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
 });

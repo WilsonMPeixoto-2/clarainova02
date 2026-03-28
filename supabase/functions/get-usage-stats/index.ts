@@ -1,10 +1,25 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const ALLOWED_ORIGINS = [
+  "https://clarainova02.vercel.app",
+  "https://clara.sme.rio",
+];
+
+function getCorsOrigin(req: Request): string {
+  const origin = req.headers.get("origin") ?? "";
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  if (origin.startsWith("http://localhost:")) return origin;
+  return ALLOWED_ORIGINS[0];
+}
+
+function buildCorsHeaders(req: Request) {
+  return {
+    "Access-Control-Allow-Origin": getCorsOrigin(req),
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "Vary": "Origin",
+  };
+}
 
 type CountQueryLike = {
   eq: (column: string, value: string) => CountQueryLike;
@@ -37,7 +52,7 @@ async function countRecentRows(
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -73,7 +88,7 @@ Deno.serve(async (req) => {
       if (error) {
         return new Response(
           JSON.stringify({ error: "Erro ao consultar métricas" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
 
@@ -85,7 +100,7 @@ Deno.serve(async (req) => {
     if (usingFallback && Object.keys(fallbackCounts).length === 0) {
       return new Response(
         JSON.stringify({ error: "Erro ao consultar métricas" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -96,13 +111,13 @@ Deno.serve(async (req) => {
         embedding_queries: embeddingQueries ?? fallbackCounts["embedding_query"] ?? 0,
         client_side_ingestions: clientSideIngestions ?? fallbackCounts["client_side_ingestion"] ?? 0,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("get-usage-stats error:", err);
     return new Response(
       JSON.stringify({ error: "Erro interno" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

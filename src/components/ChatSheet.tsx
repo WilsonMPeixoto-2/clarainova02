@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 
 import { ChatStructuredMessage } from '@/components/chat/ChatStructuredMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -225,6 +226,23 @@ const ChatSheet = () => {
             role="dialog"
             aria-label="Chat com CLARA"
             aria-modal="true"
+            onKeyDown={(e) => {
+              if (e.key === 'Tab') {
+                const focusable = e.currentTarget.querySelectorAll<HTMLElement>(
+                  'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                  e.preventDefault();
+                  last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                  e.preventDefault();
+                  first.focus();
+                }
+              }
+            }}
           >
             <div className="chat-header-surface flex items-center justify-between gap-3 px-4 py-4 border-b border-[hsl(var(--border-subtle))] md:px-5">
               <div className="flex items-center gap-3 min-w-0">
@@ -343,9 +361,12 @@ const ChatSheet = () => {
                 )}
 
                 {messages.map((message, index) => (
-                  <div
+                  <motion.div
                     key={`${message.role}-${index}`}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <div
                       className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
@@ -359,21 +380,29 @@ const ChatSheet = () => {
                           <ChatStructuredMessage response={message.structuredResponse} />
                         ) : (
                           <div className="clara-prose">
-                            <ReactMarkdown>{message.content}</ReactMarkdown>
+                            <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
                           </div>
                         )
                       ) : (
                         message.content
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
 
                 {isLoading && !isStreaming && (
-                  <div className="flex justify-start">
+                  <motion.div
+                    className="flex justify-start"
+                    role="status"
+                    aria-live="polite"
+                    aria-busy="true"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
                     <div className="chat-loading-card">
                       <div className="chat-loading-head">
-                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" aria-hidden="true" />
                         <span>{activeLoadingPhase.title}</span>
                       </div>
                       <p className="chat-loading-copy">{activeLoadingPhase.description}</p>
@@ -381,7 +410,7 @@ const ChatSheet = () => {
                         Se eu encontrar alguma ambiguidade, vou te avisar com cuidado e posso pedir um esclarecimento ou consultar fonte oficial.
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
                 <div ref={messagesEndRef} />
@@ -399,6 +428,8 @@ const ChatSheet = () => {
                   value={input}
                   onChange={(event) => setInput(event.target.value)}
                   placeholder={inputPlaceholder}
+                  maxLength={2000}
+                  aria-label="Sua pergunta para a CLARA"
                   className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-2"
                   disabled={isLoading}
                 />

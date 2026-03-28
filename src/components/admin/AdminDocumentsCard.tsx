@@ -1,6 +1,16 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { RefreshCw, Trash2, X } from "lucide-react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -39,7 +49,34 @@ export default function AdminDocumentsCard({
   onCancel,
   onDelete,
 }: AdminDocumentsCardProps) {
+  const [deleteTarget, setDeleteTarget] = useState<Document | null>(null);
+
+  const confirmDelete = () => {
+    if (deleteTarget) {
+      onDelete(deleteTarget);
+      setDeleteTarget(null);
+    }
+  };
+
   return (
+    <>
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remover documento?</AlertDialogTitle>
+          <AlertDialogDescription>
+            O documento <strong>&ldquo;{deleteTarget?.name}&rdquo;</strong> e todos os seus chunks
+            serão permanentemente removidos. Esta ação não pode ser desfeita.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Sim, remover
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">Documentos ({documents.length})</CardTitle>
@@ -90,7 +127,7 @@ export default function AdminDocumentsCard({
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => onDelete(doc)}
+                          onClick={() => setDeleteTarget(doc)}
                           className="h-7 text-xs text-destructive"
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
@@ -125,7 +162,7 @@ export default function AdminDocumentsCard({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => onDelete(doc)}
+                        onClick={() => setDeleteTarget(doc)}
                         title="Remover documento"
                         className={
                           doc.status === "error" || doc.status === "cancelled" || isTimedOut(doc.id)
@@ -144,5 +181,6 @@ export default function AdminDocumentsCard({
         )}
       </CardContent>
     </Card>
+    </>
   );
 }

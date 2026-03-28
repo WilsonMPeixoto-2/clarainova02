@@ -1,11 +1,26 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { GoogleGenAI } from "npm:@google/genai";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const ALLOWED_ORIGINS = [
+  "https://clarainova02.vercel.app",
+  "https://clara.sme.rio",
+];
+
+function getCorsOrigin(req: Request): string {
+  const origin = req.headers.get("origin") ?? "";
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  if (origin.startsWith("http://localhost:")) return origin;
+  return ALLOWED_ORIGINS[0];
+}
+
+function buildCorsHeaders(req: Request) {
+  return {
+    "Access-Control-Allow-Origin": getCorsOrigin(req),
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "Vary": "Origin",
+  };
+}
 
 const EMBEDDING_MODEL = "text-embedding-004";
 const EMBEDDING_DIM = 768;
@@ -78,7 +93,7 @@ async function safeLogEvent(
  */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: buildCorsHeaders(req) });
   }
 
   const request_id = crypto.randomUUID();
@@ -89,14 +104,14 @@ Deno.serve(async (req) => {
     if (!document_id || !chunks || !Array.isArray(chunks) || chunks.length === 0) {
       return new Response(
         JSON.stringify({ ok: false, error: "VALIDATION:MISSING_PARAMS", request_id }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     if (chunks.length > 10) {
       return new Response(
         JSON.stringify({ ok: false, error: "VALIDATION:MAX_10_CHUNKS", request_id }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -105,7 +120,7 @@ Deno.serve(async (req) => {
     if (validChunks.length === 0) {
       return new Response(
         JSON.stringify({ ok: false, error: "VALIDATION:EMPTY_CHUNKS", saved: 0, request_id }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -191,7 +206,7 @@ Deno.serve(async (req) => {
       });
       return new Response(
         JSON.stringify({ ok: false, error: "DB_UPSERT_FAILED", details: upsertErr.message, request_id }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -219,7 +234,7 @@ Deno.serve(async (req) => {
         embedding_ms,
         db_ms,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
     console.error("embed-chunks error:", error);
@@ -227,18 +242,18 @@ Deno.serve(async (req) => {
     if (msg.includes("GEMINI_429")) {
       return new Response(
         JSON.stringify({ ok: false, error: "RATE_LIMITED", request_id }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 429, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
     if (msg.includes("GEMINI_5")) {
       return new Response(
         JSON.stringify({ ok: false, error: "UPSTREAM_ERROR", request_id }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 503, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
     return new Response(
       JSON.stringify({ ok: false, error: "INTERNAL_ERROR", details: msg, request_id }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

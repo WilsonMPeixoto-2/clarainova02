@@ -134,16 +134,22 @@ export default function AdminAuth({ children }: Props) {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="username"
-                  required
-                />
-                <div className="relative">
+                <div>
+                  <label htmlFor="admin-email" className="sr-only">Email</label>
                   <Input
+                    id="admin-email"
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="username"
+                    required
+                  />
+                </div>
+                <div className="relative">
+                  <label htmlFor="admin-password" className="sr-only">Senha</label>
+                  <Input
+                    id="admin-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Senha"
                     value={password}
@@ -156,6 +162,7 @@ export default function AdminAuth({ children }: Props) {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
