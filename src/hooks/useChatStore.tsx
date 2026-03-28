@@ -114,11 +114,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     setPendingQuestion(null);
     const userMsg: ChatMessage = { role: 'user', content: trimmed };
-    setMessages((prev) => [...prev, userMsg, { role: 'assistant', content: '', structuredResponse: null }]);
+    let allMessages: ChatMessage[] = [];
+    setMessages((prev) => {
+      allMessages = [...prev, userMsg];
+      return [...allMessages, { role: 'assistant' as const, content: '', structuredResponse: null }];
+    });
     setIsLoading(true);
     setIsStreaming(false);
-
-    const allMessages = [...messages, userMsg];
     try {
       const handleStructuredResult = (response: ClaraStructuredResponse, plainText: string) => {
         startTransition(() => {
@@ -200,7 +202,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setIsStreaming(false);
     }
-  }, [isLoading, messages]);
+  }, [isLoading]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);

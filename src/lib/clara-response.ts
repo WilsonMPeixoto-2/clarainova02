@@ -114,10 +114,10 @@ function getCurrentYearString() {
 
 function buildConfidenceLabel(value: number | null) {
   if (value == null) return null;
-  if (value >= 0.86) return 'confianca alta';
-  if (value >= 0.66) return 'confianca boa';
-  if (value >= 0.45) return 'confianca moderada';
-  return 'confianca reduzida';
+  if (value >= 0.86) return 'confiança alta';
+  if (value >= 0.66) return 'confiança boa';
+  if (value >= 0.45) return 'confiança moderada';
+  return 'confiança reduzida';
 }
 
 export function safeParseClaraStructuredEnvelope(value: unknown): ClaraStructuredEnvelope | null {
@@ -166,7 +166,7 @@ export function formatReferenceAbnt(reference: ClaraReference) {
   }
 
   if (reference.url) {
-    parts.push(`Disponivel em: ${reference.url}.`);
+    parts.push(`Disponível em: ${reference.url}.`);
   }
 
   if (reference.dataAcesso) {
@@ -199,7 +199,7 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
       });
 
       if (step.alerta) {
-        lines.push(`Observacao: ${step.alerta}`);
+        lines.push(`Observação: ${step.alerta}`);
       }
 
       lines.push('');
@@ -207,7 +207,7 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
   }
 
   if (response.observacoesFinais.length > 0) {
-    lines.push('Observacoes finais');
+    lines.push('Observações finais');
     response.observacoesFinais.forEach((observation) => {
       lines.push(`- ${observation}`);
     });
@@ -215,7 +215,7 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
   }
 
   if (response.referenciasFinais.length > 0) {
-    lines.push('Referencias');
+    lines.push('Referências');
     response.referenciasFinais.forEach((reference) => {
       lines.push(`[${reference.id}] ${formatReferenceAbnt(reference)}`);
     });
@@ -248,10 +248,10 @@ function inferTopicFromQuestion(question: string) {
     normalized.includes('naquela tela')
   ) {
     return {
-      title: 'Quero te orientar com mais seguranca',
-      summary: 'Sua pergunta parece estar ligada ao SEI-Rio, mas ainda ficou um pouco aberta para eu saber exatamente qual procedimento voce quer fazer.',
+      title: 'Quero te orientar com mais segurança',
+      summary: 'Sua pergunta parece estar ligada ao SEI-Rio, mas ainda ficou um pouco aberta para eu saber exatamente qual procedimento você quer fazer.',
       highlights: [
-        { texto: 'Esclarecimento rapido', tipo: 'atencao' as const },
+        { texto: 'Esclarecimento rápido', tipo: 'atencao' as const },
         { texto: 'Contexto da tela', tipo: 'conceito' as const },
         { texto: 'Procedimento exato', tipo: 'acao' as const },
       ],
@@ -263,20 +263,20 @@ function inferTopicFromQuestion(question: string) {
         ambiguityInUserQuestion: true,
         ambiguityInSources: false,
         clarificationRequested: true,
-        clarificationQuestion: 'Voce pode me contar se sua duvida e sobre incluir um documento, pedir assinatura ou encaminhar o processo para outra unidade?',
-        clarificationReason: 'Assim eu consigo comparar a orientacao certa e evitar te conduzir para um caminho diferente do que voce precisa.',
+        clarificationQuestion: 'Você pode me contar se sua dúvida é sobre incluir um documento, pedir assinatura ou encaminhar o processo para outra unidade?',
+        clarificationReason: 'Assim eu consigo comparar a orientação certa e evitar te conduzir para um caminho diferente do que você precisa.',
         internalExpansionPerformed: false,
         webFallbackUsed: false,
-        userNotice: 'Estou tentando entender com cuidado o que voce quer fazer no sistema para te orientar da forma mais util possivel.',
-        cautionNotice: 'Prefiro te pedir esse complemento antes de responder para nao te passar um passo a passo que pareca certo, mas nao corresponda exatamente ao seu caso.',
-        ambiguityReason: 'A formulacao atual pode se referir a mais de um procedimento no SEI-Rio.',
+        userNotice: 'Estou tentando entender com cuidado o que você quer fazer no sistema para te orientar da forma mais útil possível.',
+        cautionNotice: 'Prefiro te pedir esse complemento antes de responder para não te passar um passo a passo que pareça certo, mas não corresponda exatamente ao seu caso.',
+        ambiguityReason: 'A formulação atual pode se referir a mais de um procedimento no SEI-Rio.',
         comparedSources: [],
         prioritizedSources: [],
         processStates: [
           {
             id: 'understanding',
             titulo: 'Entendendo sua pergunta',
-            descricao: 'Identifiquei que ainda faltou um detalhe importante para diferenciar os caminhos possiveis.',
+            descricao: 'Identifiquei que ainda faltou um detalhe importante para diferenciar os caminhos possíveis.',
             status: 'informativo' as const,
           },
         ],
@@ -287,19 +287,19 @@ function inferTopicFromQuestion(question: string) {
   if (normalized.includes('assinatura') || normalized.includes('bloco')) {
     return {
       title: 'Uso de bloco de assinatura no SEI-Rio',
-      summary: 'Voce pode montar o bloco, incluir os documentos, revisar a ordem e depois encaminhar para a unidade ou servidor responsavel.',
+      summary: 'Você pode montar o bloco, incluir os documentos, revisar a ordem e depois encaminhar para a unidade ou servidor responsável.',
       highlights: [
         { texto: 'Bloco de assinatura', tipo: 'menu' as const },
         { texto: 'Incluir documento', tipo: 'acao' as const },
-        { texto: 'Unidade responsavel', tipo: 'conceito' as const },
+        { texto: 'Unidade responsável', tipo: 'conceito' as const },
       ],
       references: [
         {
           id: 1,
           tipo: 'manual' as const,
-          autorEntidade: 'SECRETARIA MUNICIPAL DE EDUCACAO DO RIO DE JANEIRO',
+          autorEntidade: 'SECRETARIA MUNICIPAL DE EDUCAÇÃO DO RIO DE JANEIRO',
           titulo: 'Manual operacional do SEI-Rio',
-          subtitulo: 'Blocos de assinatura e tramitacao',
+          subtitulo: 'Blocos de assinatura e tramitação',
           local: 'Rio de Janeiro',
           editoraOuOrgao: 'SME Rio',
           ano: '2025',
@@ -310,8 +310,8 @@ function inferTopicFromQuestion(question: string) {
         {
           id: 2,
           tipo: 'guia' as const,
-          autorEntidade: 'SECRETARIA MUNICIPAL DE EDUCACAO DO RIO DE JANEIRO',
-          titulo: 'Guia pratico do SEI-Rio',
+          autorEntidade: 'SECRETARIA MUNICIPAL DE EDUCAÇÃO DO RIO DE JANEIRO',
+          titulo: 'Guia prático do SEI-Rio',
           subtitulo: 'Assinaturas e encaminhamento interno',
           local: 'Rio de Janeiro',
           editoraOuOrgao: 'SME Rio',
@@ -333,21 +333,21 @@ function inferTopicFromQuestion(question: string) {
         internalExpansionPerformed: true,
         webFallbackUsed: false,
         userNotice: 'Comparei mais de um material interno para te devolver um passo a passo mais aderente ao SEI-Rio.',
-        cautionNotice: 'Encontrei pequenas variacoes de redacao entre os materiais, mas priorizei a orientacao que aparece de forma mais atual e alinhada ao SEI-Rio.',
-        ambiguityReason: 'Os documentos tratam o mesmo fluxo com enfases ligeiramente diferentes.',
-        comparedSources: ['Manual operacional do SEI-Rio (2025)', 'Guia pratico do SEI-Rio (2024)'],
+        cautionNotice: 'Encontrei pequenas variações de redação entre os materiais, mas priorizei a orientação que aparece de forma mais atual e alinhada ao SEI-Rio.',
+        ambiguityReason: 'Os documentos tratam o mesmo fluxo com ênfases ligeiramente diferentes.',
+        comparedSources: ['Manual operacional do SEI-Rio (2025)', 'Guia prático do SEI-Rio (2024)'],
         prioritizedSources: ['Manual operacional do SEI-Rio (2025)'],
         processStates: [
           {
             id: 'internal-search',
             titulo: 'Pesquisando na base interna',
-            descricao: 'Localizei os trechos mais proximos do seu pedido.',
+            descricao: 'Localizei os trechos mais próximos do seu pedido.',
             status: 'concluido' as const,
           },
           {
             id: 'comparison',
-            titulo: 'Comparando orientacoes e versoes',
-            descricao: 'Conferi materiais proximos para priorizar o fluxo mais aderente ao SEI-Rio.',
+            titulo: 'Comparando orientações e versões',
+            descricao: 'Conferi materiais próximos para priorizar o fluxo mais aderente ao SEI-Rio.',
             status: 'cautela' as const,
           },
         ],
@@ -357,8 +357,8 @@ function inferTopicFromQuestion(question: string) {
 
   if (normalized.includes('encaminhar') || normalized.includes('tramit')) {
     return {
-      title: 'Encaminhamento e tramitacao de processos',
-      summary: 'Antes de encaminhar um processo, vale conferir unidade de destino, documentos obrigatorios e se o despacho de envio esta coerente com a etapa atual.',
+      title: 'Encaminhamento e tramitação de processos',
+      summary: 'Antes de encaminhar um processo, vale conferir unidade de destino, documentos obrigatórios e se o despacho de envio está coerente com a etapa atual.',
       highlights: [
         { texto: 'Tramitacao', tipo: 'menu' as const },
         { texto: 'Unidade de destino', tipo: 'conceito' as const },

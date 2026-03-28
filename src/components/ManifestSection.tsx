@@ -62,12 +62,12 @@ const ManifestSection = () => {
               </span>
               <h2 id="manifest-heading" className="text-h2 mt-4">
                 <Balancer>
-                  Entenda a proxima etapa com mais rapidez.
+                  Entenda a próxima etapa com mais rapidez.
                 </Balancer>
               </h2>
               <p className="manifest-lead">
                 <Balancer>
-                  Consulte etapas frequentes sobre documentos, assinatura, envio e organizacao de processos no SEI-Rio.
+                  Consulte etapas frequentes sobre documentos, assinatura, envio e organização de processos no SEI-Rio.
                 </Balancer>
               </p>
             </div>
@@ -89,10 +89,10 @@ const ManifestSection = () => {
               <div className="manifest-protocol-copy">
                 <p className="manifest-protocol-kicker">Como usar</p>
                 <h3 className="manifest-protocol-title">
-                  <Balancer>Pergunte, leia e confira a proxima acao.</Balancer>
+                  <Balancer>Pergunte, leia e confira a próxima ação.</Balancer>
                 </h3>
                 <p className="manifest-protocol-description">
-                  A resposta organiza a execucao da tarefa, sem substituir a conferencia oficial do seu fluxo de trabalho.
+                  A resposta organiza a execução da tarefa, sem substituir a conferência oficial do seu fluxo de trabalho.
                 </p>
                 <button type="button" className="manifest-cta" onClick={() => openChat()}>
                   Abrir o chat

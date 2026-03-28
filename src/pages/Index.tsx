@@ -1,14 +1,15 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import ManifestSection from "@/components/ManifestSection";
-import FeaturesSection from "@/components/FeaturesSection";
 import { SoftWaveDivider } from "@/components/animations/SoftWaveDivider";
-import FAQSection from "@/components/FAQSection";
-import Footer from "@/components/Footer";
 import { useChat } from "@/hooks/useChatStore";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { useLocation } from "react-router-dom";
+
+const ManifestSection = lazy(() => import("@/components/ManifestSection"));
+const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
+const FAQSection = lazy(() => import("@/components/FAQSection"));
+import Footer from "@/components/Footer";
 
 const IndexContent = () => {
   const { openChat } = useChat();
@@ -61,8 +62,11 @@ const IndexContent = () => {
       <main id="main-content" className="site-main-canvas">
         <HeroSection />
         <SoftWaveDivider />
-        <FeaturesSection />
-        <FAQSection />
+        <Suspense fallback={null}>
+          <ManifestSection />
+          <FeaturesSection />
+          <FAQSection />
+        </Suspense>
       </main>
       <Footer />
     </div>

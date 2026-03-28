@@ -300,7 +300,32 @@ const INTERNAL_PROCESS_LEAK_PATTERNS = [
   /\bprompt\b/i,
   /\bschema\b/i,
   /\bjson\b/i,
+  /\bvetor(es|ial)?\b/i,
+  /\bchunk(s)?\b/i,
+  /\bedge function/i,
+  /\bapi key\b/i,
+  /\bgemini\b/i,
+  /\bmodelo de linguagem\b/i,
+  /\bllm\b/i,
+  /\bconsulta (na|a) base\b/i,
+  /\bbusca sem[aâ]ntica\b/i,
 ];
+
+const LEAK_REPLACEMENT_PATTERNS: Array<[RegExp, string]> = [
+  [/\b(com base|baseado) (na|em) minha (base|analise) interna\b/gi, "com base nas orientações disponíveis"],
+  [/\b(consultei|analisei|comparei) (a|as|os?) (base|fontes?|documentos?) (interna|internas?)\b/gi, "conforme as orientações disponíveis"],
+  [/\butilizando (o )?RAG\b/gi, ""],
+  [/\b(embedding|embeddings|vetor semântico)\b/gi, ""],
+  [/\b(busca|pesquisa) sem[aâ]ntica\b/gi, "pesquisa na base documental"],
+];
+
+function sanitizeText(text: string): string {
+  let result = text;
+  for (const [pattern, replacement] of LEAK_REPLACEMENT_PATTERNS) {
+    result = result.replace(pattern, replacement);
+  }
+  return result.replace(/\s{2,}/g, " ").trim();
+}
 
 function inferReferenceType(documentName: string): ClaraStructuredResponse["referenciasFinais"][number]["tipo"] {
   const normalized = documentName.toLowerCase();
@@ -350,11 +375,19 @@ export function sanitizeStructuredResponse(
 
   return {
     ...response,
+    tituloCurto: sanitizeText(response.tituloCurto),
+    resumoInicial: sanitizeText(response.resumoInicial),
     resumoCitacoes: options.usedRag ? filterCitationIds(response.resumoCitacoes, validIds) : [],
     etapas: response.etapas.map((step) => ({
       ...step,
+      titulo: sanitizeText(step.titulo),
+      conteudo: sanitizeText(step.conteudo),
+      itens: step.itens.map(sanitizeText),
+      destaques: step.destaques.map(sanitizeText),
+      alerta: step.alerta ? sanitizeText(step.alerta) : step.alerta,
       citacoes: options.usedRag ? filterCitationIds(step.citacoes, validIds) : [],
     })),
+    observacoesFinais: response.observacoesFinais.map(sanitizeText),
     referenciasFinais: options.usedRag ? options.groundedReferences : [],
   };
 }

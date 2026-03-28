@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, MotionValue } from 'motion/react';
+
+const PARTICLE_COUNT = 40;
 
 interface Particle {
   id: number;
@@ -10,13 +12,15 @@ interface Particle {
   color: string;
   duration: number;
   delay: number;
+  opacityPeak: number;
+  driftY: number;
+  driftX: number;
 }
 
 const ParticleItem = ({ p, mouseX, mouseY }: { p: Particle, mouseX: MotionValue<number>, mouseY: MotionValue<number> }) => {
-  // Parallax effect based on Z depth - closer particles move much faster
-  const depthFactor = (p.z + 150) / 400; 
-  const moveX = useTransform(mouseX, [0, 1], [-(250 * depthFactor), 250 * depthFactor]);
-  const moveY = useTransform(mouseY, [0, 1], [-(200 * depthFactor), 200 * depthFactor]);
+  const depthFactor = (p.z + 150) / 400;
+  const moveX = useTransform(mouseX, [0, 1], [-(180 * depthFactor), 180 * depthFactor]);
+  const moveY = useTransform(mouseY, [0, 1], [-(140 * depthFactor), 140 * depthFactor]);
 
   return (
     <motion.div
@@ -27,16 +31,17 @@ const ParticleItem = ({ p, mouseX, mouseY }: { p: Particle, mouseX: MotionValue<
         width: p.size,
         height: p.size,
         backgroundColor: p.color,
-        boxShadow: `0 0 ${p.size * 5}px ${p.color}`,
+        boxShadow: `0 0 ${p.size * 4}px ${p.color}`,
         x: moveX,
         y: moveY,
         z: p.z,
-        filter: `blur(${Math.max(0, p.z / 100)}px)`,
+        filter: p.z > 50 ? `blur(${p.z / 120}px)` : undefined,
+        willChange: 'transform, opacity',
       }}
       animate={{
-        opacity: [0, Math.random() * 0.4 + 0.4, 0],
-        y: [0, -(Math.random() * 300 + 100)],
-        x: [0, (Math.random() - 0.5) * 150],
+        opacity: [0, p.opacityPeak, 0],
+        y: [0, -p.driftY],
+        x: [0, p.driftX],
       }}
       transition={{
         duration: p.duration,
@@ -67,19 +72,26 @@ export default function ClaraParticles3D() {
   }, [mouseX, mouseY]);
 
   useEffect(() => {
-    const newParticles: Particle[] = Array.from({ length: 120 }).map((_, i) => {
-      const colors = ['rgba(255, 220, 100, 0.9)', 'rgba(0, 240, 255, 0.7)', 'rgba(255, 140, 20, 1.0)', 'rgba(255, 255, 255, 0.5)'];
-      return {
-        id: i,
-        size: Math.random() * 5 + 1,
-        x: Math.random() * 60 + 40,
-        y: Math.random() * 100,
-        z: Math.random() * 400 - 150,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        duration: Math.random() * 20 + 8,
-        delay: Math.random() * -10,
-      };
-    });
+    const colors = [
+      'rgba(255, 220, 100, 0.9)',
+      'rgba(0, 240, 255, 0.65)',
+      'rgba(255, 160, 40, 0.95)',
+      'rgba(255, 255, 255, 0.45)',
+      'rgba(200, 180, 255, 0.5)',
+    ];
+    const newParticles: Particle[] = Array.from({ length: PARTICLE_COUNT }).map((_, i) => ({
+      id: i,
+      size: Math.random() * 5 + 1.5,
+      x: Math.random() * 55 + 42,
+      y: Math.random() * 100,
+      z: Math.random() * 400 - 150,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      duration: Math.random() * 18 + 10,
+      delay: Math.random() * -12,
+      opacityPeak: Math.random() * 0.45 + 0.35,
+      driftY: Math.random() * 280 + 120,
+      driftX: (Math.random() - 0.5) * 130,
+    }));
     setParticles(newParticles);
   }, []);
 

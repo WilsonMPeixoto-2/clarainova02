@@ -31,19 +31,19 @@ type ChatPanelMode = 'default' | 'expanded' | 'fullscreen';
 const LOADING_PHASES = [
   {
     title: 'Entendendo sua pergunta',
-    description: 'Estou tentando captar exatamente o que voce quer fazer no SEI-Rio.',
+    description: 'Estou tentando captar exatamente o que você quer fazer no SEI-Rio.',
   },
   {
-    title: 'Pesquisando na base interna',
-    description: 'Estou procurando os trechos mais proximos na documentacao da CLARA.',
+    title: 'Pesquisando na base documental',
+    description: 'Estou procurando os trechos mais próximos na documentação disponível.',
   },
   {
-    title: 'Comparando informacoes',
-    description: 'Se eu encontrar variacoes entre materiais, vou priorizar a orientacao mais aderente ao SEI-Rio.',
+    title: 'Comparando informações',
+    description: 'Se eu encontrar variações entre materiais, vou priorizar a orientação mais aderente ao SEI-Rio.',
   },
   {
     title: 'Consolidando a resposta',
-    description: 'Ja estou organizando tudo em um formato mais claro, com observacoes e referencias quando couber.',
+    description: 'Já estou organizando tudo em um formato mais claro, com observações e referências quando couber.',
   },
 ];
 
@@ -323,7 +323,7 @@ const ChatSheet = () => {
                     <p className="chat-empty-title">CLARA pronta para conversar.</p>
                     <p className="chat-empty-copy">
                       {isPreviewMode
-                        ? 'Enquanto a nova base e configurada, voce ja pode testar perguntas e ver como a resposta sera organizada.'
+                        ? 'Enquanto a nova base é configurada, você já pode testar perguntas e ver como a resposta será organizada.'
                         : 'Faça uma pergunta sobre etapas, documentos, assinatura ou tramitação no SEI-Rio.'}
                     </p>
 
@@ -414,7 +414,7 @@ const ChatSheet = () => {
               <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                 <p className="text-[10px] text-muted-foreground/60">
                   {isPreviewMode
-                    ? 'Modo de preparacao: voce pode testar perguntas e visualizar o formato da resposta antes da reconexao definitiva da base.'
+                    ? 'Modo de preparação: você pode testar perguntas e visualizar o formato da resposta antes da reconexão definitiva da base.'
                     : 'Respostas preferencialmente organizadas em blocos, com fontes ao final quando houver base suficiente.'}
                 </p>
                 {!isMobile && (

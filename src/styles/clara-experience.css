@@ -238,6 +238,27 @@ body::before {
   font-size: clamp(3.7rem, 7vw, 5.8rem);
   line-height: 0.88;
   letter-spacing: -0.06em;
+  background: linear-gradient(
+    120deg,
+    hsl(0 0% 100%) 0%,
+    hsl(39 88% 90%) 20%,
+    hsl(var(--gold-2)) 40%,
+    hsl(var(--gold-1)) 55%,
+    hsl(0 0% 100%) 70%,
+    hsl(var(--gold-2)) 85%,
+    hsl(0 0% 100%) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: brand-shimmer 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 40px hsl(var(--gold-2) / 0.3));
+}
+
+@keyframes brand-shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
 }
 
 .hero-support-headline {

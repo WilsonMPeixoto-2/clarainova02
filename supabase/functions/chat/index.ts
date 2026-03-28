@@ -17,6 +17,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const MAX_MESSAGE_LENGTH = 2000;
+const MAX_CONVERSATION_MESSAGES = 20;
+const EMBEDDING_TIMEOUT_MS = 10_000;
+const SEARCH_TIMEOUT_MS = 8_000;
+const GENERATION_TIMEOUT_MS = 45_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Timeout: ${label} excedeu ${ms}ms`)), ms);
+    promise.then(resolve, reject).finally(() => clearTimeout(timer));
+  });
+}
+
 // ============================================================
 // GUARDRAILS — Anti Prompt-Injection
 // ============================================================
@@ -44,6 +57,13 @@ const INJECTION_PATTERNS: RegExp[] = [
   /a\s+partir\s+de\s+agora\s+voc[eê]/i,
   /esque[çc]a\s+(tudo|todas?\s*(as\s*)?regras)/i,
   /forget\s+(all|every)\s*(rule|instruction)/i,
+  /override\s+(your\s+)?(rules|instructions|restrictions)/i,
+  /sobrescrev(er|a)\s+(suas?\s+)?(regras|instru[çc][õo]es)/i,
+  /\bjailbreak\b/i,
+  /\bbypass\s+(filter|safety|restriction)/i,
+  /print\s+(your\s+)?(initial|first|original)\s+(prompt|instruction)/i,
+  /\[\s*SYSTEM\s*\]/i,
+  /\<\s*\/?system\s*\>/i,
 ];
 
 function checkGuardrails(message: string): { blocked: boolean; reason?: string } {
@@ -241,10 +261,135 @@ function averageScore(chunks: HybridSearchChunk[]): number | null {
   return sum / chunks.length;
 }
 
-// enrichStructuredResponse and buildFallbackProcessStates removed — diagnostics stay in metrics only
+// ============================================================
+// TELEMETRY HELPERS
+// ============================================================
 
 function estimateTokenCount(value: string): number {
   return Math.max(1, Math.ceil(value.length / 4));
+}
+
+interface TelemetryContext {
+  supabase: ReturnType<typeof createClient>;
+  requestId: string;
+  requestStartedAt: number;
+  queryText: string;
+  normalizedQuery: string;
+  intentLabel: string;
+  topicLabel: string;
+  subtopicLabel: string | null;
+  systemPromptWithContext: string;
+  chatMessages: Array<{ role: string; content: string }>;
+  retrievalMode: string;
+  retrievalTopScore: number;
+  retrievalSources: string[];
+  searchResultCount: number;
+  selectedChunkIds: string[];
+  selectedDocumentIds: string[];
+  searchMetricId: string | null;
+  knowledgeContext: string;
+}
+
+async function recordTelemetry(
+  ctx: TelemetryContext,
+  responseText: string,
+  modelName: string,
+  citationsCount: number,
+  outputMode: 'structured' | 'stream',
+): Promise<void> {
+  const responseStatus = ctx.retrievalMode === 'model_grounded' ? 'answered' : 'partial';
+  const usedRag = ctx.retrievalMode === 'model_grounded';
+  const totalLatency = Date.now() - ctx.requestStartedAt;
+  const promptEstimate = estimateTokenCount(
+    `${ctx.systemPromptWithContext}\n${ctx.chatMessages.map((m) => m.content).join('\n')}`
+  );
+  const responseEstimate = estimateTokenCount(responseText);
+
+  const { data: chatMetricRow, error: chatMetricError } = await ctx.supabase
+    .from('chat_metrics')
+    .insert({
+      request_id: ctx.requestId,
+      query_text: ctx.queryText,
+      normalized_query: ctx.normalizedQuery,
+      response_text: responseText,
+      response_status: responseStatus,
+      used_rag: usedRag,
+      used_external_web: false,
+      used_model_general_knowledge: !usedRag,
+      rag_confidence_score: ctx.retrievalTopScore || null,
+      search_result_count: ctx.searchResultCount,
+      chunks_selected_count: ctx.selectedChunkIds.length,
+      citations_count: citationsCount,
+      model_name: modelName,
+      prompt_tokens_estimate: promptEstimate,
+      response_tokens_estimate: responseEstimate,
+      latency_ms: totalLatency,
+      search_metric_id: ctx.searchMetricId,
+      metadata_json: {
+        request_id: ctx.requestId,
+        retrieval_mode: ctx.retrievalMode,
+        sources: ctx.retrievalSources,
+        selected_document_ids: ctx.selectedDocumentIds,
+        selected_chunk_ids: ctx.selectedChunkIds,
+        output_mode: outputMode,
+      },
+    })
+    .select('id')
+    .single();
+
+  if (chatMetricError) {
+    console.error(`chat_metrics ${outputMode} insert error:`, chatMetricError);
+  }
+
+  const { error: analyticsError } = await ctx.supabase.from('query_analytics').insert({
+    request_id: ctx.requestId,
+    query_text: ctx.queryText,
+    normalized_query: ctx.normalizedQuery,
+    intent_label: ctx.intentLabel,
+    topic_label: ctx.topicLabel,
+    subtopic_label: ctx.subtopicLabel,
+    is_answered_satisfactorily: usedRag ? true : null,
+    needs_content_gap_review: !usedRag,
+    gap_reason: usedRag ? null : 'sem_cobertura_documental',
+    used_rag: usedRag,
+    used_external_web: false,
+    chat_metric_id: chatMetricRow?.id ?? null,
+  });
+
+  if (analyticsError) {
+    console.error(`query_analytics ${outputMode} insert error:`, analyticsError);
+  }
+
+  const logEntries: { event_type: string; metadata?: Record<string, unknown> }[] = [
+    {
+      event_type: 'chat_message',
+      metadata: {
+        request_id: ctx.requestId,
+        model: modelName,
+        retrieval_mode: ctx.retrievalMode,
+        top_score: ctx.retrievalTopScore,
+        source_count: ctx.retrievalSources.length,
+        response_status: responseStatus,
+        output_mode: outputMode,
+      },
+    },
+  ];
+
+  if (ctx.knowledgeContext) {
+    logEntries.push({
+      event_type: 'embedding_query',
+      metadata: {
+        request_id: ctx.requestId,
+        retrieval_mode: ctx.retrievalMode,
+        sources: ctx.retrievalSources,
+      },
+    });
+  }
+
+  const { error: logErr } = await ctx.supabase.from('usage_logs').insert(logEntries);
+  if (logErr) {
+    console.error('Usage log error:', logErr);
+  }
 }
 
 async function readSseText(stream: ReadableStream<Uint8Array>): Promise<string> {
@@ -419,6 +564,28 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (messages.length > MAX_CONVERSATION_MESSAGES) {
+      return new Response(
+        JSON.stringify({ error: 'Conversa muito longa. Inicie uma nova conversa.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    for (const msg of messages) {
+      if (typeof msg.content !== 'string' || typeof msg.role !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Formato de mensagem inválido.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (msg.content.length > MAX_MESSAGE_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: 'Mensagem muito longa. Tente ser mais conciso.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     const requestStartedAt = Date.now();
     const requestId = crypto.randomUUID();
 
@@ -439,9 +606,11 @@ Deno.serve(async (req) => {
     const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       req.headers.get('x-real-ip') ||
       'unknown';
+    const userAgent = req.headers.get('user-agent') || '';
+    const rateLimitKey = `${clientIP}:${userAgent.slice(0, 64)}`;
 
     const { data: allowed, error: rlError } = await supabase.rpc('check_rate_limit', {
-      p_identifier: clientIP,
+      p_identifier: rateLimitKey,
       p_max_requests: 15,
       p_window_minutes: 1,
     });
@@ -524,20 +693,28 @@ Deno.serve(async (req) => {
     if (lastUserMessage) {
       try {
         const searchStartedAt = Date.now();
-        const embeddingResult = await ai.models.embedContent({
-          model: 'text-embedding-004',
-          contents: lastUserMessage.content,
-          config: { outputDimensionality: 768 },
-        });
+        const embeddingResult = await withTimeout(
+          ai.models.embedContent({
+            model: 'text-embedding-004',
+            contents: lastUserMessage.content,
+            config: { outputDimensionality: 768 },
+          }),
+          EMBEDDING_TIMEOUT_MS,
+          'embedding',
+        );
 
         const queryEmbedding = embeddingResult.embeddings?.[0]?.values;
 
-        if (queryEmbedding) {
-          const { data: chunks, error: matchErr } = await supabase.rpc('hybrid_search_chunks', {
-            query_embedding: JSON.stringify(queryEmbedding),
-            query_text: lastUserMessage.content,
-            match_count: 8,
-          }) as { data: HybridSearchChunk[] | null; error: Error | null };
+        if (queryEmbedding && queryEmbedding.length === 768) {
+          const { data: chunks, error: matchErr } = await withTimeout(
+            supabase.rpc('hybrid_search_chunks', {
+              query_embedding: JSON.stringify(queryEmbedding),
+              query_text: lastUserMessage.content,
+              match_count: 8,
+            }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
+            SEARCH_TIMEOUT_MS,
+            'hybrid_search',
+          );
 
           searchLatencyMs = Date.now() - searchStartedAt;
 
@@ -603,7 +780,14 @@ Deno.serve(async (req) => {
       content: m.content,
     }));
 
-    const structuredResult = await generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages);
+    const structuredResult = await withTimeout(
+      generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages),
+      GENERATION_TIMEOUT_MS,
+      'structured_generation',
+    ).catch((err) => {
+      console.warn('Structured generation failed/timed out, falling back to stream:', err.message);
+      return null;
+    });
 
     if (structuredResult && lastUserMessage) {
       let resolvedStructuredResult = structuredResult;
@@ -613,16 +797,20 @@ Deno.serve(async (req) => {
       });
 
       if (responseHasInternalProcessLeakage(structuredResponse)) {
-        const repairedStructuredResult = await generateStructuredWithFallback(
-          ai,
-          `${systemPromptWithContext}
+        const repairedStructuredResult = await withTimeout(
+          generateStructuredWithFallback(
+            ai,
+            `${systemPromptWithContext}
 
 REESCRITA OBRIGATORIA:
 - Reescreva a resposta focando apenas na orientacao operacional ao usuario.
 - Nao mencione base interna, analise interna, comparacao de fontes, RAG, embeddings, backend, telemetria, schema ou qualquer bastidor do sistema.
 - Se houver base suficiente, responda em passo a passo claro sobre o SEI-Rio.`,
-          chatMessages,
-        );
+            chatMessages,
+          ),
+          GENERATION_TIMEOUT_MS,
+          'leakage_repair',
+        ).catch(() => null);
 
         if (repairedStructuredResult) {
           resolvedStructuredResult = repairedStructuredResult;
@@ -634,99 +822,24 @@ REESCRITA OBRIGATORIA:
       }
 
       const structuredPlainText = renderStructuredResponseToPlainText(structuredResponse);
-      const responseStatus = retrievalMode === 'model_grounded' ? 'answered' : 'partial';
-      const usedRag = retrievalMode === 'model_grounded';
-      const totalLatency = Date.now() - requestStartedAt;
-      const promptEstimate = estimateTokenCount(
-        `${systemPromptWithContext}\n${chatMessages.map((message) => message.content).join('\n')}`
-      );
-      const responseEstimate = estimateTokenCount(structuredPlainText);
 
-      const { data: chatMetricRow, error: chatMetricError } = await supabase
-        .from('chat_metrics')
-        .insert({
-          request_id: requestId,
-          query_text: lastUserMessage.content,
-          normalized_query: normalizedQuery,
-          response_text: structuredPlainText,
-          response_status: responseStatus,
-          used_rag: usedRag,
-          used_external_web: false,
-          used_model_general_knowledge: !usedRag,
-          rag_confidence_score: retrievalTopScore || null,
-          search_result_count: searchResultCount,
-          chunks_selected_count: selectedChunkIds.length,
-          citations_count: structuredResponse.referenciasFinais.length,
-          model_name: resolvedStructuredResult.model,
-          prompt_tokens_estimate: promptEstimate,
-          response_tokens_estimate: responseEstimate,
-          latency_ms: totalLatency,
-          search_metric_id: searchMetricId,
-          metadata_json: {
-            request_id: requestId,
-            retrieval_mode: retrievalMode,
-            sources: retrievalSources,
-            selected_document_ids: selectedDocumentIds,
-            selected_chunk_ids: selectedChunkIds,
-            output_mode: 'structured',
-          },
-        })
-        .select('id')
-        .single();
+      const telemetryCtx: TelemetryContext = {
+        supabase, requestId, requestStartedAt,
+        queryText: lastUserMessage.content,
+        normalizedQuery, intentLabel, topicLabel, subtopicLabel,
+        systemPromptWithContext, chatMessages,
+        retrievalMode, retrievalTopScore, retrievalSources,
+        searchResultCount, selectedChunkIds, selectedDocumentIds,
+        searchMetricId, knowledgeContext,
+      };
 
-      if (chatMetricError) {
-        console.error('chat_metrics structured insert error:', chatMetricError);
-      }
-
-      const { error: analyticsError } = await supabase.from('query_analytics').insert({
-        request_id: requestId,
-        query_text: lastUserMessage.content,
-        normalized_query: normalizedQuery,
-        intent_label: intentLabel,
-        topic_label: topicLabel,
-        subtopic_label: subtopicLabel,
-        is_answered_satisfactorily: usedRag ? true : null,
-        needs_content_gap_review: !usedRag,
-        gap_reason: usedRag ? null : 'sem_cobertura_documental',
-        used_rag: usedRag,
-        used_external_web: false,
-        chat_metric_id: chatMetricRow?.id ?? null,
-      });
-
-      if (analyticsError) {
-        console.error('query_analytics structured insert error:', analyticsError);
-      }
-
-      const logEntries: { event_type: string; metadata?: Record<string, unknown> }[] = [
-        {
-          event_type: 'chat_message',
-          metadata: {
-            request_id: requestId,
-            model: resolvedStructuredResult.model,
-            retrieval_mode: retrievalMode,
-            top_score: retrievalTopScore,
-            source_count: retrievalSources.length,
-            response_status: responseStatus,
-            output_mode: 'structured',
-          },
-        },
-      ];
-
-      if (knowledgeContext) {
-        logEntries.push({
-          event_type: 'embedding_query',
-          metadata: {
-            request_id: requestId,
-            retrieval_mode: retrievalMode,
-            sources: retrievalSources,
-          },
-        });
-      }
-
-      const { error: logErr } = await supabase.from('usage_logs').insert(logEntries);
-      if (logErr) {
-        console.error('Usage log error:', logErr);
-      }
+      await recordTelemetry(
+        telemetryCtx,
+        structuredPlainText,
+        resolvedStructuredResult.model,
+        structuredResponse.referenciasFinais.length,
+        'structured',
+      ).catch((err) => console.error('Telemetry error (structured):', err));
 
       return new Response(
         JSON.stringify({
@@ -800,100 +913,20 @@ REESCRITA OBRIGATORIA:
       const [clientStream, telemetryStream] = result.stream.tee();
       responseStream = clientStream;
 
+      const telemetryCtx: TelemetryContext = {
+        supabase, requestId, requestStartedAt,
+        queryText: lastUserMessage.content,
+        normalizedQuery, intentLabel, topicLabel, subtopicLabel,
+        systemPromptWithContext, chatMessages,
+        retrievalMode, retrievalTopScore, retrievalSources,
+        searchResultCount, selectedChunkIds, selectedDocumentIds,
+        searchMetricId, knowledgeContext,
+      };
+
       void readSseText(telemetryStream)
-        .then(async (responseText) => {
-          const responseStatus = retrievalMode === 'model_grounded' ? 'answered' : 'partial';
-          const usedRag = retrievalMode === 'model_grounded';
-          const totalLatency = Date.now() - requestStartedAt;
-          const promptEstimate = estimateTokenCount(
-            `${systemPromptWithContext}\n${chatMessages.map((message) => message.content).join('\n')}`
-          );
-          const responseEstimate = estimateTokenCount(responseText);
-
-          const { data: chatMetricRow, error: chatMetricError } = await supabase
-            .from('chat_metrics')
-            .insert({
-              request_id: requestId,
-              query_text: lastUserMessage.content,
-              normalized_query: normalizedQuery,
-              response_text: responseText,
-              response_status: responseStatus,
-              used_rag: usedRag,
-              used_external_web: false,
-              used_model_general_knowledge: !usedRag,
-              rag_confidence_score: retrievalTopScore || null,
-              search_result_count: searchResultCount,
-              chunks_selected_count: selectedChunkIds.length,
-              citations_count: retrievalSources.length,
-              model_name: result.model,
-              prompt_tokens_estimate: promptEstimate,
-              response_tokens_estimate: responseEstimate,
-              latency_ms: totalLatency,
-              search_metric_id: searchMetricId,
-              metadata_json: {
-                request_id: requestId,
-                retrieval_mode: retrievalMode,
-                sources: retrievalSources,
-                selected_document_ids: selectedDocumentIds,
-                selected_chunk_ids: selectedChunkIds,
-              },
-            })
-            .select('id')
-            .single();
-
-          if (chatMetricError) {
-            console.error('chat_metrics insert error:', chatMetricError);
-          }
-
-          const { error: analyticsError } = await supabase.from('query_analytics').insert({
-            request_id: requestId,
-            query_text: lastUserMessage.content,
-            normalized_query: normalizedQuery,
-            intent_label: intentLabel,
-            topic_label: topicLabel,
-            subtopic_label: subtopicLabel,
-            is_answered_satisfactorily: usedRag ? true : null,
-            needs_content_gap_review: !usedRag,
-            gap_reason: usedRag ? null : 'sem_cobertura_documental',
-            used_rag: usedRag,
-            used_external_web: false,
-            chat_metric_id: chatMetricRow?.id ?? null,
-          });
-
-          if (analyticsError) {
-            console.error('query_analytics insert error:', analyticsError);
-          }
-
-          const logEntries: { event_type: string; metadata?: Record<string, unknown> }[] = [
-            {
-              event_type: 'chat_message',
-              metadata: {
-                request_id: requestId,
-                model: result.model,
-                retrieval_mode: retrievalMode,
-                top_score: retrievalTopScore,
-                source_count: retrievalSources.length,
-                response_status: responseStatus,
-              },
-            },
-          ];
-
-          if (knowledgeContext) {
-            logEntries.push({
-              event_type: 'embedding_query',
-              metadata: {
-                request_id: requestId,
-                retrieval_mode: retrievalMode,
-                sources: retrievalSources,
-              },
-            });
-          }
-
-          const { error: logErr } = await supabase.from('usage_logs').insert(logEntries);
-          if (logErr) {
-            console.error('Usage log error:', logErr);
-          }
-        })
+        .then((responseText) =>
+          recordTelemetry(telemetryCtx, responseText, result.model, retrievalSources.length, 'stream')
+        )
         .catch((telemetryError) => {
           console.error('Telemetry capture error:', telemetryError);
         });

@@ -124,18 +124,31 @@ Deno.serve(async (req) => {
       details_json: { start_index, requested_chunks: chunks.length, valid_chunks: validChunks.length },
     });
 
-    // Generate embeddings
+    // Generate embeddings with timeout and dimension validation
+    const EMBED_TIMEOUT_MS = 15_000;
     const embeddingStart = Date.now();
     const embeddingPromises = validChunks.map(async (text: string) => {
       try {
-        const result = await ai.models.embedContent({
-          model: EMBEDDING_MODEL,
-          contents: text,
-          config: { outputDimensionality: EMBEDDING_DIM },
-        });
-        return result.embeddings?.[0]?.values || null;
+        const result = await Promise.race([
+          ai.models.embedContent({
+            model: EMBEDDING_MODEL,
+            contents: text,
+            config: { outputDimensionality: EMBEDDING_DIM },
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("EMBED_TIMEOUT")), EMBED_TIMEOUT_MS)
+          ),
+        ]);
+        const values = result.embeddings?.[0]?.values;
+        if (!values || values.length !== EMBEDDING_DIM) {
+          console.warn(`Embedding dimension mismatch: expected ${EMBEDDING_DIM}, got ${values?.length ?? 0}`);
+          return null;
+        }
+        return values;
       } catch (err: unknown) {
-        console.error(`Embedding error:`, getErrorMessage(err));
+        const msg = getErrorMessage(err);
+        console.error(`Embedding error:`, msg);
+        if (msg === "EMBED_TIMEOUT") return null;
         const status = getErrorStatus(err);
         if (status === 429 || (status && status >= 500)) {
           throw new Error(`GEMINI_${status}`, { cause: err });

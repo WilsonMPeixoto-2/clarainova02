@@ -52,7 +52,7 @@ const FeaturesSection = () => {
   const { openChat } = useChat();
 
   return (
-    <section id="conhecimento" className="knowledge-section py-20 md:py-28 relative overflow-hidden" aria-labelledby="features-heading">
+    <section id="conhecimento" className="knowledge-section aurora-bg py-20 md:py-28 relative overflow-hidden" aria-labelledby="features-heading">
       <div className="knowledge-ambient-media" aria-hidden="true">
         <img
           className="knowledge-ambient-video"
@@ -71,11 +71,11 @@ const FeaturesSection = () => {
               Funcionalidades
             </span>
             <h2 id="features-heading" className="text-h2 mt-4">
-              <Balancer>Consultas uteis para o dia a dia.</Balancer>
+              <Balancer>Consultas úteis para o dia a dia.</Balancer>
             </h2>
             <p className="text-body text-lg max-w-3xl mx-auto mt-4">
               <Balancer>
-                Duvidas frequentes sobre documentos, bloco de assinatura, tramitacao e conferencia antes do envio.
+                Dúvidas frequentes sobre documentos, bloco de assinatura, tramitação e conferência antes do envio.
               </Balancer>
             </p>
           </div>
