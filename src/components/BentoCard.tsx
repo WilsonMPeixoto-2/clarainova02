@@ -41,7 +41,7 @@ export default function BentoCard({
             <span className="inline-flex items-center justify-center w-11 h-11 rounded-[0.9rem] border border-[hsl(var(--gold-1)/0.2)] bg-[linear-gradient(145deg,hsl(var(--gold-1)/0.14),hsl(var(--gold-2)/0.06))] text-primary shadow-[0_0_22px_hsl(var(--glow)/0.07)] transition-all duration-300 group-hover:shadow-[0_0_28px_hsl(var(--glow)/0.12)] group-hover:border-[hsl(var(--gold-1)/0.3)]">
               <Icon className="w-[1.35rem] h-[1.35rem]" strokeWidth={1.9} aria-hidden="true" />
             </span>
-            <ArrowUpRight className="w-4 h-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+            <ArrowUpRight className="w-4 h-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </div>
           <h3 className="mt-4 text-lg @[280px]:text-xl font-semibold tracking-tight text-foreground relative z-10" style={{ fontFamily: "var(--font-heading)", transform: 'translateZ(20px)' }}>
             {title}

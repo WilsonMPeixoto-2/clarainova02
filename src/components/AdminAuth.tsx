@@ -4,7 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Chrome, Fingerprint, Lock, Loader2, Eye, EyeOff, DatabaseZap } from "lucide-react";
+import { Globe, Fingerprint, Lock, Loader2, Eye, EyeOff, DatabaseZap } from "lucide-react";
 import { toast } from "sonner";
 import {
   getAdminAuthCallbackUrl,
@@ -117,7 +117,7 @@ export default function AdminAuth({ children }: Props) {
           <CardContent>
             <div className="space-y-4">
               <Button type="button" className="w-full gap-2" onClick={handleGoogleSignIn} disabled={googleSubmitting || submitting}>
-                {googleSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Chrome className="h-4 w-4" />}
+                {googleSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
                 Continuar com Google
               </Button>
 

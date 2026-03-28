@@ -402,7 +402,7 @@ const ChatSheet = () => {
                   >
                     <div className="chat-loading-card">
                       <div className="chat-loading-head">
-                        <Loader2 className="w-4 h-4 text-primary animate-spin" aria-hidden="true" />
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
                         <span>{activeLoadingPhase.title}</span>
                       </div>
                       <p className="chat-loading-copy">{activeLoadingPhase.description}</p>

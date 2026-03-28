@@ -35,14 +35,14 @@ const LegalPageLayout = ({
             <div className="legal-hero-card">
               <div className="legal-breadcrumbs">
                 <Link to="/" className="legal-back-link">
-                  <ArrowLeft size={15} aria-hidden="true" />
+                  <ArrowLeft size={15} />
                   Voltar para a CLARA
                 </Link>
                 <span className="legal-meta-pill">{updatedAt}</span>
               </div>
 
               <span className="legal-kicker">
-                <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                <ShieldCheck className="w-3.5 h-3.5" />
                 {kicker}
               </span>
               <h1 className="legal-title">{title}</h1>

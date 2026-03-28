@@ -57,7 +57,7 @@ const ManifestSection = () => {
           <div className="manifest-shell">
             <div className="manifest-copy">
               <span className="manifest-kicker">
-                <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                <ShieldCheck className="w-3.5 h-3.5" />
                 Como funciona
               </span>
               <h2 id="manifest-heading" className="text-h2 mt-4">
@@ -96,7 +96,7 @@ const ManifestSection = () => {
                 </p>
                 <button type="button" className="manifest-cta" onClick={() => openChat()}>
                   Abrir o chat
-                  <ArrowRight size={16} aria-hidden="true" />
+                  <ArrowRight size={16} />
                 </button>
               </div>
 
