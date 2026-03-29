@@ -4,7 +4,7 @@ import { buildMockStructuredResponse } from "@/lib/clara-response";
 import { requestChat, streamChatResponse, type ChatApiConfig } from "@/lib/chat-api";
 
 const baseConfig: ChatApiConfig = {
-  supabaseUrl: "https://clara.supabase.co",
+  supabaseUrl: "https://example.supabase.co",
   supabasePublishableKey: "anon-key",
   backendConfigured: true,
   mockEnabled: false,
