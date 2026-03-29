@@ -1,10 +1,10 @@
-project_id = "replace-with-your-project-ref"
+project_id = "jasqctuzeznwdtbcuixn"
 
 [functions.embed-chunks]
-verify_jwt = false
+verify_jwt = true
 
 [functions.chat]
 verify_jwt = false
 
 [functions.get-usage-stats]
-verify_jwt = false
+verify_jwt = true

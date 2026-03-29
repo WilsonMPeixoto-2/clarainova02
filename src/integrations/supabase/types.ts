@@ -91,37 +91,73 @@ export type Database = {
       }
       document_chunks: {
         Row: {
+          char_count: number | null
           chunk_index: number
+          chunk_metadata_json: Json
           content: string
           created_at: string
           document_id: string
+          embedded_at: string | null
           embedding: string | null
+          embedding_dim: number | null
+          embedding_model: string | null
           id: string
+          is_active: boolean
+          keyword_tsv: unknown
+          keyword_weight: number
           page_end: number | null
           page_start: number | null
           section_title: string | null
+          semantic_weight: number
+          text_hash: string | null
+          token_count_estimate: number | null
+          updated_at: string
         }
         Insert: {
+          char_count?: number | null
           chunk_index?: number
+          chunk_metadata_json?: Json
           content: string
           created_at?: string
           document_id: string
+          embedded_at?: string | null
           embedding?: string | null
+          embedding_dim?: number | null
+          embedding_model?: string | null
           id?: string
+          is_active?: boolean
+          keyword_tsv?: unknown
+          keyword_weight?: number
           page_end?: number | null
           page_start?: number | null
           section_title?: string | null
+          semantic_weight?: number
+          text_hash?: string | null
+          token_count_estimate?: number | null
+          updated_at?: string
         }
         Update: {
+          char_count?: number | null
           chunk_index?: number
+          chunk_metadata_json?: Json
           content?: string
           created_at?: string
           document_id?: string
+          embedded_at?: string | null
           embedding?: string | null
+          embedding_dim?: number | null
+          embedding_model?: string | null
           id?: string
+          is_active?: boolean
+          keyword_tsv?: unknown
+          keyword_weight?: number
           page_end?: number | null
           page_start?: number | null
           section_title?: string | null
+          semantic_weight?: number
+          text_hash?: string | null
+          token_count_estimate?: number | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -184,24 +220,90 @@ export type Database = {
       documents: {
         Row: {
           created_at: string
+          document_hash: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          file_name: string | null
           file_path: string
           id: string
+          is_active: boolean
+          jurisdiction_scope: string | null
+          language_code: string | null
+          last_reviewed_at: string | null
+          metadata_json: Json
+          mime_type: string | null
           name: string
+          page_count: number | null
+          processed_at: string | null
+          published_at: string | null
+          source_name: string | null
+          source_type: string | null
+          source_url: string | null
           status: string
+          storage_path: string | null
+          summary: string | null
+          text_char_count: number | null
+          topic_scope: string | null
+          updated_at: string
+          version_label: string | null
         }
         Insert: {
           created_at?: string
+          document_hash?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          file_name?: string | null
           file_path: string
           id?: string
+          is_active?: boolean
+          jurisdiction_scope?: string | null
+          language_code?: string | null
+          last_reviewed_at?: string | null
+          metadata_json?: Json
+          mime_type?: string | null
           name: string
+          page_count?: number | null
+          processed_at?: string | null
+          published_at?: string | null
+          source_name?: string | null
+          source_type?: string | null
+          source_url?: string | null
           status?: string
+          storage_path?: string | null
+          summary?: string | null
+          text_char_count?: number | null
+          topic_scope?: string | null
+          updated_at?: string
+          version_label?: string | null
         }
         Update: {
           created_at?: string
+          document_hash?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          file_name?: string | null
           file_path?: string
           id?: string
+          is_active?: boolean
+          jurisdiction_scope?: string | null
+          language_code?: string | null
+          last_reviewed_at?: string | null
+          metadata_json?: Json
+          mime_type?: string | null
           name?: string
+          page_count?: number | null
+          processed_at?: string | null
+          published_at?: string | null
+          source_name?: string | null
+          source_type?: string | null
+          source_url?: string | null
           status?: string
+          storage_path?: string | null
+          summary?: string | null
+          text_char_count?: number | null
+          topic_scope?: string | null
+          updated_at?: string
+          version_label?: string | null
         }
         Relationships: []
       }
@@ -430,21 +532,18 @@ export type Database = {
         }
         Returns: {
           content: string
+          document_authority_level: string
           document_id: string
+          document_kind: string
           document_name: string
+          document_search_weight: number
+          document_source_name: string
+          document_source_type: string
+          document_topic_scope: string
           id: string
           page_end: number
           page_start: number
           section_title: string
-          similarity: number
-        }[]
-      }
-      match_chunks: {
-        Args: { match_count?: number; query_embedding: string }
-        Returns: {
-          content: string
-          document_id: string
-          id: string
           similarity: number
         }[]
       }

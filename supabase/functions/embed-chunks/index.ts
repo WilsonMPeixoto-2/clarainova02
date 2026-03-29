@@ -124,9 +124,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY")!;
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const geminiKey = Deno.env.get("GEMINI_API_KEY");
+    if (!geminiKey) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "CONFIG:GEMINI_API_KEY_MISSING", request_id }),
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "CONFIG:SUPABASE_CREDENTIALS_MISSING", request_id }),
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
 
     const ai = new GoogleGenAI({ apiKey: geminiKey });
     const supabase = createClient(supabaseUrl, supabaseKey);
