@@ -275,6 +275,10 @@ function getPublicErrorMessage(
   }
 
   const normalized = message.toLowerCase();
+  if (isProviderAvailabilityError(error)) {
+    return 'O atendimento da CLARA está temporariamente indisponível neste ambiente. Tente novamente em alguns minutos.';
+  }
+
   if (normalized.includes('timeout')) {
     return 'A resposta demorou mais do que o esperado. Tente novamente em instantes.';
   }
@@ -295,6 +299,30 @@ function getPublicErrorMessage(
   }
 
   return message;
+}
+
+function isProviderAvailabilityError(error: unknown): boolean {
+  const message = getErrorMessage(error, '').toLowerCase();
+  if (!message) {
+    return false;
+  }
+
+  return [
+    'model_fallback_failed',
+    'permission_denied',
+    'resource_exhausted',
+    'quota',
+    '429',
+    '500',
+    '502',
+    '503',
+    '504',
+    'unavailable',
+    'overloaded',
+    'service unavailable',
+    'model not found',
+    'models/',
+  ].some((pattern) => message.includes(pattern));
 }
 
 function normalizeQueryText(value: string): string {
@@ -612,19 +640,20 @@ async function callGeminiWithFallback(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
 ): Promise<{ stream: ReadableStream<Uint8Array>; model: string }> {
+  const failures: string[] = [];
+
   for (const model of GEMINI_MODELS) {
     try {
       const stream = await streamWithGenAI(ai, model, systemPrompt, messages);
       return { stream, model };
     } catch (err: unknown) {
       const msg = getErrorMessage(err, String(err ?? ''));
+      failures.push(`${model}: ${msg}`);
       console.warn(`Model ${model} failed: ${msg}`);
-      if (msg.includes('403') || msg.includes('PERMISSION_DENIED')) {
-        throw new Error('O atendimento da CLARA está temporariamente indisponível neste ambiente.', { cause: err });
-      }
     }
   }
-  throw new Error('Não consegui concluir sua resposta agora. Tente novamente em alguns minutos.');
+
+  throw new Error(`MODEL_FALLBACK_FAILED: ${failures.join(' | ')}`);
 }
 
 // ============================================================
@@ -678,7 +707,7 @@ Deno.serve(async (req) => {
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'A CLARA ainda não está disponível neste ambiente. Tente novamente mais tarde.' }),
-        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
@@ -688,7 +717,7 @@ Deno.serve(async (req) => {
     if (!supabaseUrl || !supabaseKey) {
       return new Response(
         JSON.stringify({ error: 'O atendimento da CLARA ainda não está pronto neste ambiente. Tente novamente mais tarde.' }),
-        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -949,6 +978,7 @@ REESCRITA OBRIGATORIA:
     } catch (err: unknown) {
       const rawErrorMsg = getErrorMessage(err);
       const errorMsg = getPublicErrorMessage(err);
+      const providerUnavailable = isProviderAvailabilityError(err);
       if (lastUserMessage) {
         void supabase.from('chat_metrics').insert({
           request_id: requestId,
@@ -965,12 +995,13 @@ REESCRITA OBRIGATORIA:
           model_name: null,
           latency_ms: Date.now() - requestStartedAt,
           search_metric_id: searchMetricId,
-          error_code: 'model_fallback_failed',
+          error_code: providerUnavailable ? 'provider_unavailable' : 'model_fallback_failed',
           error_message: rawErrorMsg,
           metadata_json: {
             request_id: requestId,
             retrieval_mode: retrievalMode,
             sources: retrievalSources,
+            attempted_models: GEMINI_MODELS,
           },
         }).then(({ error }) => {
           if (error) console.error('chat_metrics failure insert error:', error);
@@ -994,7 +1025,10 @@ REESCRITA OBRIGATORIA:
       }
       return new Response(
         JSON.stringify({ error: errorMsg }),
-        { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        {
+          status: providerUnavailable ? 503 : 500,
+          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
+        }
       );
     }
 
