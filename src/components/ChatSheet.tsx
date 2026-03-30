@@ -1,15 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Download,
-  Loader2,
-  Maximize2,
-  MessageCircle,
-  Minimize2,
-  PanelRightOpen,
-  Send,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { DownloadSimple, CircleNotch, ArrowsOut, ChatCircle, ArrowsIn, Sidebar, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
@@ -76,6 +66,29 @@ const ChatSheet = () => {
   const isOnline = useOnlineStatus();
   const [input, setInput] = useState('');
   const [panelMode, setPanelMode] = useState<ChatPanelMode>('default');
+  const [customWidth, setCustomWidth] = useState<number | null>(null);
+  const isDraggingRef = useRef(false);
+
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isDraggingRef.current) return;
+      const newWidth = window.innerWidth - e.clientX;
+      setCustomWidth(Math.max(420, Math.min(newWidth, window.innerWidth - 20)));
+    };
+    const handlePointerUp = () => {
+      isDraggingRef.current = false;
+      document.body.style.cursor = '';
+    };
+
+    if (isOpen) {
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+    }
+    return () => {
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [isOpen]);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [loadingPhaseIndex, setLoadingPhaseIndex] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -184,11 +197,13 @@ const ChatSheet = () => {
 
   const sheetWidth = isMobile
     ? '100vw'
-    : panelMode === 'default'
-      ? 'clamp(560px, 50vw, 920px)'
-      : panelMode === 'expanded'
-        ? 'clamp(760px, 78vw, 1440px)'
-        : '100vw';
+    : panelMode === 'fullscreen'
+      ? '100vw'
+      : customWidth 
+        ? `${customWidth}px`
+        : panelMode === 'default'
+          ? 'clamp(560px, 45vw, 840px)'
+          : 'clamp(760px, 78vw, 1440px)';
 
   const assistantMessageMaxWidth = isMobile ? 'max-w-[96%]' : 'max-w-[94%]';
   const activeLoadingPhase = LOADING_PHASES[loadingPhaseIndex];
@@ -246,10 +261,25 @@ const ChatSheet = () => {
               }
             }}
           >
+            {/* Drag Handle para resize nativo pelo usuário */}
+            {!isMobile && panelMode !== 'fullscreen' && (
+              <div
+                className="absolute top-0 bottom-0 left-0 w-3 -ml-[1.5px] cursor-col-resize z-50 hover:bg-primary/20 active:bg-primary/30 active:backdrop-blur-sm transition-colors group flex items-center justify-center"
+                onPointerDown={(e) => {
+                  isDraggingRef.current = true;
+                  document.body.style.cursor = 'col-resize';
+                  e.preventDefault();
+                }}
+                title="Arraste para redimensionar"
+              >
+                <div className="w-[3px] h-12 bg-border/40 rounded-full group-hover:bg-primary/50 group-active:bg-primary/80 transition-colors" />
+              </div>
+            )}
+
             <div className="chat-header-surface flex items-center justify-between gap-3 px-4 py-4 border-b border-[hsl(var(--border-subtle))] md:px-5">
               <div className="flex items-center gap-3 min-w-0">
                 <span className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-primary/35 bg-primary/10 text-primary shrink-0">
-                  <MessageCircle size={18} />
+                  <ChatCircle size={18} />
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">CLARA</p>
@@ -270,7 +300,7 @@ const ChatSheet = () => {
                     aria-label="Baixar sessao em PDF"
                     title="Baixar sessao em PDF"
                   >
-                    {isExportingPdf ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                    {isExportingPdf ? <CircleNotch size={16} className="animate-spin" /> : <DownloadSimple size={16} />}
                   </button>
                 )}
 
@@ -278,22 +308,28 @@ const ChatSheet = () => {
                   <>
                     <button
                       type="button"
-                      onClick={() => handlePanelMode(panelMode === 'default' ? 'expanded' : 'default')}
+                      onClick={() => {
+                        setCustomWidth(null);
+                        handlePanelMode(panelMode === 'default' ? 'expanded' : 'default');
+                      }}
                       className="chat-header-action"
                       aria-label={panelMode === 'default' ? 'Ampliar painel do chat' : 'Restaurar tamanho padrao'}
                       title={panelMode === 'default' ? 'Ampliar painel do chat' : 'Restaurar tamanho padrao'}
                     >
-                      {panelMode === 'default' ? <PanelRightOpen size={16} /> : <Minimize2 size={16} />}
+                      {panelMode === 'default' ? <Sidebar size={16} /> : <ArrowsIn size={16} />}
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => handlePanelMode(panelMode === 'fullscreen' ? 'expanded' : 'fullscreen')}
+                      onClick={() => {
+                        setCustomWidth(null);
+                        handlePanelMode(panelMode === 'fullscreen' ? 'expanded' : 'fullscreen');
+                      }}
                       className="chat-header-action"
                       aria-label={panelMode === 'fullscreen' ? 'Sair do modo tela inteira' : 'Expandir chat para toda a tela'}
                       title={panelMode === 'fullscreen' ? 'Sair do modo tela inteira' : 'Expandir chat para toda a tela'}
                     >
-                      {panelMode === 'fullscreen' ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                      {panelMode === 'fullscreen' ? <ArrowsIn size={16} /> : <ArrowsOut size={16} />}
                     </button>
                   </>
                 )}
@@ -306,7 +342,7 @@ const ChatSheet = () => {
                     aria-label="Limpar conversa"
                     title="Limpar conversa"
                   >
-                    <Trash2 size={16} />
+                    <Trash size={16} />
                   </button>
                 )}
 
@@ -337,7 +373,7 @@ const ChatSheet = () => {
                 {messages.length === 0 && !isLoading && (
                   <div className="chat-empty-state">
                     <div className="chat-empty-avatar">
-                      <MessageCircle className="w-6 h-6 text-primary/60" />
+                      <ChatCircle className="w-6 h-6 text-primary/60" />
                     </div>
                     <p className="chat-empty-kicker">{runtimeLabel}</p>
                     <p className="chat-empty-title">CLARA pronta para conversar.</p>
@@ -404,7 +440,7 @@ const ChatSheet = () => {
                   >
                     <div className="chat-loading-card">
                       <div className="chat-loading-head">
-                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                        <CircleNotch className="w-4 h-4 text-primary animate-spin" />
                         <span>{activeLoadingPhase.title}</span>
                       </div>
                       <p className="chat-loading-copy">{activeLoadingPhase.description}</p>
@@ -446,7 +482,7 @@ const ChatSheet = () => {
                   className="p-2 rounded-lg text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   aria-label="Enviar mensagem"
                 >
-                  <Send size={18} />
+                  <PaperPlaneRight size={18} />
                 </button>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 mt-2">

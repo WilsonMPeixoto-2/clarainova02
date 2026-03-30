@@ -1,16 +1,5 @@
 import { useMemo, useState } from 'react';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  CircleDashed,
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  Globe,
-  Info,
-  MessageCircleQuestion,
-  ShieldAlert,
-} from 'lucide-react';
+import { Warning, CheckCircle, CircleDashed, CaretDown, ChevronUp, FileText, Globe, Info, MessageCircleQuestion, ShieldAlert } from "@phosphor-icons/react";
 
 import {
   type ClaraHighlight,
@@ -145,7 +134,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
             {analysis.cautionNotice && (
               <section className="chat-analysis-card is-caution" aria-label="Cautela">
                 <div className="chat-analysis-title">
-                  <AlertTriangle size={15} />
+                  <Warning size={15} />
                   Cautela
                 </div>
                 <p className="chat-analysis-body">{analysis.cautionNotice}</p>
@@ -255,7 +244,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
             onClick={() => setShowReferences((current) => !current)}
           >
             <span>Referencias</span>
-            {showReferences ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {showReferences ? <ChevronUp size={16} /> : <CaretDown size={16} />}
           </button>
           {showReferences && (
             <ol className="chat-reference-list">

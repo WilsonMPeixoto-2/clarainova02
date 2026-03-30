@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ShieldCheck } from "@phosphor-icons/react";
 import { Link } from 'react-router-dom';
 
 import Footer from '@/components/Footer';
