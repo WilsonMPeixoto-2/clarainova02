@@ -1,119 +1,163 @@
-# Status da Migracao — Supabase Proprio
+# Status da Migracao — Baseline e Supabase Proprio
 
-Ultima atualizacao: 2026-03-29
+Ultima atualizacao: 2026-03-30
 
 ## Resumo executivo
 
-| Fase | Status |
+| Frente | Status |
 |---|---|
-| Migracao estrutural (banco, functions, config) | Concluida |
+| Baseline local do repositorio | Verificada |
+| Migracao estrutural para Supabase | Concluida |
 | Desacoplamento do Lovable | Praticamente completo |
-| Validacao end-to-end | Pendente |
+| Validacao operacional end-to-end | Pendente |
 
-**O backend existe, mas ainda nao esta provado em uso.**
-
----
-
-## Projeto Supabase
-
-- **Project ID:** jasqctuzeznwdtbcuixn
-- **URL:** https://jasqctuzeznwdtbcuixn.supabase.co
-- **Regiao:** padrao
+**O codigo atual ja passa em `npm run validate` e `npm run build`, mas a prova operacional do backend, do corpus e da publicacao em producao ainda depende de configuracao real.**
 
 ---
 
-## O que foi feito
+## Projeto Supabase de referencia
 
-### Banco de dados
+- **Project ID:** `jasqctuzeznwdtbcuixn`
+- **URL:** `https://jasqctuzeznwdtbcuixn.supabase.co`
+- **Funcao no repositorio:** referencia usada durante a migracao
 
-3 migrations consolidadas aplicadas (originadas de 19 incrementais):
+> O repositorio pode ser relinkado para outro projeto com `supabase link --project-ref <project-ref>`.
 
-- `clara_foundation_tables_and_indexes` — extensoes, 9 tabelas, indexes, triggers, storage
-- `clara_rls_policies_and_search_functions` — RLS em 9 tabelas, 21 policies, hybrid_search_chunks v7
-- `clara_check_rate_limit_function` — rate limiting por IP
+---
 
-Extensoes: vector 0.8.0, pgcrypto 1.3
-Funcoes: hybrid_search_chunks (RRF + authority metadata), check_rate_limit (sliding window), set_updated_at
-Storage: bucket `documents` (privado, 3 policies authenticated)
+## Baseline local verificada
 
-### Edge Functions
+- **Node:** `24.14.0` (arquivos `.node-version` e `.nvmrc`)
+- **Checagem padrao:** `npm run validate`
+- **Resultado atual da baseline:**
+  - `npm run typecheck` OK
+  - `npm run lint` OK
+  - `npm test` OK
+  - `npm run build` OK
 
-| Funcao | JWT | Status | Invocada |
-|---|---|---|---|
-| chat | false (publico) | ACTIVE | Nao |
-| embed-chunks | true (admin) | ACTIVE | Nao |
-| get-usage-stats | true (admin) | ACTIVE | Nao |
+---
 
-### Configuracao
+## O que o repositorio materializa hoje
 
-| Item | Status |
-|---|---|
-| .env local | Criado com keys reais |
-| Vercel env vars (production) | VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY setadas |
-| Redeploy Vercel | Pendente |
+### Frontend
+
+- Chat publico com renderizacao estruturada
+- Fluxo de exportacao em PDF
+- Area administrativa preparada
+- Fallback para modo de preparacao quando o Supabase nao esta configurado no ambiente
+
+### Backend Supabase
+
+- **19 migrations** versionadas em `supabase/migrations`
+- **3 Edge Functions** versionadas em `supabase/functions`
+  - `chat`
+  - `embed-chunks`
+  - `get-usage-stats`
+- `supabase/config.toml` ja linkado ao projeto de referencia
+
+### Auth e seguranca
+
+- `chat` segue publico (`verify_jwt = false`)
+- `embed-chunks` e `get-usage-stats` exigem JWT (`verify_jwt = true`)
+- A camada administrativa ainda depende de usuario real no Supabase Auth para operacao completa
 
 ### Desacoplamento do Lovable
 
-- Nenhuma key antiga no codigo-fonte
-- Nenhum endpoint residual
-- Nenhum pacote Lovable
-- Supabase client le de env vars (nenhum valor hardcoded)
-- Unico residuo: mock URL em src/test/chat-api.test.ts:7 (nao afeta producao)
+- Nenhuma key Lovable no frontend versionado
+- Nenhum endpoint Lovable ativo no runtime
+- Nenhum pacote Lovable em `package.json`
+- Residuo conhecido: mencao textual a `lovable` em regra de grounding em `supabase/functions/chat/knowledge.ts`
 
 ---
 
-## Bloqueadores imediatos (em ordem)
+## Configuracao versionada
 
-### 1. GEMINI_API_KEY
+| Item versionado | Estado no repositorio |
+|---|---|
+| `.env.example` | Atualizado com as env vars reais usadas pelo frontend |
+| `SUPABASE_SETUP.md` | Guia operacional do bootstrap |
+| `README.md` | Alinhado ao baseline atual |
+| `vercel.json` | Configurado para SPA com rewrite para `index.html` |
 
-Secret no Supabase para Edge Functions chat e embed-chunks.
-Sem ela: chat responde erro 500, embeddings nao sao gerados.
+> Segredos locais, usuarios administrativos e env vars reais do Vercel nao sao inferidos a partir do repositorio e devem ser conferidos no ambiente operacional.
 
-### 2. Auth admin
+---
 
-Nenhum usuario criado no Supabase Auth.
-Sem ele: admin panel nao funciona, upload autenticado bloqueado, JWT nas rotas admin nao valida.
+## Bloqueadores operacionais imediatos
 
-### 3. Redeploy Vercel
+### 1. `GEMINI_API_KEY`
 
-Build em producao usa valores anteriores.
-Sem ele: site em producao nao conecta ao Supabase novo.
+Secret necessario no projeto Supabase para as Edge Functions `chat` e `embed-chunks`.
+
+Sem ela:
+
+- o chat nao completa respostas grounded no backend
+- embeddings reais nao sao gerados
+
+### 2. Auth administrativa real
+
+E necessario haver usuario ou provedor configurado no Supabase Auth.
+
+Sem isso:
+
+- `/admin` nao conclui o fluxo real de autenticacao
+- uploads autenticados e metricas administrativas ficam indisponiveis
+
+### 3. Corpus inicial e ingestao
+
+O pipeline existe, mas ainda precisa de documentos reais e governanca de corpus para provar o RAG.
+
+Sem isso:
+
+- `document_chunks` permanece vazio ou insuficiente
+- `hybrid_search_chunks` nao prova recuperacao relevante
+
+### 4. Publicacao do baseline atual
+
+O baseline local ja compila, testa e builda, mas ainda precisa ser publicado em um novo deploy para refletir esse estado na producao.
 
 ---
 
 ## Checklist de validacao
 
-### Fase 1 — Vinculo basico
-- [ ] npm run dev local — frontend inicia sem erro
-- [ ] hasSupabaseConfig = true no console
-- [ ] SELECT simples em documents retorna [] sem erro
+### Fase 0 — Baseline do repositorio
 
-### Fase 2 — Fluxo RAG completo
-- [ ] GEMINI_API_KEY setada no Supabase
-- [ ] Upload de 1 PDF de teste via admin
-- [ ] document_chunks populado com embeddings
-- [ ] hybrid_search_chunks retorna resultados
-- [ ] Chat responde com referencias documentais
+- [x] `npm run validate`
+- [x] `npm run build`
+- [x] Documentacao interna alinhada ao estado real do codigo
 
-### Fase 3 — Seguranca
-- [ ] Query com anon key bloqueada (RLS)
-- [ ] Login admin funciona
-- [ ] embed-chunks sem JWT retorna 401
-- [ ] Rate limit bloqueia apos 15 requests/min
-- [ ] Storage: upload sem auth negado
+### Fase 1 — Vinculo basico com Supabase
+
+- [ ] `.env` preenchido com `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`
+- [ ] `hasSupabaseConfig = true` no frontend
+- [ ] Projeto certo linkado via `supabase link`
+- [ ] `supabase db push` aplicado sem erro
+
+### Fase 2 — Operacao administrativa
+
+- [ ] Login administrativo funcional
+- [ ] `get-usage-stats` acessivel com JWT valido
+- [ ] Upload autenticado de documento funcional
+
+### Fase 3 — Fluxo RAG completo
+
+- [ ] `GEMINI_API_KEY` configurada no projeto remoto
+- [ ] Ingestao de ao menos 1 PDF real
+- [ ] `document_chunks` populado com embeddings
+- [ ] `hybrid_search_chunks` retornando resultados uteis
+- [ ] Chat grounded respondendo com referencias
 
 ### Fase 4 — Producao
-- [ ] Redeploy Vercel com envs corretas
-- [ ] Chat em producao funciona
-- [ ] Metricas registradas (chat_metrics, search_metrics, query_analytics)
+
+- [ ] Env vars conferidas no Vercel
+- [ ] Novo deploy publicado
+- [ ] Produção refletindo o baseline atual
 
 ---
 
-## Proxima fase (apos validacao)
+## Proxima fase recomendada
 
-Conforme docs/migracao-supabase-proprio.md:
-
-1. Auth administrativa com Google (desktop)
-2. Passkeys/WebAuthn para mobile
-3. Upload resumable
-4. Ingestao de base documental completa
+1. Fechar o contrato funcional do chat (`Direto` / `Didatico`)
+2. Polir estrutura e legibilidade do chat
+3. Revisar mensagens, excecoes e tom conversacional
+4. Definir governanca do corpus inicial antes da primeira ingestao ampla

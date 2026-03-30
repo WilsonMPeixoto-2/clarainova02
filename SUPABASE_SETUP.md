@@ -1,21 +1,25 @@
 # Setup do Supabase Proprio
 
-Este projeto ja nao depende do backend Lovable. O objetivo e ligar o codigo a um projeto Supabase controlado por voce.
+Este projeto ja nao depende do backend Lovable. O objetivo deste guia e ligar o codigo a um projeto Supabase sob sua propria titularidade, preservando a arquitetura atual da CLARA.
 
-## Checklist Completo de Conexao
+## Checklist completo de conexao
 
 ### 1. Pre-requisitos
 
-- [ ] Conta no Supabase (supabase.com)
-- [ ] Supabase CLI instalado (`npm install -g supabase`)
-- [ ] Chave da API Google Gemini (`GEMINI_API_KEY`)
-- [ ] Node 20+ e npm instalados
+- [ ] Conta no Supabase
+- [ ] Supabase CLI instalada
+- [ ] `GEMINI_API_KEY`
+- [ ] Node `24.14.x` e npm instalados
 
-### 2. Criar o projeto Supabase
+### 2. Criar ou escolher o projeto Supabase
 
 - [ ] Dashboard Supabase > New Project
-- [ ] Regiao: escolher a mais proxima (ex: sa-east-1 para Brasil)
-- [ ] Anotar: `Project URL`, `anon/public key`, `service_role key`, `project-ref`
+- [ ] Escolher a regiao adequada
+- [ ] Anotar:
+  - `Project URL`
+  - `anon/public key`
+  - `service_role key`
+  - `project-ref`
 
 ### 3. Configurar arquivos locais
 
@@ -25,32 +29,42 @@ cp supabase/functions/.env.example supabase/functions/.env.local
 ```
 
 Preencher `.env`:
-```
-VITE_SUPABASE_PROJECT_ID=<project-ref>
+
+```env
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=<anon-public-key>
 ```
 
 Preencher `supabase/functions/.env.local`:
-```
+
+```env
 GEMINI_API_KEY=<sua-chave-gemini>
 ```
 
-### 4. Linkar e aplicar banco
+### 4. Relinkar o repositorio, se necessario
+
+O repositorio hoje esta linkado ao projeto de referencia `jasqctuzeznwdtbcuixn` em `supabase/config.toml`.
+
+Se voce for operar com um projeto seu:
 
 ```sh
 supabase link --project-ref <project-ref>
+```
+
+### 5. Aplicar o banco
+
+```sh
 supabase db push
 ```
 
-Isso aplica as 19 migrations que criam:
-- Tabelas: `documents`, `document_chunks`, `usage_logs`, `rate_limits`, `ingestion_jobs`, `document_processing_events`, `chat_metrics`, `search_metrics`, `query_analytics`
-- Extensao: `vector` (pgvector, 768 dimensoes)
-- Funcoes: `hybrid_search_chunks`, `check_rate_limit`
-- Indices: IVFFlat para busca vetorial, GIN para full-text search (portugues)
-- Storage bucket: `documents` (para PDFs)
+Isso aplica as **19 migrations** versionadas no repositorio, incluindo:
 
-### 5. Deploy das Edge Functions
+- tabelas de documentos, chunks, metricas e analytics
+- extensao `vector`
+- funcoes `hybrid_search_chunks` e `check_rate_limit`
+- policies e endurecimentos de acesso
+
+### 6. Publicar as Edge Functions
 
 ```sh
 supabase functions deploy chat
@@ -59,40 +73,47 @@ supabase functions deploy get-usage-stats
 supabase secrets set GEMINI_API_KEY=<sua-chave-gemini>
 ```
 
-### 6. Configurar Vercel (producao)
+### 7. Configurar o Vercel
 
-No dashboard do Vercel (Settings > Environment Variables), adicionar:
+No dashboard do Vercel, conferir ou adicionar:
 
 | Variavel | Valor |
-|----------|-------|
-| `VITE_SUPABASE_PROJECT_ID` | `<project-ref>` |
+|---|---|
 | `VITE_SUPABASE_URL` | `https://<project-ref>.supabase.co` |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | `<anon-public-key>` |
 
-Depois, fazer redeploy: Vercel Dashboard > Deployments > Redeploy (ultimo commit).
+Depois, publicar novo deploy.
 
-### 7. Testar a conexao
+### 8. Testar a conexao
 
-- [ ] Abrir clarainova02.vercel.app > chat deve sair do modo preview para online
-- [ ] Enviar uma mensagem > deve retornar resposta do Gemini (mesmo sem documentos)
-- [ ] Abrir /admin > login com Google deve funcionar
-- [ ] Upload de PDF no admin > deve chunkar e gerar embeddings
-- [ ] Nova pergunta no chat > deve buscar nos chunks carregados (RAG ativo)
+- [ ] `npm run validate`
+- [ ] `npm run dev`
+- [ ] O frontend sai do modo de preparacao
+- [ ] O chat responde sem erro
+- [ ] `/admin` conclui autenticacao real
+- [ ] Upload administrativo funciona
+- [ ] `get-usage-stats` responde com JWT valido
 
-### 8. Validacao do pipeline RAG
+### 9. Validar o pipeline RAG
 
-Apos o primeiro upload de PDF:
+Apos o primeiro upload real:
+
+- [ ] `document_chunks` populado com embeddings
+- [ ] `hybrid_search_chunks` retornando trechos relevantes
+- [ ] O chat grounded cita referencias de forma coerente
+
+Exemplos de verificacao:
 
 ```sql
--- Verificar chunks com embeddings
-SELECT id, document_id, chunk_index,
-       length(content) as content_len,
-       embedding IS NOT NULL as has_embedding
+SELECT id, document_id, chunk_index, embedding IS NOT NULL AS has_embedding
 FROM document_chunks
-ORDER BY created_at DESC LIMIT 10;
+ORDER BY created_at DESC
+LIMIT 10;
+```
 
--- Testar busca hibrida
-SELECT * FROM hybrid_search_chunks(
+```sql
+SELECT *
+FROM hybrid_search_chunks(
   '<embedding-json-768d>',
   'como criar documento no SEI',
   8
@@ -109,23 +130,20 @@ npm run dev
 
 ## Variaveis de ambiente
 
-**Frontend** (Vite, publicas):
-- `VITE_SUPABASE_URL` — URL do projeto
-- `VITE_SUPABASE_PUBLISHABLE_KEY` — chave anonima (publica)
-- `VITE_SUPABASE_PROJECT_ID` — referencia do projeto
+### Frontend
 
-**Edge Functions** (privadas, Deno runtime):
-- `SUPABASE_URL` — injetada automaticamente pelo Supabase
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+### Edge Functions
+
+- `SUPABASE_URL` — injetada automaticamente
 - `SUPABASE_SERVICE_ROLE_KEY` — injetada automaticamente
 - `GEMINI_API_KEY` — configurada via `supabase secrets set`
 
-## Seguranca (pos-bootstrap)
+## Observacoes operacionais
 
-Apos confirmar que tudo funciona, endurecer:
-
-- [ ] Restringir RLS: remover policies publicas de INSERT/UPDATE em `documents` e `document_chunks`
-- [ ] Adicionar policy: apenas usuarios autenticados podem inserir
-- [ ] Habilitar `verify_jwt = true` nas Edge Functions
-- [ ] Revisar bucket `documents`: restringir upload a usuarios autenticados
-- [ ] Configurar Google OAuth no Supabase (Authentication > Providers > Google)
-- [ ] Adicionar redirect URLs no Google Cloud Console para OAuth
+- O frontend nao precisa de `VITE_SUPABASE_PROJECT_ID` para funcionar.
+- Sem as env vars do frontend, a CLARA entra em modo de preparacao.
+- Sem usuario administrativo real no Supabase Auth, o admin nao fica operacional.
+- Sem corpus inicial, o RAG continua estruturalmente pronto, mas ainda nao provado.

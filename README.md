@@ -1,58 +1,65 @@
 # CLARAINOVA02 — Assistente Inteligente com RAG
 
-**CLARA** (Consultora Legal e Assistente de Respostas Automatizadas) e uma assistente de IA especializada, com frontend ja estabilizado e backend preparado para ser ligado a um projeto Supabase sob sua propria titularidade.
+**CLARA** (Consultora Legal e Assistente de Respostas Automatizadas) e uma assistente de IA especializada para fluxos documentais e orientacao institucional, com frontend publico em React e backend preparado para operacao grounded via Supabase.
 
-## Stack Tecnológica
+## Status atual do repositorio
+
+- Baseline local verificada em Node `24.14.x`
+- Checagem padrao do projeto: `npm run validate`
+- Build de producao validado localmente com `npm run build`
+- O frontend funciona mesmo sem Supabase, entrando em modo de preparacao
+- Admin, ingestao, metricas e RAG grounded dependem de configuracao real do Supabase, auth administrativa e corpus inicial
+
+## Stack tecnologica
 
 | Camada | Tecnologia |
 |--------|-----------|
-| **Frontend** | React 19 · TypeScript · Vite 7 · Tailwind CSS 4 · Motion |
-| **Backend** | Supabase (projeto proprio) · Deno Edge Functions |
-| **IA** | Google Gemini via `@google/genai` SDK · Embeddings `gemini-embedding-001` |
-| **Banco Vetorial** | pgvector com índice **HNSW** (Hierarchical Navigable Small World) |
-| **Busca** | Híbrida RRF (Reciprocal Rank Fusion) — semântica + full-text |
-| **Ingestão** | `unpdf` (extração client-side) · LangChain Text Splitter · Rastreabilidade por página |
+| **Frontend** | React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · Motion |
+| **Backend** | Supabase · Edge Functions em Deno |
+| **IA** | Google Gemini via `@google/genai` |
+| **Banco vetorial** | Postgres + pgvector |
+| **Busca** | Hibrida semantica + lexical com `hybrid_search_chunks` |
+| **Ingestao** | `unpdf` + LangChain Text Splitter + pipeline administrativa |
 
-## Arquitetura
+## O que ja esta ativo no codigo
 
-```
-┌─────────────┐     ┌──────────────┐     ┌───────────────┐
-│  React App  │────▶│ Edge Function│────▶│  Gemini API   │
-│  (Chat UI)  │◀────│  /chat       │◀────│  (streaming)  │
-└─────────────┘     └──────┬───────┘     └───────────────┘
-                           │
-                    ┌──────▼───────┐
-                    │   pgvector   │
-                    │  HNSW Index  │
-                    │ hybrid_search│
-                    └──────────────┘
-```
+- Interface publica da CLARA com home, FAQ e fluxo de chat
+- Renderizacao estruturada da resposta no frontend
+- Exportacao de conversa em PDF
+- Shell administrativa com autenticacao e callback preparados
+- Fallback de modo de preparacao quando `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` nao estao definidos
 
-## Funcionalidades
+## O que depende de configuracao operacional
 
-- 💬 Chat com streaming em tempo real
-- 📄 Ingestão de PDFs com rastreabilidade por página (`[Fonte: doc | Página: N]`)
-- 🔍 Busca híbrida vetorial + full-text com RRF
-- 📊 Painel administrativo com estatísticas de uso
-- 🎨 Design premium com animações e partículas
+- Login administrativo contra Supabase Auth
+- Upload e ingestao de PDFs pelo admin
+- Embeddings reais e busca grounded no corpus
+- Metricas agregadas vindas das Edge Functions
+- Redeploy no Vercel com o baseline atual publicado
 
 ## Desenvolvimento
 
 ```sh
 npm install
+npm run validate
 npm run dev
 ```
 
+Arquivos de referencia para ambiente:
+
+- [docs/MIGRATION_STATUS.md](./docs/MIGRATION_STATUS.md)
+- [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)
+- [supabase/config.toml](./supabase/config.toml)
+
 ## Bootstrap do Supabase proprio
 
-1. Copie [.env.example](./.env.example) para `.env` e preencha `VITE_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`.
-2. Crie o projeto no Supabase com uma conta sua e rode `supabase link --project-ref <project-ref>` para substituir o placeholder em [supabase/config.toml](./supabase/config.toml).
-3. Copie [supabase/functions/.env.example](./supabase/functions/.env.example) para `supabase/functions/.env.local` e preencha `GEMINI_API_KEY` para desenvolvimento local.
-4. Aplique schema e policies com `supabase db push`.
+1. Copie [.env.example](./.env.example) para `.env` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`.
+2. O repositorio hoje esta linkado a um projeto Supabase de referencia da migracao. Se voce for assumir a operacao com um projeto seu, relinque com `supabase link --project-ref <project-ref>`.
+3. Copie `supabase/functions/.env.example` para `supabase/functions/.env.local` e preencha `GEMINI_API_KEY` para desenvolvimento local.
+4. Rode `supabase db push` para aplicar as migrations no projeto vinculado.
 5. Publique as Edge Functions `chat`, `embed-chunks` e `get-usage-stats`, e depois registre o secret `GEMINI_API_KEY` no projeto remoto.
+6. Confira as env vars do Vercel e faca um novo deploy para publicar o baseline atual.
 
-Uma referencia operacional mais detalhada ficou em [SUPABASE_SETUP.md](./SUPABASE_SETUP.md).
-
-## Licença
+## Licenca
 
 Projeto privado — todos os direitos reservados.

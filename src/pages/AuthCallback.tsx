@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { ShieldCheck, SpinnerGap, Warning } from '@phosphor-icons/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from '@/integrations/supabase/client';
@@ -77,7 +77,7 @@ export default function AuthCallback() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
-          <TriangleAlert className="mx-auto h-8 w-8 text-destructive" />
+          <Warning className="mx-auto h-8 w-8 text-destructive" />
           <h1 className="mt-4 text-lg font-semibold text-foreground">Login administrativo indisponível</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {SUPABASE_UNAVAILABLE_MESSAGE}
@@ -92,7 +92,7 @@ export default function AuthCallback() {
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
         {status === 'loading' && (
           <>
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+            <SpinnerGap className="mx-auto h-8 w-8 animate-spin text-primary" />
             <h1 className="mt-4 text-lg font-semibold text-foreground">Concluindo seu acesso</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Estou confirmando a sessão administrativa para te levar ao painel.
@@ -112,7 +112,7 @@ export default function AuthCallback() {
 
         {status === 'error' && (
           <>
-            <TriangleAlert className="mx-auto h-8 w-8 text-destructive" />
+            <Warning className="mx-auto h-8 w-8 text-destructive" />
             <h1 className="mt-4 text-lg font-semibold text-foreground">Não consegui concluir o login</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               {errorMessage ?? 'Tente novamente a partir da tela administrativa.'}

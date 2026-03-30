@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChatTeardropText, MagnifyingGlass, FileText, Activity } from "@phosphor-icons/react";
+import { ChatTeardropText, MagnifyingGlass, FileText, Pulse } from "@phosphor-icons/react";
 import { hasSupabaseConfig, supabase } from "@/integrations/supabase/client";
 
 interface UsageStats {
@@ -37,8 +37,8 @@ export default function UsageStatsCard() {
 
   const items = stats
     ? [
-        { label: "Mensagens do chat", value: stats.chat_messages, icon: MessageSquare },
-        { label: "Buscas RAG", value: stats.embedding_queries, icon: Search },
+        { label: "Mensagens do chat", value: stats.chat_messages, icon: ChatTeardropText },
+        { label: "Buscas RAG", value: stats.embedding_queries, icon: MagnifyingGlass },
         { label: "PDFs ingeridos", value: stats.client_side_ingestions, icon: FileText },
       ]
     : [];
@@ -51,7 +51,7 @@ export default function UsageStatsCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Activity className="h-5 w-5" />
+          <Pulse className="h-5 w-5" />
           Metricas agregadas da CLARA
         </CardTitle>
         {stats && (

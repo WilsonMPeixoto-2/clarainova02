@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Warning, CheckCircle, CircleDashed, CaretDown, ChevronUp, FileText, Globe, Info, MessageCircleQuestion, ShieldAlert } from "@phosphor-icons/react";
+import { Warning, CheckCircle, CircleDashed, CaretDown, CaretUp, FileText, Globe, Info, Question, ShieldWarning } from "@phosphor-icons/react";
 
 import {
   type ClaraHighlight,
@@ -35,13 +35,13 @@ function getProcessStateMeta(state: ClaraProcessState) {
     case 'concluido':
       return {
         label: 'Concluido',
-        icon: CheckCircle2,
+        icon: CheckCircle,
         className: 'chat-process-state is-complete',
       };
     case 'cautela':
       return {
         label: 'Cautela',
-        icon: AlertTriangle,
+        icon: Warning,
         className: 'chat-process-state is-caution',
       };
     case 'web':
@@ -109,7 +109,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         {analysis.clarificationRequested && analysis.clarificationQuestion && (
           <section className="chat-clarification-card" aria-label="Pedido de esclarecimento">
             <div className="chat-clarification-title">
-              <MessageCircleQuestion size={16} />
+              <Question size={16} />
               Antes de eu seguir
             </div>
             {analysis.clarificationReason && (
@@ -212,7 +212,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
 
               {step.alerta && (
                 <div className="chat-step-alert" role="note">
-                  <ShieldAlert size={15} />
+                  <ShieldWarning size={15} />
                   <span>{step.alerta}</span>
                 </div>
               )}
@@ -244,7 +244,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
             onClick={() => setShowReferences((current) => !current)}
           >
             <span>Referencias</span>
-            {showReferences ? <ChevronUp size={16} /> : <CaretDown size={16} />}
+            {showReferences ? <CaretUp size={16} /> : <CaretDown size={16} />}
           </button>
           {showReferences && (
             <ol className="chat-reference-list">
