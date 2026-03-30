@@ -219,11 +219,7 @@ const HeroSection = () => {
               animate="visible"
               className="hero-copy-surface"
             >
-              <motion.div variants={itemVariants} className="hero-chip-row">
-                <AnimatedShinyText><span className="badge-chip">Apoio ao SEI-Rio</span></AnimatedShinyText>
-              </motion.div>
-
-              <motion.div variants={itemVariants} className="hero-editorial-stack">
+              <motion.div variants={itemVariants} className="hero-editorial-stack mt-4">
                 <h1 className="hero-brand-display animate-flicker">CLARA</h1>
                 <p className="hero-support-headline">
                   <Balancer>
@@ -250,7 +246,7 @@ const HeroSection = () => {
                 </button>
                 <button
                   onClick={() => {
-                    scrollToSection('sistema');
+                    scrollToSection('conhecimento');
                   }}
                   className="btn-clara-secondary hero-cta-button hero-cta-secondary type-label flex items-center justify-center gap-2"
                   onMouseMove={handleMagneticMove}

@@ -19,10 +19,7 @@ const FAQSection = () => {
           <div className="faq-shell">
             <div className="faq-intro-grid">
               <div className="faq-header">
-                <span className="knowledge-kicker flex items-center gap-1.5">
-                  <Sparkle weight="duotone" size={14} className="w-3.5 h-3.5" aria-hidden="true" />
-                  FAQ
-                </span>
+
                 <h2 id="faq-heading" className="text-h2 mt-4">
                   <Balancer>Perguntas frequentes</Balancer>
                 </h2>
