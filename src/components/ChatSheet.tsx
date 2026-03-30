@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { DownloadSimple, CircleNotch, ArrowsOut, ChatCircle, ArrowsIn, Sidebar, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
@@ -6,6 +6,7 @@ import rehypeSanitize from 'rehype-sanitize';
 
 import { ChatStructuredMessage } from '@/components/chat/ChatStructuredMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useChat } from '@/hooks/useChatStore';
 import {
   CHAT_RESPONSE_MODES,
@@ -50,6 +51,36 @@ function formatSessionTitle(question: string) {
   }
 
   return `${trimmed.slice(0, 73).trimEnd()}...`;
+}
+
+function ChatHeaderActionButton({
+  label,
+  children,
+  className = '',
+  showLabel = false,
+  ...buttonProps
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  label: string;
+  children: ReactNode;
+  showLabel?: boolean;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          aria-label={label}
+          title={label}
+          className={`chat-header-action ${className}`.trim()}
+          {...buttonProps}
+        >
+          {children}
+          {showLabel && <span className="chat-header-action-label">{label}</span>}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{label}</TooltipContent>
+    </Tooltip>
+  );
 }
 
 const ChatSheet = () => {
@@ -189,12 +220,12 @@ const ChatSheet = () => {
       });
 
       toast.success('PDF gerado', {
-        description: 'A sessao atual foi exportada para consulta posterior.',
+        description: 'A conversa atual foi exportada em PDF para consulta posterior.',
       });
     } catch (error) {
       console.error('PDF export error:', error);
       toast.error('Nao foi possivel gerar o PDF', {
-        description: 'Tente novamente em alguns instantes.',
+        description: 'Tente exportar novamente em alguns instantes.',
       });
     } finally {
       setIsExportingPdf(false);
@@ -216,6 +247,11 @@ const ChatSheet = () => {
   const isPreviewMode = runtimeMode === 'preview';
   const isMockMode = runtimeMode === 'mock';
   const responseModePresentation = getChatResponseModePresentation(responseMode);
+  const panelModeHint = panelMode === 'default'
+    ? 'Painel padrão, com foco em consulta rápida'
+    : panelMode === 'expanded'
+      ? 'Painel ampliado para leitura operacional'
+      : 'Tela inteira para leitura longa';
   const inputPlaceholder = isPreviewMode
     ? responseMode === 'direto'
       ? 'Pergunte para testar uma resposta mais objetiva enquanto a nova base e preparada...'
@@ -304,69 +340,56 @@ const ChatSheet = () => {
 
               <div className="flex items-center gap-1 shrink-0">
                 {exportableMessages.length > 0 && (
-                  <button
-                    type="button"
+                  <ChatHeaderActionButton
                     onClick={handleExportPdf}
                     disabled={isExportingPdf}
-                    className="chat-header-action"
-                    aria-label="Baixar sessao em PDF"
-                    title="Baixar sessao em PDF"
+                    className="is-prominent"
+                    label="Exportar PDF"
+                    showLabel={!isMobile}
                   >
                     {isExportingPdf ? <CircleNotch size={16} className="animate-spin" /> : <DownloadSimple size={16} />}
-                  </button>
+                  </ChatHeaderActionButton>
                 )}
 
                 {!isMobile && (
                   <>
-                    <button
-                      type="button"
+                    <ChatHeaderActionButton
                       onClick={() => {
                         setCustomWidth(null);
                         handlePanelMode(panelMode === 'default' ? 'expanded' : 'default');
                       }}
-                      className="chat-header-action"
-                      aria-label={panelMode === 'default' ? 'Ampliar painel do chat' : 'Restaurar tamanho padrao'}
-                      title={panelMode === 'default' ? 'Ampliar painel do chat' : 'Restaurar tamanho padrao'}
+                      label={panelMode === 'default' ? 'Ampliar painel' : 'Restaurar largura'}
                     >
                       {panelMode === 'default' ? <Sidebar size={16} /> : <ArrowsIn size={16} />}
-                    </button>
+                    </ChatHeaderActionButton>
 
-                    <button
-                      type="button"
+                    <ChatHeaderActionButton
                       onClick={() => {
                         setCustomWidth(null);
                         handlePanelMode(panelMode === 'fullscreen' ? 'expanded' : 'fullscreen');
                       }}
-                      className="chat-header-action"
-                      aria-label={panelMode === 'fullscreen' ? 'Sair do modo tela inteira' : 'Expandir chat para toda a tela'}
-                      title={panelMode === 'fullscreen' ? 'Sair do modo tela inteira' : 'Expandir chat para toda a tela'}
+                      label={panelMode === 'fullscreen' ? 'Sair da tela inteira' : 'Tela inteira'}
                     >
                       {panelMode === 'fullscreen' ? <ArrowsIn size={16} /> : <ArrowsOut size={16} />}
-                    </button>
+                    </ChatHeaderActionButton>
                   </>
                 )}
 
                 {messages.length > 0 && (
-                  <button
-                    type="button"
+                  <ChatHeaderActionButton
                     onClick={clearMessages}
-                    className="chat-header-action"
-                    aria-label="Limpar conversa"
-                    title="Limpar conversa"
+                    label="Limpar conversa"
                   >
                     <Trash size={16} />
-                  </button>
+                  </ChatHeaderActionButton>
                 )}
 
-                <button
-                  type="button"
+                <ChatHeaderActionButton
                   onClick={closeChat}
-                  className="chat-header-action"
-                  aria-label="Fechar chat"
-                  title="Fechar chat"
+                  label="Fechar chat"
                 >
                   <X size={18} />
-                </button>
+                </ChatHeaderActionButton>
               </div>
             </div>
 
@@ -536,7 +559,7 @@ const ChatSheet = () => {
                 </p>
                 {!isMobile && (
                   <span className="text-[10px] text-muted-foreground/50">
-                    {panelMode === 'default' ? 'Painel padrão: metade da tela' : 'Painel expandido para leitura operacional'}
+                    {panelModeHint}
                   </span>
                 )}
               </div>

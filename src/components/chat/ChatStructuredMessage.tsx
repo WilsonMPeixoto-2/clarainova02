@@ -85,6 +85,25 @@ function ReferenceItem({ reference }: { reference: ClaraReference }) {
   );
 }
 
+function SectionHeading({
+  icon: Icon,
+  title,
+  detail,
+}: {
+  icon: typeof FileText;
+  title: string;
+  detail?: string;
+}) {
+  return (
+    <div className="chat-section-heading">
+      <div className="chat-section-title">
+        <Icon size={15} />
+        <span>{title}</span>
+      </div>
+      {detail && <span className="chat-section-detail">{detail}</span>}
+    </div>
+  );
+}
 
 export function ChatStructuredMessage({ response }: { response: ClaraStructuredResponse }) {
   const [showReferences, setShowReferences] = useState(true);
@@ -100,10 +119,13 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
           Resposta estruturada
         </div>
         <h3 className="chat-response-title">{response.tituloCurto}</h3>
-        <p className="chat-response-summary">
-          {response.resumoInicial}
-          <CitationList citations={response.resumoCitacoes} />
-        </p>
+        <div className="chat-response-summary-block">
+          <p className="chat-response-summary-label">Resumo</p>
+          <p className="chat-response-summary">
+            {response.resumoInicial}
+            <CitationList citations={response.resumoCitacoes} />
+          </p>
+        </div>
 
 
         {analysis.clarificationRequested && analysis.clarificationQuestion && (
@@ -166,67 +188,82 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         )}
 
         {groupedHighlights.length > 0 && (
-          <div className="chat-highlight-cloud" aria-label="Destaques da resposta">
-            {groupedHighlights.map((highlight) => (
-              <span key={`${highlight.tipo}-${highlight.texto}`} className={`chat-highlight-badge chat-highlight-${highlight.tipo}`}>
-                <span className="chat-highlight-label">{highlightLabel(highlight)}</span>
-                <span>{highlight.texto}</span>
-              </span>
-            ))}
-          </div>
+          <section className="chat-section-shell" aria-label="Destaques da resposta">
+            <SectionHeading
+              icon={Info}
+              title="Pontos-chave"
+              detail={`${groupedHighlights.length} destaque${groupedHighlights.length > 1 ? 's' : ''}`}
+            />
+            <div className="chat-highlight-cloud">
+              {groupedHighlights.map((highlight) => (
+                <span key={`${highlight.tipo}-${highlight.texto}`} className={`chat-highlight-badge chat-highlight-${highlight.tipo}`}>
+                  <span className="chat-highlight-label">{highlightLabel(highlight)}</span>
+                  <span>{highlight.texto}</span>
+                </span>
+              ))}
+            </div>
+          </section>
         )}
       </div>
 
 
       {response.etapas.length > 0 && (
-        <div className="chat-step-grid" role="list" aria-label="Etapas sugeridas">
-          {response.etapas.map((step) => (
-            <article key={step.numero} className="chat-step-card" role="listitem">
-              <div className="chat-step-header">
-                <span className="chat-step-number">{String(step.numero).padStart(2, '0')}</span>
-                <div className="chat-step-heading">
-                  <h4>{step.titulo}</h4>
-                  {step.citacoes.length > 0 && <CitationList citations={step.citacoes} />}
+        <section className="chat-section-shell" aria-label="Etapas sugeridas">
+          <SectionHeading
+            icon={CheckCircle}
+            title="Passo a passo"
+            detail={`${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''}`}
+          />
+          <div className="chat-step-grid" role="list">
+            {response.etapas.map((step) => (
+              <article key={step.numero} className="chat-step-card" role="listitem">
+                <div className="chat-step-header">
+                  <span className="chat-step-number">{String(step.numero).padStart(2, '0')}</span>
+                  <div className="chat-step-heading">
+                    <h4>{step.titulo}</h4>
+                    {step.citacoes.length > 0 && <CitationList citations={step.citacoes} />}
+                  </div>
                 </div>
-              </div>
 
-              <p className="chat-step-body">{step.conteudo}</p>
+                <p className="chat-step-body">{step.conteudo}</p>
 
-              {step.destaques.length > 0 && (
-                <div className="chat-step-highlights">
-                  {step.destaques.map((highlight) => (
-                    <span key={`${step.numero}-${highlight}`} className="chat-step-chip">
-                      {highlight}
-                    </span>
-                  ))}
-                </div>
-              )}
+                {step.destaques.length > 0 && (
+                  <div className="chat-step-highlights">
+                    {step.destaques.map((highlight) => (
+                      <span key={`${step.numero}-${highlight}`} className="chat-step-chip">
+                        {highlight}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
-              {step.itens.length > 0 && (
-                <ul className="chat-step-list">
-                  {step.itens.map((item) => (
-                    <li key={`${step.numero}-${item}`}>{item}</li>
-                  ))}
-                </ul>
-              )}
+                {step.itens.length > 0 && (
+                  <ul className="chat-step-list">
+                    {step.itens.map((item) => (
+                      <li key={`${step.numero}-${item}`}>{item}</li>
+                    ))}
+                  </ul>
+                )}
 
-              {step.alerta && (
-                <div className="chat-step-alert" role="note">
-                  <ShieldWarning size={15} />
-                  <span>{step.alerta}</span>
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
+                {step.alerta && (
+                  <div className="chat-step-alert" role="note">
+                    <ShieldWarning size={15} />
+                    <span>{step.alerta}</span>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
       )}
 
       {response.observacoesFinais.length > 0 && (
         <section className="chat-observation-card" aria-label="Observacoes finais">
-          <div className="chat-observation-title">
-            <FileText size={15} />
-            Observacoes finais
-          </div>
+          <SectionHeading
+            icon={ShieldWarning}
+            title="Observações finais"
+            detail={`${response.observacoesFinais.length} ponto${response.observacoesFinais.length > 1 ? 's' : ''}`}
+          />
           <ul className="chat-observation-list">
             {response.observacoesFinais.map((observation) => (
               <li key={observation}>{observation}</li>
@@ -243,7 +280,15 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
             className="chat-references-toggle"
             onClick={() => setShowReferences((current) => !current)}
           >
-            <span>Referencias</span>
+            <span className="chat-references-toggle-copy">
+              <span className="chat-section-title">
+                <FileText size={15} />
+                <span>Fontes consultadas</span>
+              </span>
+              <span className="chat-section-detail">
+                {response.referenciasFinais.length} referência{response.referenciasFinais.length > 1 ? 's' : ''}
+              </span>
+            </span>
             {showReferences ? <CaretUp size={16} /> : <CaretDown size={16} />}
           </button>
           {showReferences && (
