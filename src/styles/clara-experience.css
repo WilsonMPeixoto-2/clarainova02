@@ -264,10 +264,11 @@ body::before {
 .hero-support-headline {
   max-width: 28rem;
   margin-top: 0.45rem;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
+  font-weight: 500;
   font-size: clamp(1.35rem, 2.2vw, 1.95rem);
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
   color: hsl(var(--foreground) / 0.96);
 }
 

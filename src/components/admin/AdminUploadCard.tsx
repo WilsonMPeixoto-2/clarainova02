@@ -1,5 +1,5 @@
 import type { ChangeEvent, ReactNode } from "react";
-import { AlertCircle, Brain, FileText, ShieldCheck, Upload, X } from "lucide-react";
+import { WarningCircle, Brain, FileText, ShieldCheck, Upload, X } from "@phosphor-icons/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ function phaseIcon(status: IngestionStatus): ReactNode {
     case "verifying":
       return <ShieldCheck className="inline h-3 w-3 mr-1" />;
     case "partial":
-      return <AlertCircle className="inline h-3 w-3 mr-1" />;
+      return <WarningCircle className="inline h-3 w-3 mr-1" />;
     default:
       return null;
   }

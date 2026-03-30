@@ -220,7 +220,7 @@ const HeroSection = () => {
               className="hero-copy-surface"
             >
               <motion.div variants={itemVariants} className="hero-editorial-stack mt-4">
-                <h1 className="hero-brand-display animate-flicker">CLARA</h1>
+                <h1 className="hero-brand-display">CLARA</h1>
                 <p className="hero-support-headline">
                   <Balancer>
                     Orientação clara para documentos, assinatura e tramitação no SEI-Rio.

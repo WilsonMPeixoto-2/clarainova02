@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from "react";
-import { RefreshCw, Trash2, X } from "lucide-react";
+import { ArrowsClockwise, Trash, X } from "@phosphor-icons/react";
 
 import {
   AlertDialog,
@@ -121,7 +121,7 @@ export default function AdminDocumentsCard({
                           disabled={retryingId === doc.id}
                           className="h-7 text-xs"
                         >
-                          <RefreshCw className={`h-3 w-3 mr-1 ${retryingId === doc.id ? "animate-spin" : ""}`} />
+                          <ArrowsClockwise className={`h-3 w-3 mr-1 ${retryingId === doc.id ? "animate-spin" : ""}`} />
                           Retomar
                         </Button>
                         <Button
@@ -130,7 +130,7 @@ export default function AdminDocumentsCard({
                           onClick={() => setDeleteTarget(doc)}
                           className="h-7 text-xs text-destructive"
                         >
-                          <Trash2 className="h-3 w-3 mr-1" />
+                          <Trash className="h-3 w-3 mr-1" />
                           Excluir
                         </Button>
                       </div>
@@ -156,7 +156,7 @@ export default function AdminDocumentsCard({
                           disabled={retryingId === doc.id}
                           title="Retomar"
                         >
-                          <RefreshCw className={`h-4 w-4 text-muted-foreground ${retryingId === doc.id ? "animate-spin" : ""}`} />
+                          <ArrowsClockwise className={`h-4 w-4 text-muted-foreground ${retryingId === doc.id ? "animate-spin" : ""}`} />
                         </Button>
                       )}
                       <Button
@@ -170,7 +170,7 @@ export default function AdminDocumentsCard({
                             : "opacity-60 hover:opacity-100"
                         }
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
                   </TableCell>

@@ -4,7 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe, Fingerprint, Lock, Loader2, Eye, EyeOff, DatabaseZap } from "lucide-react";
+import { Globe, Fingerprint, LockKey, CircleNotch, Eye, EyeSlash, Lightning } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import {
   getAdminAuthCallbackUrl,
@@ -47,7 +47,7 @@ export default function AdminAuth({ children }: Props) {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <DatabaseZap className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+            <Lightning className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
             <CardTitle className="text-xl">Painel em preparação</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-center">
@@ -101,7 +101,7 @@ export default function AdminAuth({ children }: Props) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <CircleNotch className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -111,13 +111,13 @@ export default function AdminAuth({ children }: Props) {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
-            <Lock className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+            <LockKey className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
             <CardTitle className="text-xl">Área Administrativa</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <Button type="button" className="w-full gap-2" onClick={handleGoogleSignIn} disabled={googleSubmitting || submitting}>
-                {googleSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                {googleSubmitting ? <CircleNotch className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
                 Continuar com Google
               </Button>
 
@@ -165,11 +165,11 @@ export default function AdminAuth({ children }: Props) {
                     aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeSlash className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting || googleSubmitting}>
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Entrar com credenciais"}
+                  {submitting ? <CircleNotch className="h-4 w-4 animate-spin" /> : "Entrar com credenciais"}
                 </Button>
               </form>
             </div>

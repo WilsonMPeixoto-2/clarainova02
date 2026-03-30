@@ -13,12 +13,18 @@ export default function NeuralParticleSystem() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let animationFrameId: number;
+    let isVisible = true;
     let particles: { x: number; y: number; vx: number; vy: number; size: number }[] = [];
     const particleCount = 50;
     const connectionDistance = 140;
     const connectionDistanceSq = connectionDistance * connectionDistance;
     const mouseRadiusSq = 200 * 200;
     const mouse = { x: -1000, y: -1000 };
+    
+    // Ler token semântico do CSS
+    const computedStyle = getComputedStyle(document.documentElement);
+    let tealColor = computedStyle.getPropertyValue('--teal-1').trim() || '184 78% 58%';
+    if (tealColor.includes(',')) tealColor = '184 78% 58%'; // fallback if format is unexpected
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -46,6 +52,11 @@ export default function NeuralParticleSystem() {
     };
 
     const animate = () => {
+      if (!isVisible) {
+        animationFrameId = requestAnimationFrame(animate);
+        return;
+      }
+
       const w = window.innerWidth;
       const h = window.innerHeight;
       ctx.clearRect(0, 0, w, h);
@@ -69,7 +80,7 @@ export default function NeuralParticleSystem() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 240, 255, 0.35)';
+        ctx.fillStyle = `hsl(${tealColor} / 0.35)`;
         ctx.fill();
 
         // Neural connections (using squared distance — no sqrt per pair)
@@ -82,7 +93,7 @@ export default function NeuralParticleSystem() {
           if (distSq < connectionDistanceSq) {
             const alpha = 0.11 * (1 - distSq / connectionDistanceSq);
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(0, 240, 255, ${alpha.toFixed(3)})`;
+            ctx.strokeStyle = `hsl(${tealColor} / ${alpha.toFixed(3)})`;
             ctx.lineWidth = 0.5;
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
@@ -101,12 +112,24 @@ export default function NeuralParticleSystem() {
 
     window.addEventListener('resize', resize);
     window.addEventListener('mousemove', handleMouseMove);
+    
+    // Intersection Observer para pausar animação (A1)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
+    
     resize();
     animate();
 
     return () => {
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', handleMouseMove);
+      observer.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
   }, []);

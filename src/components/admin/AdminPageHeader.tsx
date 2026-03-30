@@ -1,4 +1,4 @@
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, SignOut } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export default function AdminPageHeader({ onSignOut }: AdminPageHeaderProps) {
         </div>
       </div>
       <Button variant="ghost" size="icon" onClick={onSignOut} title="Sair">
-        <LogOut className="h-5 w-5" />
+        <SignOut className="h-5 w-5" />
       </Button>
     </div>
   );

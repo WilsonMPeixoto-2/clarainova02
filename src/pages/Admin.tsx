@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { Warning, CheckCircle, CircleNotch, XCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
@@ -608,14 +608,14 @@ export default function Admin() {
   };
 
   const statusIcon = (doc: Document) => {
-    if (isTimedOut(doc.id)) return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    if (isTimedOut(doc.id)) return <Warning className="h-4 w-4 text-yellow-500" />;
 
     switch (doc.status) {
       case "processed":
-        return <CheckCircle2 className="h-4 w-4 text-primary" />;
+        return <CheckCircle className="h-4 w-4 text-primary" />;
       case "processing":
       case "pending":
-        return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+        return <CircleNotch className="h-4 w-4 animate-spin text-muted-foreground" />;
       case "error":
         return <XCircle className="h-4 w-4 text-destructive" />;
       case "cancelled":

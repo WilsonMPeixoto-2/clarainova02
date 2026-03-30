@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MessageSquare, Search, FileText, Activity } from "lucide-react";
+import { ChatTeardropText, MagnifyingGlass, FileText, Activity } from "@phosphor-icons/react";
 import { hasSupabaseConfig, supabase } from "@/integrations/supabase/client";
 
 interface UsageStats {

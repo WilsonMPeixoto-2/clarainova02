@@ -10,7 +10,7 @@ export default function HeroBackgroundOGL() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const renderer = new Renderer({ alpha: true, dpr: 2 });
     const gl = renderer.gl;
-    containerRef.current.appendChild(gl.canvas);
+    container.appendChild(gl.canvas);
 
     gl.clearColor(0, 0, 0, 0);
 
@@ -71,10 +71,20 @@ export default function HeroBackgroundOGL() {
     mesh.setParent(scene);
 
     let requestID: number;
+    let isVisible = true;
+    
+    // Ler tokens formatados se der, senão fallback hardcoded
+    program.uniforms.uColor1.value = [0.0, 0.94, 1.0]; // Teal/Cyan normalized RGB
+    program.uniforms.uColor2.value = [0.93, 0.76, 0.45]; // Gold 2 normalized RGB
+
     const update = (t: number) => {
-      requestID = requestAnimationFrame(update);
+      if (!isVisible) {
+        requestID = requestAnimationFrame(update);
+        return;
+      }
       program.uniforms.uTime.value = t * 0.001;
       renderer.render({ scene, camera });
+      requestID = requestAnimationFrame(update);
     };
     requestID = requestAnimationFrame(update);
 
@@ -82,11 +92,18 @@ export default function HeroBackgroundOGL() {
       renderer.setSize(containerRef.current!.offsetWidth, containerRef.current!.offsetHeight);
       camera.perspective({ aspect: gl.canvas.width / gl.canvas.height });
     };
+    
+    const observer = new IntersectionObserver((entries) => {
+      isVisible = entries[0].isIntersecting;
+    }, { threshold: 0 });
+    observer.observe(container);
+    
     window.addEventListener('resize', resize);
     resize();
 
     return () => {
       window.removeEventListener('resize', resize);
+      observer.disconnect();
       cancelAnimationFrame(requestID);
       const glCanvas = gl.canvas;
       if (container.contains(glCanvas)) {

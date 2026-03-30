@@ -1,5 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeft, ChatCircle } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -70,7 +70,7 @@ const NotFound = () => {
               to="/?chat=1"
               className="btn-clara-primary px-6 py-3 rounded-full font-semibold text-sm flex items-center gap-2"
             >
-              <MessageCircle className="w-4 h-4" />
+              <ChatCircle className="w-4 h-4" />
               Falar com a CLARA
             </Link>
           </div>
