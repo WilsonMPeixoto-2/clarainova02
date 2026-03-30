@@ -51,23 +51,23 @@ export function getChatRuntimeMode(env: {
 }
 
 export function getChatConfigurationErrorMessage() {
-  return 'A CLARA está sem conexão com o backend configurado. Verifique as variáveis do Supabase na Vercel antes de usar o chat em produção.';
+  return 'A CLARA ainda não está conectada ao ambiente de atendimento deste projeto. Revise a configuração antes de publicar o chat em produção.';
 }
 
 export function getChatRuntimeLabel(mode: ChatRuntimeMode) {
-  if (mode === 'online') return 'Base interna conectada';
-  if (mode === 'mock') return 'Mock local em desenvolvimento';
-  return 'Modo de preparação';
+  if (mode === 'online') return 'Atendimento conectado';
+  if (mode === 'mock') return 'Ambiente de demonstração';
+  return 'Demonstração guiada';
 }
 
 export function getChatRuntimeDescription(mode: ChatRuntimeMode) {
   if (mode === 'online') {
-    return 'A camada conversacional está consultando a base configurada do projeto.';
+    return 'A CLARA está consultando as orientações disponíveis para responder sua pergunta com mais segurança.';
   }
 
   if (mode === 'mock') {
-    return 'As respostas estão vindo de um mock local de desenvolvimento para testes rápidos.';
+    return 'Você está em um ambiente de demonstração da CLARA, usado para revisar a experiência do atendimento.';
   }
 
-  return 'A interface conversacional está ativa, mas a nova integração Supabase ainda será religada na próxima etapa.';
+  return 'O chat já pode ser experimentado nesta fase. As respostas ainda são demonstrativas enquanto a base oficial é finalizada.';
 }

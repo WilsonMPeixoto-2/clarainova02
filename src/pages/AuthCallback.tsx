@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ShieldCheck, SpinnerGap, Warning } from '@phosphor-icons/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { formatAdminAuthErrorMessage } from '@/lib/admin-auth';
 import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from '@/integrations/supabase/client';
 
 type CallbackStatus = 'loading' | 'success' | 'error';
@@ -30,7 +31,12 @@ export default function AuthCallback() {
 
       if (error) {
         setStatus('error');
-        setErrorMessage(error.message);
+        setErrorMessage(
+          formatAdminAuthErrorMessage(
+            error.message,
+            'Não consegui concluir seu acesso agora. Tente novamente a partir da área administrativa.',
+          ),
+        );
         return;
       }
 
@@ -53,7 +59,7 @@ export default function AuthCallback() {
         }
 
         setStatus('error');
-        setErrorMessage('Não foi possível concluir o login. Tente novamente na tela administrativa.');
+        setErrorMessage('Não consegui confirmar seu acesso por aqui. Tente novamente a partir da área administrativa.');
       }, 900);
     };
 
@@ -93,9 +99,9 @@ export default function AuthCallback() {
         {status === 'loading' && (
           <>
             <SpinnerGap className="mx-auto h-8 w-8 animate-spin text-primary" />
-            <h1 className="mt-4 text-lg font-semibold text-foreground">Concluindo seu acesso</h1>
+            <h1 className="mt-4 text-lg font-semibold text-foreground">Quase lá</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Estou confirmando a sessão administrativa para te levar ao painel.
+              Estou confirmando seu acesso para te levar ao painel com segurança.
             </p>
           </>
         )}
@@ -113,9 +119,9 @@ export default function AuthCallback() {
         {status === 'error' && (
           <>
             <Warning className="mx-auto h-8 w-8 text-destructive" />
-            <h1 className="mt-4 text-lg font-semibold text-foreground">Não consegui concluir o login</h1>
+            <h1 className="mt-4 text-lg font-semibold text-foreground">Não consegui concluir seu acesso</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {errorMessage ?? 'Tente novamente a partir da tela administrativa.'}
+              {errorMessage ?? 'Tente novamente a partir da área administrativa.'}
             </p>
           </>
         )}

@@ -34,19 +34,19 @@ function getProcessStateMeta(state: ClaraProcessState) {
   switch (state.status) {
     case 'concluido':
       return {
-        label: 'Concluido',
+        label: 'Concluído',
         icon: CheckCircle,
         className: 'chat-process-state is-complete',
       };
     case 'cautela':
       return {
-        label: 'Cautela',
+        label: 'Atenção',
         icon: Warning,
         className: 'chat-process-state is-caution',
       };
     case 'web':
       return {
-        label: 'Web',
+        label: 'Oficial',
         icon: Globe,
         className: 'chat-process-state is-web',
       };
@@ -116,7 +116,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
       <div className="chat-response-intro">
         <div className="chat-response-kicker">
           <FileText size={14} />
-          Resposta estruturada
+          Orientação estruturada
         </div>
         <h3 className="chat-response-title">{response.tituloCurto}</h3>
         <div className="chat-response-summary-block">
@@ -132,7 +132,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
           <section className="chat-clarification-card" aria-label="Pedido de esclarecimento">
             <div className="chat-clarification-title">
               <Question size={16} />
-              Antes de eu seguir
+              Antes de te orientar melhor
             </div>
             {analysis.clarificationReason && (
               <p className="chat-clarification-body">{analysis.clarificationReason}</p>
@@ -147,7 +147,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
               <section className="chat-analysis-card" aria-label="Leitura da resposta">
                 <div className="chat-analysis-title">
                   <Info size={15} />
-                  Leitura da resposta
+                  Contexto útil
                 </div>
                 <p className="chat-analysis-body">{analysis.userNotice}</p>
               </section>
@@ -157,7 +157,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
               <section className="chat-analysis-card is-caution" aria-label="Cautela">
                 <div className="chat-analysis-title">
                   <Warning size={15} />
-                  Cautela
+                  Ponto de atenção
                 </div>
                 <p className="chat-analysis-body">{analysis.cautionNotice}</p>
               </section>

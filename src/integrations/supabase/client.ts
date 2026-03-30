@@ -6,7 +6,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 export const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 export const SUPABASE_UNAVAILABLE_MESSAGE =
-  'O Supabase ainda nao foi configurado neste ambiente. A CLARA permanece em modo de preparacao ate a nova conexao ser concluida.';
+  'Este ambiente ainda está finalizando a conexão principal da CLARA. Assim que ela for concluída, o acesso completo volta a ficar disponível.';
 
 type UnavailableQueryResponse = {
   count: number;

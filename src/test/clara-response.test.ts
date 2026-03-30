@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildMockStructuredResponse,
+  buildPreviewStructuredResponse,
   formatReferenceAbnt,
   renderStructuredResponseToPlainText,
   safeParseClaraStructuredEnvelope,
@@ -70,5 +71,25 @@ describe('clara-response helpers', () => {
     expect(plainText).not.toContain('Fontes priorizadas');
     expect(plainText).not.toContain('Leitura de confianca');
     expect(plainText).not.toContain('Aviso importante');
+  });
+
+  it('keeps preview copy free from backend and infrastructure jargon', () => {
+    const response = buildPreviewStructuredResponse('Como incluir documento externo?');
+    const visibleCopy = [
+      response.resumoInicial,
+      ...response.observacoesFinais,
+      response.analiseDaResposta.userNotice,
+      response.analiseDaResposta.cautionNotice,
+      ...response.analiseDaResposta.processStates.map((state) => `${state.titulo} ${state.descricao}`),
+      ...response.referenciasFinais.map((reference) => `${reference.titulo} ${reference.subtitulo ?? ''}`),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    expect(visibleCopy).not.toContain('backend');
+    expect(visibleCopy).not.toContain('supabase');
+    expect(visibleCopy).not.toContain('functions');
+    expect(visibleCopy).not.toContain('base vetorial');
   });
 });

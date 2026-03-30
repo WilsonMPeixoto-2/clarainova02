@@ -27,20 +27,20 @@ type ChatPanelMode = 'default' | 'expanded' | 'fullscreen';
 
 const LOADING_PHASES = [
   {
-    title: 'Entendendo sua pergunta',
-    description: 'Estou tentando captar exatamente o que você quer fazer no SEI-Rio.',
+    title: 'Entendendo sua dúvida',
+    description: 'Estou identificando com cuidado o que você quer fazer no SEI-Rio.',
   },
   {
-    title: 'Pesquisando na base documental',
-    description: 'Estou procurando os trechos mais próximos na documentação disponível.',
+    title: 'Localizando orientações úteis',
+    description: 'Estou reunindo as orientações mais próximas do seu caso.',
   },
   {
-    title: 'Comparando informações',
-    description: 'Se eu encontrar variações entre materiais, vou priorizar a orientação mais aderente ao SEI-Rio.',
+    title: 'Conferindo pontos sensíveis',
+    description: 'Se houver diferenças entre orientações, vou destacar o caminho mais seguro para você.',
   },
   {
-    title: 'Consolidando a resposta',
-    description: 'Já estou organizando tudo em um formato mais claro, com observações e referências quando couber.',
+    title: 'Montando sua resposta',
+    description: 'Já estou organizando a orientação em um formato claro, com alertas e referências quando fizer sentido.',
   },
 ];
 
@@ -254,12 +254,12 @@ const ChatSheet = () => {
       : 'Tela inteira para leitura longa';
   const inputPlaceholder = isPreviewMode
     ? responseMode === 'direto'
-      ? 'Pergunte para testar uma resposta mais objetiva enquanto a nova base e preparada...'
-      : 'Pergunte para testar um passo a passo guiado enquanto a nova base e preparada...'
+      ? 'Pergunte para experimentar uma resposta mais objetiva nesta demonstração da CLARA...'
+      : 'Pergunte para experimentar um passo a passo guiado nesta demonstração da CLARA...'
     : isMockMode
       ? responseMode === 'direto'
-        ? 'Pergunte para testar o modo direto da CLARA...'
-        : 'Pergunte para testar o modo didatico da CLARA...'
+        ? 'Pergunte para experimentar o modo direto da CLARA...'
+        : 'Pergunte para experimentar o modo didático da CLARA...'
       : responseModePresentation.placeholder;
 
   return (
@@ -411,10 +411,10 @@ const ChatSheet = () => {
                       <ChatCircle className="w-6 h-6 text-primary/60" />
                     </div>
                     <p className="chat-empty-kicker">{runtimeLabel}</p>
-                    <p className="chat-empty-title">CLARA pronta para conversar.</p>
+                    <p className="chat-empty-title">CLARA pronta para te orientar.</p>
                     <p className="chat-empty-copy">
                       {isPreviewMode
-                        ? 'Enquanto a nova base é configurada, você já pode testar perguntas e ver como a resposta será organizada.'
+                        ? 'Você já pode testar perguntas e sentir como a CLARA organiza a orientação. Nesta fase, as respostas funcionam como demonstração da experiência.'
                         : 'Faça uma pergunta sobre etapas, documentos, assinatura ou tramitação no SEI-Rio.'}
                     </p>
                     <div className="chat-mode-summary">
@@ -486,7 +486,7 @@ const ChatSheet = () => {
                       </div>
                       <p className="chat-loading-copy">{activeLoadingPhase.description}</p>
                       <p className="chat-loading-hint">
-                        {responseModePresentation.loadingHint} Se eu encontrar alguma ambiguidade, vou te avisar com cuidado e posso pedir um esclarecimento ou consultar fonte oficial.
+                        {responseModePresentation.loadingHint} Se aparecer alguma ambiguidade, eu vou te avisar com clareza e pedir só o complemento necessário para seguir com segurança.
                       </p>
                     </div>
                   </motion.div>
@@ -498,7 +498,7 @@ const ChatSheet = () => {
 
             {!isOnline && (
               <div className="px-4 py-2 bg-yellow-900/30 border-t border-yellow-600/30 text-center" role="alert">
-                <p className="text-xs text-yellow-400 font-medium">Sem conexão — verifique sua internet para enviar mensagens.</p>
+                <p className="text-xs text-yellow-400 font-medium">Você está sem conexão. Assim que a internet voltar, eu continuo com você.</p>
               </div>
             )}
             <form
@@ -554,8 +554,8 @@ const ChatSheet = () => {
               <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                 <p className="text-[10px] text-muted-foreground/60">
                   {isPreviewMode
-                    ? `Modo de preparação: você pode testar o modo ${responseModePresentation.label.toLowerCase()} antes da reconexão definitiva da base.`
-                    : `Modo atual: ${responseModePresentation.label}. Quando houver base suficiente, as fontes continuam ao final da resposta.`}
+                    ? `Ambiente demonstrativo: você pode experimentar o modo ${responseModePresentation.label.toLowerCase()} enquanto a base oficial da CLARA é finalizada.`
+                    : `Modo atual: ${responseModePresentation.label}. Quando houver material aplicável, as referências ficam ao final da resposta.`}
                 </p>
                 {!isMobile && (
                   <span className="text-[10px] text-muted-foreground/50">

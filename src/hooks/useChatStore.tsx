@@ -12,7 +12,11 @@ import {
   isChatResponseMode,
   type ChatResponseMode,
 } from '@/lib/chat-response-mode';
-import type { ChatRuntimeMode } from '@/lib/chat-runtime';
+import {
+  getChatRuntimeDescription,
+  getChatRuntimeLabel,
+  type ChatRuntimeMode,
+} from '@/lib/chat-runtime';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -82,23 +86,9 @@ function persistResponseMode(mode: ChatResponseMode) {
 }
 
 function getRuntimePresentation(config: ChatApiConfig) {
-  if (config.runtimeMode === 'online') {
-    return {
-      runtimeLabel: 'Base interna conectada',
-      runtimeDescription: 'A CLARA está consultando a base configurada do projeto.',
-    };
-  }
-
-  if (config.runtimeMode === 'mock') {
-    return {
-      runtimeLabel: 'Mock local em desenvolvimento',
-      runtimeDescription: 'As respostas estão vindo de um mock local para testes de interface.',
-    };
-  }
-
   return {
-    runtimeLabel: 'Modo de preparação',
-    runtimeDescription: 'A interface conversacional está ativa enquanto a nova integração Supabase é preparada.',
+    runtimeLabel: getChatRuntimeLabel(config.runtimeMode),
+    runtimeDescription: getChatRuntimeDescription(config.runtimeMode),
   };
 }
 
@@ -251,7 +241,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       await streamChatResponse(result.response, handleDelta, handleDone, handleError);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Erro ao conectar. Tente novamente.';
+      const errorMsg = err instanceof Error
+        ? err.message
+        : 'Não consegui concluir sua mensagem agora. Tente novamente em instantes.';
       startTransition(() => {
         setMessages((prev) =>
           replaceLastAssistantMessage(prev, {

@@ -124,16 +124,16 @@ function checkGuardrails(message: string): { blocked: boolean; reason?: string }
   return { blocked: false };
 }
 
-const GUARDRAIL_RESPONSE = `Desculpe, não posso ajudar com esse tipo de solicitação.
+const GUARDRAIL_RESPONSE = `Desculpe, não consigo ajudar com esse tipo de solicitação.
 
 Sou a **CLARA**, assistente institucional voltada ao uso do **SEI-Rio** e a rotinas administrativas relacionadas. Posso ajudar com:
 
-- 📋 inclusão e organização de documentos
-- ✍️ blocos e pedidos de assinatura
-- 🔄 tramitação, envio, retorno e encaminhamento
-- ✅ conferência operacional antes de movimentar o processo
+- inclusão e organização de documentos
+- blocos e pedidos de assinatura
+- tramitação, envio, retorno e encaminhamento
+- conferência operacional antes de movimentar o processo
 
-Se quiser, reformule a pergunta dentro desse contexto.`;
+Se quiser, reformule a pergunta dentro desse contexto e eu sigo com você.`;
 
 // ============================================================
 // SYSTEM PROMPT
@@ -186,6 +186,8 @@ ESTRUTURA DA RESPOSTA
 - Nunca invente nome de documento, página ou seção.
 - Quando houver ambiguidade, descreva isso em linguagem acolhedora e útil ao usuario.
 - Quando pedir esclarecimento, explique brevemente por que esta pedindo esse complemento.
+- Nos avisos, cautelas e processStates, use linguagem humana e institucional.
+- Evite rotulos tecnicos visiveis ao usuario, como "base interna", "web fallback", "RAG", "backend" ou termos de infraestrutura.
 
 JSON E CAMPOS DE DECISAO
 - Preencha sempre o objeto analiseDaResposta.
@@ -251,7 +253,7 @@ type HybridSearchChunk = {
   section_title?: string | null;
 };
 
-function getErrorMessage(error: unknown, fallback = 'Erro ao conectar com a IA.'): string {
+function getErrorMessage(error: unknown, fallback = 'Não consegui concluir sua resposta agora.'): string {
   if (error instanceof Error && error.message.trim()) {
     return error.message;
   }
@@ -261,6 +263,38 @@ function getErrorMessage(error: unknown, fallback = 'Erro ao conectar com a IA.'
   }
 
   return fallback;
+}
+
+function getPublicErrorMessage(
+  error: unknown,
+  fallback = 'Não consegui concluir sua resposta agora. Tente novamente em instantes.',
+): string {
+  const message = getErrorMessage(error, '');
+  if (!message) {
+    return fallback;
+  }
+
+  const normalized = message.toLowerCase();
+  if (normalized.includes('timeout')) {
+    return 'A resposta demorou mais do que o esperado. Tente novamente em instantes.';
+  }
+
+  if (
+    normalized.includes('api') ||
+    normalized.includes('permission_denied') ||
+    normalized.includes('supabase') ||
+    normalized.includes('credential') ||
+    normalized.includes('token') ||
+    normalized.includes('gemini') ||
+    normalized.includes('model') ||
+    normalized.includes('backend') ||
+    normalized.includes('schema') ||
+    normalized.includes('json')
+  ) {
+    return fallback;
+  }
+
+  return message;
 }
 
 function normalizeQueryText(value: string): string {
@@ -586,11 +620,11 @@ async function callGeminiWithFallback(
       const msg = getErrorMessage(err, String(err ?? ''));
       console.warn(`Model ${model} failed: ${msg}`);
       if (msg.includes('403') || msg.includes('PERMISSION_DENIED')) {
-        throw new Error('Chave da API inválida ou sem permissão.', { cause: err });
+        throw new Error('O atendimento da CLARA está temporariamente indisponível neste ambiente.', { cause: err });
       }
     }
   }
-  throw new Error('Todos os modelos estão indisponíveis no momento. Tente novamente em alguns minutos.');
+  throw new Error('Não consegui concluir sua resposta agora. Tente novamente em alguns minutos.');
 }
 
 // ============================================================
@@ -610,14 +644,14 @@ Deno.serve(async (req) => {
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Mensagens são obrigatórias.' }),
+        JSON.stringify({ error: 'Envie sua pergunta para que eu possa te ajudar.' }),
         { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
 
     if (messages.length > MAX_CONVERSATION_MESSAGES) {
       return new Response(
-        JSON.stringify({ error: 'Conversa muito longa. Inicie uma nova conversa.' }),
+        JSON.stringify({ error: 'Esta conversa já ficou longa. Para eu te responder com clareza, comece uma nova conversa.' }),
         { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
@@ -625,13 +659,13 @@ Deno.serve(async (req) => {
     for (const msg of messages) {
       if (typeof msg.content !== 'string' || typeof msg.role !== 'string') {
         return new Response(
-          JSON.stringify({ error: 'Formato de mensagem inválido.' }),
+          JSON.stringify({ error: 'Recebi a mensagem em um formato que não consegui interpretar. Tente enviar novamente.' }),
           { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
       if (msg.content.length > MAX_MESSAGE_LENGTH) {
         return new Response(
-          JSON.stringify({ error: 'Mensagem muito longa. Tente ser mais conciso.' }),
+          JSON.stringify({ error: 'Sua mensagem ficou longa demais para eu processar de uma vez. Se puder, envie em partes ou resuma o ponto principal.' }),
           { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
@@ -643,7 +677,7 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('GEMINI_API_KEY');
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: 'Chave da API não configurada.' }),
+        JSON.stringify({ error: 'A CLARA ainda não está disponível neste ambiente. Tente novamente mais tarde.' }),
         { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
@@ -653,7 +687,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!supabaseUrl || !supabaseKey) {
       return new Response(
-        JSON.stringify({ error: 'Credenciais Supabase não configuradas.' }),
+        JSON.stringify({ error: 'O atendimento da CLARA ainda não está pronto neste ambiente. Tente novamente mais tarde.' }),
         { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
@@ -676,7 +710,7 @@ Deno.serve(async (req) => {
       console.error('Rate limit check error:', rlError);
     } else if (!allowed) {
       return new Response(
-        JSON.stringify({ error: 'Muitas mensagens em pouco tempo. Aguarde um momento e tente novamente. ⏳' }),
+        JSON.stringify({ error: 'Recebi muitas mensagens em sequência. Aguarde um instante e tente novamente.' }),
         { status: 429, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }
@@ -913,7 +947,8 @@ REESCRITA OBRIGATORIA:
     try {
       result = await callGeminiWithFallback(ai, systemPromptWithContext, chatMessages);
     } catch (err: unknown) {
-      const errorMsg = getErrorMessage(err);
+      const rawErrorMsg = getErrorMessage(err);
+      const errorMsg = getPublicErrorMessage(err);
       if (lastUserMessage) {
         void supabase.from('chat_metrics').insert({
           request_id: requestId,
@@ -931,7 +966,7 @@ REESCRITA OBRIGATORIA:
           latency_ms: Date.now() - requestStartedAt,
           search_metric_id: searchMetricId,
           error_code: 'model_fallback_failed',
-          error_message: errorMsg,
+          error_message: rawErrorMsg,
           metadata_json: {
             request_id: requestId,
             retrieval_mode: retrievalMode,
@@ -1000,7 +1035,7 @@ REESCRITA OBRIGATORIA:
   } catch (error) {
     console.error('Chat function error:', error);
     return new Response(
-      JSON.stringify({ error: 'Erro interno do servidor.' }),
+      JSON.stringify({ error: 'O atendimento da CLARA oscilou por aqui. Tente novamente em instantes.' }),
       { status: 500, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }

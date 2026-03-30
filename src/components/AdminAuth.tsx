@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe, Fingerprint, LockKey, CircleNotch, Eye, EyeSlash, Lightning } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import {
+  formatAdminAuthErrorMessage,
   getAdminAuthCallbackUrl,
   getPasskeyPreparationMessage,
   isPasskeySupported,
@@ -48,14 +49,14 @@ export default function AdminAuth({ children }: Props) {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <Lightning className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-            <CardTitle className="text-xl">Painel em preparação</CardTitle>
+            <CardTitle className="text-xl">Painel administrativo em configuração</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-center">
             <p className="text-sm text-muted-foreground">
               {SUPABASE_UNAVAILABLE_MESSAGE}
             </p>
             <p className="text-xs text-muted-foreground/80">
-              Nesta fase, o foco segue em interface, experiência e organização operacional antes da reconexão definitiva do backend.
+              Enquanto isso, a experiência do painel segue em revisão para que o acesso volte com mais estabilidade e clareza.
             </p>
           </CardContent>
         </Card>
@@ -68,7 +69,12 @@ export default function AdminAuth({ children }: Props) {
     setSubmitting(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      toast.error("Erro no login", { description: error.message });
+      toast.error("Não consegui concluir o login", {
+        description: formatAdminAuthErrorMessage(
+          error.message,
+          "Revise seus dados e tente novamente.",
+        ),
+      });
     }
     setSubmitting(false);
   };
@@ -87,21 +93,32 @@ export default function AdminAuth({ children }: Props) {
     });
 
     if (error) {
-      toast.error("Erro no login com Google", { description: error.message });
+      toast.error("Não consegui abrir o login com Google", {
+        description: formatAdminAuthErrorMessage(
+          error.message,
+          "Tente novamente em instantes.",
+        ),
+      });
       setGoogleSubmitting(false);
     }
   };
 
   const handlePasskeyInfo = () => {
-    toast(passkeySupported ? "Passkeys em preparação" : "Passkeys ainda indisponíveis neste navegador", {
+    toast(passkeySupported ? "Passkey em breve" : "Passkey indisponível neste navegador", {
       description: getPasskeyPreparationMessage(),
     });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <CircleNotch className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <CircleNotch className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">Confirmando seu acesso</p>
+            <p className="text-xs text-muted-foreground">Estou verificando a sessão administrativa para te levar ao painel.</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -123,13 +140,13 @@ export default function AdminAuth({ children }: Props) {
 
               <Button type="button" variant="outline" className="w-full gap-2" onClick={handlePasskeyInfo}>
                 <Fingerprint className="h-4 w-4" />
-                {passkeySupported ? "Passkey em preparação" : "Passkey indisponível aqui"}
+                {passkeySupported ? "Passkey em breve" : "Passkey indisponível aqui"}
               </Button>
 
               <div className="rounded-lg border border-border/80 bg-muted/30 p-3">
-                <p className="text-sm font-medium text-foreground">Fallback provisório</p>
+                <p className="text-sm font-medium text-foreground">Outra forma de acesso</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Enquanto o Supabase próprio não estiver totalmente configurado com Google e WebAuthn, o login por email e senha continua disponível.
+                  Se o acesso principal ainda não estiver disponível para sua conta, você pode entrar com email e senha já provisionados.
                 </p>
               </div>
 
@@ -177,7 +194,7 @@ export default function AdminAuth({ children }: Props) {
               Acesso restrito a contas administrativas já provisionadas.
             </p>
             <p className="mt-2 text-center text-xs text-muted-foreground/80">
-              O fluxo preferencial agora é Google; passkeys já aparecem como próxima etapa de evolução do painel.
+              O acesso com Google é o caminho principal, e outras opções seguem em evolução conforme a maturidade do painel.
             </p>
           </CardContent>
         </Card>

@@ -14,7 +14,7 @@ export function getChatResponseModePresentation(mode: ChatResponseMode) {
       label: 'Direto',
       shortLabel: 'Modo direto',
       description: 'Resposta mais objetiva, com foco no caminho principal e no que precisa ser feito agora.',
-      loadingHint: 'Vou priorizar uma orientação mais curta e operacional.',
+      loadingHint: 'Vou priorizar um caminho mais objetivo e prático.',
       placeholder: 'Pergunte para receber uma orientação mais objetiva...',
     };
   }
@@ -23,7 +23,7 @@ export function getChatResponseModePresentation(mode: ChatResponseMode) {
     label: 'Didático',
     shortLabel: 'Modo didático',
     description: 'Resposta guiada em etapas, com contexto e conferências para executar com mais segurança.',
-    loadingHint: 'Vou organizar a resposta em etapas, com mais contexto e conferências.',
+    loadingHint: 'Vou organizar a orientação em etapas, com contexto e conferências.',
     placeholder: 'Pergunte para receber um passo a passo guiado...',
   };
 }

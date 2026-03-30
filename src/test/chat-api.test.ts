@@ -145,6 +145,14 @@ describe("chat api transport", () => {
     expect(result.plainText).toContain("Resposta didática de teste da CLARA");
   });
 
+  it("surfaces a human-friendly network error message", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("socket hang up")));
+
+    await expect(
+      requestChat([{ role: "user", content: "Como incluir anexo?" }], baseConfig),
+    ).rejects.toThrow("Não consegui me conectar agora. Confira sua internet e tente novamente.");
+  });
+
   it("streams SSE deltas into the UI callback", async () => {
     const encoder = new TextEncoder();
     const chunks = [
@@ -185,5 +193,20 @@ describe("chat api transport", () => {
     expect(tokens.join("")).toBe("Primeiro segundo");
     expect(doneCalled).toBe(true);
     expect(errorMessage).toBeNull();
+  });
+
+  it("returns a friendly error when stream reading is unavailable", async () => {
+    let errorMessage: string | null = null;
+
+    await streamChatResponse(
+      new Response(null),
+      () => undefined,
+      () => undefined,
+      (message) => {
+        errorMessage = message;
+      },
+    );
+
+    expect(errorMessage).toBe("A resposta não pôde continuar por aqui. Tente enviar novamente.");
   });
 });

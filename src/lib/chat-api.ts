@@ -152,12 +152,12 @@ export async function requestChat(
       }),
     });
   } catch {
-    throw new Error('Falha de conexão. Verifique sua internet e tente novamente.');
+    throw new Error('Não consegui me conectar agora. Confira sua internet e tente novamente.');
   }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Erro ${res.status}. Tente novamente.`);
+    throw new Error(body.error || 'Não consegui concluir sua mensagem agora. Tente novamente em instantes.');
   }
 
   const contentType = res.headers.get('content-type') ?? '';
@@ -200,7 +200,7 @@ export async function requestChat(
       return { kind: 'text', text: body.response };
     }
 
-    throw new Error('A CLARA respondeu em um formato inesperado.');
+    throw new Error('Recebi a resposta em um formato que não consegui aproveitar. Tente novamente em instantes.');
   }
 
   if (contentType.includes('text/event-stream')) {
@@ -228,7 +228,7 @@ export async function streamChatResponse(
 ) {
   const reader = response.body?.getReader();
   if (!reader) {
-    onError('Stream não disponível.');
+    onError('A resposta não pôde continuar por aqui. Tente enviar novamente.');
     return;
   }
 
@@ -264,7 +264,7 @@ export async function streamChatResponse(
       }
     }
   } catch {
-    onError('Conexão interrompida durante a resposta. Tente novamente.');
+    onError('A conexão caiu antes de eu terminar a resposta. Tente enviar novamente.');
     return;
   }
 

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   getChatConfigurationErrorMessage,
+  getChatRuntimeDescription,
+  getChatRuntimeLabel,
   isChatBackendConfigured,
   isChatMockEnabled,
 } from "@/lib/chat-runtime";
@@ -21,6 +23,16 @@ describe("chat runtime configuration", () => {
   });
 
   it("returns a production-safe configuration error message", () => {
-    expect(getChatConfigurationErrorMessage()).toContain("sem conexão com o backend");
+    expect(getChatConfigurationErrorMessage()).toContain("ainda não está conectada");
+  });
+
+  it("exposes user-facing runtime labels and descriptions", () => {
+    expect(getChatRuntimeLabel("online")).toBe("Atendimento conectado");
+    expect(getChatRuntimeLabel("mock")).toBe("Ambiente de demonstração");
+    expect(getChatRuntimeLabel("preview")).toBe("Demonstração guiada");
+
+    expect(getChatRuntimeDescription("online")).toContain("orientações disponíveis");
+    expect(getChatRuntimeDescription("mock")).toContain("ambiente de demonstração");
+    expect(getChatRuntimeDescription("preview")).toContain("respostas ainda são demonstrativas");
   });
 });
