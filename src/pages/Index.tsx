@@ -68,9 +68,9 @@ const IndexContent = () => {
             <FeaturesSection />
             <FAQSection />
           </Suspense>
-          <Footer />
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

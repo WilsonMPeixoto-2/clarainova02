@@ -13,7 +13,6 @@ const features = [
     subtitle: 'Dúvidas operacionais em linguagem natural',
     description: 'Você pode escrever a pergunta de forma simples, sem precisar usar termos técnicos do sistema.',
     points: ['Perguntas sobre telas, etapas e comandos', 'Consultas sobre documentos e tramitação', 'Uso de linguagem simples'],
-    prompt: 'Como incluir um documento externo no SEI-Rio?',
   },
   {
     id: 'answers',
@@ -22,7 +21,6 @@ const features = [
     subtitle: 'Consulta rápida ou explicação em etapas',
     description: 'A resposta pode ser mais curta para consulta imediata ou mais detalhada quando a tarefa exigir sequência.',
     points: ['Resumo objetivo', 'Explicação passo a passo quando aplicável', 'Texto pensado para leitura rápida'],
-    prompt: 'Explique em passo a passo como usar um bloco de assinatura no SEI-Rio.',
   },
   {
     id: 'workflow',
@@ -31,7 +29,6 @@ const features = [
     subtitle: 'Documentos, assinatura e tramitação',
     description: 'A ferramenta foi pensada para apoiar tarefas recorrentes do uso do SEI-Rio.',
     points: ['Inclusão de documentos', 'Blocos de assinatura', 'Encaminhamento e conferência de etapas'],
-    prompt: 'Quais etapas devo conferir antes de encaminhar um processo no SEI-Rio?',
   },
 ];
 

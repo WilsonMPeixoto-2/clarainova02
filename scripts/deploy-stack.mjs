@@ -38,7 +38,7 @@ if (!skipDbPush) {
 }
 
 if (!skipFunctions) {
-  run(resolveCommand("npx"), ["supabase", "functions", "deploy", "chat", "--no-verify-jwt"]);
+  run(resolveCommand("npx"), ["supabase", "functions", "deploy", "chat"]);
   run(resolveCommand("npx"), ["supabase", "functions", "deploy", "embed-chunks"]);
   run(resolveCommand("npx"), ["supabase", "functions", "deploy", "get-usage-stats"]);
 }
