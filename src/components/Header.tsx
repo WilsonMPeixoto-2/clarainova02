@@ -17,13 +17,8 @@ const Header = () => {
   const location = useLocation();
   const { openChat } = useChat();
 
-  const primaryLinks: NavItem[] = [
-    { label: 'Como funciona', to: '/#sistema' },
-    { label: 'Funcionalidades', to: '/#conhecimento' },
+  const navLinks: NavItem[] = [
     { label: 'Perguntas frequentes', to: '/#faq' },
-  ];
-
-  const secondaryLinks: NavItem[] = [
     { label: 'Política de Privacidade', to: '/privacidade', note: 'Uso e proteção de dados' },
     { label: 'Termos de Uso', to: '/termos', note: 'Condições de acesso ao serviço' },
     { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com', note: 'wilsonmp2@gmail.com' },
@@ -67,44 +62,21 @@ const Header = () => {
           <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(250px,auto)_1fr_auto] md:gap-6">
             <Link
               to="/"
-              className="header-brand-link inline-flex items-center gap-3 shrink-0 min-w-[120px] sm:min-w-[150px] md:min-w-[320px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
+              className="header-brand-link inline-flex items-center shrink-0 min-w-[120px] sm:min-w-[150px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
             >
-              <span
-                className="header-brand-mark"
-                aria-hidden="true"
-              >
-                C
-              </span>
-              <span className="header-brand-block hidden sm:grid">
-                <span className="header-brand-title">
-                  CLARA
-                </span>
-                <span className="hidden md:block header-brand-subtitle">
-                  Apoio ao uso do SEI-Rio
-                </span>
+              <span className="header-brand-title text-xl font-bold tracking-tight text-foreground transition-opacity hover:opacity-80">
+                CLARA
               </span>
               <span className="sr-only">CLARA - Página inicial</span>
             </Link>
 
             
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-6 justify-self-center">
-              <nav className="flex items-center gap-5">
-                {primaryLinks.filter(l => l.label !== 'Funcionalidades').map((link) => (
-                  <Link
-                    key={link.label}
-                    to={link.to ?? '/'}
-                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </nav>
-              <div className="h-4 w-px bg-border/40" aria-hidden="true" />
-              <nav className="flex items-center gap-4">
-                {secondaryLinks.map((link) => {
+            <div className="hidden lg:flex items-center justify-center">
+              <nav className="flex items-center gap-8">
+                {navLinks.map((link) => {
                   const target = link.to ?? link.href ?? '/';
-                  const baseClasses = "text-xs font-medium text-muted-foreground hover:text-foreground transition-colors duration-200";
+                  const baseClasses = "text-[13px] uppercase tracking-[0.05em] font-medium text-foreground/75 hover:text-primary transition-colors duration-200";
                   return link.to ? (
                     <Link key={link.label} to={link.to} className={baseClasses}>{link.label}</Link>
                   ) : (
@@ -175,34 +147,8 @@ const Header = () => {
         <div className="flex flex-col h-[calc(100%-86px)]">
           <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
             <div className="space-y-1">
-              <p className="px-3 pb-2 text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Home</p>
-              {primaryLinks.map((link) => {
-                const target = link.to ?? link.href ?? '/';
-                const isActive = isActiveLink(target);
-                return (
-                  <Link
-                    key={link.label}
-                    to={link.to ?? '/'}
-                    onClick={() => setMenuOpen(false)}
-                    className={`group flex flex-col px-3 py-3 rounded-xl border transition-all duration-[150ms]
-                      ${isActive
-                        ? 'border-primary/45 bg-primary/10'
-                        : 'border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.45)] hover:border-primary/30 hover:bg-[hsl(var(--surface-2)/0.72)]'
-                      }
-                    `}
-                  >
-                    <span className={`text-sm font-semibold ${isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
-                      {link.label}
-                    </span>
-                    {link.note ? <span className="text-xs text-muted-foreground mt-1">{link.note}</span> : null}
-                  </Link>
-                );
-              })}
-            </div>
-
-            <div className="space-y-1">
-              <p className="px-3 pb-2 text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Informações legais</p>
-              {secondaryLinks.map((link) => {
+              <p className="px-3 pb-2 text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Navegação e Avisos Legais</p>
+              {navLinks.map((link) => {
                 const target = link.to ?? link.href ?? '/';
                 const isActive = isActiveLink(target);
                 const className = `group flex flex-col px-3 py-3 rounded-xl border transition-all duration-[150ms]
@@ -223,7 +169,7 @@ const Header = () => {
                       <span className={`text-sm font-semibold ${isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
                         {link.label}
                       </span>
-                      <span className="text-xs text-muted-foreground mt-1">{link.note}</span>
+                      {link.note && <span className="text-xs text-muted-foreground mt-1">{link.note}</span>}
                     </Link>
                   );
                 }
@@ -238,11 +184,13 @@ const Header = () => {
                     <span className={`text-sm font-semibold ${isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
                       {link.label}
                     </span>
-                    <span className="text-xs text-muted-foreground mt-1">{link.note}</span>
+                    {link.note && <span className="text-xs text-muted-foreground mt-1">{link.note}</span>}
                   </a>
                 );
               })}
             </div>
+
+
           </div>
 
           <div className="drawer-footer-surface px-4 py-5 border-t">

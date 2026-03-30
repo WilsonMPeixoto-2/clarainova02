@@ -7,7 +7,6 @@ import { useChat } from "@/hooks/useChatStore";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { useLocation } from "react-router-dom";
 
-const ManifestSection = lazy(() => import("@/components/ManifestSection"));
 const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 import Footer from "@/components/Footer";
@@ -66,7 +65,6 @@ const IndexContent = () => {
         <div className="relative max-w-[100vw] overflow-hidden">
           <GlobalStars />
           <Suspense fallback={null}>
-            <ManifestSection />
             <FeaturesSection />
             <FAQSection />
           </Suspense>
