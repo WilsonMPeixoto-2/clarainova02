@@ -1,4 +1,4 @@
-import { ShieldCheck } from '@phosphor-icons/react';
+import { Sparkle } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -19,24 +19,18 @@ const FAQSection = () => {
           <div className="faq-shell">
             <div className="faq-intro-grid">
               <div className="faq-header">
-                <span className="knowledge-kicker">
-                  <ShieldCheck weight="duotone" size={14} className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="knowledge-kicker flex items-center gap-1.5">
+                  <Sparkle weight="duotone" size={14} className="w-3.5 h-3.5" aria-hidden="true" />
                   FAQ
                 </span>
                 <h2 id="faq-heading" className="text-h2 mt-4">
-                  <Balancer>Perguntas frequentes sobre uso e limites</Balancer>
+                  <Balancer>Perguntas frequentes</Balancer>
                 </h2>
-                <p className="text-body mt-3 max-w-3xl">
-                  <Balancer>
-                    A CLARA foi criada para orientar o uso do SEI-Rio com respostas claras, sem substituir a validação da sua unidade.
-                  </Balancer>
-                </p>
               </div>
 
               <div className="faq-note-card">
                 <p className="faq-note-kicker">Protocolo de uso</p>
-                <p className="faq-note-title">Como obter respostas mais úteis</p>
-                <ul className="faq-note-list">
+                <ul className="faq-note-list mt-3">
                   <li>Descreva a tarefa ou a tela com o máximo de precisão possível.</li>
                   <li>Use a resposta para revisar o caminho antes de agir no processo.</li>
                   <li>Quando houver dúvida normativa ou decisória, a referência final continua sendo o fluxo oficial da unidade.</li>

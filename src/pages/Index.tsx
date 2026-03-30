@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import { SoftWaveDivider } from "@/components/animations/SoftWaveDivider";
+import GlobalStars from "@/components/animations/GlobalStars";
 import { useChat } from "@/hooks/useChatStore";
 import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { useLocation } from "react-router-dom";
@@ -62,13 +63,16 @@ const IndexContent = () => {
       <main id="main-content" className="site-main-canvas">
         <HeroSection />
         <SoftWaveDivider />
-        <Suspense fallback={null}>
-          <ManifestSection />
-          <FeaturesSection />
-          <FAQSection />
-        </Suspense>
+        <div className="relative max-w-[100vw] overflow-hidden">
+          <GlobalStars />
+          <Suspense fallback={null}>
+            <ManifestSection />
+            <FeaturesSection />
+            <FAQSection />
+          </Suspense>
+          <Footer />
+        </div>
       </main>
-      <Footer />
     </div>
   );
 };

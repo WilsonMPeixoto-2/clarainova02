@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { FileText, MagnifyingGlass, ShieldCheck, ChatCircleText, Clock, CheckCircle, PenNib, ArrowRight } from '@phosphor-icons/react';
+import { FileText, MagnifyingGlass, ChatCircleText, CheckCircle, PenNib } from '@phosphor-icons/react';
 import Balancer from 'react-wrap-balancer';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
@@ -66,8 +66,7 @@ const FeaturesSection = () => {
       <div className="container mx-auto px-6">
         <ScrollReveal>
           <div className="knowledge-header max-w-4xl mx-auto text-center mb-12 md:mb-16">
-            <span className="knowledge-kicker">
-              <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+            <span className="knowledge-kicker flex justify-center text-sm font-semibold tracking-widest text-[hsl(var(--gold-1))] uppercase">
               Funcionalidades
             </span>
             <h2 id="features-heading" className="text-h2 mt-4">
@@ -84,12 +83,6 @@ const FeaturesSection = () => {
         <ScrollReveal delay={0.06}>
           <div className="max-w-6xl mx-auto mb-12 md:mb-16">
             <div className="bento-divider mb-7 md:mb-8" aria-hidden="true" />
-            <div className="knowledge-section-heading">
-              <p className="text-caption uppercase tracking-[0.08em] text-muted-foreground">Consultas frequentes</p>
-              <h3 className="text-h3 mt-2">
-                <Balancer>Rotinas recorrentes com leitura clara e direta.</Balancer>
-              </h3>
-            </div>
             <div className="bento-services-grid">
               {bentoCards.map((card) => (
                 <BentoCard key={card.title} title={card.title} description={card.description} icon={card.icon} variant={card.variant} />
@@ -98,24 +91,18 @@ const FeaturesSection = () => {
           </div>
         </ScrollReveal>
 
-        <div className="knowledge-grid" role="list" aria-label="Recursos da CLARA">
+        <div className="knowledge-grid">
           {features.map((feature, index) => (
             <ScrollReveal key={feature.id} delay={index * 0.08}>
-              <motion.article className="knowledge-card group h-full" role="listitem" whileHover={{ y: -4, rotateX: 1.2, rotateY: index === 1 ? 0.8 : -0.8 }} transition={{ type: 'spring', stiffness: 260, damping: 22 }}>
-                <div className="knowledge-card-head">
-                  <div className="knowledge-icon" aria-hidden="true"><feature.icon className="w-6 h-6 text-primary" weight="duotone" /></div>
-                  <span className="knowledge-index">0{index + 1}</span>
+              <motion.article className="knowledge-card group h-full" whileHover={{ y: -4, rotateX: 1.2, rotateY: index === 1 ? 0.8 : -0.8 }} transition={{ type: 'spring', stiffness: 260, damping: 22 }}>
+                <div className="knowledge-card-head justify-end w-full">
+                  <span className="knowledge-index opacity-60 font-medium text-2xl">0{index + 1}</span>
                 </div>
-                <h3 className="knowledge-title mt-5">{feature.title}</h3>
-                <p className="knowledge-subtitle">{feature.subtitle}</p>
-                <p className="text-body mt-4">{feature.description}</p>
-                <ul className="knowledge-points" aria-label={`Diferenciais de ${feature.title}`}>
+                <h3 className="text-xl font-semibold text-[hsl(var(--gold-1))] leading-tight mt-6">{feature.subtitle}</h3>
+                <p className="text-body mt-4 text-muted-foreground leading-relaxed">{feature.description}</p>
+                <ul className="knowledge-points mt-6" aria-label={`Diferenciais de ${feature.title}`}>
                   {feature.points.map((point) => (<li key={point}>{point}</li>))}
                 </ul>
-                <button type="button" className="knowledge-card-cta" onClick={() => openChat(feature.prompt)}>
-                  Testar este caso no chat
-                  <ArrowRight weight="bold" size={15} aria-hidden="true" />
-                </button>
               </motion.article>
             </ScrollReveal>
           ))}

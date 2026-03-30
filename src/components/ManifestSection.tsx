@@ -30,20 +30,16 @@ const manifestoCards = [
 
 const protocolSteps = [
   {
-    title: 'Descreva a dúvida',
-    description: 'Explique a tarefa, a tela ou o problema do jeito que você faria para um colega.',
+    title: 'Descreva a tarefa ou demanda',
+    description: 'Informe a etapa atual, a tela ou o objetivo final da sua ação no SEI-Rio.',
   },
   {
-    title: 'Leia a resposta',
-    description: 'Use a orientação para localizar etapas, botões, documentos e verificações importantes.',
+    title: 'Siga a orientação recomendada',
+    description: 'Entenda os comandos, ordens de serviço e verificações importantes para prosseguir.',
   },
   {
-    title: 'Confira a próxima ação',
-    description: 'Revise o que precisa ser anexado, assinado, enviado ou confirmado antes de continuar.',
-  },
-  {
-    title: 'Valide na rotina da unidade',
-    description: 'Se houver exceção ou dúvida normativa, confirme com o procedimento oficial aplicável.',
+    title: 'Realize o estágio oficial',
+    description: 'Valide excepcionais junto ao setor responsável ou conclua as conformidades normativas.',
   },
 ];
 

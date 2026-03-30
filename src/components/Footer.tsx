@@ -1,9 +1,8 @@
-import { EnvelopeSimple, ShieldCheck, Phone, LinkedinLogo } from '@phosphor-icons/react';
+import { EnvelopeSimple, Sparkle, Phone, LinkedinLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const footerSignals = ['Documentos', 'Assinatura', 'Tramitação', 'Consultas rápidas'];
 
   return (
     <footer className="footer-premium-shell py-16 md:py-20 border-t border-[hsl(var(--border-subtle))]" role="contentinfo">
@@ -15,13 +14,7 @@ const Footer = () => {
             <p className="text-sm text-muted-foreground max-w-xl">
               Desenvolvido por <span className="text-foreground font-medium">Wilson M. Peixoto</span> - SME/RJ
             </p>
-            <p className="text-xs text-muted-foreground/80">Inovação para a Gestão Pública</p>
-
-            <div className="footer-signal-row" aria-label="Temas frequentes">
-              {footerSignals.map((signal) => (
-                <span key={signal} className="footer-signal-chip">{signal}</span>
-              ))}
-            </div>
+            <p className="text-xs text-muted-foreground/80 mb-6">Inovação para a Gestão Pública</p>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
               <a href="tel:+5521994974132" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
@@ -46,27 +39,30 @@ const Footer = () => {
             <p className="text-caption">© {currentYear} CLARA. Todos os direitos reservados.</p>
           </div>
 
-          <div className="footer-link-columns">
-            <nav className="footer-link-group" aria-label="Navegação">
-              <p className="footer-link-heading">Navegação</p>
-              <Link to="/#conhecimento" className="footer-link">Funcionalidades</Link>
-              <Link to="/#faq" className="footer-link">FAQ</Link>
+          <div className="flex flex-row flex-wrap sm:flex-nowrap justify-between gap-12 sm:gap-16 w-full lg:w-auto">
+            <nav className="flex flex-col gap-4" aria-label="Navegação">
+              <p className="text-xs font-semibold tracking-widest text-[hsl(var(--gold-1))] uppercase mb-1">Navegação</p>
+              <Link to="/#conhecimento" className="text-sm text-foreground/80 hover:text-foreground transition-colors">Funcionalidades</Link>
+              <Link to="/#faq" className="text-sm text-foreground/80 hover:text-foreground transition-colors">FAQ</Link>
             </nav>
-            <nav className="footer-link-group" aria-label="Transparência">
-              <p className="footer-link-heading">Transparência</p>
-              <Link to="/termos" className="footer-link">Termos de Uso</Link>
-              <Link to="/privacidade" className="footer-link">Política de Privacidade</Link>
+            <nav className="flex flex-col gap-4" aria-label="Transparência">
+              <p className="text-xs font-semibold tracking-widest text-[hsl(var(--gold-1))] uppercase mb-1">Transparência</p>
+              <Link to="/termos" className="text-sm text-foreground/80 hover:text-foreground transition-colors">Termos de Uso</Link>
+              <Link to="/privacidade" className="text-sm text-foreground/80 hover:text-foreground transition-colors">Política de Privacidade</Link>
             </nav>
-            <nav className="footer-link-group" aria-label="Contato">
-              <p className="footer-link-heading">Contato</p>
-              <a href="mailto:wilsonmp2@gmail.com" className="footer-link">Email direto</a>
+            <nav className="flex flex-col gap-4" aria-label="Contato">
+              <p className="text-xs font-semibold tracking-widest text-[hsl(var(--gold-1))] uppercase mb-1">Contato</p>
+              <a href="mailto:wilsonmp2@gmail.com" className="text-sm text-foreground/80 hover:text-foreground transition-colors">Email direto</a>
             </nav>
           </div>
         </div>
 
         <div className="mt-10 pt-8 border-t border-[hsl(var(--border-subtle))]">
           <div className="footer-note" role="note">
-            <ShieldCheck weight="duotone" size={14} className="text-primary flex-shrink-0" aria-hidden="true" />
+            <div className="relative flex-shrink-0 w-4 h-4 mt-0.5 flex items-center justify-center">
+              <div className="absolute inset-0 bg-[hsl(var(--gold-1))] rounded-full blur-[4px] opacity-40"></div>
+              <Sparkle weight="fill" size={12} className="text-[hsl(var(--gold-1))] relative z-10" aria-hidden="true" />
+            </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               A CLARA auxilia consultas operacionais e não substitui a leitura dos documentos oficiais nem a validação interna necessária em cada processo.
             </p>
