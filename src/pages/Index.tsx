@@ -4,7 +4,7 @@ import HeroSection from "@/components/HeroSection";
 import { SoftWaveDivider } from "@/components/animations/SoftWaveDivider";
 import GlobalStars from "@/components/animations/GlobalStars";
 import { useChat } from "@/hooks/useChatStore";
-import { useDocumentMeta } from "@/hooks/useDocumentMeta";
+import { DocumentMeta } from "@/components/DocumentMeta";
 import { useLocation } from "react-router-dom";
 
 const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
@@ -16,11 +16,7 @@ const IndexContent = () => {
   const location = useLocation();
   const handledSearchRef = useRef<string | null>(null);
 
-  useDocumentMeta({
-    title: "CLARA — apoio ao uso do SEI-Rio e a rotinas administrativas",
-    description:
-      "CLARA é uma ferramenta de apoio para dúvidas sobre uso do SEI-Rio, documentos, tramitação, assinatura e etapas operacionais em rotinas administrativas.",
-  });
+
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -51,6 +47,10 @@ const IndexContent = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <DocumentMeta 
+        title="CLARA — apoio ao uso do SEI-Rio e a rotinas administrativas"
+        description="CLARA é uma ferramenta de apoio para dúvidas sobre uso do SEI-Rio, documentos, tramitação, assinatura e etapas operacionais em rotinas administrativas."
+      />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg"

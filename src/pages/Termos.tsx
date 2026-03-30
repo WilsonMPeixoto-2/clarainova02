@@ -1,13 +1,7 @@
-import { useDocumentMeta } from "@/hooks/useDocumentMeta";
+import { DocumentMeta } from "@/components/DocumentMeta";
 import LegalPageLayout from "@/components/LegalPageLayout";
 
 const Termos = () => {
-  useDocumentMeta({
-    title: "Termos de Serviço — CLARA",
-    description:
-      "Termos de Serviço da CLARA, ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas, com foco em escopo, limites e responsabilidades de uso.",
-  });
-
   const sections = [
     {
       title: "1. Aceitação dos Termos",
@@ -86,13 +80,19 @@ const Termos = () => {
   ];
 
   return (
-    <LegalPageLayout
+    <>
+      <DocumentMeta 
+        title="Termos de Serviço — CLARA"
+        description="Termos de Serviço da CLARA, ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas, com foco em escopo, limites e responsabilidades de uso."
+      />
+      <LegalPageLayout
       kicker="Termos de Serviço"
       title="Termos claros para o uso da CLARA"
       description="Escopo, limites e responsabilidade de uso da CLARA como ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas."
       updatedAt="Última atualização: 15 de março de 2026"
       sections={sections}
     />
+    </>
   );
 };
 

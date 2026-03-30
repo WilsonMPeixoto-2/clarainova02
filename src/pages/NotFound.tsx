@@ -3,17 +3,18 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 import { motion } from "motion/react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useDocumentMeta } from "@/hooks/useDocumentMeta";
+import { DocumentMeta } from "@/components/DocumentMeta";
 
 const NotFound = () => {
   const location = useLocation();
-  useDocumentMeta({
-    title: "Página não encontrada — CLARA",
-    description: "A rota solicitada não foi encontrada. Volte para a home da CLARA ou abra o chat para continuar a navegação.",
-  });
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <>
+      <DocumentMeta 
+        title="Página não encontrada — CLARA"
+        description="A rota solicitada não foi encontrada. Volte para a home da CLARA ou abra o chat para continuar a navegação."
+      />
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
       <main className="flex-1 flex items-center justify-center px-6 relative overflow-hidden">
@@ -78,6 +79,7 @@ const NotFound = () => {
 
       <Footer />
     </div>
+    </>
   );
 };
 

@@ -1,13 +1,7 @@
-import { useDocumentMeta } from "@/hooks/useDocumentMeta";
+import { DocumentMeta } from "@/components/DocumentMeta";
 import LegalPageLayout from "@/components/LegalPageLayout";
 
 const Privacidade = () => {
-  useDocumentMeta({
-    title: "Política de Privacidade — CLARA",
-    description:
-      "Política de Privacidade da CLARA, ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas, com informações sobre dados tratados e limites de uso.",
-  });
-
   const sections = [
     {
       title: "1. Escopo desta política",
@@ -92,13 +86,19 @@ const Privacidade = () => {
   ];
 
   return (
-    <LegalPageLayout
+    <>
+      <DocumentMeta 
+        title="Política de Privacidade — CLARA"
+        description="Política de Privacidade da CLARA, ferramenta de apoio ao uso do SEI-Rio e a rotinas administrativas, com informações sobre dados tratados e limites de uso."
+      />
+      <LegalPageLayout
       kicker="Política de Privacidade"
       title="Privacidade com transparência operacional"
       description="Como a CLARA trata dados, quais limites orientam o uso do serviço e quais cuidados continuam valendo no uso do site e do chat."
       updatedAt="Última atualização: 15 de março de 2026"
       sections={sections}
     />
+    </>
   );
 };
 
