@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  DEFAULT_CHAT_RESPONSE_MODE,
+  type ChatResponseMode,
+} from '@/lib/chat-response-mode';
 
 export const ClaraReferenceSchema = z.object({
   id: z.number().int().positive(),
@@ -110,6 +114,60 @@ function getCurrentDateString() {
 
 function getCurrentYearString() {
   return new Date().getFullYear().toString();
+}
+
+function takeFirstSentence(value: string) {
+  const trimmed = value.trim();
+  const match = trimmed.match(/^.*?[.!?](?:\s|$)/);
+  return (match?.[0] ?? trimmed).trim();
+}
+
+function renumberSteps(steps: ClaraStructuredResponse['etapas']) {
+  return steps.map((step, index) => ({
+    ...step,
+    numero: index + 1,
+  }));
+}
+
+function adaptStructuredResponseForMode(
+  response: ClaraStructuredResponse,
+  responseMode: ChatResponseMode,
+): ClaraStructuredResponse {
+  if (responseMode === 'didatico') {
+    return response;
+  }
+
+  const conciseProcessStates = response.analiseDaResposta.processStates
+    .filter((state) => state.status !== 'concluido')
+    .slice(0, 2);
+
+  return {
+    ...response,
+    resumoInicial: takeFirstSentence(response.resumoInicial),
+    modoResposta: response.etapas.length > 0 ? 'checklist' : 'explicacao',
+    etapas: renumberSteps(
+      response.etapas.slice(0, 2).map((step) => ({
+        ...step,
+        conteudo: takeFirstSentence(step.conteudo),
+        itens: step.itens.slice(0, 2),
+        destaques: step.destaques.slice(0, 2),
+        alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
+      })),
+    ),
+    observacoesFinais: response.observacoesFinais.slice(0, 1).map(takeFirstSentence),
+    termosDestacados: response.termosDestacados.slice(0, 4),
+    analiseDaResposta: {
+      ...response.analiseDaResposta,
+      userNotice: null,
+      clarificationReason: response.analiseDaResposta.clarificationReason
+        ? takeFirstSentence(response.analiseDaResposta.clarificationReason)
+        : null,
+      cautionNotice: response.analiseDaResposta.cautionNotice
+        ? takeFirstSentence(response.analiseDaResposta.cautionNotice)
+        : null,
+      processStates: conciseProcessStates,
+    },
+  };
 }
 
 function buildConfidenceLabel(value: number | null) {
@@ -522,10 +580,13 @@ function inferTopicFromQuestion(question: string) {
   };
 }
 
-export function buildMockStructuredResponse(question: string): ClaraStructuredResponse {
+export function buildMockStructuredResponse(
+  question: string,
+  responseMode: ChatResponseMode = DEFAULT_CHAT_RESPONSE_MODE,
+): ClaraStructuredResponse {
   const topic = inferTopicFromQuestion(question);
 
-  return {
+  const response: ClaraStructuredResponse = {
     tituloCurto: topic.title,
     resumoInicial: topic.summary,
     resumoCitacoes: topic.references.length > 0 ? [topic.references[0].id] : [],
@@ -583,16 +644,23 @@ export function buildMockStructuredResponse(question: string): ClaraStructuredRe
     referenciasFinais: topic.references,
     analiseDaResposta: topic.analysis,
   };
+
+  return adaptStructuredResponseForMode(response, responseMode);
 }
 
-export function buildPreviewStructuredResponse(question: string): ClaraStructuredResponse {
+export function buildPreviewStructuredResponse(
+  question: string,
+  responseMode: ChatResponseMode = DEFAULT_CHAT_RESPONSE_MODE,
+): ClaraStructuredResponse {
   const normalizedQuestion = question.trim() || 'Como a CLARA vai operar quando a base estiver religada?';
-  const base = buildMockStructuredResponse(normalizedQuestion);
+  const base = buildMockStructuredResponse(normalizedQuestion, responseMode);
 
-  return {
+  const response: ClaraStructuredResponse = {
     ...base,
-    tituloCurto: 'Resposta de teste da CLARA',
-    resumoInicial: `A nova base ainda esta em configuracao. Por enquanto, esta resposta mostra o formato das orientacoes para a pergunta "${normalizedQuestion}".`,
+    tituloCurto: responseMode === 'direto' ? 'Resposta direta de teste da CLARA' : 'Resposta didática de teste da CLARA',
+    resumoInicial: responseMode === 'direto'
+      ? `A nova base ainda esta em configuracao. Por enquanto, esta resposta mostra como a CLARA entrega uma orientacao mais objetiva para "${normalizedQuestion}".`
+      : `A nova base ainda esta em configuracao. Por enquanto, esta resposta mostra como a CLARA organiza um passo a passo guiado para "${normalizedQuestion}".`,
     resumoCitacoes: [],
     etapas: [
       {
@@ -671,11 +739,11 @@ export function buildPreviewStructuredResponse(question: string): ClaraStructure
       userNotice: 'A resposta foi gerada localmente para demonstrar o formato do atendimento enquanto a base definitiva e reconfigurada.',
       cautionNotice: 'Use este retorno apenas como teste. A consulta documental final voltara quando o novo backend estiver conectado.',
       ambiguityReason: null,
-      comparedSources: ['Preview local do chat'],
-      prioritizedSources: ['Preview local do chat'],
-      processStates: [
-        {
-          id: 'preview-mode',
+        comparedSources: ['Preview local do chat'],
+        prioritizedSources: ['Preview local do chat'],
+        processStates: [
+          {
+            id: 'preview-mode',
           titulo: 'Modo de teste',
           descricao: 'A interface esta ativa e a resposta foi montada localmente para validar estrutura e legibilidade.',
           status: 'informativo',
@@ -692,7 +760,9 @@ export function buildPreviewStructuredResponse(question: string): ClaraStructure
           descricao: 'A proxima acao e reconectar variaveis, functions e base vetorial no novo projeto Supabase.',
           status: 'cautela',
         },
-      ],
-    },
+        ],
+      },
   };
+
+  return adaptStructuredResponseForMode(response, responseMode);
 }

@@ -7,6 +7,10 @@ import rehypeSanitize from 'rehype-sanitize';
 import { ChatStructuredMessage } from '@/components/chat/ChatStructuredMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChat } from '@/hooks/useChatStore';
+import {
+  CHAT_RESPONSE_MODES,
+  getChatResponseModePresentation,
+} from '@/lib/chat-response-mode';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from 'sonner';
@@ -55,12 +59,14 @@ const ChatSheet = () => {
     pendingQuestion,
     isLoading,
     isStreaming,
+    responseMode,
     runtimeMode,
     runtimeLabel,
     runtimeDescription,
     closeChat,
     sendMessage,
     clearMessages,
+    setResponseMode,
   } = useChat();
   const isMobile = useIsMobile();
   const isOnline = useOnlineStatus();
@@ -209,11 +215,16 @@ const ChatSheet = () => {
   const activeLoadingPhase = LOADING_PHASES[loadingPhaseIndex];
   const isPreviewMode = runtimeMode === 'preview';
   const isMockMode = runtimeMode === 'mock';
+  const responseModePresentation = getChatResponseModePresentation(responseMode);
   const inputPlaceholder = isPreviewMode
-    ? 'Pergunte e teste o formato da resposta enquanto a nova base e preparada...'
+    ? responseMode === 'direto'
+      ? 'Pergunte para testar uma resposta mais objetiva enquanto a nova base e preparada...'
+      : 'Pergunte para testar um passo a passo guiado enquanto a nova base e preparada...'
     : isMockMode
-      ? 'Pergunte e teste o mock local da CLARA...'
-      : 'Pergunte sobre etapas, documentos ou tramitação...';
+      ? responseMode === 'direto'
+        ? 'Pergunte para testar o modo direto da CLARA...'
+        : 'Pergunte para testar o modo didatico da CLARA...'
+      : responseModePresentation.placeholder;
 
   return (
     <>
@@ -286,6 +297,7 @@ const ChatSheet = () => {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-[11px] text-muted-foreground">Apoio ao SEI-Rio</p>
                     <span className="chat-status-pill" data-mode={runtimeMode}>{runtimeLabel}</span>
+                    <span className="chat-response-mode-pill" data-mode={responseMode}>{responseModePresentation.label}</span>
                   </div>
                 </div>
               </div>
@@ -382,6 +394,12 @@ const ChatSheet = () => {
                         ? 'Enquanto a nova base é configurada, você já pode testar perguntas e ver como a resposta será organizada.'
                         : 'Faça uma pergunta sobre etapas, documentos, assinatura ou tramitação no SEI-Rio.'}
                     </p>
+                    <div className="chat-mode-summary">
+                      <p className="chat-mode-summary-kicker">Modo selecionado</p>
+                      <p className="chat-mode-summary-copy">
+                        <strong>{responseModePresentation.label}</strong>: {responseModePresentation.description}
+                      </p>
+                    </div>
 
                     <div className="chat-starter-grid mt-5">
                       {STARTER_PROMPTS.map((prompt) => (
@@ -445,7 +463,7 @@ const ChatSheet = () => {
                       </div>
                       <p className="chat-loading-copy">{activeLoadingPhase.description}</p>
                       <p className="chat-loading-hint">
-                        Se eu encontrar alguma ambiguidade, vou te avisar com cuidado e posso pedir um esclarecimento ou consultar fonte oficial.
+                        {responseModePresentation.loadingHint} Se eu encontrar alguma ambiguidade, vou te avisar com cuidado e posso pedir um esclarecimento ou consultar fonte oficial.
                       </p>
                     </div>
                   </motion.div>
@@ -464,6 +482,31 @@ const ChatSheet = () => {
               onSubmit={handleSubmit}
               className="px-4 py-3 border-t border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1))]"
             >
+              <div className="chat-response-mode-shell" aria-label="Modo de resposta">
+                <div className="chat-response-mode-copy-block">
+                  <p className="chat-response-mode-kicker">Modo de resposta</p>
+                  <p className="chat-response-mode-copy">{responseModePresentation.description}</p>
+                </div>
+                <div className="chat-response-mode-toggle" role="group" aria-label="Selecionar modo de resposta">
+                  {CHAT_RESPONSE_MODES.map((modeOption) => {
+                    const optionPresentation = getChatResponseModePresentation(modeOption);
+                    const isActive = responseMode === modeOption;
+
+                    return (
+                      <button
+                        key={modeOption}
+                        type="button"
+                        onClick={() => setResponseMode(modeOption)}
+                        disabled={isLoading || isStreaming}
+                        className={`chat-response-mode-option ${isActive ? 'is-active' : ''}`}
+                        aria-pressed={isActive}
+                      >
+                        {optionPresentation.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <div className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.6)] px-3 py-1.5 focus-within:border-primary/40 transition-colors">
                 <input
                   ref={inputRef}
@@ -488,8 +531,8 @@ const ChatSheet = () => {
               <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                 <p className="text-[10px] text-muted-foreground/60">
                   {isPreviewMode
-                    ? 'Modo de preparação: você pode testar perguntas e visualizar o formato da resposta antes da reconexão definitiva da base.'
-                    : 'Respostas preferencialmente organizadas em blocos, com fontes ao final quando houver base suficiente.'}
+                    ? `Modo de preparação: você pode testar o modo ${responseModePresentation.label.toLowerCase()} antes da reconexão definitiva da base.`
+                    : `Modo atual: ${responseModePresentation.label}. Quando houver base suficiente, as fontes continuam ao final da resposta.`}
                 </p>
                 {!isMobile && (
                   <span className="text-[10px] text-muted-foreground/50">

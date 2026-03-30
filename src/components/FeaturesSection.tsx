@@ -18,9 +18,9 @@ const features = [
     id: 'answers',
     icon: ChatCircleText,
     title: 'Respostas organizadas',
-    subtitle: 'Consulta rápida ou explicação em etapas',
-    description: 'A resposta pode ser mais curta para consulta imediata ou mais detalhada quando a tarefa exigir sequência.',
-    points: ['Resumo objetivo', 'Explicação passo a passo quando aplicável', 'Texto pensado para leitura rápida'],
+    subtitle: 'Modo Direto ou Didático no próprio chat',
+    description: 'Você pode alternar entre uma resposta mais objetiva e um passo a passo guiado, conforme a necessidade da tarefa.',
+    points: ['Seletor visível dentro do chat', 'Resumo objetivo para consulta rápida', 'Explicação em etapas quando você precisar de mais segurança'],
   },
   {
     id: 'workflow',

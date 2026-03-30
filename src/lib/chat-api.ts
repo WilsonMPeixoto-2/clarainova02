@@ -12,10 +12,18 @@ import {
   isChatMockEnabled,
   type ChatRuntimeMode,
 } from '@/lib/chat-runtime';
+import {
+  DEFAULT_CHAT_RESPONSE_MODE,
+  type ChatResponseMode,
+} from '@/lib/chat-response-mode';
 
 export interface ChatTransportMessage {
   role: 'user' | 'assistant';
   content: string;
+}
+
+export interface ChatRequestOptions {
+  responseMode?: ChatResponseMode;
 }
 
 export type ChatRequestResult =
@@ -68,10 +76,14 @@ export function getDefaultChatApiConfig(): ChatApiConfig {
   };
 }
 
-export function getMockChatResult(question: string, delayMs = 0): Promise<ChatRequestResult> {
+export function getMockChatResult(
+  question: string,
+  responseMode: ChatResponseMode = DEFAULT_CHAT_RESPONSE_MODE,
+  delayMs = 0,
+): Promise<ChatRequestResult> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const response = buildMockStructuredResponse(question);
+      const response = buildMockStructuredResponse(question, responseMode);
       resolve({
         kind: 'structured',
         response,
@@ -81,10 +93,14 @@ export function getMockChatResult(question: string, delayMs = 0): Promise<ChatRe
   });
 }
 
-export function getPreviewChatResult(question: string, delayMs = 0): Promise<ChatRequestResult> {
+export function getPreviewChatResult(
+  question: string,
+  responseMode: ChatResponseMode = DEFAULT_CHAT_RESPONSE_MODE,
+  delayMs = 0,
+): Promise<ChatRequestResult> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const response = buildPreviewStructuredResponse(question);
+      const response = buildPreviewStructuredResponse(question, responseMode);
       resolve({
         kind: 'structured',
         response,
@@ -97,15 +113,26 @@ export function getPreviewChatResult(question: string, delayMs = 0): Promise<Cha
 export async function requestChat(
   messages: ChatTransportMessage[],
   config: ChatApiConfig,
+  options: ChatRequestOptions = {},
 ): Promise<ChatRequestResult> {
+  const responseMode = options.responseMode ?? DEFAULT_CHAT_RESPONSE_MODE;
+
   if (!config.backendConfigured) {
     const lastQuestion = [...messages].reverse().find((message) => message.role === 'user')?.content ?? '';
 
     if (config.runtimeMode === 'mock') {
-      return getMockChatResult(lastQuestion, config.mockDelayMs ?? (650 + Math.random() * 450));
+      return getMockChatResult(
+        lastQuestion,
+        responseMode,
+        config.mockDelayMs ?? (650 + Math.random() * 450),
+      );
     }
 
-    return getPreviewChatResult(lastQuestion, config.mockDelayMs ?? (780 + Math.random() * 520));
+    return getPreviewChatResult(
+      lastQuestion,
+      responseMode,
+      config.mockDelayMs ?? (780 + Math.random() * 520),
+    );
   }
 
   const url = `${config.supabaseUrl}/functions/v1/chat`;
@@ -119,7 +146,10 @@ export async function requestChat(
         'Authorization': `Bearer ${config.supabasePublishableKey}`,
         'apikey': config.supabasePublishableKey ?? '',
       },
-      body: JSON.stringify({ messages: messages.map((message) => ({ role: message.role, content: message.content })) }),
+      body: JSON.stringify({
+        messages: messages.map((message) => ({ role: message.role, content: message.content })),
+        responseMode,
+      }),
     });
   } catch {
     throw new Error('Falha de conexão. Verifique sua internet e tente novamente.');

@@ -38,12 +38,41 @@ const MAX_CONVERSATION_MESSAGES = 20;
 const EMBEDDING_TIMEOUT_MS = 10_000;
 const SEARCH_TIMEOUT_MS = 8_000;
 const GENERATION_TIMEOUT_MS = 45_000;
+const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
+type ChatResponseMode = (typeof CHAT_RESPONSE_MODES)[number];
+const DEFAULT_CHAT_RESPONSE_MODE: ChatResponseMode = 'didatico';
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`Timeout: ${label} excedeu ${ms}ms`)), ms);
     promise.then(resolve, reject).finally(() => clearTimeout(timer));
   });
+}
+
+function isChatResponseMode(value: unknown): value is ChatResponseMode {
+  return typeof value === 'string' && CHAT_RESPONSE_MODES.includes(value as ChatResponseMode);
+}
+
+function buildResponseModePrompt(responseMode: ChatResponseMode) {
+  if (responseMode === 'direto') {
+    return `
+
+PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIRETO
+- Priorize resposta curta, objetiva e operacional.
+- Comece pelo caminho principal, sem introducoes longas.
+- Quando houver procedimento, use no maximo 3 etapas curtas e bem acionaveis.
+- Reduza contexto lateral, repeticoes e observacoes que nao mudem a acao pratica.
+- Mantenha cautelas, ambiguidade e pedidos de esclarecimento quando forem necessarios.`;
+  }
+
+  return `
+
+PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIDATICO
+- Organize a resposta como explicacao guiada e acolhedora.
+- Quando houver procedimento, entregue passo a passo com contexto do que revisar antes, durante e depois.
+- Pode usar mais etapas e observacoes praticas quando isso ajudar o usuario a executar com seguranca.
+- Explique rapidamente termos tecnicos ou pontos que costumam gerar erro.
+- Mantenha cautelas, ambiguidade e pedidos de esclarecimento quando forem necessarios.`;
 }
 
 // ============================================================
@@ -304,6 +333,7 @@ interface TelemetryContext {
   selectedDocumentIds: string[];
   searchMetricId: string | null;
   knowledgeContext: string;
+  responseMode: ChatResponseMode;
 }
 
 async function recordTelemetry(
@@ -341,14 +371,15 @@ async function recordTelemetry(
       response_tokens_estimate: responseEstimate,
       latency_ms: totalLatency,
       search_metric_id: ctx.searchMetricId,
-      metadata_json: {
-        request_id: ctx.requestId,
-        retrieval_mode: ctx.retrievalMode,
-        sources: ctx.retrievalSources,
-        selected_document_ids: ctx.selectedDocumentIds,
-        selected_chunk_ids: ctx.selectedChunkIds,
-        output_mode: outputMode,
-      },
+        metadata_json: {
+          request_id: ctx.requestId,
+          retrieval_mode: ctx.retrievalMode,
+          sources: ctx.retrievalSources,
+          selected_document_ids: ctx.selectedDocumentIds,
+          selected_chunk_ids: ctx.selectedChunkIds,
+          output_mode: outputMode,
+          response_mode: ctx.responseMode,
+        },
     })
     .select('id')
     .single();
@@ -387,6 +418,7 @@ async function recordTelemetry(
         source_count: ctx.retrievalSources.length,
         response_status: responseStatus,
         output_mode: outputMode,
+        response_mode: ctx.responseMode,
       },
     },
   ];
@@ -571,7 +603,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, responseMode: rawResponseMode } = await req.json();
+    const responseMode = isChatResponseMode(rawResponseMode)
+      ? rawResponseMode
+      : DEFAULT_CHAT_RESPONSE_MODE;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -795,7 +830,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const systemPromptWithContext = SYSTEM_PROMPT + knowledgeContext;
+    const systemPromptWithContext = `${SYSTEM_PROMPT}${buildResponseModePrompt(responseMode)}${knowledgeContext}`;
 
     const chatMessages = messages.map((m: { role: string; content: string }) => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -852,7 +887,7 @@ REESCRITA OBRIGATORIA:
         systemPromptWithContext, chatMessages,
         retrievalMode, retrievalTopScore, retrievalSources,
         searchResultCount, selectedChunkIds, selectedDocumentIds,
-        searchMetricId, knowledgeContext,
+        searchMetricId, knowledgeContext, responseMode,
       };
 
       await recordTelemetry(
@@ -942,7 +977,7 @@ REESCRITA OBRIGATORIA:
         systemPromptWithContext, chatMessages,
         retrievalMode, retrievalTopScore, retrievalSources,
         searchResultCount, selectedChunkIds, selectedDocumentIds,
-        searchMetricId, knowledgeContext,
+        searchMetricId, knowledgeContext, responseMode,
       };
 
       void readSseText(telemetryStream)

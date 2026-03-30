@@ -46,6 +46,9 @@ describe("chat api transport", () => {
     }
     expect(result.response.tituloCurto).toBe(response.tituloCurto);
     expect(result.plainText).toBe("Resposta estruturada pronta.");
+    const fetchCall = fetchMock.mock.calls[0];
+    const requestBody = JSON.parse(String(fetchCall?.[1]?.body));
+    expect(requestBody.responseMode).toBe("didatico");
   });
 
   it("parses structured envelopes embedded in answer text", async () => {
@@ -94,6 +97,34 @@ describe("chat api transport", () => {
     expect(result.kind).toBe("structured");
   });
 
+  it("includes the selected response mode in the backend payload", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          answer: "Resposta curta.",
+        }),
+        {
+          headers: { "content-type": "application/json" },
+          status: 200,
+        },
+      ),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await requestChat(
+      [{ role: "user", content: "Como encaminhar o processo?" }],
+      baseConfig,
+      { responseMode: "direto" },
+    );
+
+    const requestBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(requestBody.responseMode).toBe("direto");
+    expect(requestBody.messages).toEqual([
+      { role: "user", content: "Como encaminhar o processo?" },
+    ]);
+  });
+
   it("returns the preview responder when backend is absent and mock mode is disabled", async () => {
     const result = await requestChat(
       [{ role: "user", content: "Como incluir anexo?" }],
@@ -110,8 +141,8 @@ describe("chat api transport", () => {
       throw new Error("Expected structured preview result");
     }
 
-    expect(result.response.tituloCurto).toBe("Resposta de teste da CLARA");
-    expect(result.plainText).toContain("Resposta de teste da CLARA");
+    expect(result.response.tituloCurto).toBe("Resposta didática de teste da CLARA");
+    expect(result.plainText).toContain("Resposta didática de teste da CLARA");
   });
 
   it("streams SSE deltas into the UI callback", async () => {

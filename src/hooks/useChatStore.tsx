@@ -7,6 +7,11 @@ import {
   streamChatResponse,
   type ChatApiConfig,
 } from '@/lib/chat-api';
+import {
+  DEFAULT_CHAT_RESPONSE_MODE,
+  isChatResponseMode,
+  type ChatResponseMode,
+} from '@/lib/chat-response-mode';
 import type { ChatRuntimeMode } from '@/lib/chat-runtime';
 
 export interface ChatMessage {
@@ -21,6 +26,7 @@ interface ChatState {
   pendingQuestion: string | null;
   isLoading: boolean;
   isStreaming: boolean;
+  responseMode: ChatResponseMode;
   runtimeMode: ChatRuntimeMode;
   runtimeLabel: string;
   runtimeDescription: string;
@@ -28,11 +34,13 @@ interface ChatState {
   closeChat: () => void;
   sendMessage: (text: string) => void;
   clearMessages: () => void;
+  setResponseMode: (mode: ChatResponseMode) => void;
 }
 
 const ChatContext = createContext<ChatState | null>(null);
 const CHAT_API_CONFIG = getDefaultChatApiConfig();
 const CHAT_STORAGE_KEY = 'clara-chat-history';
+const CHAT_RESPONSE_MODE_STORAGE_KEY = 'clara-chat-response-mode';
 const MAX_PERSISTED_MESSAGES = 50;
 
 function loadPersistedMessages(): ChatMessage[] {
@@ -53,6 +61,23 @@ function persistMessages(messages: ChatMessage[]) {
     localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
   } catch {
     // Storage full or unavailable — silently ignore
+  }
+}
+
+function loadPersistedResponseMode(): ChatResponseMode {
+  try {
+    const raw = localStorage.getItem(CHAT_RESPONSE_MODE_STORAGE_KEY);
+    return isChatResponseMode(raw) ? raw : DEFAULT_CHAT_RESPONSE_MODE;
+  } catch {
+    return DEFAULT_CHAT_RESPONSE_MODE;
+  }
+}
+
+function persistResponseMode(mode: ChatResponseMode) {
+  try {
+    localStorage.setItem(CHAT_RESPONSE_MODE_STORAGE_KEY, mode);
+  } catch {
+    // Storage unavailable — silently ignore
   }
 }
 
@@ -128,7 +153,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [responseMode, setResponseModeRaw] = useState<ChatResponseMode>(loadPersistedResponseMode);
   const { runtimeLabel, runtimeDescription } = getRuntimePresentation(CHAT_API_CONFIG);
+
+  const setResponseMode = useCallback((mode: ChatResponseMode) => {
+    setResponseModeRaw(mode);
+    persistResponseMode(mode);
+  }, []);
 
   const openChat = useCallback((question?: string) => {
     setIsOpen(true);
@@ -204,7 +235,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         });
       };
 
-      const result = await requestChat(allMessages, CHAT_API_CONFIG);
+      const result = await requestChat(allMessages, CHAT_API_CONFIG, { responseMode });
 
       if (result.kind === 'structured') {
         setIsLoading(false);
@@ -235,7 +266,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       setIsStreaming(false);
     }
-  }, [isLoading, setMessages]);
+  }, [isLoading, responseMode, setMessages]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
@@ -251,6 +282,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         pendingQuestion,
         isLoading,
         isStreaming,
+        responseMode,
         runtimeMode: CHAT_API_CONFIG.runtimeMode,
         runtimeLabel,
         runtimeDescription,
@@ -258,6 +290,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         closeChat,
         sendMessage,
         clearMessages,
+        setResponseMode,
       }}
     >
       {children}

@@ -1,5 +1,6 @@
 describe('chat persistence (localStorage)', () => {
   const STORAGE_KEY = 'clara-chat-history';
+  const RESPONSE_MODE_KEY = 'clara-chat-response-mode';
 
   beforeEach(() => {
     localStorage.clear();
@@ -36,6 +37,13 @@ describe('chat persistence (localStorage)', () => {
       }
     }
     expect(loadSafe()).toEqual([]);
+  });
+
+  it('persists the selected response mode separately from the message history', () => {
+    localStorage.setItem(RESPONSE_MODE_KEY, 'direto');
+
+    expect(localStorage.getItem(RESPONSE_MODE_KEY)).toBe('direto');
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
   it('respects max persisted messages limit', () => {
