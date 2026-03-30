@@ -105,7 +105,7 @@ Sem isso:
 
 ### 3. Corpus inicial e ingestao
 
-O pipeline existe, mas ainda precisa de documentos reais e governanca de corpus para provar o RAG.
+O pipeline existe e a governanca inicial do corpus ja foi materializada no admin e na documentacao operacional. O que ainda falta e a carga real dos primeiros documentos para provar o RAG.
 
 Sem isso:
 
@@ -160,4 +160,4 @@ O baseline local ja compila, testa e builda, mas ainda precisa ser publicado em 
 1. Fechar o contrato funcional do chat (`Direto` / `Didatico`)
 2. Polir estrutura e legibilidade do chat
 3. Revisar mensagens, excecoes e tom conversacional
-4. Definir governanca do corpus inicial antes da primeira ingestao ampla
+4. Ingerir o corpus minimo viavel seguindo a politica de governanca ja definida

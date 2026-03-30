@@ -27,6 +27,7 @@
 - Renderizacao estruturada da resposta no frontend
 - Exportacao de conversa em PDF
 - Shell administrativa com autenticacao e callback preparados
+- Perfil de governanca documental no admin para classificar escopo, autoridade, peso e prioridade antes da ingestao
 - Fallback de modo de preparacao quando `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` nao estao definidos
 
 ## O que depende de configuracao operacional
@@ -48,6 +49,8 @@ npm run dev
 Arquivos de referencia para ambiente:
 
 - [docs/MIGRATION_STATUS.md](./docs/MIGRATION_STATUS.md)
+- [docs/corpus-governance.md](./docs/corpus-governance.md)
+- [docs/corpus-ingestion-playbook.md](./docs/corpus-ingestion-playbook.md)
 - [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)
 - [supabase/config.toml](./supabase/config.toml)
 

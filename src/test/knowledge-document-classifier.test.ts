@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { classifyKnowledgeDocument } from "@/lib/knowledge-document-classifier";
+import {
+  classifyKnowledgeDocument,
+  recommendKnowledgeGovernance,
+} from "@/lib/knowledge-document-classifier";
 
 describe("knowledge document classifier", () => {
   it("marks CLARA technical documents as internal and non-searchable", () => {
@@ -47,5 +50,25 @@ describe("knowledge document classifier", () => {
     expect(result.topicScope).toBe("sei_rio_norma");
     expect(result.documentKind).toBe("norma");
     expect(result.searchWeight).toBeGreaterThan(1.1);
+  });
+
+  it("recommends corpus category and ingestion priority from the classification", () => {
+    const officialManual = classifyKnowledgeDocument(
+      "Manual SEI-Rio.pdf",
+      "Manual do SEI-Rio sobre documento externo, assinatura e encaminhamento entre unidades.",
+    );
+    const supportMaterial = classifyKnowledgeDocument(
+      "Cartilha complementar.pdf",
+      "Material de apoio complementar com orientacoes gerais, glossario e notas de contexto para consulta secundaria.",
+    );
+
+    expect(recommendKnowledgeGovernance(officialManual)).toMatchObject({
+      corpusCategory: "nucleo_oficial",
+      ingestionPriority: "alta",
+    });
+    expect(recommendKnowledgeGovernance(supportMaterial)).toMatchObject({
+      corpusCategory: "apoio_complementar",
+      ingestionPriority: "baixa",
+    });
   });
 });

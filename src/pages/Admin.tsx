@@ -7,6 +7,17 @@ import AdminUploadCard from "@/components/admin/AdminUploadCard";
 import type { Document, IngestionState, IngestionStatus } from "@/components/admin/admin-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from "@/integrations/supabase/client";
+import {
+  DEFAULT_UPLOAD_GOVERNANCE_FORM,
+  resolveUploadGovernance,
+  type UploadGovernanceFormState,
+} from "@/lib/admin-governance";
+import {
+  KNOWLEDGE_CORPUS_CATEGORY_LABELS,
+  KNOWLEDGE_DOCUMENT_KIND_LABELS,
+  KNOWLEDGE_INGESTION_PRIORITY_LABELS,
+  KNOWLEDGE_TOPIC_SCOPE_LABELS,
+} from "@/lib/knowledge-document-classifier";
 
 const AdminDocumentsCard = lazy(() => import("@/components/admin/AdminDocumentsCard"));
 const UsageStatsCard = lazy(() => import("@/components/UsageStatsCard"));
@@ -141,6 +152,7 @@ export default function Admin() {
   const [ingestions, setIngestions] = useState<IngestionState[]>([]);
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [processingTimers, setProcessingTimers] = useState<Record<string, number>>({});
+  const [uploadGovernance, setUploadGovernance] = useState<UploadGovernanceFormState>(DEFAULT_UPLOAD_GOVERNANCE_FORM);
   const prevStatusRef = useRef<Record<string, string>>({});
 
   const fetchDocuments = useCallback(async () => {
@@ -211,6 +223,26 @@ export default function Admin() {
       )),
     );
   };
+
+  const updateUploadGovernance = useCallback(function updateUploadGovernance<K extends keyof UploadGovernanceFormState>(
+    field: K,
+    value: UploadGovernanceFormState[K],
+  ) {
+    setUploadGovernance((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const resetUploadGovernance = useCallback(() => {
+    setUploadGovernance(DEFAULT_UPLOAD_GOVERNANCE_FORM);
+  }, []);
+
+  const describeGovernanceSummary = useCallback((resolved: ReturnType<typeof resolveUploadGovernance>) => {
+    const scopeLabel = KNOWLEDGE_TOPIC_SCOPE_LABELS[resolved.topicScope];
+    const kindLabel = KNOWLEDGE_DOCUMENT_KIND_LABELS[resolved.documentKind];
+    const priorityLabel = KNOWLEDGE_INGESTION_PRIORITY_LABELS[resolved.ingestionPriority];
+    const corpusLabel = KNOWLEDGE_CORPUS_CATEGORY_LABELS[resolved.corpusCategory];
+
+    return `${scopeLabel} • ${kindLabel} • prioridade ${priorityLabel.toLowerCase()} • ${corpusLabel.toLowerCase()}`;
+  }, []);
 
   const preparePdfPayload = async (file: File, fileName: string) => {
     updateIngestion(fileName, {
@@ -326,7 +358,7 @@ export default function Admin() {
     return { insertedChunks, status: "failed" };
   };
 
-  const processFileClientSide = async (file: File) => {
+  const processFileClientSide = async (file: File, governanceForm: UploadGovernanceFormState) => {
     const abortController = new AbortController();
     const ingestion: IngestionState = {
       fileName: file.name,
@@ -344,6 +376,14 @@ export default function Admin() {
 
     try {
       const prepared = await preparePdfPayload(file, file.name);
+      const resolvedGovernance = resolveUploadGovernance(file.name, prepared.fullText, governanceForm);
+
+      updateIngestion(file.name, {
+        governanceSummary: describeGovernanceSummary(resolvedGovernance),
+        governanceDetail: resolvedGovernance.governanceReason,
+        phaseLabel: `Governança definida — ${KNOWLEDGE_DOCUMENT_KIND_LABELS[resolvedGovernance.documentKind]}`,
+        progress: 32,
+      });
 
       if (abortController.signal.aborted) return;
 
@@ -352,9 +392,7 @@ export default function Admin() {
       const filePath = `${crypto.randomUUID()}_${sanitizedName}`;
 
       const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-
-      if (!accessToken) {
+      if (!sessionData?.session?.access_token) {
         throw new Error("Sessão expirada. Faça login novamente.");
       }
 
@@ -366,7 +404,47 @@ export default function Admin() {
 
       const { data: doc, error: docErr } = await supabase
         .from("documents")
-        .insert({ name: file.name, file_path: filePath, status: "processing" })
+        .insert({
+          name: file.name,
+          file_path: filePath,
+          file_name: file.name,
+          mime_type: file.type || "application/pdf",
+          storage_path: filePath,
+          status: "processing",
+          is_active: resolvedGovernance.isActive,
+          language_code: "pt-BR",
+          jurisdiction_scope: "municipal_rj",
+          topic_scope: resolvedGovernance.topicScope,
+          source_type: resolvedGovernance.sourceType,
+          source_name: resolvedGovernance.sourceName,
+          source_url: resolvedGovernance.sourceUrl,
+          summary: resolvedGovernance.summary,
+          version_label: resolvedGovernance.versionLabel,
+          published_at: resolvedGovernance.publishedAt,
+          last_reviewed_at: resolvedGovernance.lastReviewedAt,
+          page_count: prepared.pages.length,
+          text_char_count: prepared.fullText.length,
+          metadata_json: {
+            document_kind: resolvedGovernance.documentKind,
+            authority_level: resolvedGovernance.authorityLevel,
+            search_weight: resolvedGovernance.searchWeight,
+            corpus_category: resolvedGovernance.corpusCategory,
+            ingestion_priority: resolvedGovernance.ingestionPriority,
+            governance_notes: resolvedGovernance.governanceNotes,
+            governance_reason: resolvedGovernance.governanceReason,
+            classifier_warning: resolvedGovernance.classification.warning,
+            classifier_tags: resolvedGovernance.classification.tags,
+            classifier_scores: {
+              technical: resolvedGovernance.classification.technicalScore,
+              procedural: resolvedGovernance.classification.proceduralScore,
+              official: resolvedGovernance.classification.officialScore,
+              faq: resolvedGovernance.classification.faqScore,
+              guide: resolvedGovernance.classification.guideScore,
+              normative: resolvedGovernance.classification.normativeScore,
+              manual: resolvedGovernance.classification.manualScore,
+            },
+          },
+        })
         .select()
         .single();
 
@@ -392,13 +470,23 @@ export default function Admin() {
       }
 
       if (result.status === "done") {
-        await supabase.from("documents").update({ status: "processed" }).eq("id", documentId);
+        await supabase.from("documents").update({
+          status: "processed",
+          processed_at: new Date().toISOString(),
+          failed_at: null,
+          failure_reason: null,
+        }).eq("id", documentId);
         await supabase.from("usage_logs").insert({
           event_type: "client_side_ingestion",
           metadata: {
             document_id: documentId,
             chunks_count: prepared.chunks.length,
             text_length: prepared.fullText.length,
+            topic_scope: resolvedGovernance.topicScope,
+            document_kind: resolvedGovernance.documentKind,
+            authority_level: resolvedGovernance.authorityLevel,
+            corpus_category: resolvedGovernance.corpusCategory,
+            ingestion_priority: resolvedGovernance.ingestionPriority,
           },
         });
         updateIngestion(file.name, {
@@ -407,10 +495,14 @@ export default function Admin() {
           progress: 100,
         });
         toast.success("Documento processado", {
-          description: `"${file.name}" — ${prepared.chunks.length} fragmentos indexados.`,
+          description: `"${file.name}" — ${prepared.chunks.length} fragmentos indexados com governança documental.`,
         });
       } else if (result.status === "partial") {
-        await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
+        await supabase.from("documents").update({
+          status: "error",
+          failed_at: new Date().toISOString(),
+          failure_reason: "partial_ingestion",
+        }).eq("id", documentId);
         updateIngestion(file.name, {
           status: "partial",
           phaseLabel: `⚠ Parcial — ${result.insertedChunks}/${prepared.chunks.length} fragmentos`,
@@ -420,7 +512,11 @@ export default function Admin() {
           description: `"${file.name}" — ${result.insertedChunks}/${prepared.chunks.length}. Use Retomar.`,
         });
       } else {
-        await supabase.from("documents").update({ status: "error" }).eq("id", documentId);
+        await supabase.from("documents").update({
+          status: "error",
+          failed_at: new Date().toISOString(),
+          failure_reason: "no_chunks_persisted",
+        }).eq("id", documentId);
         updateIngestion(file.name, {
           status: "failed",
           phaseLabel: "Falha — nenhum fragmento salvo",
@@ -460,7 +556,7 @@ export default function Admin() {
         toast.error("Erro", { description: `${file.name} não é um PDF` });
         continue;
       }
-      await processFileClientSide(file);
+      await processFileClientSide(file, uploadGovernance);
     }
 
     event.target.value = "";
@@ -684,7 +780,10 @@ export default function Admin() {
         <AdminUploadCard
           ingestions={ingestions}
           isBusy={isBusy}
+          governanceForm={uploadGovernance}
           onUpload={handleUpload}
+          onGovernanceChange={updateUploadGovernance}
+          onGovernanceReset={resetUploadGovernance}
           onCancelIngestion={handleCancelIngestion}
         />
 

@@ -21,7 +21,7 @@ export default function AdminPageHeader({ onSignOut }: AdminPageHeaderProps) {
             Base de Conhecimento — CLARA
           </h1>
           <p className="text-sm text-muted-foreground">
-            Faça upload de PDFs para alimentar a base de conhecimento da assistente.
+            Governe o corpus inicial da CLARA com prioridade, metadados e curadoria antes de cada ingestao.
           </p>
         </div>
       </div>

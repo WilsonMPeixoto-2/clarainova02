@@ -4,6 +4,16 @@ export interface Document {
   file_path: string;
   status: string;
   created_at: string;
+  is_active?: boolean;
+  topic_scope?: string | null;
+  source_type?: string | null;
+  source_name?: string | null;
+  source_url?: string | null;
+  summary?: string | null;
+  version_label?: string | null;
+  published_at?: string | null;
+  last_reviewed_at?: string | null;
+  metadata_json?: Record<string, unknown> | null;
 }
 
 export type IngestionStatus =
@@ -33,5 +43,7 @@ export interface IngestionState {
   expectedChunks: number;
   insertedChunks: number;
   lastError?: IngestionLastError;
+  governanceSummary?: string;
+  governanceDetail?: string;
   abortController?: AbortController;
 }

@@ -18,6 +18,54 @@ export type KnowledgeDocumentKind =
 
 export type KnowledgeAuthorityLevel = 'official' | 'institutional' | 'internal' | 'supporting';
 
+export type KnowledgeCorpusCategory =
+  | 'nucleo_oficial'
+  | 'cobertura_operacional'
+  | 'apoio_complementar'
+  | 'interno_excluido';
+
+export type KnowledgeIngestionPriority = 'alta' | 'media' | 'baixa';
+
+export const KNOWLEDGE_TOPIC_SCOPES: KnowledgeTopicScope[] = [
+  'sei_rio_manual',
+  'sei_rio_guia',
+  'sei_rio_norma',
+  'sei_rio_faq',
+  'rotina_administrativa',
+  'material_apoio',
+  'clara_internal',
+];
+
+export const KNOWLEDGE_DOCUMENT_KINDS: KnowledgeDocumentKind[] = [
+  'manual',
+  'guia',
+  'norma',
+  'faq',
+  'administrativo',
+  'apoio',
+  'internal_technical',
+];
+
+export const KNOWLEDGE_AUTHORITY_LEVELS: KnowledgeAuthorityLevel[] = [
+  'official',
+  'institutional',
+  'internal',
+  'supporting',
+];
+
+export const KNOWLEDGE_CORPUS_CATEGORIES: KnowledgeCorpusCategory[] = [
+  'nucleo_oficial',
+  'cobertura_operacional',
+  'apoio_complementar',
+  'interno_excluido',
+];
+
+export const KNOWLEDGE_INGESTION_PRIORITIES: KnowledgeIngestionPriority[] = [
+  'alta',
+  'media',
+  'baixa',
+];
+
 export const KNOWLEDGE_TOPIC_SCOPE_LABELS: Record<KnowledgeTopicScope, string> = {
   sei_rio_manual: 'Manual do SEI-Rio',
   sei_rio_guia: 'Guia do SEI-Rio',
@@ -45,6 +93,19 @@ export const KNOWLEDGE_AUTHORITY_LEVEL_LABELS: Record<KnowledgeAuthorityLevel, s
   supporting: 'Complementar',
 };
 
+export const KNOWLEDGE_CORPUS_CATEGORY_LABELS: Record<KnowledgeCorpusCategory, string> = {
+  nucleo_oficial: 'Nucleo oficial',
+  cobertura_operacional: 'Cobertura operacional',
+  apoio_complementar: 'Apoio complementar',
+  interno_excluido: 'Interno excluido',
+};
+
+export const KNOWLEDGE_INGESTION_PRIORITY_LABELS: Record<KnowledgeIngestionPriority, string> = {
+  alta: 'Alta',
+  media: 'Media',
+  baixa: 'Baixa',
+};
+
 export interface KnowledgeDocumentClassification {
   topicScope: KnowledgeTopicScope;
   documentKind: KnowledgeDocumentKind;
@@ -61,6 +122,12 @@ export interface KnowledgeDocumentClassification {
   searchWeight: number;
   tags: string[];
   excludedFromChatReason: string | null;
+}
+
+export interface KnowledgeGovernanceRecommendation {
+  corpusCategory: KnowledgeCorpusCategory;
+  ingestionPriority: KnowledgeIngestionPriority;
+  rationale: string;
 }
 
 const TECHNICAL_PATTERNS = [
@@ -321,5 +388,46 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
     searchWeight: 0.8,
     tags,
     excludedFromChatReason: null,
+  };
+}
+
+export function recommendKnowledgeGovernance(
+  classification: KnowledgeDocumentClassification,
+): KnowledgeGovernanceRecommendation {
+  if (!classification.shouldIndex || classification.topicScope === 'clara_internal') {
+    return {
+      corpusCategory: 'interno_excluido',
+      ingestionPriority: 'baixa',
+      rationale: 'Material tecnico ou interno da CLARA: manter fora do chat e apenas como registro operacional.',
+    };
+  }
+
+  if (
+    classification.documentKind === 'norma' ||
+    (classification.documentKind === 'manual' && classification.authorityLevel === 'official')
+  ) {
+    return {
+      corpusCategory: 'nucleo_oficial',
+      ingestionPriority: 'alta',
+      rationale: 'Documento nuclear do corpus inicial: deve entrar antes dos materiais complementares.',
+    };
+  }
+
+  if (
+    classification.documentKind === 'guia' ||
+    classification.documentKind === 'faq' ||
+    classification.documentKind === 'administrativo'
+  ) {
+    return {
+      corpusCategory: 'cobertura_operacional',
+      ingestionPriority: classification.documentKind === 'guia' ? 'alta' : 'media',
+      rationale: 'Documento util para ampliar cobertura operacional depois do nucleo oficial.',
+    };
+  }
+
+  return {
+    corpusCategory: 'apoio_complementar',
+    ingestionPriority: 'baixa',
+    rationale: 'Material complementar: usar apenas para fechar lacunas reais do corpus principal.',
   };
 }
