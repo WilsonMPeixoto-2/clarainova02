@@ -4,7 +4,7 @@
 
 ## Status atual do repositorio
 
-- Baseline local verificada em Node `24.14.x`
+- Baseline local verificada em Node `24.14.1`
 - Checagem padrao do projeto: `npm run validate`
 - Build de producao validado localmente com `npm run build`
 - O frontend funciona mesmo sem Supabase, entrando em modo de preparacao

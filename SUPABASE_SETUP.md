@@ -9,7 +9,7 @@ Este projeto ja nao depende do backend Lovable. O objetivo deste guia e ligar o 
 - [ ] Conta no Supabase
 - [ ] Supabase CLI instalada
 - [ ] `GEMINI_API_KEY`
-- [ ] Node `24.14.x` e npm instalados
+- [ ] Node `24.14.1` e npm instalados
 
 ### 2. Criar ou escolher o projeto Supabase
 
