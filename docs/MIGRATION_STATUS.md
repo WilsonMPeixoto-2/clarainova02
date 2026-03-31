@@ -168,3 +168,15 @@ Sem depender ainda do corpus real ou da estabilizacao do Gemini, o repositorio j
 - a lista administrativa passou a exibir categoria do corpus, prioridade, autoridade e prontidao para grounding
 
 Esses ajustes ja melhoram a honestidade operacional da ingestao, mas o BLOCO 2 so podera ser considerado fechado quando houver primeira carga curada real no Supabase.
+
+---
+
+## Nota de andamento do BLOCO C
+
+A camada institucional publica do produto foi revisada para refletir melhor o estado real da CLARA:
+
+- Termos de Uso agora deixam explicitos a natureza do projeto, os limites operacionais, o uso permitido da area administrativa e a ausencia de efeito vinculante das respostas
+- Politica de Privacidade agora descreve armazenamento local no navegador, metricas agregadas, provedores envolvidos, retencao operacional e o fato de que imagens ainda nao sao recebidas no chat publico
+- Metadados publicos passaram a identificar autoria e manutencao de forma menos generica
+
+Essa frente ficou mais madura institucionalmente, mas ainda devera ser revisitada quando novas capacidades de entrada ou observabilidade forem publicadas.

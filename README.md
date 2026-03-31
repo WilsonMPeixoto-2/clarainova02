@@ -9,6 +9,7 @@
 - Build de producao validado localmente com `npm run build`
 - O frontend funciona mesmo sem Supabase, entrando em modo de preparacao
 - Admin, ingestao, metricas e RAG grounded dependem do Supabase real, auth administrativa, corpus inicial curado e estabilidade do provedor Gemini
+- Termos de Uso, Politica de Privacidade e metadados publicos foram alinhados ao estado real do produto, com autoria, provedores e limites operacionais explicitados
 
 ## Stack tecnologica
 

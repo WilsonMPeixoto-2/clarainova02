@@ -12,9 +12,11 @@ const Footer = () => {
             <p className="footer-brand-kicker">CLARA / apoio ao SEI-Rio</p>
             <span className="footer-brand-title">CLARA</span>
             <p className="text-sm text-muted-foreground max-w-xl">
-              Desenvolvido por <span className="text-foreground font-medium">Wilson M. Peixoto</span> - SME/RJ
+              Projeto concebido e mantido por <span className="text-foreground font-medium">Wilson M. Peixoto</span> - SME/RJ
             </p>
-            <p className="text-xs text-muted-foreground/80 mb-6">Inovação para a Gestão Pública</p>
+            <p className="text-xs text-muted-foreground/80 mb-6">
+              Ferramenta institucional em maturação para apoio operacional ao uso do SEI-Rio.
+            </p>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
               <a href="tel:+5521994974132" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
@@ -64,7 +66,7 @@ const Footer = () => {
               <Sparkle weight="fill" size={12} className="text-[hsl(var(--gold-1))] relative z-10" aria-hidden="true" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              A CLARA auxilia consultas operacionais e não substitui a leitura dos documentos oficiais nem a validação interna necessária em cada processo.
+              A CLARA auxilia consultas operacionais e não substitui documentos oficiais, validação interna, decisão administrativa nem análise técnica ou jurídica quando cabível.
             </p>
           </div>
         </div>
