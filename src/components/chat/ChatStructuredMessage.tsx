@@ -110,6 +110,13 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
   const analysis = response.analiseDaResposta;
   const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
   const processStates = useMemo(() => analysis.processStates.slice(0, 4), [analysis.processStates]);
+  const responseMeta = [
+    response.etapas.length > 0 ? `${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''}` : null,
+    response.referenciasFinais.length > 0
+      ? `${response.referenciasFinais.length} referência${response.referenciasFinais.length > 1 ? 's' : ''}`
+      : null,
+    analysis.cautionNotice ? 'Exige atenção' : null,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="chat-structured-response">
@@ -119,8 +126,17 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
           Orientação estruturada
         </div>
         <h3 className="chat-response-title">{response.tituloCurto}</h3>
+        {responseMeta.length > 0 && (
+          <div className="chat-response-meta-row" aria-label="Resumo da resposta">
+            {responseMeta.map((item) => (
+              <span key={item} className="chat-response-meta-badge">
+                {item}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="chat-response-summary-block">
-          <p className="chat-response-summary-label">Resumo</p>
+          <p className="chat-response-summary-label">Leitura inicial</p>
           <p className="chat-response-summary">
             {response.resumoInicial}
             <CitationList citations={response.resumoCitacoes} />
@@ -212,7 +228,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
           <SectionHeading
             icon={CheckCircle}
             title="Passo a passo"
-            detail={`${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''}`}
+            detail={`${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''} para executar`}
           />
           <div className="chat-step-grid" role="list">
             {response.etapas.map((step) => (
@@ -286,17 +302,22 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
                 <span>Fontes consultadas</span>
               </span>
               <span className="chat-section-detail">
-                {response.referenciasFinais.length} referência{response.referenciasFinais.length > 1 ? 's' : ''}
+                {response.referenciasFinais.length} referência{response.referenciasFinais.length > 1 ? 's' : ''} de apoio
               </span>
             </span>
             {showReferences ? <CaretUp size={16} /> : <CaretDown size={16} />}
           </button>
           {showReferences && (
-            <ol className="chat-reference-list">
-              {response.referenciasFinais.map((reference) => (
-                <ReferenceItem key={reference.id} reference={reference} />
-              ))}
-            </ol>
+            <>
+              <p className="chat-reference-intro">
+                As fontes abaixo sustentam os trechos com respaldo documental apresentados nesta resposta.
+              </p>
+              <ol className="chat-reference-list">
+                {response.referenciasFinais.map((reference) => (
+                  <ReferenceItem key={reference.id} reference={reference} />
+                ))}
+              </ol>
+            </>
           )}
         </section>
       )}

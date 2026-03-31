@@ -121,6 +121,39 @@ const styles = StyleSheet.create({
     fontSize: 10,
     lineHeight: 1.55,
   },
+  introMetaGrid: {
+    marginTop: 16,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  introMetaCard: {
+    minWidth: 120,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2D425C',
+    backgroundColor: '#192E46',
+  },
+  introMetaLabel: {
+    color: '#B8C3D1',
+    fontSize: 7.8,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  introMetaValue: {
+    marginTop: 4,
+    color: '#F7F4EE',
+    fontSize: 13.4,
+    fontWeight: 700,
+  },
+  introMetaCopy: {
+    marginTop: 2,
+    color: '#D0D7E0',
+    fontSize: 8.4,
+    lineHeight: 1.42,
+  },
   messageBlock: {
     marginBottom: 14,
     borderRadius: 16,
@@ -153,6 +186,10 @@ const styles = StyleSheet.create({
   },
   assistantLabel: {
     color: '#E0B66A',
+  },
+  messageMeta: {
+    fontSize: 8.4,
+    color: '#E4E8EE',
   },
   messageBody: {
     paddingHorizontal: 16,
@@ -556,6 +593,20 @@ function renderStructuredMessage(response: ClaraStructuredResponse) {
   );
 }
 
+function summarizeSession(messages: PdfChatMessage[]) {
+  const questions = messages.filter((message) => message.role === 'user').length;
+  const answers = messages.filter((message) => message.role === 'assistant').length;
+  const groundedAnswers = messages.filter(
+    (message) => message.role === 'assistant' && (message.structuredResponse?.referenciasFinais.length ?? 0) > 0,
+  ).length;
+
+  return {
+    questions,
+    answers,
+    groundedAnswers,
+  };
+}
+
 function BrandMark({ logoSrc }: { logoSrc?: string | null }) {
   if (logoSrc) {
     return <Image src={logoSrc} style={styles.brandLogo} />;
@@ -574,6 +625,10 @@ export function ChatSessionPdfDocument({
   sessionTitle,
   logoSrc,
 }: ChatSessionPdfDocumentProps) {
+  const sessionSummary = summarizeSession(messages);
+  let questionIndex = 0;
+  let answerIndex = 0;
+
   return (
     <Document
       title={`CLARA - ${sessionTitle}`}
@@ -605,25 +660,55 @@ export function ChatSessionPdfDocument({
           <Text style={styles.introText}>
             Documento gerado automaticamente a partir da conversa atual no chat da CLARA, com perguntas e respostas organizadas para consulta posterior.
           </Text>
-        </View>
-
-        {messages.map((message, index) => (
-          <View key={`${message.role}-${index}`} style={styles.messageBlock}>
-            <View style={[styles.messageHeader, message.role === 'user' ? styles.userHeader : styles.assistantHeader]}>
-              <Text style={[styles.messageLabel, message.role === 'user' ? styles.userLabel : styles.assistantLabel]}>
-                {message.role === 'user' ? `Pergunta ${index + 1}` : 'Resposta da CLARA'}
-              </Text>
+          <View style={styles.introMetaGrid}>
+            <View style={styles.introMetaCard}>
+              <Text style={styles.introMetaLabel}>Perguntas</Text>
+              <Text style={styles.introMetaValue}>{sessionSummary.questions}</Text>
+              <Text style={styles.introMetaCopy}>Entradas do usuario registradas nesta sessao.</Text>
             </View>
-            <View style={styles.messageBody}>
-              {message.structuredResponse && message.role === 'assistant'
-                ? renderStructuredMessage(message.structuredResponse)
-                : renderPlainMessage(message.content)}
+            <View style={styles.introMetaCard}>
+              <Text style={styles.introMetaLabel}>Respostas</Text>
+              <Text style={styles.introMetaValue}>{sessionSummary.answers}</Text>
+              <Text style={styles.introMetaCopy}>Orientacoes emitidas pela CLARA.</Text>
+            </View>
+            <View style={styles.introMetaCard}>
+              <Text style={styles.introMetaLabel}>Base documental</Text>
+              <Text style={styles.introMetaValue}>{sessionSummary.groundedAnswers}</Text>
+              <Text style={styles.introMetaCopy}>Respostas com referencias listadas no proprio PDF.</Text>
             </View>
           </View>
-        ))}
+        </View>
+
+        {messages.map((message, index) => {
+          const entryNumber = message.role === 'user' ? ++questionIndex : ++answerIndex;
+
+          return (
+            <View key={`${message.role}-${index}`} style={styles.messageBlock}>
+              <View style={[styles.messageHeader, message.role === 'user' ? styles.userHeader : styles.assistantHeader]}>
+                <Text style={[styles.messageLabel, message.role === 'user' ? styles.userLabel : styles.assistantLabel]}>
+                  {message.role === 'user'
+                    ? `Pergunta ${String(entryNumber).padStart(2, '0')}`
+                    : `Resposta ${String(entryNumber).padStart(2, '0')}`}
+                </Text>
+                <Text style={styles.messageMeta}>
+                  {message.role === 'user'
+                    ? 'Solicitacao registrada'
+                    : message.structuredResponse?.referenciasFinais.length
+                      ? 'Com base documental'
+                      : 'Orientacao conversacional'}
+                </Text>
+              </View>
+              <View style={styles.messageBody}>
+                {message.structuredResponse && message.role === 'assistant'
+                  ? renderStructuredMessage(message.structuredResponse)
+                  : renderPlainMessage(message.content)}
+              </View>
+            </View>
+          );
+        })}
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>CLARA - Apoio ao uso do SEI-Rio e a rotinas administrativas</Text>
+          <Text style={styles.footerText}>CLARA - Registro de atendimento exportado do chat institucional</Text>
           <Text
             style={styles.footerText}
             render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`}
