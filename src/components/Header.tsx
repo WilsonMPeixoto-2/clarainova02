@@ -3,6 +3,7 @@ import { List, X, ChatCircle } from '@phosphor-icons/react';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { Link, useLocation } from 'react-router-dom';
 import { useChat } from '@/hooks/useChatStore';
+import { ClaraMonogram } from '@/components/ClaraMonogram';
 
 type NavItem = {
   label: string;
@@ -62,8 +63,9 @@ const Header = () => {
           <div className="flex items-center h-16 gap-3 md:h-20 md:grid md:grid-cols-[minmax(250px,auto)_1fr_auto] md:gap-6">
             <Link
               to="/"
-              className="header-brand-link inline-flex items-center shrink-0 min-w-[120px] sm:min-w-[150px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
+              className="header-brand-link inline-flex items-center gap-3 shrink-0 min-w-[120px] sm:min-w-[150px] md:justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg"
             >
+              <ClaraMonogram className="h-9 w-9 shrink-0" />
               <span className="header-brand-title text-xl font-bold tracking-tight text-foreground transition-opacity hover:opacity-80">
                 CLARA
               </span>
@@ -127,9 +129,7 @@ const Header = () => {
       >
         <div className="drawer-header-surface flex items-center justify-between px-6 py-5 border-b">
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-primary/35 bg-primary/10 text-primary text-xs font-semibold" aria-hidden="true">
-              C
-            </span>
+            <ClaraMonogram className="h-8 w-8" title="" />
             <div>
               <p className="text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Navegação</p>
               <p className="text-sm font-semibold text-foreground">Menu CLARA</p>

@@ -1,9 +1,19 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = 'clara-v1';
+const CACHE_NAME = 'clara-v2';
 const STATIC_ASSETS = [
   '/',
+  '/manifest.json',
+  '/favicon.svg',
+  '/favicon.ico',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
   '/favicon.png',
+  '/apple-touch-icon.png',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon-maskable-512.png',
+  '/og-clara.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -43,9 +53,12 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/assets/') ||
     url.pathname.endsWith('.woff2') ||
     url.pathname.endsWith('.png') ||
+    url.pathname.endsWith('.svg') ||
+    url.pathname.endsWith('.ico') ||
     url.pathname.endsWith('.avif') ||
     url.pathname.endsWith('.webp') ||
-    url.pathname.endsWith('.jpg')
+    url.pathname.endsWith('.jpg') ||
+    url.pathname === '/manifest.json'
   ) {
     event.respondWith(
       caches.match(request).then((cached) => {

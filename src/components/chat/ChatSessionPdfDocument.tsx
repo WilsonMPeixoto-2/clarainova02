@@ -55,25 +55,27 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   brandMark: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: '#E0B66A',
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#122033',
+    borderWidth: 1,
+    borderColor: '#D8C7A1',
     alignItems: 'center',
     justifyContent: 'center',
   },
   brandMarkText: {
-    color: '#122033',
-    fontSize: 16,
+    color: '#E0B66A',
+    fontSize: 17,
     fontWeight: 700,
   },
   brandLogo: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
+    width: 42,
+    height: 42,
+    borderRadius: 14,
   },
   brandName: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 700,
     color: '#122033',
   },
@@ -81,7 +83,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
     fontSize: 8.8,
     color: '#536072',
-    maxWidth: 230,
+    maxWidth: 260,
   },
   headerMeta: {
     alignItems: 'flex-end',
@@ -632,9 +634,9 @@ export function ChatSessionPdfDocument({
   return (
     <Document
       title={`CLARA - ${sessionTitle}`}
-      author="CLARA"
-      subject="Exportacao de sessao do chat da CLARA"
-      creator="CLARA"
+      author="Wilson M. Peixoto"
+      subject="Registro exportado de sessao da CLARA"
+      creator="Projeto CLARA"
       language="pt-BR"
       creationDate={generatedAt}
       modificationDate={generatedAt}
@@ -645,20 +647,20 @@ export function ChatSessionPdfDocument({
             <BrandMark logoSrc={logoSrc} />
             <View>
               <Text style={styles.brandName}>CLARA</Text>
-              <Text style={styles.brandSubtitle}>Consultora de Legislacao e Apoio a Rotinas Administrativas</Text>
+              <Text style={styles.brandSubtitle}>Apoio ao uso do SEI-Rio e a rotinas administrativas</Text>
             </View>
           </View>
           <View style={styles.headerMeta}>
-            <Text style={styles.headerMetaLabel}>Sessao exportada</Text>
+            <Text style={styles.headerMetaLabel}>Documento CLARA</Text>
             <Text style={styles.headerMetaValue}>{formatDateTime(generatedAt)}</Text>
           </View>
         </View>
 
         <View style={styles.introCard}>
-          <Text style={styles.introKicker}>Exportacao da sessao atual</Text>
+          <Text style={styles.introKicker}>Sessao registrada</Text>
           <Text style={styles.introTitle}>{sessionTitle}</Text>
           <Text style={styles.introText}>
-            Documento gerado automaticamente a partir da conversa atual no chat da CLARA, com perguntas e respostas organizadas para consulta posterior.
+            Registro exportado do atendimento da CLARA, preparado para leitura posterior, compartilhamento interno e impressao do conteudo desta conversa.
           </Text>
           <View style={styles.introMetaGrid}>
             <View style={styles.introMetaCard}>
@@ -708,7 +710,7 @@ export function ChatSessionPdfDocument({
         })}
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>CLARA - Registro de atendimento exportado do chat institucional</Text>
+          <Text style={styles.footerText}>CLARA · projeto autoral de Wilson M. Peixoto</Text>
           <Text
             style={styles.footerText}
             render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`}

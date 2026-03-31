@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { DocumentMeta } from "@/components/DocumentMeta";
+import { ClaraMonogram } from "@/components/ClaraMonogram";
 
 const NotFound = () => {
   const location = useLocation();
@@ -42,7 +43,7 @@ const NotFound = () => {
             animate={{ rotate: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <span className="text-2xl font-display font-bold text-primary">C</span>
+            <ClaraMonogram className="h-10 w-10" title="" />
           </motion.div>
 
           <div className="space-y-2">

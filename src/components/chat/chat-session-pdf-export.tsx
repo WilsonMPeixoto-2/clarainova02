@@ -25,7 +25,7 @@ function buildPdfFileName(sessionTitle: string, generatedAt: Date) {
     .replace(/^-+|-+$/g, '')
     .slice(0, 50);
 
-  return `clara-sessao-${slug || 'atendimento'}-${stamp}.pdf`;
+  return `clara-registro-${slug || 'atendimento'}-${stamp}.pdf`;
 }
 
 export async function exportChatSessionPdf(options: {

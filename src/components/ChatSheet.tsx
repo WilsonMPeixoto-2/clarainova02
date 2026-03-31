@@ -218,7 +218,7 @@ const ChatSheet = () => {
       await exportChatSessionPdf({
         messages: exportableMessages,
         sessionTitle,
-        logoSrc: typeof window !== 'undefined' ? `${window.location.origin}/favicon.png` : null,
+        logoSrc: typeof window !== 'undefined' ? `${window.location.origin}/icon-192.png` : null,
       });
 
       toast.success('PDF gerado', {

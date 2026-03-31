@@ -4,59 +4,49 @@ import LegalPageLayout from "@/components/LegalPageLayout";
 const Termos = () => {
   const sections = [
     {
-      title: "1. Natureza da CLARA",
+      title: "1. Identificação do serviço e governança",
       content: (
         <>
-          <p>A CLARA é uma ferramenta digital de apoio ao uso do SEI-Rio e a rotinas administrativas. O projeto encontra-se em maturação e é mantido por Wilson M. Peixoto - SME/RJ.</p>
-          <p className="mt-4">A ferramenta não deve ser interpretada como canal oficial de decisão, manifestação administrativa vinculante, despacho, parecer ou ato formal da Administração.</p>
+          <p>A CLARA é uma ferramenta digital de apoio operacional ao uso do SEI-Rio e a rotinas administrativas correlatas. Ao acessar e utilizar a aplicação, você concorda com estes Termos de Uso.</p>
+          <p className="mt-4">Nesta versão pública, a autoria técnica identificada na aplicação é de Wilson M. Peixoto, com contato indicado no próprio site. A menção à SME/RJ informa contexto profissional de atuação do autor, mas não transforma, por si só, a CLARA em canal oficial do SEI-Rio, da SME/RJ, da Prefeitura do Rio ou em ato administrativo formal.</p>
         </>
       ),
     },
     {
-      title: "2. Aceitação e uso do serviço",
+      title: "2. O que a CLARA oferece",
       content: (
         <>
-          <p>Ao acessar e utilizar a CLARA, você concorda com estes Termos de Uso e com a Política de Privacidade vigente.</p>
-          <p className="mt-4">Se o uso ocorrer em contexto institucional, continuam valendo as regras internas da sua unidade, as orientações oficiais aplicáveis e as validações humanas exigidas em cada procedimento.</p>
-        </>
-      ),
-    },
-    {
-      title: "3. Escopo atual do serviço",
-      content: (
-        <>
-          <p>Nesta fase do projeto, a CLARA foi desenhada principalmente para:</p>
+          <p>A CLARA foi desenhada para apoiar consultas operacionais e revisão de etapas recorrentes, especialmente quando o usuário precisa organizar a próxima ação antes de operar no processo administrativo.</p>
           <ul className="list-disc pl-6 mt-3 space-y-2">
             <li>orientar tarefas frequentes no SEI-Rio;</li>
             <li>ajudar na organização de documentos, anexos e blocos de assinatura;</li>
             <li>apoiar a conferência de etapas antes de encaminhamentos e tramitações;</li>
-            <li>oferecer respostas curtas ou passo a passo quando houver base suficiente.</li>
+            <li>oferecer respostas em modo direto ou didático, com referências documentais quando houver base suficiente.</li>
           </ul>
           <p className="mt-4">O escopo pode evoluir, ser restringido ou ser reorganizado conforme a disponibilidade técnica, a governança da base documental e as decisões de manutenção do projeto.</p>
         </>
       ),
     },
     {
-      title: "4. Limites da ferramenta",
+      title: "3. Escopo, natureza do serviço e limites de resposta",
       content: (
         <>
-          <p>A CLARA não substitui decisão administrativa, leitura de documentos oficiais, validação interna da unidade, análise normativa especializada nem análise jurídica quando cabível.</p>
-          <p className="mt-4">As respostas podem conter simplificações, omissões, desatualização pontual de contexto ou cobertura insuficiente para casos específicos. Sempre que houver impacto relevante, a etapa final deve ser conferida pelo usuário responsável.</p>
+          <p>A CLARA não substitui decisão administrativa, leitura dos documentos oficiais, validação interna da unidade, análise normativa especializada, parecer jurídico, despacho ou manifestação formal.</p>
+          <p className="mt-4">As respostas podem sintetizar procedimentos, apontar cautelas e sugerir conferências, mas não produzem efeito vinculante nem dispensam validação humana antes da prática de qualquer ato no processo.</p>
         </>
       ),
     },
     {
-      title: "5. Uso permitido e área administrativa",
+      title: "4. Uso permitido e condutas vedadas",
       content: (
         <>
-          <p>O uso é permitido para apoio a atividades legítimas de orientação operacional e consulta sobre rotinas administrativas.</p>
-          <p className="mt-4"><strong>Não é permitido:</strong> tentar burlar autenticação, explorar falhas, usar o serviço para fins ilícitos, inserir conteúdo indevido na administração da base, reproduzir material de forma abusiva ou operar a área administrativa sem autorização.</p>
-          <p className="mt-4">Documentos enviados para ingestão administrativa devem respeitar a governança definida para o corpus, as regras internas aplicáveis e a necessidade real de uso da base.</p>
+          <p>O uso é permitido para apoio a atividades legítimas de orientação operacional e consulta sobre rotinas administrativas compatíveis com o escopo do serviço.</p>
+          <p className="mt-4"><strong>Não é permitido:</strong> tentar burlar o sistema, explorar falhas, abusar da infraestrutura, solicitar revelação de segredos ou instruções internas, usar o serviço para fins ilícitos, inserir conteúdo indevido no corpus administrativo ou reproduzir material sem base de uso adequada.</p>
         </>
       ),
     },
     {
-      title: "6. Responsabilidade do usuário",
+      title: "5. Responsabilidades do usuário e do administrador",
       content: (
         <>
           <p>Ao utilizar a CLARA, o usuário deve:</p>
@@ -66,31 +56,32 @@ const Termos = () => {
             <li>evitar o envio de dados pessoais, sigilosos ou sensíveis sem necessidade;</li>
             <li>confirmar a etapa final antes de praticar qualquer ato no processo administrativo.</li>
           </ul>
+          <p className="mt-4">Quando houver acesso à área administrativa, o uso também pressupõe conta autenticada, autorização para lidar com o material enviado, observância do regime de sigilo aplicável e revisão humana da origem, atualidade e aderência institucional dos documentos inseridos no corpus.</p>
         </>
       ),
     },
     {
-      title: "7. Disponibilidade, manutenção e alterações",
+      title: "6. Base documental, ambiente administrativo e evolução",
       content: (
         <>
-          <p>A CLARA pode ser atualizada, ajustada, expandida, restringida ou ter funcionalidades revistas ao longo do projeto, inclusive quanto à base documental, aos provedores externos, à autenticação e aos fluxos de resposta.</p>
-          <p className="mt-4">Mudanças de escopo, interface, telemetria, corpus ou comportamento não criam obrigação de manutenção de funcionalidades experimentais, provisórias ou temporariamente indisponíveis.</p>
+          <p>A base documental, a área administrativa e os fluxos de resposta da CLARA podem ser ajustados ao longo do projeto. Dependendo do ambiente operacional, o chat também pode entrar em modo de preparação, demonstração, manutenção ou resposta degradada.</p>
+          <p className="mt-4">Mudanças de escopo, interface, provedores técnicos, corpus, autenticação ou comportamento não criam obrigação de manutenção permanente de funcionalidades experimentais, provisórias ou ainda em estabilização.</p>
         </>
       ),
     },
     {
-      title: "8. Responsabilidade do projeto e contato",
+      title: "7. Limitação de responsabilidade e contato",
       content: (
         <>
-          <p>A CLARA é uma ferramenta de apoio. O projeto busca reduzir incerteza operacional, mas não transfere para si a responsabilidade final por atos praticados a partir da orientação recebida.</p>
-          <p className="mt-4">O uso do sistema não elimina a responsabilidade do usuário por conferir a orientação recebida, os documentos oficiais aplicáveis e as regras internas da sua unidade.</p>
+          <p>A CLARA é uma ferramenta de apoio. Suas respostas podem conter simplificações, omissões, indisponibilidades temporárias ou imprecisões decorrentes do escopo da base, da curadoria documental, da configuração do ambiente e do processamento automatizado.</p>
+          <p className="mt-4">O uso do sistema não elimina a responsabilidade do usuário por conferir a orientação recebida, os documentos oficiais aplicáveis e as regras internas da unidade responsável pelo processo.</p>
           <ul className="list-disc pl-6 mt-3 space-y-2">
             <li>não substitui leitura do documento oficial;</li>
             <li>não substitui análise jurídica ou técnica especializada;</li>
             <li>não produz efeito vinculante;</li>
             <li>não dispensa validação humana antes da execução do procedimento.</li>
           </ul>
-          <p className="mt-4">Dúvidas institucionais ou pedidos relacionados a estes termos podem ser encaminhados pelo contato público informado na aplicação.</p>
+          <p className="mt-4">Dúvidas sobre estes Termos ou sobre a operação pública atual do projeto podem ser encaminhadas ao contato informado na aplicação: <strong>wilsonmp2@gmail.com</strong>.</p>
         </>
       ),
     },
@@ -98,18 +89,18 @@ const Termos = () => {
 
   return (
     <>
-      <DocumentMeta 
+      <DocumentMeta
         title="Termos de Uso — CLARA"
-        description="Termos de Uso da CLARA, com esclarecimentos sobre natureza do projeto, escopo, limites operacionais, responsabilidades e manutenção da ferramenta."
+        description="Termos de Uso da CLARA, com escopo do serviço, limites de responsabilidade, autoria identificada e regras de uso do ambiente público e administrativo."
         canonical="https://clarainova02.vercel.app/termos"
       />
       <LegalPageLayout
-      kicker="Termos de Uso"
-      title="Condições de uso compatíveis com o produto real"
-      description="Natureza da CLARA, limites de responsabilidade, uso permitido e contornos institucionais da ferramenta no estado atual do projeto."
-      updatedAt="Última atualização: 31 de março de 2026"
-      sections={sections}
-    />
+        kicker="Termos de Uso"
+        title="Condições de uso compatíveis com o produto real"
+        description="Natureza da CLARA, limites de responsabilidade, uso permitido e contornos institucionais da ferramenta no estado atual do projeto."
+        updatedAt="Última atualização: 31 de março de 2026"
+        sections={sections}
+      />
     </>
   );
 };

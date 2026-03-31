@@ -9,13 +9,13 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         <div className="footer-premium-grid">
           <div className="footer-brand-card">
-            <p className="footer-brand-kicker">CLARA / apoio ao SEI-Rio</p>
+            <p className="footer-brand-kicker">CLARA / apoio operacional ao SEI-Rio</p>
             <span className="footer-brand-title">CLARA</span>
             <p className="text-sm text-muted-foreground max-w-xl">
-              Projeto concebido e mantido por <span className="text-foreground font-medium">Wilson M. Peixoto</span> - SME/RJ
+              <span className="text-foreground font-medium">Autoria técnica e manutenção inicial:</span> Wilson M. Peixoto
             </p>
             <p className="text-xs text-muted-foreground/80 mb-6">
-              Ferramenta institucional em maturação para apoio operacional ao uso do SEI-Rio.
+              A referência à SME/RJ informa contexto profissional de atuação do autor. O ambiente público da CLARA permanece, nesta apresentação, como projeto autoral e não como canal institucional oficial.
             </p>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
@@ -66,7 +66,7 @@ const Footer = () => {
               <Sparkle weight="fill" size={12} className="text-[hsl(var(--gold-1))] relative z-10" aria-hidden="true" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              A CLARA auxilia consultas operacionais e não substitui documentos oficiais, validação interna, decisão administrativa nem análise técnica ou jurídica quando cabível.
+              A CLARA é uma ferramenta de apoio operacional e curadoria documental. A autoria e o contexto institucional informados neste site não a transformam, por si só, em canal oficial do SEI-Rio, da SME/RJ ou da Prefeitura do Rio. A validação humana e os documentos oficiais continuam prevalecendo em cada processo.
             </p>
           </div>
         </div>

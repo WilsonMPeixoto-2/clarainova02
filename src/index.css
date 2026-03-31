@@ -3991,3 +3991,98 @@
     offset-distance: 100%;
   }
 }
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 214 44% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 214 44% 14%;
+    --muted: 210 18% 96%;
+    --muted-foreground: 214 18% 32%;
+    --border: 214 22% 82%;
+    --border-subtle: 214 22% 82%;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #122033 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-image: none !important;
+  }
+
+  body::before,
+  .hero-base-layer,
+  .hero-media-stage,
+  .cinematic-noise,
+  .scanline,
+  .menu-backdrop,
+  .drawer-shell,
+  .chat-shell,
+  video,
+  canvas {
+    display: none !important;
+  }
+
+  header {
+    position: static !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid rgba(18, 32, 51, 0.14) !important;
+  }
+
+  .hero-content-layer,
+  .hero-copy-column,
+  .hero-copy-surface,
+  .glass-card,
+  .hero-prompt-cluster,
+  .knowledge-card,
+  .knowledge-bottom-cta,
+  .faq-shell,
+  .faq-note-card,
+  .footer-brand-card,
+  .legal-hero-card,
+  .legal-section-card,
+  .site-header-frame,
+  .footer-premium-shell {
+    background: #ffffff !important;
+    color: #122033 !important;
+    box-shadow: none !important;
+    border-color: rgba(18, 32, 51, 0.14) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+  }
+
+  .hero-copy-surface {
+    padding: 0 !important;
+  }
+
+  .hero-brand-display,
+  .hero-brand-wordmark,
+  .footer-brand-title,
+  .text-gradient-gold {
+    background: none !important;
+    color: #122033 !important;
+    -webkit-text-fill-color: currentColor !important;
+    filter: none !important;
+  }
+
+  .hero-actions,
+  .quick-carousel-controls,
+  .drawer-footer-surface {
+    display: none !important;
+  }
+
+  a {
+    color: #122033 !important;
+    text-decoration: none !important;
+  }
+}
