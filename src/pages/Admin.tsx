@@ -4,7 +4,13 @@ import { toast } from "sonner";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminUploadCard from "@/components/admin/AdminUploadCard";
-import type { Document, IngestionState, IngestionStatus } from "@/components/admin/admin-types";
+import {
+  ADMIN_UPLOAD_MAX_SIZE_BYTES,
+  ADMIN_UPLOAD_MAX_SIZE_MB,
+  type Document,
+  type IngestionState,
+  type IngestionStatus,
+} from "@/components/admin/admin-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from "@/integrations/supabase/client";
 import {
@@ -426,7 +432,14 @@ export default function Admin() {
 
     for (let index = 0; index < chunksToSend.length; index += EMBED_BATCH_SIZE) {
       if (abortSignal.aborted) {
-        return { insertedChunks: processedCount, status: "canceled" };
+        const failedEmbeddings = Math.max((existingChunkHealth?.savedCount ?? 0) - processedCount, 0);
+        return {
+          savedChunks: existingChunkHealth?.savedCount ?? 0,
+          embeddedChunks: processedCount,
+          failedEmbeddings,
+          requestIds,
+          status: "canceled",
+        };
       }
 
       const batchItems = chunksToSend.slice(index, index + EMBED_BATCH_SIZE);
@@ -651,7 +664,7 @@ export default function Admin() {
 
       if (result.status === "canceled") {
         await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
-        updateIngestion(file.name, { status: "canceled", phaseLabel: "Cancelado" });
+        updateIngestion(file.name, { status: "canceled", phaseLabel: "Processamento cancelado" });
         return;
       }
 
@@ -789,7 +802,15 @@ export default function Admin() {
     for (let index = 0; index < files.length; index++) {
       const file = files[index];
       if (file.type !== "application/pdf") {
-        toast.error("Erro", { description: `${file.name} não é um PDF` });
+        toast.error("Envio recusado", {
+          description: `${file.name} nao esta em PDF. O painel aceita apenas PDFs com texto extraivel.`,
+        });
+        continue;
+      }
+      if (file.size > ADMIN_UPLOAD_MAX_SIZE_BYTES) {
+        toast.error("Arquivo acima do limite", {
+          description: `${file.name} excede o limite operacional de ${ADMIN_UPLOAD_MAX_SIZE_MB} MB por arquivo.`,
+        });
         continue;
       }
       await processFileClientSide(file, uploadGovernance);
@@ -807,7 +828,7 @@ export default function Admin() {
       ingestion?.abortController?.abort();
       return prev.map((item) => (
         item.fileName === fileName
-          ? { ...item, status: "canceled" as IngestionStatus, phaseLabel: "Cancelado" }
+          ? { ...item, status: "canceled" as IngestionStatus, phaseLabel: "Processamento cancelado" }
           : item
       ));
     });
@@ -1012,7 +1033,7 @@ export default function Admin() {
       }, 5000);
     } catch (err: unknown) {
       toast.error("Erro ao reprocessar", {
-        description: err instanceof Error ? err.message : "Erro desconhecido",
+        description: err instanceof Error ? err.message : "Nao foi possivel retomar este documento agora.",
       });
       await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
       fetchDocuments();
@@ -1026,9 +1047,11 @@ export default function Admin() {
       await supabase.from("document_chunks").delete().eq("document_id", doc.id);
       await supabase.from("documents").update({ status: "cancelled" }).eq("id", doc.id);
       fetchDocuments();
-      toast.success("Cancelado", { description: `"${doc.name}" foi cancelado.` });
+      toast.success("Processamento cancelado", { description: `"${doc.name}" saiu da fila administrativa.` });
     } catch {
-      toast.error("Erro ao cancelar");
+      toast.error("Nao foi possivel cancelar", {
+        description: "Tente novamente em instantes.",
+      });
     }
   };
 
@@ -1038,9 +1061,13 @@ export default function Admin() {
       await supabase.storage.from("documents").remove([doc.file_path]);
       await supabase.from("documents").delete().eq("id", doc.id);
       fetchDocuments();
-      toast.success("Documento removido");
+      toast.success("Documento removido", {
+        description: `"${doc.name}" foi excluido do painel e do storage.`,
+      });
     } catch {
-      toast.error("Erro ao remover");
+      toast.error("Nao foi possivel remover o documento", {
+        description: "Verifique a conexao com o Supabase e tente novamente.",
+      });
     }
   };
 
@@ -1070,7 +1097,7 @@ export default function Admin() {
   };
 
   const statusLabel = (doc: Document) => {
-    if (isTimedOut(doc.id)) return "Possível falha — tente reprocessar";
+    if (isTimedOut(doc.id)) return "Tempo acima do esperado — revise ou retome";
 
     const map: Record<string, string> = {
       pending: "Na fila",
@@ -1103,7 +1130,7 @@ export default function Admin() {
   if (!hasSupabaseConfig) {
     return (
       <div className="min-h-screen bg-background p-4 md:p-8">
-        <div className="mx-auto max-w-4xl space-y-6">
+        <div className="mx-auto max-w-5xl space-y-6">
           <AdminPageHeader onSignOut={() => {}} />
           <Card>
             <CardHeader>
@@ -1123,8 +1150,34 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-5xl space-y-6">
         <AdminPageHeader onSignOut={() => { void supabase.auth.signOut(); }} />
+
+        <Card className="border-border/80 bg-muted/20">
+          <CardContent className="grid gap-3 pt-6 md:grid-cols-3">
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Disponivel agora</p>
+              <p className="text-sm font-medium text-foreground">Login por conta provisionada e ingestao manual de PDF</p>
+              <p className="text-xs text-muted-foreground">
+                O painel segue utilizavel para curadoria, upload, leitura de status e retry administrativo.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Ainda depende de integracao</p>
+              <p className="text-sm font-medium text-foreground">Google OAuth, passkeys e estabilidade do provedor de embeddings</p>
+              <p className="text-xs text-muted-foreground">
+                Essas frentes nao impedem a operacao basica do painel, mas continuam fora do fluxo principal hoje.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Como ler o estado documental</p>
+              <p className="text-sm font-medium text-foreground">So use o chat quando embeddings e governanca estiverem completos</p>
+              <p className="text-xs text-muted-foreground">
+                Documento salvo nao significa grounding liberado. O painel agora explicita essa diferenca em cada etapa.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         <AdminUploadCard
           ingestions={ingestions}

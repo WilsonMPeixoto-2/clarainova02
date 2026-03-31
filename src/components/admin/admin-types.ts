@@ -16,6 +16,9 @@ export interface Document {
   metadata_json?: Record<string, unknown> | null;
 }
 
+export const ADMIN_UPLOAD_MAX_SIZE_MB = 20;
+export const ADMIN_UPLOAD_MAX_SIZE_BYTES = ADMIN_UPLOAD_MAX_SIZE_MB * 1024 * 1024;
+
 export type IngestionStatus =
   | "idle"
   | "extracting"

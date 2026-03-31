@@ -3,7 +3,7 @@ import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from "@/int
 import type { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe, Fingerprint, LockKey, CircleNotch, Eye, EyeSlash, Lightning } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import {
@@ -26,6 +26,7 @@ export default function AdminAuth({ children }: Props) {
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const passkeySupported = useMemo(() => isPasskeySupported(), []);
+  const googleOAuthOperational = false;
 
   useEffect(() => {
     if (!hasSupabaseConfig) return;
@@ -126,37 +127,46 @@ export default function AdminAuth({ children }: Props) {
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-sm">
-          <CardHeader className="text-center">
+        <Card className="w-full max-w-lg">
+          <CardHeader className="space-y-2 text-center">
             <LockKey className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
             <CardTitle className="text-xl">Área Administrativa</CardTitle>
+            <CardDescription>
+              Use uma conta administrativa já provisionada. Google e passkeys seguem visíveis apenas como rotas em habilitação neste ambiente.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Button type="button" className="w-full gap-2" onClick={handleGoogleSignIn} disabled={googleSubmitting || submitting}>
-                {googleSubmitting ? <CircleNotch className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
-                Continuar com Google
-              </Button>
-
-              <Button type="button" variant="outline" className="w-full gap-2" onClick={handlePasskeyInfo}>
-                <Fingerprint className="h-4 w-4" />
-                {passkeySupported ? "Passkey em breve" : "Passkey indisponível aqui"}
-              </Button>
-
-              <div className="rounded-lg border border-border/80 bg-muted/30 p-3">
-                <p className="text-sm font-medium text-foreground">Outra forma de acesso</p>
+          <CardContent className="space-y-5">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border/80 bg-background p-3 text-left">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Disponível agora</p>
+                <p className="mt-1 text-sm font-medium text-foreground">Email e senha provisionados</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Se o acesso principal ainda não estiver disponível para sua conta, você pode entrar com email e senha já provisionados.
+                  Fluxo operacional comprovado no ambiente real e pronto para contas administrativas já habilitadas.
                 </p>
               </div>
+              <div className="rounded-lg border border-border/80 bg-muted/30 p-3 text-left">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Em habilitação</p>
+                <p className="mt-1 text-sm font-medium text-foreground">Google OAuth e passkey</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Essas rotas seguem mapeadas na interface, mas ainda não devem ser tratadas como acesso ativo neste ambiente.
+                </p>
+              </div>
+            </div>
 
+            <div className="rounded-lg border border-border/80 bg-background p-4">
+              <div className="mb-4 space-y-1">
+                <p className="text-sm font-medium text-foreground">Entrar com conta provisionada</p>
+                <p className="text-xs text-muted-foreground">
+                  Use este fluxo quando sua conta já estiver autorizada no Supabase Auth.
+                </p>
+              </div>
               <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
                 <div>
                   <label htmlFor="admin-email" className="sr-only">Email</label>
                   <Input
                     id="admin-email"
                     type="email"
-                    placeholder="Email"
+                    placeholder="email@exemplo.rio"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="username"
@@ -186,15 +196,38 @@ export default function AdminAuth({ children }: Props) {
                   </button>
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting || googleSubmitting}>
-                  {submitting ? <CircleNotch className="h-4 w-4 animate-spin" /> : "Entrar com credenciais"}
+                  {submitting ? <CircleNotch className="h-4 w-4 animate-spin" /> : "Entrar com conta provisionada"}
                 </Button>
               </form>
             </div>
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              Acesso restrito a contas administrativas já provisionadas.
-            </p>
-            <p className="mt-2 text-center text-xs text-muted-foreground/80">
-              Quando o Google estiver habilitado neste ambiente, ele aparecerá como rota preferencial. Enquanto isso, use uma conta administrativa já provisionada.
+
+            <div className="rounded-lg border border-border/80 bg-muted/20 p-4 space-y-3">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Rotas em habilitação neste ambiente</p>
+                <p className="text-xs text-muted-foreground">
+                  Elas seguem visíveis para orientar o desenho futuro do acesso, mas não são o caminho principal de uso agora.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={handleGoogleSignIn}
+                disabled={!googleOAuthOperational || googleSubmitting || submitting}
+              >
+                {googleSubmitting ? <CircleNotch className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                {googleOAuthOperational ? "Continuar com Google" : "Google OAuth em habilitação"}
+              </Button>
+
+              <Button type="button" variant="outline" className="w-full justify-start gap-2" onClick={handlePasskeyInfo}>
+                <Fingerprint className="h-4 w-4" />
+                {passkeySupported ? "Passkey em preparação" : "Passkey indisponível neste navegador"}
+              </Button>
+            </div>
+
+            <p className="text-center text-xs text-muted-foreground">
+              Acesso restrito a contas administrativas já provisionadas para a operação do painel.
             </p>
           </CardContent>
         </Card>

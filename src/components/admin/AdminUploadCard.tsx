@@ -24,7 +24,11 @@ import {
   type KnowledgeSourceType,
 } from "@/lib/admin-governance";
 
-import type { IngestionState, IngestionStatus } from "./admin-types";
+import {
+  ADMIN_UPLOAD_MAX_SIZE_MB,
+  type IngestionState,
+  type IngestionStatus,
+} from "./admin-types";
 
 interface AdminUploadCardProps {
   ingestions: IngestionState[];
@@ -74,6 +78,23 @@ function isInProgress(status: IngestionStatus) {
   return status === "vectorizing" || status === "extracting" || status === "verifying";
 }
 
+function getIngestionHint(ingestion: IngestionState) {
+  switch (ingestion.status) {
+    case "done":
+      return "Documento completo. Se a governanca estiver ativa, ele ja pode sustentar grounding.";
+    case "embedding_pending":
+      return "O arquivo e os chunks ja foram salvos, mas o documento ainda nao deve entrar no chat ate concluir os embeddings.";
+    case "partial":
+      return "A ingestao ficou incompleta. Retome o processamento antes de considerar esse documento para uso operacional.";
+    case "failed":
+      return "Nenhum uso no chat deve ser considerado enquanto esta falha nao for resolvida.";
+    case "verifying":
+      return "Conferindo se cadastro, chunks e embeddings refletem o mesmo estado do documento.";
+    default:
+      return null;
+  }
+}
+
 export default function AdminUploadCard({
   ingestions,
   isBusy,
@@ -94,6 +115,49 @@ export default function AdminUploadCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border border-border/80 bg-muted/20 p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Formato aceito</p>
+            <p className="mt-1 text-sm font-medium text-foreground">PDF com texto extraivel</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              PDFs apenas com imagem podem falhar na extração antes mesmo do chunking.
+            </p>
+          </div>
+          <div className="rounded-lg border border-border/80 bg-muted/20 p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Limite operacional</p>
+            <p className="mt-1 text-sm font-medium text-foreground">Ate {ADMIN_UPLOAD_MAX_SIZE_MB} MB por arquivo</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Esse limite vale para manter o painel previsivel em navegadores e redes comuns.
+            </p>
+          </div>
+          <div className="rounded-lg border border-border/80 bg-muted/20 p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Interacao atual</p>
+            <p className="mt-1 text-sm font-medium text-foreground">Selecao por clique</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              O painel ainda nao trata arrastar e soltar como gesto operacional confirmado.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-2 md:grid-cols-4">
+          <div className="rounded-lg border border-border/80 bg-background p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">1. Documento salvo</p>
+            <p className="mt-1 text-xs text-muted-foreground">Arquivo enviado e cadastro criado no painel.</p>
+          </div>
+          <div className="rounded-lg border border-border/80 bg-background p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">2. Chunks salvos</p>
+            <p className="mt-1 text-xs text-muted-foreground">Texto extraido, fragmentado e persistido no banco.</p>
+          </div>
+          <div className="rounded-lg border border-border/80 bg-background p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">3. Embeddings prontos</p>
+            <p className="mt-1 text-xs text-muted-foreground">Cada chunk recebeu vetorizacao concluida.</p>
+          </div>
+          <div className="rounded-lg border border-border/80 bg-background p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">4. Pronto para grounding</p>
+            <p className="mt-1 text-xs text-muted-foreground">So acontece com embeddings completos e governanca elegivel.</p>
+          </div>
+        </div>
+
         <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
@@ -320,13 +384,13 @@ export default function AdminUploadCard({
           </div>
         </div>
 
-        <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 transition-colors hover:border-primary/50 hover:bg-muted/50">
+        <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 text-center transition-colors hover:border-primary/50 hover:bg-muted/50">
           <FileText className="mb-2 h-10 w-10 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">
-            Clique ou arraste PDFs aqui
+            Selecionar PDFs para ingestao
           </span>
           <span className="text-xs text-muted-foreground">
-            Apenas arquivos PDF — cada envio ja entra com governanca documental e prioridade de corpus
+            PDFs com texto extraivel, ate {ADMIN_UPLOAD_MAX_SIZE_MB} MB por arquivo. A selecao abre pelo clique; arrastar arquivo ainda nao esta ativo aqui.
           </span>
           <input
             type="file"
@@ -342,24 +406,25 @@ export default function AdminUploadCard({
           <div className="space-y-3">
             {ingestions.map((ing) => (
               <div key={ing.fileName} className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-foreground truncate max-w-[60%]">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <span className="break-all text-sm font-medium text-foreground sm:max-w-[58%] sm:truncate">
                     {ing.fileName}
                   </span>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium ${phaseColor(ing.status)}`}>
+                  <div className="flex flex-col items-start gap-2 sm:items-end">
+                    <span className={`text-xs font-medium sm:text-right ${phaseColor(ing.status)}`}>
                       {phaseIcon(ing.status)}
                       {ing.phaseLabel}
                     </span>
                     {isInProgress(ing.status) && (
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
+                        size="sm"
+                        className="h-8 gap-2 px-3 text-xs"
                         onClick={() => onCancelIngestion(ing.fileName)}
-                        title="Cancelar"
+                        title="Cancelar processamento"
                       >
                         <X className="h-3 w-3" />
+                        Cancelar
                       </Button>
                     )}
                   </div>
@@ -370,12 +435,18 @@ export default function AdminUploadCard({
                 )}
 
                 {ing.expectedChunks > 0 && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Chunks salvos: {ing.insertedChunks}/{ing.expectedChunks}
-                    {" · "}
-                    Embeddings prontos: {ing.embeddedChunks}/{ing.expectedChunks}
-                    {ing.failedEmbeddings > 0 && ` · pendentes: ${ing.failedEmbeddings}`}
-                  </p>
+                  <div className="grid gap-2 text-[11px] text-muted-foreground sm:grid-cols-3">
+                    <p className="rounded-md border border-border/70 bg-background/80 px-2 py-1">
+                      Documento salvo: {ing.insertedChunks > 0 ? "sim" : "ainda nao"}
+                    </p>
+                    <p className="rounded-md border border-border/70 bg-background/80 px-2 py-1">
+                      Chunks salvos: {ing.insertedChunks}/{ing.expectedChunks}
+                    </p>
+                    <p className="rounded-md border border-border/70 bg-background/80 px-2 py-1">
+                      Embeddings prontos: {ing.embeddedChunks}/{ing.expectedChunks}
+                      {ing.failedEmbeddings > 0 && ` · pendentes: ${ing.failedEmbeddings}`}
+                    </p>
+                  </div>
                 )}
 
                 {ing.lastError && (
@@ -394,6 +465,12 @@ export default function AdminUploadCard({
                 {ing.governanceDetail && (
                   <p className="text-[11px] text-muted-foreground/80">
                     {ing.governanceDetail}
+                  </p>
+                )}
+
+                {getIngestionHint(ing) && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {getIngestionHint(ing)}
                   </p>
                 )}
               </div>

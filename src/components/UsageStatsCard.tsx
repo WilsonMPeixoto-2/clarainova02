@@ -37,9 +37,24 @@ export default function UsageStatsCard() {
 
   const items = stats
     ? [
-        { label: "Mensagens do chat", value: stats.chat_messages, icon: ChatTeardropText },
-        { label: "Buscas RAG", value: stats.embedding_queries, icon: MagnifyingGlass },
-        { label: "PDFs ingeridos", value: stats.client_side_ingestions, icon: FileText },
+        {
+          label: "Mensagens do chat",
+          description: "Atendimentos registrados no mês corrente.",
+          value: stats.chat_messages,
+          icon: ChatTeardropText,
+        },
+        {
+          label: "Buscas documentais",
+          description: "Consultas de recuperação feitas no corpus ativo.",
+          value: stats.embedding_queries,
+          icon: MagnifyingGlass,
+        },
+        {
+          label: "PDFs ingeridos",
+          description: "Envios administrativos concluídos neste mês.",
+          value: stats.client_side_ingestions,
+          icon: FileText,
+        },
       ]
     : [];
 
@@ -54,8 +69,11 @@ export default function UsageStatsCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Pulse className="h-5 w-5" />
-          Metricas agregadas da CLARA
+          Metricas agregadas do painel
         </CardTitle>
+        <CardDescription>
+          Leitura mensal do backend ativo, com sinais agregados do produto e sem identificação individual de usuários.
+        </CardDescription>
         {stats && (
           <CardDescription className="capitalize">{monthLabel}</CardDescription>
         )}
@@ -63,36 +81,35 @@ export default function UsageStatsCard() {
       <CardContent className="space-y-4">
         {!hasSupabaseConfig ? (
           <p className="py-4 text-center text-sm text-muted-foreground">
-            As métricas agregadas voltam a aparecer assim que o novo Supabase for conectado.
+            As métricas voltam a aparecer assim que o Supabase ativo estiver conectado ao painel.
           </p>
         ) : loading ? (
-          <p className="text-sm text-muted-foreground text-center py-4">Carregando...</p>
+          <p className="text-sm text-muted-foreground text-center py-4">Carregando métricas agregadas...</p>
         ) : !stats ? (
-          <p className="text-sm text-muted-foreground text-center py-4">Erro ao carregar dados</p>
+          <p className="text-sm text-muted-foreground text-center py-4">
+            Não consegui carregar as métricas agora. O restante do painel continua utilizável.
+          </p>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid gap-3 sm:grid-cols-3">
               {items.map((item) => (
                 <div
                   key={item.label}
-                  className="flex flex-col items-center gap-1 rounded-lg border p-3 text-center"
+                  className="rounded-lg border p-3 text-left"
                 >
-                  <item.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <p className="text-2xl font-bold text-foreground">{item.value}</p>
-                  <p className="text-xs text-muted-foreground">{item.label}</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{item.label}</p>
+                      <p className="text-2xl font-bold text-foreground">{item.value}</p>
+                    </div>
+                    <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">{item.description}</p>
                 </div>
               ))}
             </div>
-            <div className="space-y-1 pt-2 border-t">
-              <p className="text-xs text-muted-foreground">
-                ✅ Painel voltado para monitoramento tecnico e evolucao da base
-              </p>
-              <p className="text-xs text-muted-foreground">
-                ✅ Os numeros exibidos dependem da telemetria disponivel no backend ativo
-              </p>
-              <p className="text-xs text-muted-foreground">
-                ✅ A proposta e acompanhar sinais agregados do produto, sem identificar quem fez cada pergunta
-              </p>
+            <div className="rounded-lg border border-border/80 bg-muted/20 p-3 text-xs text-muted-foreground">
+              Use este card para leitura rápida do volume operacional. Os totais dependem da telemetria disponível no backend ativo e não substituem auditoria detalhada por evento.
             </div>
           </>
         )}

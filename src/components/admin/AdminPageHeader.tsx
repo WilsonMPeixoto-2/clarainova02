@@ -9,24 +9,26 @@ interface AdminPageHeaderProps {
 
 export default function AdminPageHeader({ onSignOut }: AdminPageHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex items-start gap-3 sm:gap-4">
         <Link to="/">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="sm" className="gap-2 px-2.5">
             <ArrowLeft className="h-5 w-5" />
+            <span className="text-sm">Voltar</span>
           </Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold text-foreground sm:text-2xl">
             Base de Conhecimento — CLARA
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Governe o corpus inicial da CLARA com prioridade, metadados e curadoria antes de cada ingestao.
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Governe o corpus da CLARA com curadoria, prioridade e leitura honesta do estado documental antes de cada ingestao.
           </p>
         </div>
       </div>
-      <Button variant="ghost" size="icon" onClick={onSignOut} title="Sair">
+      <Button variant="outline" size="sm" onClick={onSignOut} title="Sair" className="w-full gap-2 sm:w-auto">
         <SignOut className="h-5 w-5" />
+        <span>Sair</span>
       </Button>
     </div>
   );
