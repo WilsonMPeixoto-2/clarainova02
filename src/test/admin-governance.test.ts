@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_UPLOAD_GOVERNANCE_FORM,
   parseDocumentGovernanceMetadata,
+  resolveDocumentOperationalState,
   resolveUploadGovernance,
 } from "@/lib/admin-governance";
 
@@ -45,6 +46,12 @@ describe("admin governance resolver", () => {
       corpus_category: "nucleo_oficial",
       ingestion_priority: "alta",
       governance_notes: "entra antes dos guias",
+      expected_chunks: 12,
+      saved_chunks: 12,
+      embedded_chunks: 10,
+      missing_embeddings: 2,
+      grounding_status: "embeddings_pending",
+      grounding_enabled: false,
     });
 
     expect(metadata.documentKind).toBe("manual");
@@ -53,5 +60,39 @@ describe("admin governance resolver", () => {
     expect(metadata.corpusCategory).toBe("nucleo_oficial");
     expect(metadata.ingestionPriority).toBe("alta");
     expect(metadata.governanceNotes).toBe("entra antes dos guias");
+    expect(metadata.expectedChunks).toBe(12);
+    expect(metadata.embeddedChunks).toBe(10);
+    expect(metadata.groundingStatus).toBe("embeddings_pending");
+    expect(metadata.groundingEnabled).toBe(false);
+  });
+
+  it("keeps internally excluded corpus entries out of grounding even with manual activation checked", () => {
+    const resolved = resolveUploadGovernance(
+      "backend-principios-clara.pdf",
+      "O backend da CLARA usa Supabase, embeddings, schema JSON, telemetria e edge functions para operar o RAG.",
+      {
+        ...DEFAULT_UPLOAD_GOVERNANCE_FORM,
+        corpusCategory: "interno_excluido",
+        isActive: true,
+      },
+    );
+
+    expect(resolved.corpusCategory).toBe("interno_excluido");
+    expect(resolved.isActive).toBe(false);
+  });
+
+  it("marks documents with complete chunks but missing embeddings as pending for grounding", () => {
+    const state = resolveDocumentOperationalState({
+      expectedChunks: 8,
+      savedChunks: 8,
+      embeddedChunks: 5,
+      governanceActive: true,
+      excludedFromGrounding: false,
+    });
+
+    expect(state.status).toBe("embedding_pending");
+    expect(state.groundingStatus).toBe("embeddings_pending");
+    expect(state.groundingEnabled).toBe(false);
+    expect(state.failureReason).toBe("embedding_incomplete");
   });
 });

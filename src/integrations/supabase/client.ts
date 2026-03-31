@@ -2,8 +2,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+function sanitizeEnvValue(value: string | undefined) {
+  return value?.replace(/\\n/g, '').trim() ?? '';
+}
+
+const SUPABASE_URL = sanitizeEnvValue(import.meta.env.VITE_SUPABASE_URL);
+const SUPABASE_PUBLISHABLE_KEY = sanitizeEnvValue(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 export const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 export const SUPABASE_UNAVAILABLE_MESSAGE =
   'Este ambiente ainda está finalizando a conexão principal da CLARA. Assim que ela for concluída, o acesso completo volta a ficar disponível.';

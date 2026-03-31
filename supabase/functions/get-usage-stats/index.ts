@@ -21,6 +21,38 @@ function buildCorsHeaders(req: Request) {
   };
 }
 
+function getBearerToken(req: Request): string | null {
+  const authorization = req.headers.get("authorization") ?? "";
+  if (!authorization.toLowerCase().startsWith("bearer ")) return null;
+  const token = authorization.slice(7).trim();
+  return token || null;
+}
+
+async function requireAuthenticatedUser(
+  req: Request,
+  supabaseUrl: string,
+  supabaseAnonKey: string,
+) {
+  const accessToken = getBearerToken(req);
+  if (!accessToken) return null;
+
+  const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  });
+
+  const { data, error } = await authClient.auth.getUser();
+  if (error || !data.user) {
+    console.warn("get-usage-stats auth rejected:", error?.message ?? "no user");
+    return null;
+  }
+
+  return data.user;
+}
+
 type CountQueryLike = {
   eq: (column: string, value: string) => CountQueryLike;
 };
@@ -57,31 +89,41 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseKey) {
       return new Response(
         JSON.stringify({ error: "Credenciais Supabase não configuradas" }),
         { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
+
+    const authenticatedUser = await requireAuthenticatedUser(req, supabaseUrl, supabaseAnonKey);
+    if (!authenticatedUser) {
+      return new Response(
+        JSON.stringify({ error: "Não autorizado" }),
+        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-    const [chatMessages, embeddingQueries, clientSideIngestions] = await Promise.all([
+    const [chatMessages, embeddingQueries, processedDocuments] = await Promise.all([
       countRecentRows(supabase, "chat_metrics", monthStart),
       countRecentRows(supabase, "search_metrics", monthStart),
       countRecentRows(
         supabase,
-        "ingestion_jobs",
+        "documents",
         monthStart,
-        (query) => query.eq("status", "completed").eq("trigger_source", "admin_panel"),
+        (query) => query.eq("status", "processed"),
       ),
     ]);
 
     const usingFallback =
-      chatMessages === null || embeddingQueries === null || clientSideIngestions === null;
+      chatMessages === null || embeddingQueries === null || processedDocuments === null;
 
     const fallbackCounts: Record<string, number> = {};
 
@@ -111,12 +153,12 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-        chat_messages: chatMessages ?? fallbackCounts["chat_message"] ?? 0,
-        embedding_queries: embeddingQueries ?? fallbackCounts["embedding_query"] ?? 0,
-        client_side_ingestions: clientSideIngestions ?? fallbackCounts["client_side_ingestion"] ?? 0,
-      }),
+        JSON.stringify({
+          month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+          chat_messages: chatMessages ?? fallbackCounts["chat_message"] ?? 0,
+          embedding_queries: embeddingQueries ?? fallbackCounts["embedding_query"] ?? 0,
+          client_side_ingestions: processedDocuments ?? fallbackCounts["client_side_ingestion"] ?? 0,
+        }),
       { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {

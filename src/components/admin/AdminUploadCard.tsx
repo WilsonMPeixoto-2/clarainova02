@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   KNOWLEDGE_AUTHORITY_LEVEL_LABELS,
   KNOWLEDGE_AUTHORITY_LEVELS,
+  KNOWLEDGE_CORPUS_LANES,
   KNOWLEDGE_CORPUS_CATEGORIES,
   KNOWLEDGE_CORPUS_CATEGORY_LABELS,
   KNOWLEDGE_DOCUMENT_KIND_LABELS,
@@ -39,6 +40,8 @@ function phaseColor(status: IngestionStatus) {
   switch (status) {
     case "done":
       return "text-primary";
+    case "embedding_pending":
+      return "text-amber-600 dark:text-amber-400";
     case "failed":
       return "text-destructive";
     case "partial":
@@ -58,6 +61,8 @@ function phaseIcon(status: IngestionStatus): ReactNode {
       return <Brain className="inline h-3 w-3 mr-1" />;
     case "verifying":
       return <ShieldCheck className="inline h-3 w-3 mr-1" />;
+    case "embedding_pending":
+      return <WarningCircle className="inline h-3 w-3 mr-1" />;
     case "partial":
       return <WarningCircle className="inline h-3 w-3 mr-1" />;
     default:
@@ -297,9 +302,21 @@ export default function AdminUploadCard({
 
           <div className="rounded-md border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground space-y-1">
             <p className="font-medium text-foreground">Ordem recomendada do corpus inicial</p>
-            <p>1. Nucleo oficial: normas e manuais diretamente ligados ao SEI-Rio.</p>
-            <p>2. Cobertura operacional: guias, FAQs e rotinas administrativas validadas.</p>
-            <p>3. Apoio complementar: materiais secundarios apenas para fechar lacunas reais.</p>
+            <div className="grid gap-2 md:grid-cols-2">
+              {KNOWLEDGE_CORPUS_LANES.map((lane) => (
+                <div
+                  key={lane.category}
+                  className="rounded-md border border-border/70 bg-background/80 p-3"
+                >
+                  <p className="font-medium text-foreground">{lane.order}. {lane.title}</p>
+                  <p className="mt-1">{lane.recommendedFirstLoad}</p>
+                  <p className="mt-1">
+                    Prioridade padrao: <strong>{lane.defaultPriority}</strong> · Peso sugerido: <strong>{lane.weightBandLabel}</strong>
+                  </p>
+                  <p className="mt-1">{lane.groundingRole}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -348,8 +365,17 @@ export default function AdminUploadCard({
                   </div>
                 </div>
 
-                {(isInProgress(ing.status) || ing.status === "done" || ing.status === "partial") && (
+                {(isInProgress(ing.status) || ing.status === "done" || ing.status === "partial" || ing.status === "embedding_pending") && (
                   <Progress value={ing.status === "done" ? 100 : ing.progress} className="h-2" />
+                )}
+
+                {ing.expectedChunks > 0 && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Chunks salvos: {ing.insertedChunks}/{ing.expectedChunks}
+                    {" · "}
+                    Embeddings prontos: {ing.embeddedChunks}/{ing.expectedChunks}
+                    {ing.failedEmbeddings > 0 && ` · pendentes: ${ing.failedEmbeddings}`}
+                  </p>
                 )}
 
                 {ing.lastError && (

@@ -38,9 +38,11 @@ const MAX_CONVERSATION_MESSAGES = 20;
 const EMBEDDING_TIMEOUT_MS = 10_000;
 const SEARCH_TIMEOUT_MS = 8_000;
 const GENERATION_TIMEOUT_MS = 45_000;
+const EMBEDDING_DIM = 768;
 const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
 type ChatResponseMode = (typeof CHAT_RESPONSE_MODES)[number];
 const DEFAULT_CHAT_RESPONSE_MODE: ChatResponseMode = 'didatico';
+const KEYWORD_FALLBACK_QUERY_EMBEDDING = JSON.stringify(Array.from({ length: EMBEDDING_DIM }, () => 0));
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -231,9 +233,9 @@ REGRAS DE SEGURANÇA
 // ============================================================
 
 const GEMINI_MODELS = [
-  'gemini-3.1-flash-latest',
-  'gemini-3-flash-latest',
-  'gemini-2.5-flash-latest',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-pro',
 ];
 
 type HybridSearchChunk = {
@@ -366,6 +368,86 @@ function averageScore(chunks: HybridSearchChunk[]): number | null {
   if (chunks.length === 0) return null;
   const sum = chunks.reduce((total, chunk) => total + chunk.similarity, 0);
   return sum / chunks.length;
+}
+
+function extractChecklistItems(chunks: HybridSearchChunk[]): string[] {
+  const items = new Set<string>();
+
+  for (const chunk of chunks) {
+    const matches = chunk.content.matchAll(/(?:^|\n)\s*\d+\.\s+(.+?)(?=\n|$)/g);
+    for (const match of matches) {
+      const item = match[1]?.trim();
+      if (item) items.add(item);
+    }
+  }
+
+  return Array.from(items).slice(0, 8);
+}
+
+function buildGroundedFallbackResponse(
+  chunks: HybridSearchChunk[],
+  groundedReferences: ClaraStructuredResponse["referenciasFinais"],
+  responseMode: ChatResponseMode,
+): ClaraStructuredResponse {
+  const primaryDocument = chunks[0]?.document_name?.trim() || "documento recuperado";
+  const checklistItems = extractChecklistItems(chunks);
+  const citations = groundedReferences.map((reference) => reference.id);
+
+  const fallbackStep = checklistItems.length > 0
+    ? {
+        numero: 1,
+        titulo: "Itens para conferir",
+        conteudo: `No ${primaryDocument}, estes itens aparecem como base de conferência para o encaminhamento da prestação de contas do PDDE.`,
+        itens: checklistItems,
+        destaques: [],
+        alerta: null,
+        citacoes: citations,
+      }
+    : {
+        numero: 1,
+        titulo: "Trecho documental recuperado",
+        conteudo: chunks[0]?.content.trim() || `Encontrei conteúdo relevante em ${primaryDocument}.`,
+        itens: [],
+        destaques: [],
+        alerta: null,
+        citacoes: citations,
+      };
+
+  return {
+    tituloCurto: responseMode === 'direto'
+      ? 'Checklist documental localizado'
+      : 'Orientação documental localizada',
+    resumoInicial: `Encontrei respaldo documental em ${primaryDocument} e mantive a resposta restrita ao conteúdo recuperado.`,
+    resumoCitacoes: citations,
+    modoResposta: checklistItems.length > 0 ? 'checklist' : 'explicacao',
+    etapas: [fallbackStep],
+    observacoesFinais: [
+      'Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.',
+    ],
+    termosDestacados: [
+      { texto: 'prestação de contas do PDDE', tipo: 'conceito' },
+      { texto: primaryDocument, tipo: 'norma' },
+    ],
+    referenciasFinais: groundedReferences,
+    analiseDaResposta: {
+      questionUnderstandingConfidence: null,
+      finalConfidence: checklistItems.length > 0 ? 0.74 : 0.58,
+      answerScopeMatch: checklistItems.length > 0 ? 'probable' : 'weak',
+      ambiguityInUserQuestion: false,
+      ambiguityInSources: false,
+      clarificationRequested: false,
+      clarificationQuestion: null,
+      clarificationReason: null,
+      internalExpansionPerformed: false,
+      webFallbackUsed: false,
+      userNotice: 'Resposta operacional montada diretamente a partir das referências documentais recuperadas.',
+      cautionNotice: checklistItems.length > 0 ? null : 'O trecho recuperado foi curto, então mantive a resposta estritamente documental.',
+      ambiguityReason: null,
+      comparedSources: [],
+      prioritizedSources: groundedReferences.map((reference) => reference.titulo),
+      processStates: [],
+    },
+  };
 }
 
 // ============================================================
@@ -809,55 +891,64 @@ Deno.serve(async (req) => {
     let matchedChunks: HybridSearchChunk[] = [];
     let searchMetricId: string | null = null;
     let groundedReferences: ClaraStructuredResponse["referenciasFinais"] = [];
+    let queryEmbeddingModel = 'keyword_fallback_zero_vector';
 
     if (lastUserMessage) {
       try {
         const searchStartedAt = Date.now();
-        const embeddingResult = await withTimeout(
-          ai.models.embedContent({
-            model: 'text-embedding-004',
-            contents: lastUserMessage.content,
-            config: { outputDimensionality: 768 },
-          }),
-          EMBEDDING_TIMEOUT_MS,
-          'embedding',
-        );
+        let queryEmbeddingPayload = KEYWORD_FALLBACK_QUERY_EMBEDDING;
 
-        const queryEmbedding = embeddingResult.embeddings?.[0]?.values;
-
-        if (queryEmbedding && queryEmbedding.length === 768) {
-          const { data: chunks, error: matchErr } = await withTimeout(
-            supabase.rpc('hybrid_search_chunks', {
-              query_embedding: JSON.stringify(queryEmbedding),
-              query_text: lastUserMessage.content,
-              match_count: 8,
-            }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
-            SEARCH_TIMEOUT_MS,
-            'hybrid_search',
+        try {
+          const embeddingResult = await withTimeout(
+            ai.models.embedContent({
+              model: 'gemini-embedding-001',
+              contents: lastUserMessage.content,
+              config: { outputDimensionality: 768 },
+            }),
+            EMBEDDING_TIMEOUT_MS,
+            'embedding',
           );
 
-          searchLatencyMs = Date.now() - searchStartedAt;
+          const queryEmbedding = embeddingResult.embeddings?.[0]?.values;
+          if (queryEmbedding && queryEmbedding.length === EMBEDDING_DIM) {
+            queryEmbeddingPayload = JSON.stringify(queryEmbedding);
+            queryEmbeddingModel = 'gemini-embedding-001';
+          }
+        } catch (embeddingError) {
+          console.warn('Query embedding fallback to keyword-only retrieval:', embeddingError);
+        }
 
-          if (matchErr) {
-            console.error("Hybrid search error:", matchErr);
-          } else if (chunks && chunks.length > 0) {
-            matchedChunks = chunks;
-            searchResultCount = chunks.length;
-            selectedChunkIds = chunks.map((chunk) => chunk.id);
-            selectedDocumentIds = Array.from(new Set(chunks.map((chunk) => chunk.document_id)));
-            const decision = prepareKnowledgeDecision(
-              lastUserMessage.content,
-              chunks as RetrievedChunk[],
-            );
+        const { data: chunks, error: matchErr } = await withTimeout(
+          supabase.rpc('hybrid_search_chunks', {
+            query_embedding: queryEmbeddingPayload,
+            query_text: lastUserMessage.content,
+            match_count: 8,
+          }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
+          SEARCH_TIMEOUT_MS,
+          'hybrid_search',
+        );
 
-            retrievalSources = decision.sources;
-            retrievalTopScore = decision.topScore;
-            groundedReferences = buildGroundedReferences(decision.references);
+        searchLatencyMs = Date.now() - searchStartedAt;
 
-            if (decision.knowledgeContext) {
-              retrievalMode = "model_grounded";
-              knowledgeContext = decision.knowledgeContext;
-            }
+        if (matchErr) {
+          console.error("Hybrid search error:", matchErr);
+        } else if (chunks && chunks.length > 0) {
+          matchedChunks = chunks;
+          searchResultCount = chunks.length;
+          selectedChunkIds = chunks.map((chunk) => chunk.id);
+          selectedDocumentIds = Array.from(new Set(chunks.map((chunk) => chunk.document_id)));
+          const decision = prepareKnowledgeDecision(
+            lastUserMessage.content,
+            chunks as RetrievedChunk[],
+          );
+
+          retrievalSources = decision.sources;
+          retrievalTopScore = decision.topScore;
+          groundedReferences = buildGroundedReferences(decision.references);
+
+          if (decision.knowledgeContext) {
+            retrievalMode = "model_grounded";
+            knowledgeContext = decision.knowledgeContext;
           }
         }
       } catch (ragError) {
@@ -872,7 +963,7 @@ Deno.serve(async (req) => {
           request_id: requestId,
           query_text: lastUserMessage.content,
           normalized_query: normalizedQuery,
-          query_embedding_model: 'text-embedding-004',
+          query_embedding_model: queryEmbeddingModel,
           keyword_query_text: lastUserMessage.content,
           search_mode: 'hybrid',
           merged_hits_count: searchResultCount,
@@ -979,6 +1070,39 @@ REESCRITA OBRIGATORIA:
       const rawErrorMsg = getErrorMessage(err);
       const errorMsg = getPublicErrorMessage(err);
       const providerUnavailable = isProviderAvailabilityError(err);
+
+      if (providerUnavailable && retrievalMode === 'model_grounded' && matchedChunks.length > 0 && groundedReferences.length > 0) {
+        const fallbackResponse = buildGroundedFallbackResponse(matchedChunks, groundedReferences, responseMode);
+        const fallbackPlainText = renderStructuredResponseToPlainText(fallbackResponse);
+
+        const telemetryCtx: TelemetryContext = {
+          supabase, requestId, requestStartedAt,
+          queryText: lastUserMessage?.content ?? '',
+          normalizedQuery, intentLabel, topicLabel, subtopicLabel,
+          systemPromptWithContext, chatMessages,
+          retrievalMode, retrievalTopScore, retrievalSources,
+          searchResultCount, selectedChunkIds, selectedDocumentIds,
+          searchMetricId, knowledgeContext, responseMode,
+        };
+
+        await recordTelemetry(
+          telemetryCtx,
+          fallbackPlainText,
+          'grounded_fallback',
+          fallbackResponse.referenciasFinais.length,
+          'structured',
+        ).catch((telemetryError) => console.error('Telemetry error (grounded fallback):', telemetryError));
+
+        return new Response(
+          JSON.stringify({
+            kind: 'clara_structured_response',
+            response: fallbackResponse,
+            plainText: fallbackPlainText,
+          }),
+          { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        );
+      }
+
       if (lastUserMessage) {
         void supabase.from('chat_metrics').insert({
           request_id: requestId,

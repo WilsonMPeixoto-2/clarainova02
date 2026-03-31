@@ -1,6 +1,6 @@
 # Governanca do corpus da CLARA
 
-Data: 2026-03-30
+Data: 2026-03-31
 
 ## Objetivo
 
@@ -36,8 +36,33 @@ Sempre que possivel, o admin deve registrar tambem:
 - `corpus_category`
 - `ingestion_priority`
 - `governance_notes`
+- `expected_chunks`
+- `saved_chunks`
+- `embedded_chunks`
+- `missing_embeddings`
+- `grounding_status`
+- `grounding_enabled`
+- `readiness_summary`
 
 Na implementacao atual, os complementares ficam em parte nas colunas de `documents` e em parte em `metadata_json`.
+
+## Estado operacional obrigatorio
+
+O admin nao deve tratar "documento salvo" como sinônimo de "documento pronto para grounding".
+
+O estado correto passa a ser:
+
+- `chunks_incomplete`: o documento ainda nao teve todos os chunks esperados persistidos
+- `embeddings_pending`: todos os chunks ja foram salvos, mas ainda faltam embeddings
+- `ready`: chunks e embeddings completos, com governanca ativa
+- `inactive`: documento completo, mas mantido fora do grounding por decisao operacional
+- `excluded`: documento completo, mas excluido do grounding principal por categoria interna ou peso zero
+
+Regra pratica:
+
+- `status = processed` so deve significar "documento completo do ponto de vista tecnico"
+- `status = embedding_pending` deve aparecer quando o PDF foi salvo e chunkado, mas o provedor nao concluiu todos os embeddings
+- `grounding_enabled = true` so deve existir quando o documento esta tecnicamente completo e elegivel pela governanca
 
 ## Categorias de corpus
 
@@ -157,6 +182,9 @@ O admin agora:
 - pode manter a classificacao principal em modo automatico ou sobrescrever
 - registra categoria de corpus e prioridade de ingestao
 - visualiza na lista de documentos o escopo, tipo, autoridade, peso, prioridade e status de ativacao
+- exibe a faixa do corpus e a prontidao para grounding
+- diferencia `chunks salvos` de `embeddings prontos`
+- permite retomar documentos em `embedding_pending` sem fingir que eles ja estao prontos para o chat
 
 ## O que este documento nao faz
 

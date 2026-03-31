@@ -194,7 +194,7 @@ export default function AdminAuth({ children }: Props) {
               Acesso restrito a contas administrativas já provisionadas.
             </p>
             <p className="mt-2 text-center text-xs text-muted-foreground/80">
-              O acesso com Google é o caminho principal, e outras opções seguem em evolução conforme a maturidade do painel.
+              Quando o Google estiver habilitado neste ambiente, ele aparecerá como rota preferencial. Enquanto isso, use uma conta administrativa já provisionada.
             </p>
           </CardContent>
         </Card>

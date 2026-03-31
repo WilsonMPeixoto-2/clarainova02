@@ -26,6 +26,18 @@ export type KnowledgeCorpusCategory =
 
 export type KnowledgeIngestionPriority = 'alta' | 'media' | 'baixa';
 
+export interface KnowledgeCorpusLaneDefinition {
+  category: KnowledgeCorpusCategory;
+  order: number;
+  title: string;
+  description: string;
+  defaultPriority: KnowledgeIngestionPriority;
+  weightBandLabel: string;
+  defaultIsActive: boolean;
+  groundingRole: string;
+  recommendedFirstLoad: string;
+}
+
 export const KNOWLEDGE_TOPIC_SCOPES: KnowledgeTopicScope[] = [
   'sei_rio_manual',
   'sei_rio_guia',
@@ -64,6 +76,53 @@ export const KNOWLEDGE_INGESTION_PRIORITIES: KnowledgeIngestionPriority[] = [
   'alta',
   'media',
   'baixa',
+];
+
+export const KNOWLEDGE_CORPUS_LANES: KnowledgeCorpusLaneDefinition[] = [
+  {
+    category: 'nucleo_oficial',
+    order: 1,
+    title: 'Nucleo oficial',
+    description: 'Normas e manuais diretamente aderentes ao SEI-Rio. Sao a primeira camada de confianca do grounding.',
+    defaultPriority: 'alta',
+    weightBandLabel: '1.25 a 1.35',
+    defaultIsActive: true,
+    groundingRole: 'Entra primeiro e sustenta a maior parte das respostas.',
+    recommendedFirstLoad: 'Manuais oficiais, normas e instrucoes diretamente aplicaveis ao SEI-Rio.',
+  },
+  {
+    category: 'cobertura_operacional',
+    order: 2,
+    title: 'Cobertura operacional',
+    description: 'Guias, FAQs e rotinas validadas que ampliam cobertura sem disputar com o nucleo oficial.',
+    defaultPriority: 'media',
+    weightBandLabel: '0.92 a 1.18',
+    defaultIsActive: true,
+    groundingRole: 'Entra depois do nucleo oficial.',
+    recommendedFirstLoad: 'Guias praticos, FAQs institucionais e rotinas operacionais validadas.',
+  },
+  {
+    category: 'apoio_complementar',
+    order: 3,
+    title: 'Apoio complementar',
+    description: 'Material secundario para fechar lacunas especificas sem inflar a base.',
+    defaultPriority: 'baixa',
+    weightBandLabel: '0.80 a 0.95',
+    defaultIsActive: true,
+    groundingRole: 'So entra quando houver lacuna real apos a primeira carga.',
+    recommendedFirstLoad: 'Cartilhas locais e referencias complementares nao nucleares.',
+  },
+  {
+    category: 'interno_excluido',
+    order: 4,
+    title: 'Interno excluido',
+    description: 'Materiais da propria CLARA ou de operacao interna que nao devem contaminar o chat.',
+    defaultPriority: 'baixa',
+    weightBandLabel: '0.00',
+    defaultIsActive: false,
+    groundingRole: 'Fica fora do grounding principal por padrao.',
+    recommendedFirstLoad: 'Arquitetura, backend, RAG, telemetria, provas internas e documentos tecnicos.',
+  },
 ];
 
 export const KNOWLEDGE_TOPIC_SCOPE_LABELS: Record<KnowledgeTopicScope, string> = {
@@ -170,6 +229,11 @@ const PROCEDURAL_PATTERNS = [
   /\bincluir\b/i,
   /\bprocedimento\b/i,
   /\brotina administrativa\b/i,
+  /\bprestac[aã]o de contas\b/i,
+  /\bconcilia[cç][aã]o banc[aá]ria\b/i,
+  /\bextrat(?:o|os) banc[aá]ri(?:o|os)\b/i,
+  /\bata(?:s)?\b/i,
+  /\bof[ií]cio\b/i,
 ];
 
 const OFFICIAL_PATTERNS = [
@@ -179,6 +243,16 @@ const OFFICIAL_PATTERNS = [
   /\bsei-rio\b/i,
   /\bmanual operacional\b/i,
   /\bguia pratico\b/i,
+];
+
+const SEI_RIO_PATTERNS = [
+  /\bsei(?:-rio)?\b/i,
+  /sistema eletr[oô]nico de informa[cç][oõ]es/i,
+  /\bdocumento externo\b/i,
+  /\bbloco de assinatura\b/i,
+  /\bassinatura eletr[oô]nica\b/i,
+  /\btramita[cç][aã]o no sei\b/i,
+  /\bprocesso no sei\b/i,
 ];
 
 const FAQ_PATTERNS = [
@@ -215,6 +289,7 @@ function countMatches(patterns: RegExp[], text: string) {
 }
 
 function buildTags(input: {
+  seiScore: number;
   proceduralScore: number;
   officialScore: number;
   faqScore: number;
@@ -224,7 +299,8 @@ function buildTags(input: {
 }) {
   const tags: string[] = [];
 
-  if (input.proceduralScore > 0) tags.push('sei-rio');
+  if (input.seiScore > 0) tags.push('sei-rio');
+  if (input.proceduralScore > 0) tags.push('rotina-administrativa');
   if (input.officialScore > 0) tags.push('fonte-oficial');
   if (input.manualScore > 0) tags.push('manual');
   if (input.guideScore > 0) tags.push('guia');
@@ -237,6 +313,7 @@ function buildTags(input: {
 export function classifyKnowledgeDocument(fileName: string, text: string): KnowledgeDocumentClassification {
   const corpus = `${fileName}\n${text.slice(0, 8000)}`;
   const technicalScore = countMatches(TECHNICAL_PATTERNS, corpus);
+  const seiScore = countMatches(SEI_RIO_PATTERNS, corpus);
   const proceduralScore = countMatches(PROCEDURAL_PATTERNS, corpus);
   const officialScore = countMatches(OFFICIAL_PATTERNS, corpus);
   const faqScore = countMatches(FAQ_PATTERNS, corpus);
@@ -244,6 +321,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
   const normativeScore = countMatches(NORMATIVE_PATTERNS, corpus);
   const manualScore = countMatches(MANUAL_PATTERNS, corpus);
   const tags = buildTags({
+    seiScore,
     proceduralScore,
     officialScore,
     faqScore,
@@ -251,6 +329,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
     normativeScore,
     manualScore,
   });
+  const isSeiRioMaterial = seiScore > 0;
 
   if (technicalScore >= 3 && technicalScore > proceduralScore) {
     return {
@@ -272,7 +351,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
     };
   }
 
-  if (normativeScore > 0 && proceduralScore > 0) {
+  if (normativeScore > 0 && proceduralScore > 0 && isSeiRioMaterial) {
     return {
       topicScope: 'sei_rio_norma',
       documentKind: 'norma',
@@ -292,7 +371,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
     };
   }
 
-  if (manualScore > 0 && proceduralScore > 0) {
+  if (manualScore > 0 && proceduralScore > 0 && isSeiRioMaterial) {
     return {
       topicScope: 'sei_rio_manual',
       documentKind: 'manual',
@@ -312,7 +391,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
     };
   }
 
-  if (guideScore > 0 && proceduralScore > 0) {
+  if (guideScore > 0 && proceduralScore > 0 && isSeiRioMaterial) {
     return {
       topicScope: 'sei_rio_guia',
       documentKind: 'guia',
@@ -332,7 +411,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
     };
   }
 
-  if (faqScore > 0 && proceduralScore > 0) {
+  if (faqScore > 0 && proceduralScore > 0 && isSeiRioMaterial) {
     return {
       topicScope: 'sei_rio_faq',
       documentKind: 'faq',

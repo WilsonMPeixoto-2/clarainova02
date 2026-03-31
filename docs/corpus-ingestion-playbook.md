@@ -1,6 +1,6 @@
 # Playbook de ingestao inicial da CLARA
 
-Data: 2026-03-30
+Data: 2026-03-31
 
 ## Objetivo
 
@@ -118,8 +118,24 @@ Depois de ingerir:
 
 1. Verificar se `documents` recebeu os metadados esperados.
 2. Verificar se `document_chunks` foi populado.
-3. Testar ao menos uma pergunta real ligada ao documento.
-4. Confirmar se a referencia aparece de forma coerente na resposta.
+3. Confirmar se o documento ficou em um dos estados corretos:
+   - `ready`
+   - `embedding_pending`
+   - `chunks_incomplete`
+4. So considerar o documento apto para grounding principal quando `grounding_enabled = true`.
+5. Testar ao menos uma pergunta real ligada ao documento.
+6. Confirmar se a referencia aparece de forma coerente na resposta.
+
+## Tratamento para falha parcial de embeddings
+
+Se o provedor de embeddings estiver indisponivel, sem cota ou com chave invalida:
+
+- o documento pode ser salvo no banco com todos os chunks
+- o status deve ficar como `embedding_pending`, e nao como `processed`
+- o admin deve usar `Retomar` quando o provedor estiver normalizado
+- o documento nao deve ser tratado como pronto para o grounding principal
+
+Essa regra existe para manter a operacao honesta enquanto Gemini e corpus real ainda nao estiverem estabilizados.
 
 ## Estrategia do corpus inicial
 
@@ -133,7 +149,7 @@ Nao ultrapassar esse volume antes do primeiro ciclo de validacao do RAG.
 
 ## Criterio de avance para o proximo bloco
 
-Este playbook prepara o caminho para o `BLOCO 5`.
+Este playbook prepara o caminho para o `BLOCO 3`.
 
 So vale partir para a prova operacional do RAG quando:
 

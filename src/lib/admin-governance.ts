@@ -1,5 +1,6 @@
 import {
   classifyKnowledgeDocument,
+  KNOWLEDGE_CORPUS_LANES,
   recommendKnowledgeGovernance,
   type KnowledgeAuthorityLevel,
   type KnowledgeCorpusCategory,
@@ -84,6 +85,31 @@ export interface ResolvedUploadGovernance {
   governanceReason: string;
 }
 
+export type DocumentGroundingStatus =
+  | "processing"
+  | "ready"
+  | "embeddings_pending"
+  | "chunks_incomplete"
+  | "inactive"
+  | "excluded";
+
+export const DOCUMENT_GROUNDING_STATUS_LABELS: Record<DocumentGroundingStatus, string> = {
+  processing: "Em preparação",
+  ready: "Pronto para grounding",
+  embeddings_pending: "Embeddings pendentes",
+  chunks_incomplete: "Chunks incompletos",
+  inactive: "Fora do grounding",
+  excluded: "Excluido do grounding",
+};
+
+export interface ResolvedDocumentOperationalState {
+  status: string;
+  failureReason: string | null;
+  groundingStatus: DocumentGroundingStatus;
+  groundingEnabled: boolean;
+  readinessSummary: string;
+}
+
 function normalizeOptionalText(value: string) {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
@@ -92,6 +118,22 @@ function normalizeOptionalText(value: string) {
 function normalizeOptionalDate(value: string) {
   const trimmed = value.trim();
   return trimmed.length > 0 ? `${trimmed}T00:00:00.000Z` : null;
+}
+
+function normalizeCorpusCategorySafety(
+  topicScope: KnowledgeTopicScope,
+  documentKind: KnowledgeDocumentKind,
+  authorityLevel: KnowledgeAuthorityLevel,
+  corpusCategory: KnowledgeCorpusCategory,
+  searchWeight: number,
+) {
+  return (
+    topicScope === "clara_internal" ||
+    documentKind === "internal_technical" ||
+    authorityLevel === "internal" ||
+    corpusCategory === "interno_excluido" ||
+    searchWeight <= 0
+  );
 }
 
 export function resolveUploadGovernance(
@@ -119,9 +161,18 @@ export function resolveUploadGovernance(
     form.authorityLevel === "auto" &&
     form.searchWeight.trim().length === 0;
 
-  const isActive = classification.shouldIndex || !keepsAutomaticClassification
-    ? form.isActive
-    : false;
+  const forcedOutOfGrounding = normalizeCorpusCategorySafety(
+    topicScope,
+    documentKind,
+    authorityLevel,
+    corpusCategory,
+    searchWeight,
+  );
+  const isActive = forcedOutOfGrounding
+    ? false
+    : classification.shouldIndex || !keepsAutomaticClassification
+      ? form.isActive
+      : false;
 
   const governanceReason = classification.warning ?? recommendation.rationale;
 
@@ -164,6 +215,84 @@ function getMetadataValue<T extends string | number | boolean>(
   return null;
 }
 
+function getMetadataArrayValue(metadata: JsonLike, key: string) {
+  if (!metadata || typeof metadata !== "object") {
+    return null;
+  }
+
+  const value = metadata[key];
+  return Array.isArray(value) ? value : null;
+}
+
+export function getKnowledgeCorpusLane(category: KnowledgeCorpusCategory | null | undefined) {
+  if (!category) return null;
+  return KNOWLEDGE_CORPUS_LANES.find((lane) => lane.category === category) ?? null;
+}
+
+export function resolveDocumentOperationalState(input: {
+  expectedChunks: number;
+  savedChunks: number;
+  embeddedChunks: number;
+  governanceActive: boolean;
+  excludedFromGrounding: boolean;
+}) : ResolvedDocumentOperationalState {
+  const expectedChunks = Math.max(0, input.expectedChunks);
+  const savedChunks = Math.max(0, Math.min(input.savedChunks, expectedChunks || input.savedChunks));
+  const embeddedChunks = Math.max(0, Math.min(input.embeddedChunks, savedChunks));
+  const missingEmbeddings = Math.max(expectedChunks - embeddedChunks, 0);
+
+  if (expectedChunks === 0 || savedChunks === 0 || savedChunks < expectedChunks) {
+    const missingChunks = Math.max(expectedChunks - savedChunks, 0);
+    return {
+      status: "error",
+      failureReason: savedChunks === 0 ? "no_chunks_persisted" : "partial_ingestion",
+      groundingStatus: "chunks_incomplete",
+      groundingEnabled: false,
+      readinessSummary: missingChunks > 0
+        ? `${savedChunks}/${expectedChunks} chunks salvos`
+        : "Nenhum chunk salvo",
+    };
+  }
+
+  if (embeddedChunks < expectedChunks) {
+    return {
+      status: "embedding_pending",
+      failureReason: "embedding_incomplete",
+      groundingStatus: "embeddings_pending",
+      groundingEnabled: false,
+      readinessSummary: `${embeddedChunks}/${expectedChunks} embeddings prontos`,
+    };
+  }
+
+  if (input.excludedFromGrounding) {
+    return {
+      status: "processed",
+      failureReason: null,
+      groundingStatus: "excluded",
+      groundingEnabled: false,
+      readinessSummary: "Documento completo, mas fora do grounding principal",
+    };
+  }
+
+  if (!input.governanceActive) {
+    return {
+      status: "processed",
+      failureReason: null,
+      groundingStatus: "inactive",
+      groundingEnabled: false,
+      readinessSummary: "Documento completo, aguardando ativacao manual",
+    };
+  }
+
+  return {
+    status: "processed",
+    failureReason: null,
+    groundingStatus: "ready",
+    groundingEnabled: true,
+    readinessSummary: `${embeddedChunks}/${expectedChunks} embeddings prontos`,
+  };
+}
+
 export function parseDocumentGovernanceMetadata(metadata: JsonLike) {
   return {
     documentKind: getMetadataValue<string>(metadata, "document_kind"),
@@ -172,5 +301,15 @@ export function parseDocumentGovernanceMetadata(metadata: JsonLike) {
     corpusCategory: getMetadataValue<string>(metadata, "corpus_category"),
     ingestionPriority: getMetadataValue<string>(metadata, "ingestion_priority"),
     governanceNotes: getMetadataValue<string>(metadata, "governance_notes"),
+    expectedChunks: getMetadataValue<number>(metadata, "expected_chunks"),
+    savedChunks: getMetadataValue<number>(metadata, "saved_chunks"),
+    embeddedChunks: getMetadataValue<number>(metadata, "embedded_chunks"),
+    missingEmbeddings: getMetadataValue<number>(metadata, "missing_embeddings"),
+    groundingStatus: getMetadataValue<string>(metadata, "grounding_status"),
+    groundingEnabled: getMetadataValue<boolean>(metadata, "grounding_enabled"),
+    governanceActivationRequested: getMetadataValue<boolean>(metadata, "governance_activation_requested"),
+    readinessSummary: getMetadataValue<string>(metadata, "readiness_summary"),
+    lastEmbeddingAttemptAt: getMetadataValue<string>(metadata, "last_embedding_attempt_at"),
+    lastEmbeddingRequestIds: getMetadataArrayValue(metadata, "last_embedding_request_ids"),
   };
 }

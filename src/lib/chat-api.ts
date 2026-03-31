@@ -50,9 +50,13 @@ export interface ChatApiConfig {
   mockDelayMs?: number;
 }
 
+function sanitizeEnvValue(value: string | undefined) {
+  return value?.replace(/\\n/g, '').trim() ?? '';
+}
+
 export function getDefaultChatApiConfig(): ChatApiConfig {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseUrl = sanitizeEnvValue(import.meta.env.VITE_SUPABASE_URL);
+  const supabasePublishableKey = sanitizeEnvValue(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
   const backendConfigured = isChatBackendConfigured({
     VITE_SUPABASE_URL: supabaseUrl,
     VITE_SUPABASE_PUBLISHABLE_KEY: supabasePublishableKey,

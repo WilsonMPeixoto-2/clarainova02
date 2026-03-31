@@ -44,7 +44,9 @@ export default function UsageStatsCard() {
     : [];
 
   const monthLabel = stats
-    ? new Date(stats.month + "-01").toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
+    ? new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" }).format(
+        new Date(`${stats.month}-01T00:00:00Z`),
+      )
     : "";
 
   return (

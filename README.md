@@ -8,7 +8,7 @@
 - Checagem padrao do projeto: `npm run validate`
 - Build de producao validado localmente com `npm run build`
 - O frontend funciona mesmo sem Supabase, entrando em modo de preparacao
-- Admin, ingestao, metricas e RAG grounded dependem de configuracao real do Supabase, auth administrativa e corpus inicial
+- Admin, ingestao, metricas e RAG grounded dependem do Supabase real, auth administrativa, corpus inicial curado e estabilidade do provedor Gemini
 
 ## Stack tecnologica
 
@@ -32,11 +32,10 @@
 
 ## O que depende de configuracao operacional
 
-- Login administrativo contra Supabase Auth
-- Upload e ingestao de PDFs pelo admin
-- Embeddings reais e busca grounded no corpus
+- Google OAuth do admin no projeto Supabase real
+- Primeira carga curada de documentos aderentes ao SEI-Rio
+- Embeddings reais estaveis no provedor Gemini
 - Metricas agregadas vindas das Edge Functions
-- Redeploy no Vercel com o baseline atual publicado
 
 ## Desenvolvimento
 

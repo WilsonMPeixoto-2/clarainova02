@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { hasSupabaseConfig, SUPABASE_UNAVAILABLE_MESSAGE, supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_UPLOAD_GOVERNANCE_FORM,
+  getKnowledgeCorpusLane,
+  resolveDocumentOperationalState,
   resolveUploadGovernance,
   type UploadGovernanceFormState,
 } from "@/lib/admin-governance";
@@ -107,7 +109,7 @@ async function embedBatchWithRetry(
   batch: string[],
   startIndex: number,
   signal?: AbortSignal,
-): Promise<{ saved: number; requestId?: string }> {
+): Promise<{ saved: number; embedded: number; failedEmbeddings: number; requestId?: string }> {
   return withRetry(async () => {
     const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
       body: { document_id: documentId, chunks: batch, start_index: startIndex },
@@ -125,26 +127,112 @@ async function embedBatchWithRetry(
       throw new Error(`EMBED_APP_ERROR: ${code} (req: ${fnData?.request_id || "?"})`);
     }
 
-    return { saved: fnData?.saved || batch.length, requestId: fnData?.request_id };
+    const saved = fnData?.saved || batch.length;
+    const failedEmbeddings = Math.max(0, fnData?.failed_embeddings || 0);
+    return {
+      saved,
+      embedded: Math.max(saved - failedEmbeddings, 0),
+      failedEmbeddings,
+      requestId: fnData?.request_id,
+    };
   }, { retries: 3, signal });
 }
 
-async function verifyChunksInDB(documentId: string): Promise<number> {
-  const { count } = await supabase
-    .from("document_chunks")
-    .select("*", { count: "exact", head: true })
-    .eq("document_id", documentId);
+function countExpectedChunkIndexes(indexes: Iterable<number>, expectedChunkCount: number): number {
+  const expectedIndexes = new Set<number>();
 
-  return count || 0;
+  for (let index = 0; index < expectedChunkCount; index++) {
+    expectedIndexes.add(index);
+  }
+
+  let matched = 0;
+  for (const index of indexes) {
+    if (expectedIndexes.has(index)) {
+      matched += 1;
+    }
+  }
+
+  return matched;
 }
 
-async function getExistingChunkIndexes(documentId: string): Promise<Set<number>> {
+function hasAllExpectedChunkIndexes(indexes: Set<number>, expectedChunkCount: number): boolean {
+  return countExpectedChunkIndexes(indexes, expectedChunkCount) === expectedChunkCount;
+}
+
+interface DocumentChunkHealth {
+  savedCount: number;
+  embeddedCount: number;
+  savedIndexes: Set<number>;
+  embeddedIndexes: Set<number>;
+}
+
+async function inspectDocumentChunks(documentId: string, expectedChunkCount: number): Promise<DocumentChunkHealth> {
   const { data } = await supabase
     .from("document_chunks")
-    .select("chunk_index")
+    .select("chunk_index, embedding")
     .eq("document_id", documentId);
 
-  return new Set((data || []).map((row: { chunk_index: number }) => row.chunk_index));
+  const rows = (data || []) as Array<{ chunk_index: number; embedding: string | null }>;
+  const savedIndexes = new Set(rows.map((row) => row.chunk_index));
+  const embeddedIndexes = new Set(
+    rows
+      .filter((row) => Boolean(row.embedding))
+      .map((row) => row.chunk_index),
+  );
+
+  return {
+    savedCount: countExpectedChunkIndexes(savedIndexes, expectedChunkCount),
+    embeddedCount: countExpectedChunkIndexes(embeddedIndexes, expectedChunkCount),
+    savedIndexes,
+    embeddedIndexes,
+  };
+}
+
+function normalizeMetadataRecord(metadata: Document["metadata_json"]): Record<string, unknown> {
+  return metadata && typeof metadata === "object" && !Array.isArray(metadata)
+    ? { ...metadata }
+    : {};
+}
+
+function isExcludedFromGrounding(input: {
+  corpusCategory: string;
+  topicScope: string;
+  documentKind: string;
+  authorityLevel: string;
+  searchWeight: number;
+}) {
+  return (
+    input.corpusCategory === "interno_excluido" ||
+    input.topicScope === "clara_internal" ||
+    input.documentKind === "internal_technical" ||
+    input.authorityLevel === "internal" ||
+    input.searchWeight <= 0
+  );
+}
+
+function buildOperationalMetadata(input: {
+  metadata: Record<string, unknown>;
+  expectedChunks: number;
+  chunkHealth: DocumentChunkHealth;
+  operationalState: ReturnType<typeof resolveDocumentOperationalState>;
+  governanceActivationRequested: boolean;
+  requestIds?: string[];
+}) {
+  const missingEmbeddings = Math.max(input.expectedChunks - input.chunkHealth.embeddedCount, 0);
+
+  return {
+    ...input.metadata,
+    expected_chunks: input.expectedChunks,
+    saved_chunks: input.chunkHealth.savedCount,
+    embedded_chunks: input.chunkHealth.embeddedCount,
+    missing_embeddings: missingEmbeddings,
+    grounding_status: input.operationalState.groundingStatus,
+    grounding_enabled: input.operationalState.groundingEnabled,
+    governance_activation_requested: input.governanceActivationRequested,
+    readiness_summary: input.operationalState.readinessSummary,
+    last_embedding_attempt_at: input.requestIds && input.requestIds.length > 0 ? new Date().toISOString() : input.metadata.last_embedding_attempt_at ?? null,
+    last_embedding_request_ids: input.requestIds && input.requestIds.length > 0 ? input.requestIds : input.metadata.last_embedding_request_ids ?? [],
+  };
 }
 
 export default function Admin() {
@@ -184,6 +272,10 @@ export default function Admin() {
       if (oldStatus && oldStatus !== doc.status) {
         if (doc.status === "processed") {
           toast.success("Documento pronto", { description: `"${doc.name}" foi processado com sucesso.` });
+        } else if (doc.status === "embedding_pending") {
+          toast.warning("Embeddings pendentes", {
+            description: `"${doc.name}" foi salvo, mas ainda nao esta pronto para grounding.`,
+          });
         } else if (doc.status === "error") {
           toast.error("Erro no processamento", { description: `"${doc.name}" falhou. Use o botão reprocessar.` });
         }
@@ -281,27 +373,53 @@ export default function Admin() {
     chunks: string[],
     fileName: string,
     abortSignal: AbortSignal,
-    skipIndexes?: Set<number>,
-  ): Promise<{ insertedChunks: number; status: IngestionStatus }> => {
+    existingChunkHealth?: DocumentChunkHealth,
+  ): Promise<{
+    savedChunks: number;
+    embeddedChunks: number;
+    failedEmbeddings: number;
+    requestIds: string[];
+    status: IngestionStatus;
+  }> => {
     const totalChunks = chunks.length;
+    const embeddedIndexes = existingChunkHealth?.embeddedIndexes ?? new Set<number>();
     const chunksToSend: { chunk: string; index: number }[] = [];
 
     for (let index = 0; index < chunks.length; index++) {
-      if (!skipIndexes || !skipIndexes.has(index)) {
+      if (!embeddedIndexes.has(index)) {
         chunksToSend.push({ chunk: chunks[index], index });
       }
     }
 
     if (chunksToSend.length === 0) {
-      return { insertedChunks: totalChunks, status: "done" };
+      const chunkHealth = existingChunkHealth ?? await inspectDocumentChunks(documentId, totalChunks);
+      const failedEmbeddings = Math.max(chunkHealth.savedCount - chunkHealth.embeddedCount, 0);
+
+      return {
+        savedChunks: chunkHealth.savedCount,
+        embeddedChunks: chunkHealth.embeddedCount,
+        failedEmbeddings,
+        requestIds: [],
+        status: chunkHealth.embeddedCount >= totalChunks
+          ? "done"
+          : chunkHealth.savedCount >= totalChunks
+            ? "embedding_pending"
+            : chunkHealth.savedCount > 0
+              ? "partial"
+              : "failed",
+      };
     }
 
-    let processedCount = skipIndexes ? (totalChunks - chunksToSend.length) : 0;
+    let processedCount = existingChunkHealth?.embeddedCount ?? 0;
+    const requestIds: string[] = [];
 
     updateIngestion(fileName, {
       status: "vectorizing",
       expectedChunks: totalChunks,
       processedChunks: processedCount,
+      embeddedChunks: processedCount,
+      insertedChunks: existingChunkHealth?.savedCount ?? 0,
+      failedEmbeddings: Math.max((existingChunkHealth?.savedCount ?? 0) - processedCount, 0),
       phaseLabel: `Vetorizando... ${processedCount}/${totalChunks}`,
       progress: 30 + Math.round((processedCount / totalChunks) * 60),
     });
@@ -316,7 +434,10 @@ export default function Admin() {
       const batchStartIndex = batchItems[0].index;
 
       try {
-        await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
+        const result = await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
+        if (result.requestId) {
+          requestIds.push(result.requestId);
+        }
       } catch (err: unknown) {
         console.error(`Batch at index ${batchStartIndex} failed after retries:`, err);
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -334,6 +455,7 @@ export default function Admin() {
       const embeddingProgress = 30 + Math.round((processedCount / totalChunks) * 60);
       updateIngestion(fileName, {
         processedChunks: processedCount,
+        embeddedChunks: processedCount,
         progress: embeddingProgress,
         phaseLabel: `Vetorizando... ${processedCount}/${totalChunks}`,
       });
@@ -345,17 +467,49 @@ export default function Admin() {
       progress: 92,
     });
 
-    const insertedChunks = await verifyChunksInDB(documentId);
-    updateIngestion(fileName, { insertedChunks });
+    const chunkHealth = await inspectDocumentChunks(documentId, totalChunks);
+    const failedEmbeddings = Math.max(chunkHealth.savedCount - chunkHealth.embeddedCount, 0);
+    updateIngestion(fileName, {
+      insertedChunks: chunkHealth.savedCount,
+      embeddedChunks: chunkHealth.embeddedCount,
+      failedEmbeddings,
+    });
 
-    if (insertedChunks >= totalChunks) {
-      return { insertedChunks, status: "done" };
+    if (chunkHealth.embeddedCount >= totalChunks) {
+      return {
+        savedChunks: chunkHealth.savedCount,
+        embeddedChunks: chunkHealth.embeddedCount,
+        failedEmbeddings,
+        requestIds,
+        status: "done",
+      };
     }
-    if (insertedChunks > 0) {
-      return { insertedChunks, status: "partial" };
+    if (chunkHealth.savedCount >= totalChunks) {
+      return {
+        savedChunks: chunkHealth.savedCount,
+        embeddedChunks: chunkHealth.embeddedCount,
+        failedEmbeddings,
+        requestIds,
+        status: "embedding_pending",
+      };
+    }
+    if (chunkHealth.savedCount > 0) {
+      return {
+        savedChunks: chunkHealth.savedCount,
+        embeddedChunks: chunkHealth.embeddedCount,
+        failedEmbeddings,
+        requestIds,
+        status: "partial",
+      };
     }
 
-    return { insertedChunks, status: "failed" };
+    return {
+      savedChunks: chunkHealth.savedCount,
+      embeddedChunks: chunkHealth.embeddedCount,
+      failedEmbeddings,
+      requestIds,
+      status: "failed",
+    };
   };
 
   const processFileClientSide = async (file: File, governanceForm: UploadGovernanceFormState) => {
@@ -369,6 +523,8 @@ export default function Admin() {
       processedChunks: 0,
       expectedChunks: 0,
       insertedChunks: 0,
+      embeddedChunks: 0,
+      failedEmbeddings: 0,
       abortController,
     };
 
@@ -390,6 +546,55 @@ export default function Admin() {
       const { sanitizeFileName } = await loadAdminIngestionModule();
       const sanitizedName = sanitizeFileName(file.name);
       const filePath = `${crypto.randomUUID()}_${sanitizedName}`;
+      const corpusLane = getKnowledgeCorpusLane(resolvedGovernance.corpusCategory);
+      const excludedFromGrounding = isExcludedFromGrounding({
+        corpusCategory: resolvedGovernance.corpusCategory,
+        topicScope: resolvedGovernance.topicScope,
+        documentKind: resolvedGovernance.documentKind,
+        authorityLevel: resolvedGovernance.authorityLevel,
+        searchWeight: resolvedGovernance.searchWeight,
+      });
+      const initialOperationalState = resolveDocumentOperationalState({
+        expectedChunks: prepared.chunks.length,
+        savedChunks: 0,
+        embeddedChunks: 0,
+        governanceActive: resolvedGovernance.isActive,
+        excludedFromGrounding,
+      });
+      const governanceMetadata: Record<string, unknown> = {
+        document_kind: resolvedGovernance.documentKind,
+        authority_level: resolvedGovernance.authorityLevel,
+        search_weight: resolvedGovernance.searchWeight,
+        corpus_category: resolvedGovernance.corpusCategory,
+        ingestion_priority: resolvedGovernance.ingestionPriority,
+        governance_notes: resolvedGovernance.governanceNotes,
+        governance_reason: resolvedGovernance.governanceReason,
+        classifier_warning: resolvedGovernance.classification.warning,
+        classifier_tags: resolvedGovernance.classification.tags,
+        classifier_scores: {
+          technical: resolvedGovernance.classification.technicalScore,
+          procedural: resolvedGovernance.classification.proceduralScore,
+          official: resolvedGovernance.classification.officialScore,
+          faq: resolvedGovernance.classification.faqScore,
+          guide: resolvedGovernance.classification.guideScore,
+          normative: resolvedGovernance.classification.normativeScore,
+          manual: resolvedGovernance.classification.manualScore,
+        },
+        corpus_lane_order: corpusLane?.order ?? null,
+        corpus_lane_title: corpusLane?.title ?? null,
+      };
+      const initialMetadata = buildOperationalMetadata({
+        metadata: governanceMetadata,
+        expectedChunks: prepared.chunks.length,
+        chunkHealth: {
+          savedCount: 0,
+          embeddedCount: 0,
+          savedIndexes: new Set<number>(),
+          embeddedIndexes: new Set<number>(),
+        },
+        operationalState: initialOperationalState,
+        governanceActivationRequested: resolvedGovernance.isActive,
+      });
 
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData?.session?.access_token) {
@@ -424,26 +629,7 @@ export default function Admin() {
           last_reviewed_at: resolvedGovernance.lastReviewedAt,
           page_count: prepared.pages.length,
           text_char_count: prepared.fullText.length,
-          metadata_json: {
-            document_kind: resolvedGovernance.documentKind,
-            authority_level: resolvedGovernance.authorityLevel,
-            search_weight: resolvedGovernance.searchWeight,
-            corpus_category: resolvedGovernance.corpusCategory,
-            ingestion_priority: resolvedGovernance.ingestionPriority,
-            governance_notes: resolvedGovernance.governanceNotes,
-            governance_reason: resolvedGovernance.governanceReason,
-            classifier_warning: resolvedGovernance.classification.warning,
-            classifier_tags: resolvedGovernance.classification.tags,
-            classifier_scores: {
-              technical: resolvedGovernance.classification.technicalScore,
-              procedural: resolvedGovernance.classification.proceduralScore,
-              official: resolvedGovernance.classification.officialScore,
-              faq: resolvedGovernance.classification.faqScore,
-              guide: resolvedGovernance.classification.guideScore,
-              normative: resolvedGovernance.classification.normativeScore,
-              manual: resolvedGovernance.classification.manualScore,
-            },
-          },
+          metadata_json: initialMetadata,
         })
         .select()
         .single();
@@ -469,12 +655,30 @@ export default function Admin() {
         return;
       }
 
+      const chunkHealth = await inspectDocumentChunks(documentId, prepared.chunks.length);
+      const operationalState = resolveDocumentOperationalState({
+        expectedChunks: prepared.chunks.length,
+        savedChunks: chunkHealth.savedCount,
+        embeddedChunks: chunkHealth.embeddedCount,
+        governanceActive: resolvedGovernance.isActive,
+        excludedFromGrounding,
+      });
+      const finalMetadata = buildOperationalMetadata({
+        metadata: governanceMetadata,
+        expectedChunks: prepared.chunks.length,
+        chunkHealth,
+        operationalState,
+        governanceActivationRequested: resolvedGovernance.isActive,
+        requestIds: result.requestIds,
+      });
+
       if (result.status === "done") {
         await supabase.from("documents").update({
-          status: "processed",
+          status: operationalState.status,
           processed_at: new Date().toISOString(),
           failed_at: null,
-          failure_reason: null,
+          failure_reason: operationalState.failureReason,
+          metadata_json: finalMetadata,
         }).eq("id", documentId);
         await supabase.from("usage_logs").insert({
           event_type: "client_side_ingestion",
@@ -491,34 +695,66 @@ export default function Admin() {
         });
         updateIngestion(file.name, {
           status: "done",
-          phaseLabel: `✓ Pronto — ${prepared.chunks.length} fragmentos`,
+          insertedChunks: chunkHealth.savedCount,
+          embeddedChunks: chunkHealth.embeddedCount,
+          failedEmbeddings: result.failedEmbeddings,
+          phaseLabel: `✓ Pronto — ${chunkHealth.embeddedCount}/${prepared.chunks.length} embeddings`,
           progress: 100,
         });
         toast.success("Documento processado", {
-          description: `"${file.name}" — ${prepared.chunks.length} fragmentos indexados com governança documental.`,
+          description: `"${file.name}" — ${chunkHealth.embeddedCount}/${prepared.chunks.length} embeddings prontos com governança documental.`,
+        });
+      } else if (result.status === "embedding_pending") {
+        await supabase.from("documents").update({
+          status: operationalState.status,
+          processed_at: null,
+          failed_at: new Date().toISOString(),
+          failure_reason: operationalState.failureReason,
+          metadata_json: finalMetadata,
+        }).eq("id", documentId);
+        updateIngestion(file.name, {
+          status: "embedding_pending",
+          insertedChunks: chunkHealth.savedCount,
+          embeddedChunks: chunkHealth.embeddedCount,
+          failedEmbeddings: result.failedEmbeddings,
+          phaseLabel: `⚠ Embeddings pendentes — ${chunkHealth.embeddedCount}/${prepared.chunks.length}`,
+          progress: Math.max(92, Math.round((chunkHealth.embeddedCount / prepared.chunks.length) * 100)),
+        });
+        toast.warning("Documento salvo com embeddings pendentes", {
+          description: `"${file.name}" — ${chunkHealth.savedCount} chunks salvos, ${chunkHealth.embeddedCount}/${prepared.chunks.length} embeddings prontos. Use Retomar.`,
         });
       } else if (result.status === "partial") {
         await supabase.from("documents").update({
-          status: "error",
+          status: operationalState.status,
+          processed_at: null,
           failed_at: new Date().toISOString(),
-          failure_reason: "partial_ingestion",
+          failure_reason: operationalState.failureReason,
+          metadata_json: finalMetadata,
         }).eq("id", documentId);
         updateIngestion(file.name, {
           status: "partial",
-          phaseLabel: `⚠ Parcial — ${result.insertedChunks}/${prepared.chunks.length} fragmentos`,
-          progress: Math.round((result.insertedChunks / prepared.chunks.length) * 100),
+          insertedChunks: chunkHealth.savedCount,
+          embeddedChunks: chunkHealth.embeddedCount,
+          failedEmbeddings: result.failedEmbeddings,
+          phaseLabel: `⚠ Parcial — ${chunkHealth.savedCount}/${prepared.chunks.length} chunks salvos`,
+          progress: Math.round((chunkHealth.savedCount / prepared.chunks.length) * 100),
         });
         toast.error("Processamento parcial", {
-          description: `"${file.name}" — ${result.insertedChunks}/${prepared.chunks.length}. Use Retomar.`,
+          description: `"${file.name}" — ${chunkHealth.savedCount}/${prepared.chunks.length} chunks salvos. Use Retomar.`,
         });
       } else {
         await supabase.from("documents").update({
-          status: "error",
+          status: operationalState.status,
+          processed_at: null,
           failed_at: new Date().toISOString(),
-          failure_reason: "no_chunks_persisted",
+          failure_reason: operationalState.failureReason,
+          metadata_json: finalMetadata,
         }).eq("id", documentId);
         updateIngestion(file.name, {
           status: "failed",
+          insertedChunks: chunkHealth.savedCount,
+          embeddedChunks: chunkHealth.embeddedCount,
+          failedEmbeddings: result.failedEmbeddings,
           phaseLabel: "Falha — nenhum fragmento salvo",
         });
         toast.error("Falha total", {
@@ -581,7 +817,6 @@ export default function Admin() {
     setRetryingId(doc.id);
 
     try {
-      const existingIndexes = await getExistingChunkIndexes(doc.id);
       await supabase.from("documents").update({ status: "processing" }).eq("id", doc.id);
 
       const { data: fileData, error: downloadErr } = await supabase.storage
@@ -604,22 +839,67 @@ export default function Admin() {
         processedChunks: 0,
         expectedChunks: 0,
         insertedChunks: 0,
+        embeddedChunks: 0,
+        failedEmbeddings: 0,
         abortController,
       };
 
       setIngestions((prev) => [...prev.filter((item) => item.fileName !== doc.name), ingestion]);
 
       const prepared = await preparePdfPayload(file, doc.name);
+      const metadata = normalizeMetadataRecord(doc.metadata_json);
+      const searchWeight = typeof metadata.search_weight === "number" ? metadata.search_weight : 1;
+      const corpusCategory = typeof metadata.corpus_category === "string" ? metadata.corpus_category : "apoio_complementar";
+      const topicScope = typeof doc.topic_scope === "string" ? doc.topic_scope : "material_apoio";
+      const documentKind = typeof metadata.document_kind === "string" ? metadata.document_kind : "apoio";
+      const authorityLevel = typeof metadata.authority_level === "string" ? metadata.authority_level : "supporting";
+      const governanceActive = doc.is_active !== false;
+      const excludedFromGrounding = isExcludedFromGrounding({
+        corpusCategory,
+        topicScope,
+        documentKind,
+        authorityLevel,
+        searchWeight,
+      });
+      const existingChunkHealth = await inspectDocumentChunks(doc.id, prepared.chunks.length);
 
-      if (existingIndexes.size >= prepared.chunks.length) {
-        await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
+      updateIngestion(doc.name, {
+        insertedChunks: existingChunkHealth.savedCount,
+        embeddedChunks: existingChunkHealth.embeddedCount,
+        failedEmbeddings: Math.max(existingChunkHealth.savedCount - existingChunkHealth.embeddedCount, 0),
+      });
+
+      if (hasAllExpectedChunkIndexes(existingChunkHealth.embeddedIndexes, prepared.chunks.length)) {
+        const operationalState = resolveDocumentOperationalState({
+          expectedChunks: prepared.chunks.length,
+          savedChunks: existingChunkHealth.savedCount,
+          embeddedChunks: existingChunkHealth.embeddedCount,
+          governanceActive,
+          excludedFromGrounding,
+        });
+        await supabase.from("documents").update({
+          status: operationalState.status,
+          processed_at: new Date().toISOString(),
+          failed_at: null,
+          failure_reason: operationalState.failureReason,
+          metadata_json: buildOperationalMetadata({
+            metadata,
+            expectedChunks: prepared.chunks.length,
+            chunkHealth: existingChunkHealth,
+            operationalState,
+            governanceActivationRequested: governanceActive,
+          }),
+        }).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "done",
+          insertedChunks: existingChunkHealth.savedCount,
+          embeddedChunks: existingChunkHealth.embeddedCount,
+          failedEmbeddings: 0,
           progress: 100,
-          phaseLabel: `✓ ${prepared.chunks.length} fragmentos (já existiam)`,
+          phaseLabel: `✓ ${prepared.chunks.length} embeddings prontos (ja existiam)`,
         });
         toast.success("Já completo", {
-          description: `"${doc.name}" — todos os fragmentos já existiam.`,
+          description: `"${doc.name}" — todos os embeddings ja existiam.`,
         });
         fetchDocuments();
         setTimeout(() => {
@@ -633,29 +913,95 @@ export default function Admin() {
         prepared.chunks,
         doc.name,
         abortController.signal,
-        existingIndexes,
+        existingChunkHealth,
       );
 
+      const finalChunkHealth = await inspectDocumentChunks(doc.id, prepared.chunks.length);
+      const operationalState = resolveDocumentOperationalState({
+        expectedChunks: prepared.chunks.length,
+        savedChunks: finalChunkHealth.savedCount,
+        embeddedChunks: finalChunkHealth.embeddedCount,
+        governanceActive,
+        excludedFromGrounding,
+      });
+      const nextMetadata = buildOperationalMetadata({
+        metadata,
+        expectedChunks: prepared.chunks.length,
+        chunkHealth: finalChunkHealth,
+        operationalState,
+        governanceActivationRequested: governanceActive,
+        requestIds: result.requestIds,
+      });
+
       if (result.status === "done") {
-        await supabase.from("documents").update({ status: "processed" }).eq("id", doc.id);
+        await supabase.from("documents").update({
+          status: operationalState.status,
+          processed_at: new Date().toISOString(),
+          failed_at: null,
+          failure_reason: operationalState.failureReason,
+          metadata_json: nextMetadata,
+        }).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "done",
+          insertedChunks: finalChunkHealth.savedCount,
+          embeddedChunks: finalChunkHealth.embeddedCount,
+          failedEmbeddings: 0,
           progress: 100,
-          phaseLabel: `✓ ${prepared.chunks.length} fragmentos`,
+          phaseLabel: `✓ ${prepared.chunks.length} embeddings prontos`,
         });
         toast.success("Reprocessado", { description: `"${doc.name}" pronto.` });
+      } else if (result.status === "embedding_pending") {
+        await supabase.from("documents").update({
+          status: operationalState.status,
+          processed_at: null,
+          failed_at: new Date().toISOString(),
+          failure_reason: operationalState.failureReason,
+          metadata_json: nextMetadata,
+        }).eq("id", doc.id);
+        updateIngestion(doc.name, {
+          status: "embedding_pending",
+          insertedChunks: finalChunkHealth.savedCount,
+          embeddedChunks: finalChunkHealth.embeddedCount,
+          failedEmbeddings: result.failedEmbeddings,
+          phaseLabel: `⚠ Embeddings pendentes — ${finalChunkHealth.embeddedCount}/${prepared.chunks.length}`,
+          progress: Math.max(92, Math.round((finalChunkHealth.embeddedCount / prepared.chunks.length) * 100)),
+        });
+        toast.warning("Embeddings ainda pendentes", {
+          description: `"${doc.name}" — ${finalChunkHealth.embeddedCount}/${prepared.chunks.length} embeddings prontos.`,
+        });
       } else if (result.status === "partial") {
-        await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
+        await supabase.from("documents").update({
+          status: operationalState.status,
+          processed_at: null,
+          failed_at: new Date().toISOString(),
+          failure_reason: operationalState.failureReason,
+          metadata_json: nextMetadata,
+        }).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "partial",
-          phaseLabel: `⚠ ${result.insertedChunks}/${prepared.chunks.length} — Retome novamente`,
+          insertedChunks: finalChunkHealth.savedCount,
+          embeddedChunks: finalChunkHealth.embeddedCount,
+          failedEmbeddings: result.failedEmbeddings,
+          phaseLabel: `⚠ ${finalChunkHealth.savedCount}/${prepared.chunks.length} chunks salvos — Retome novamente`,
         });
         toast.error("Parcial", {
-          description: `"${doc.name}" — ${result.insertedChunks}/${prepared.chunks.length}. Retome.`,
+          description: `"${doc.name}" — ${finalChunkHealth.savedCount}/${prepared.chunks.length}. Retome.`,
         });
       } else {
-        await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
-        updateIngestion(doc.name, { status: "failed", phaseLabel: "Falha no reprocessamento" });
+        await supabase.from("documents").update({
+          status: operationalState.status,
+          processed_at: null,
+          failed_at: new Date().toISOString(),
+          failure_reason: operationalState.failureReason,
+          metadata_json: nextMetadata,
+        }).eq("id", doc.id);
+        updateIngestion(doc.name, {
+          status: "failed",
+          insertedChunks: finalChunkHealth.savedCount,
+          embeddedChunks: finalChunkHealth.embeddedCount,
+          failedEmbeddings: result.failedEmbeddings,
+          phaseLabel: "Falha no reprocessamento",
+        });
         toast.error("Falha", { description: "Reprocessamento falhou." });
       }
 
@@ -709,6 +1055,8 @@ export default function Admin() {
     switch (doc.status) {
       case "processed":
         return <CheckCircle className="h-4 w-4 text-primary" />;
+      case "embedding_pending":
+        return <Warning className="h-4 w-4 text-yellow-500" />;
       case "processing":
       case "pending":
         return <CircleNotch className="h-4 w-4 animate-spin text-muted-foreground" />;
@@ -728,6 +1076,7 @@ export default function Admin() {
       pending: "Na fila",
       processing: "Processando",
       processed: "Pronto",
+      embedding_pending: "Embeddings pendentes",
       error: "Erro",
       cancelled: "Cancelado",
     };
@@ -742,7 +1091,7 @@ export default function Admin() {
   };
 
   const canRetry = (doc: Document) =>
-    doc.status === "error" || doc.status === "cancelled" || isTimedOut(doc.id);
+    doc.status === "error" || doc.status === "cancelled" || doc.status === "embedding_pending" || isTimedOut(doc.id);
 
   const canCancel = (doc: Document) =>
     (doc.status === "processing" || doc.status === "pending") && !isTimedOut(doc.id);

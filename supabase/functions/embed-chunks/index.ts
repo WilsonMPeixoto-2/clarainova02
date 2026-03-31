@@ -22,8 +22,10 @@ function buildCorsHeaders(req: Request) {
   };
 }
 
-const EMBEDDING_MODEL = "text-embedding-004";
+const EMBEDDING_MODEL = "gemini-embedding-001";
 const EMBEDDING_DIM = 768;
+const EMBED_TIMEOUT_MS = 15_000;
+const EMBED_RETRY_DELAYS_MS = [1500, 3000, 6000];
 
 function getErrorMessage(error: unknown, fallback = "Erro interno"): string {
   if (error instanceof Error && error.message.trim()) return error.message;
@@ -86,6 +88,84 @@ async function safeLogEvent(
   }
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getBearerToken(req: Request): string | null {
+  const authorization = req.headers.get("authorization") ?? "";
+  if (!authorization.toLowerCase().startsWith("bearer ")) return null;
+  const token = authorization.slice(7).trim();
+  return token || null;
+}
+
+async function requireAuthenticatedUser(
+  req: Request,
+  supabaseUrl: string,
+  supabaseAnonKey: string,
+) {
+  const accessToken = getBearerToken(req);
+  if (!accessToken) return null;
+
+  const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  });
+
+  const { data, error } = await authClient.auth.getUser();
+  if (error || !data.user) {
+    console.warn("embed-chunks auth rejected:", error?.message ?? "no user");
+    return null;
+  }
+
+  return data.user;
+}
+
+async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string) {
+  for (let attempt = 0; attempt <= EMBED_RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      const result = await Promise.race([
+        ai.models.embedContent({
+          model: EMBEDDING_MODEL,
+          contents: text,
+          config: { outputDimensionality: EMBEDDING_DIM },
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("EMBED_TIMEOUT")), EMBED_TIMEOUT_MS)
+        ),
+      ]);
+
+      const values = result.embeddings?.[0]?.values;
+      if (!values || values.length !== EMBEDDING_DIM) {
+        console.warn(`Embedding dimension mismatch: expected ${EMBEDDING_DIM}, got ${values?.length ?? 0}`);
+        return null;
+      }
+
+      return values;
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err);
+      console.error("Embedding error:", msg);
+
+      if (msg === "EMBED_TIMEOUT") return null;
+
+      const status = getErrorStatus(err);
+      const retryable = status === 429 || (status !== undefined && status >= 500);
+
+      if (retryable && attempt < EMBED_RETRY_DELAYS_MS.length) {
+        await sleep(EMBED_RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
+
+      return null;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Edge function: receives pre-extracted text chunks,
  * generates embeddings via @google/genai SDK, and upserts to DB.
@@ -99,6 +179,24 @@ Deno.serve(async (req) => {
   const request_id = crypto.randomUUID();
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseKey) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "CONFIG:SUPABASE_CREDENTIALS_MISSING", request_id }),
+        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    const authenticatedUser = await requireAuthenticatedUser(req, supabaseUrl, supabaseAnonKey);
+    if (!authenticatedUser) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "AUTH:UNAUTHORIZED", request_id }),
+        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     const { document_id, chunks, start_index = 0, ingestion_job_id = null } = await req.json();
 
     if (!document_id || !chunks || !Array.isArray(chunks) || chunks.length === 0) {
@@ -132,15 +230,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!supabaseUrl || !supabaseKey) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "CONFIG:SUPABASE_CREDENTIALS_MISSING", request_id }),
-        { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
-      );
-    }
-
     const ai = new GoogleGenAI({ apiKey: geminiKey });
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -149,43 +238,19 @@ Deno.serve(async (req) => {
       ingestion_job_id,
       event_type: "embedding_request_received",
       message: "Lote recebido pela edge function de embeddings.",
-      details_json: { start_index, requested_chunks: chunks.length, valid_chunks: validChunks.length },
+      details_json: {
+        start_index,
+        requested_chunks: chunks.length,
+        valid_chunks: validChunks.length,
+        requested_by: authenticatedUser.id,
+      },
     });
 
-    // Generate embeddings with timeout and dimension validation
-    const EMBED_TIMEOUT_MS = 15_000;
     const embeddingStart = Date.now();
-    const embeddingPromises = validChunks.map(async (text: string) => {
-      try {
-        const result = await Promise.race([
-          ai.models.embedContent({
-            model: EMBEDDING_MODEL,
-            contents: text,
-            config: { outputDimensionality: EMBEDDING_DIM },
-          }),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("EMBED_TIMEOUT")), EMBED_TIMEOUT_MS)
-          ),
-        ]);
-        const values = result.embeddings?.[0]?.values;
-        if (!values || values.length !== EMBEDDING_DIM) {
-          console.warn(`Embedding dimension mismatch: expected ${EMBEDDING_DIM}, got ${values?.length ?? 0}`);
-          return null;
-        }
-        return values;
-      } catch (err: unknown) {
-        const msg = getErrorMessage(err);
-        console.error(`Embedding error:`, msg);
-        if (msg === "EMBED_TIMEOUT") return null;
-        const status = getErrorStatus(err);
-        if (status === 429 || (status && status >= 500)) {
-          throw new Error(`GEMINI_${status}`, { cause: err });
-        }
-        return null;
-      }
-    });
-
-    const embeddings = await Promise.all(embeddingPromises);
+    const embeddings: Array<number[] | null> = [];
+    for (const text of validChunks) {
+      embeddings.push(await generateEmbeddingWithRetry(ai, text));
+    }
     const embedding_ms = Date.now() - embeddingStart;
 
     // Build rows using ONLY columns that exist in document_chunks
@@ -252,18 +317,6 @@ Deno.serve(async (req) => {
   } catch (error: unknown) {
     console.error("embed-chunks error:", error);
     const msg = getErrorMessage(error);
-    if (msg.includes("GEMINI_429")) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "RATE_LIMITED", request_id }),
-        { status: 429, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
-      );
-    }
-    if (msg.includes("GEMINI_5")) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "UPSTREAM_ERROR", request_id }),
-        { status: 503, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
-      );
-    }
     return new Response(
       JSON.stringify({ ok: false, error: "INTERNAL_ERROR", details: msg, request_id }),
       { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }

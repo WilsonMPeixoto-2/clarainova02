@@ -22,6 +22,7 @@ export type IngestionStatus =
   | "vectorizing"
   | "verifying"
   | "done"
+  | "embedding_pending"
   | "partial"
   | "failed"
   | "canceled";
@@ -42,6 +43,8 @@ export interface IngestionState {
   processedChunks: number;
   expectedChunks: number;
   insertedChunks: number;
+  embeddedChunks: number;
+  failedEmbeddings: number;
   lastError?: IngestionLastError;
   governanceSummary?: string;
   governanceDetail?: string;

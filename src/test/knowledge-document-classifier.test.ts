@@ -52,6 +52,17 @@ describe("knowledge document classifier", () => {
     expect(result.searchWeight).toBeGreaterThan(1.1);
   });
 
+  it("does not promote non-SEI administrative material to the official SEI core", () => {
+    const result = classifyKnowledgeDocument(
+      "MODELO_DE_OFICIO_PDDE.pdf",
+      "Prestacao de contas do PDDE com extratos bancarios, conciliacao bancaria, documentos comprobatórios e atas de aprovacao.",
+    );
+
+    expect(result.topicScope).toBe("rotina_administrativa");
+    expect(result.documentKind).toBe("administrativo");
+    expect(result.authorityLevel).not.toBe("official");
+  });
+
   it("recommends corpus category and ingestion priority from the classification", () => {
     const officialManual = classifyKnowledgeDocument(
       "Manual SEI-Rio.pdf",
