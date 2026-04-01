@@ -1,0 +1,30 @@
+{
+  "source_of_truth": "origin/main",
+  "protocol_version": 1,
+  "project": "CLARAINOVA02",
+  "last_integrated_main_sha": "2a2cf9ab26b90c6b28cc685b2c13bff2cd10f3f9",
+  "current_phase": "Infraestrutura de continuidade e endurecimento operacional",
+  "active_block": "SETUP — Protocolo de continuidade",
+  "active_branch": "setup/continuity-protocol",
+  "last_tool": "CHATGPT",
+  "last_machine": "UNKNOWN",
+  "last_update_utc": "2026-04-01T00:00:00Z",
+  "completed_items": [
+    "Criação da estrutura inicial de continuidade no repositório"
+  ],
+  "pending_items": [
+    "Adotar o protocolo em todas as sessões de trabalho",
+    "Atualizar MIGRATION_STATUS para refletir o protocolo",
+    "Executar o próximo bloco técnico de RLS / policies"
+  ],
+  "external_blockers": [
+    "Google OAuth do admin ainda pendente",
+    "API do Gemini ainda instável para embeddings reais",
+    "Corpus inicial curado ainda não carregado"
+  ],
+  "next_action": "Mergear a PR de continuidade e adotar este protocolo como ritual obrigatório de abertura e fechamento de sessão",
+  "notes": [
+    "Se houver divergência entre repositório local e GitHub, GitHub continua sendo a única verdade oficial.",
+    "Trabalho não commitado e não pushado não deve ser tratado como estado confiável do projeto."
+  ]
+}
