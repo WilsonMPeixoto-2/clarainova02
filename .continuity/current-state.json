@@ -2,29 +2,35 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "2a2cf9ab26b90c6b28cc685b2c13bff2cd10f3f9",
+  "last_integrated_main_sha": "184276fa698f80acd522919e56e19cf8e66e1d49",
   "current_phase": "Infraestrutura de continuidade e endurecimento operacional",
-  "active_block": "SETUP — Protocolo de continuidade",
-  "active_branch": "setup/continuity-protocol",
-  "last_tool": "CHATGPT",
-  "last_machine": "UNKNOWN",
-  "last_update_utc": "2026-04-01T00:00:00Z",
+  "active_block": "BLOCO 0 — Continuidade e automação mínima",
+  "active_branch": "session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE",
+  "last_tool": "CODEX",
+  "last_machine": "C04-084",
+  "last_update_utc": "2026-04-01T17:16:32.165Z",
   "completed_items": [
-    "Criação da estrutura inicial de continuidade no repositório"
+    "Worktree isolado do Codex criado e bloqueado",
+    "Scripts de continuidade adicionados ao repositório",
+    "Workflow de qualidade passou a validar continuidade",
+    "Prompt universal versionado em .continuity"
   ],
   "pending_items": [
-    "Adotar o protocolo em todas as sessões de trabalho",
-    "Atualizar MIGRATION_STATUS para refletir o protocolo",
-    "Executar o próximo bloco técnico de RLS / policies"
+    "Publicar a branch de sessão no remoto",
+    "Abrir PR de continuidade contra main",
+    "Iniciar BLOCO 1 — RLS / policies"
   ],
   "external_blockers": [
     "Google OAuth do admin ainda pendente",
     "API do Gemini ainda instável para embeddings reais",
     "Corpus inicial curado ainda não carregado"
   ],
-  "next_action": "Mergear a PR de continuidade e adotar este protocolo como ritual obrigatório de abertura e fechamento de sessão",
+  "next_action": "Publicar esta branch de sessão e abrir a PR de continuidade; em seguida iniciar BLOCO 1 — RLS / policies.",
   "notes": [
-    "Se houver divergência entre repositório local e GitHub, GitHub continua sendo a única verdade oficial.",
-    "Trabalho não commitado e não pushado não deve ser tratado como estado confiável do projeto."
-  ]
+    "A branch setup/continuity-protocol foi reaproveitada e rebased sobre origin/main antes da abertura desta sessão.",
+    "O worktree C:\\repos\\clarainova02-codex está bloqueado para uso isolado do Codex."
+  ],
+  "session_status": "partial",
+  "last_report": "docs/operational-reports/2026-04-01-block-0-continuity-bootstrap.md",
+  "last_session_head_sha": "3671799483a0dc7510f4561169569b5e43251fed"
 }

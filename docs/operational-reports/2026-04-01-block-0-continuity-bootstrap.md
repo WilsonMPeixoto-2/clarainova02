@@ -39,8 +39,12 @@ O repositório já possuía uma branch remota de continuidade (`setup/continuity
 4. `package.json` e `.github/workflows/quality.yml` foram atualizados para expor e executar o check de continuidade.
 5. O protocolo e a documentação operacional foram atualizados para refletir o uso de worktrees, automação mínima e prompt universal versionado.
 6. As dependências do projeto foram instaladas no worktree do Codex e o baseline técnico do repositório foi revalidado.
+7. O encerramento estruturado da sessão foi executado com `npm run session:end`, regenerando `docs/HANDOFF.md`, atualizando `.continuity/current-state.json` e acrescentando evento no `.continuity/session-log.jsonl`.
 
 ## Arquivos alterados
+- `.continuity/current-state.json`
+- `.continuity/session-log.jsonl`
+- `docs/HANDOFF.md`
 - `.github/workflows/quality.yml`
 - `.continuity/UNIVERSAL_SESSION_PROMPT.md`
 - `docs/CONTINUITY_PROTOCOL.md`
@@ -55,7 +59,7 @@ O repositório já possuía uma branch remota de continuidade (`setup/continuity
 - `scripts/continuity/validate-continuity.mjs`
 
 ## Testes e validações executados
-- `npm run continuity:check`: pendente de atualização do estado estruturado no encerramento desta sessão
+- `npm run continuity:check`: aprovado
 - `npm run session:start`: pendente de execução com árvore limpa após o commit da sessão
 - `npm run validate`: aprovado
 - `npm run build`: aprovado dentro de `npm run validate`
@@ -68,7 +72,7 @@ Marque o que foi atingido:
 - [x] Sessão do Codex aberta em branch determinística e worktree isolado
 - [x] Scripts mínimos de continuidade adicionados ao repositório
 - [x] Pipeline de qualidade passa a validar continuidade
-- [ ] Handoff e estado estruturado atualizados com o encerramento desta sessão
+- [x] Handoff e estado estruturado atualizados com o encerramento desta sessão
 - [ ] Branch publicada no remoto
 
 ## Resultado do bloco
@@ -89,8 +93,8 @@ Marque o que foi atingido:
 Encerrar formalmente esta sessão atualizando `current-state`, `HANDOFF` e `session-log`, publicar a branch e então abrir a PR de continuidade antes de iniciar o BLOCO 1 de RLS / policies.
 
 ## Atualizações obrigatórias de continuidade
-- [ ] `docs/HANDOFF.md` atualizado
-- [ ] `.continuity/current-state.json` atualizado
-- [ ] `.continuity/session-log.jsonl` atualizado
+- [x] `docs/HANDOFF.md` atualizado
+- [x] `.continuity/current-state.json` atualizado
+- [x] `.continuity/session-log.jsonl` atualizado
 - [x] `.continuity/UNIVERSAL_SESSION_PROMPT.md` revisado se necessário
 - [x] `docs/MIGRATION_STATUS.md` revisado se necessário

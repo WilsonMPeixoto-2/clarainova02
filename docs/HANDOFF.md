@@ -3,51 +3,40 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-01 00:00 UTC
-- Atualizado por: ChatGPT (protocolo inicial)
-- Branch de referência: `setup/continuity-protocol`
-- Commit de base: `2a2cf9ab26b90c6b28cc685b2c13bff2cd10f3f9`
+- Data/hora: 2026-04-01T17:16:32.165Z
+- Atualizado por: CODEX @ C04-084
+- Branch de referência: `session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE`
+- Commit de base oficial: `184276fa698f80acd522919e56e19cf8e66e1d49`
+- Head da sessão: `3671799483a0dc7510f4561169569b5e43251fed`
+- Último relatório: `docs/operational-reports/2026-04-01-block-0-continuity-bootstrap.md`
 
 ## Estado atual resumido
-- O projeto já tem frontend público, chat estruturado, admin e pipeline RAG preparados.
-- As prioridades técnicas imediatas continuam sendo:
-  1. segurança de banco (RLS / policies)
-  2. estratégia explícita de autenticação das Edge Functions administrativas
-  3. acessibilidade do menu móvel
-  4. memória oficial e continuidade entre máquinas/ferramentas
-- Dependências externas ainda pendentes:
-  - Google OAuth do admin
-  - estabilidade operacional da API do Gemini
-  - primeira carga curada do corpus real
+- Fase atual: Infraestrutura de continuidade e endurecimento operacional
+- Bloco ativo: BLOCO 0 — Continuidade e automação mínima
+- Status da sessão: `partial`
+- Próxima ação recomendada: Publicar esta branch de sessão e abrir a PR de continuidade; em seguida iniciar BLOCO 1 — RLS / policies.
 
-## Último bloco concluído
-- Bloco: `SETUP — Protocolo de continuidade`
-- Status: `em preparação`
+## Itens concluídos
+- Worktree isolado do Codex criado e bloqueado
+- Scripts de continuidade adicionados ao repositório
+- Workflow de qualidade passou a validar continuidade
+- Prompt universal versionado em .continuity
 
-## O que está concluído
-- Estrutura inicial de continuidade criada no repositório:
-  - `docs/HANDOFF.md`
-  - `.continuity/current-state.json`
-  - `.continuity/session-log.jsonl`
-  - `docs/CONTINUITY_PROTOCOL.md`
-  - `docs/operational-reports/TEMPLATE.md`
+## Itens pendentes
+- Publicar a branch de sessão no remoto
+- Abrir PR de continuidade contra main
+- Iniciar BLOCO 1 — RLS / policies
 
-## O que está pendente
-- Integrar essas convenções ao fluxo real de trabalho diário
-- Atualizar `docs/MIGRATION_STATUS.md` para refletir explicitamente o protocolo
-- Eventualmente adicionar automações/checklists locais para abertura e fechamento de sessão
+## Bloqueios externos
+- Google OAuth do admin ainda pendente
+- API do Gemini ainda instável para embeddings reais
+- Corpus inicial curado ainda não carregado
 
-## Próxima ação recomendada
-1. Revisar e mergear esta PR de protocolo de continuidade
-2. A partir dela, exigir que toda sessão de trabalho atualize:
-   - `docs/HANDOFF.md`
-   - `.continuity/current-state.json`
-   - `.continuity/session-log.jsonl`
-   - relatório em `docs/operational-reports/`
-3. Iniciar o próximo bloco técnico: **RLS / policies**
+## Notas operacionais
+- A branch setup/continuity-protocol foi reaproveitada e rebased sobre origin/main antes da abertura desta sessão.
+- O worktree C:\repos\clarainova02-codex está bloqueado para uso isolado do Codex.
 
 ## Regras rápidas para qualquer ferramenta
-Antes de trabalhar neste projeto, sempre:
 1. fazer `git fetch origin --prune`
 2. tratar `origin/main` como verdade oficial
 3. ler:
