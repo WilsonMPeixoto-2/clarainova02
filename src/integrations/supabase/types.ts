@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          is_active: boolean
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          is_active?: boolean
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          is_active?: boolean
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_metrics: {
         Row: {
           chunks_selected_count: number | null
@@ -520,6 +547,12 @@ export type Database = {
           p_identifier: string
           p_max_requests?: number
           p_window_minutes?: number
+        }
+        Returns: boolean
+      }
+      is_admin_user: {
+        Args: {
+          p_user_id?: string | null
         }
         Returns: boolean
       }

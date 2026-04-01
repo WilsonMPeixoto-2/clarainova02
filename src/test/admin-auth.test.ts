@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatAdminAuthErrorMessage,
+  getAdminAuthorizationCheckFailedMessage,
+  getAdminAuthorizationDeniedMessage,
   getPasskeyPreparationMessage,
 } from "@/lib/admin-auth";
 
@@ -22,5 +24,11 @@ describe("admin auth copy helpers", () => {
     expect(getPasskeyPreparationMessage()).toContain("experiência do painel");
     expect(getPasskeyPreparationMessage().toLowerCase()).not.toContain("webauthn");
     expect(getPasskeyPreparationMessage().toLowerCase()).not.toContain("supabase");
+  });
+
+  it("explains when the account is authenticated but not authorized for admin use", () => {
+    expect(getAdminAuthorizationDeniedMessage("admin@clara.rio")).toContain("admin@clara.rio");
+    expect(getAdminAuthorizationDeniedMessage()).toContain("nao possui permissao administrativa");
+    expect(getAdminAuthorizationCheckFailedMessage()).toContain("permissao administrativa");
   });
 });

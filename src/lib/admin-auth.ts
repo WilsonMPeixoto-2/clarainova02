@@ -19,6 +19,18 @@ export function getPasskeyPreparationMessage() {
   return 'O acesso por passkey já está previsto na experiência do painel. Assim que a configuração principal for concluída, essa opção poderá ser ativada.';
 }
 
+export function getAdminAuthorizationDeniedMessage(email?: string | null) {
+  if (email) {
+    return `A conta ${email} foi autenticada, mas ainda nao possui permissao administrativa para este painel.`;
+  }
+
+  return 'Sua conta foi autenticada, mas ainda nao possui permissao administrativa para este painel.';
+}
+
+export function getAdminAuthorizationCheckFailedMessage() {
+  return 'Nao consegui validar sua permissao administrativa agora. Tente novamente em instantes.';
+}
+
 export function formatAdminAuthErrorMessage(
   rawMessage: string | null | undefined,
   fallback: string,

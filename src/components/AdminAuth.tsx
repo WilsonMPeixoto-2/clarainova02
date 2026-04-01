@@ -8,6 +8,8 @@ import { Globe, Fingerprint, LockKey, CircleNotch, Eye, EyeSlash, Lightning } fr
 import { toast } from "sonner";
 import {
   formatAdminAuthErrorMessage,
+  getAdminAuthorizationCheckFailedMessage,
+  getAdminAuthorizationDeniedMessage,
   getAdminAuthCallbackUrl,
   getPasskeyPreparationMessage,
   isPasskeySupported,
@@ -20,6 +22,8 @@ interface Props {
 export default function AdminAuth({ children }: Props) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(() => hasSupabaseConfig);
+  const [adminAccess, setAdminAccess] = useState<"checking" | "allowed" | "forbidden" | "error">("checking");
+  const [adminAccessMessage, setAdminAccessMessage] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -31,17 +35,58 @@ export default function AdminAuth({ children }: Props) {
   useEffect(() => {
     if (!hasSupabaseConfig) return;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    let active = true;
+
+    async function syncAdminSession(nextSession: Session | null) {
+      if (!active) return;
+
+      setSession(nextSession);
+      setAdminAccessMessage(null);
+
+      if (!nextSession) {
+        setAdminAccess("checking");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setAdminAccess("checking");
+
+      const { data, error } = await supabase.rpc("is_admin_user");
+
+      if (!active) return;
+
+      if (error) {
+        console.error("Admin authorization check failed:", error);
+        setAdminAccess("error");
+        setAdminAccessMessage(getAdminAuthorizationCheckFailedMessage());
+        setLoading(false);
+        return;
+      }
+
+      if (!data) {
+        setAdminAccess("forbidden");
+        setAdminAccessMessage(getAdminAuthorizationDeniedMessage(nextSession.user.email));
+        setLoading(false);
+        return;
+      }
+
+      setAdminAccess("allowed");
       setLoading(false);
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      void syncAdminSession(session);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
+      void syncAdminSession(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (!hasSupabaseConfig) {
@@ -110,7 +155,7 @@ export default function AdminAuth({ children }: Props) {
     });
   };
 
-  if (loading) {
+  if (loading || adminAccess === "checking") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -229,6 +274,48 @@ export default function AdminAuth({ children }: Props) {
             <p className="text-center text-xs text-muted-foreground">
               Acesso restrito a contas administrativas já provisionadas para a operação do painel.
             </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (adminAccess === "forbidden" || adminAccess === "error") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-lg">
+          <CardHeader className="space-y-2 text-center">
+            <LockKey className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+            <CardTitle className="text-xl">
+              {adminAccess === "forbidden" ? "Conta sem autorizacao administrativa" : "Nao consegui validar seu acesso"}
+            </CardTitle>
+            <CardDescription>
+              {adminAccessMessage}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg border border-border/80 bg-muted/20 p-4 text-sm text-muted-foreground">
+              O painel exige autenticacao e autorizacao administrativa versionada no banco. Entrar com uma conta valida, por si so, nao libera o uso desta area.
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                type="button"
+                className="w-full"
+                onClick={() => { void supabase.auth.signOut(); }}
+              >
+                Sair desta conta
+              </Button>
+              {adminAccess === "error" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => window.location.reload()}
+                >
+                  Tentar novamente
+                </Button>
+              ) : null}
+            </div>
           </CardContent>
         </Card>
       </div>

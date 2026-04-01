@@ -37,6 +37,30 @@ Consequencia operacional:
 - o repositório volta a representar o caminho real do banco oficial
 - qualquer nova migration de RLS deve partir dessa linha historica consolidada, e nao da cadeia incremental antiga
 
+## Atualizacao de 2026-04-01 - primitiva versionada de autorizacao administrativa
+
+O repositorio agora carrega uma migration nova para endurecer o acesso administrativo:
+
+- `20260401193000_harden_admin_authorization.sql`
+
+Essa migration introduz:
+
+- `public.admin_users` como fonte canonica de permissao administrativa
+- `public.is_admin_user(...)` para gate do frontend e uso em policies
+- troca das policies amplas de `authenticated` por policies `admin-only` nas tabelas administrativas e no bucket `documents`
+- endurecimento previsto para `embed-chunks` e `get-usage-stats`
+
+Estado atual dessa frente:
+
+- versionado no repositorio: sim
+- aplicado no projeto remoto: ainda nao
+- primeiro admin provisionado em `admin_users`: ainda nao
+
+Consequencia operacional:
+
+- o painel e as funcoes administrativas deixam de depender apenas de sessao autenticada
+- a liberacao do acesso passa a exigir concessao explicita de admin no banco
+
 ## Memoria operacional e continuidade
 
 Desde 2026-04-01, o repositorio passa a carregar uma trilha minima obrigatoria de continuidade no proprio Git:
