@@ -17,6 +17,26 @@ Ultima atualizacao: 2026-03-31
 
 **O BLOCO 1 saiu do estado "apenas pronto no codigo" e passou para "operacionalmente provado" nas frentes centrais de ambiente, autenticacao administrativa por conta provisionada, ingestao real e resposta grounded em producao.**
 
+## Atualizacao de 2026-04-01 - reconciliacao da linha historica de migrations
+
+Foi confirmada uma divergencia entre o historico local de `supabase/migrations/` e o historico oficial gravado no projeto remoto `jasqctuzeznwdtbcuixn`.
+
+O banco remoto registra apenas 3 migrations consolidadas:
+
+- `20260328230351_clara_foundation_tables_and_indexes`
+- `20260329001517_clara_rls_policies_and_search_functions`
+- `20260329001619_clara_check_rate_limit_function`
+
+Por isso, em 2026-04-01:
+
+- as 19 migrations incrementais antigas foram arquivadas em `supabase/migrations_archive/2026-04-01-pre-consolidation/`
+- a pasta ativa `supabase/migrations/` passou a refletir exatamente as 3 migrations consolidadas do remoto
+
+Consequencia operacional:
+
+- o repositório volta a representar o caminho real do banco oficial
+- qualquer nova migration de RLS deve partir dessa linha historica consolidada, e nao da cadeia incremental antiga
+
 ## Memoria operacional e continuidade
 
 Desde 2026-04-01, o repositorio passa a carregar uma trilha minima obrigatoria de continuidade no proprio Git:
