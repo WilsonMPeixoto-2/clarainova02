@@ -4,6 +4,22 @@ Data: 2026-03-31
 
 Base analisada: `main` em `5bc6450`
 
+## Atualizacao operacional
+
+Data da revalidacao: 2026-04-01
+
+Verificacao complementar executada apos o refresh de baseline em `53a029c`:
+
+- `npm install` executado para sincronizar a instalacao local com `package.json` e `package-lock.json`
+- `npm outdated` retornou vazio apos a sincronizacao
+- `npm run validate` voltou a passar integralmente
+- `package.json` permaneceu sem necessidade de novos bumps
+- `supabase/functions/deno.json` ja estava alinhado em `npm:@supabase/supabase-js@2.101.1` e `npm:@google/genai@1.47.0`
+
+Conclusao desta rodada:
+
+Nao houve novo diff tecnico de dependencias para aplicar no repositorio alem do que ja tinha entrado no baseline de 2026-03-31. A rodada de 2026-04-01 serviu para confirmar que frontend, toolchain local e integracoes declaradas de Google/Gemini continuavam no patamar mais recente ja versionado no projeto.
+
 ## Resumo executivo
 
 O repositorio entrou em uma fase de consolidacao.
