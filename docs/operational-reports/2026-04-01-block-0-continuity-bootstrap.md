@@ -40,6 +40,8 @@ O repositório já possuía uma branch remota de continuidade (`setup/continuity
 5. O protocolo e a documentação operacional foram atualizados para refletir o uso de worktrees, automação mínima e prompt universal versionado.
 6. As dependências do projeto foram instaladas no worktree do Codex e o baseline técnico do repositório foi revalidado.
 7. O encerramento estruturado da sessão foi executado com `npm run session:end`, regenerando `docs/HANDOFF.md`, atualizando `.continuity/current-state.json` e acrescentando evento no `.continuity/session-log.jsonl`.
+8. O helper de Git foi corrigido para suportar comandos com `stdio` herdado, permitindo validar o `session:start` no caminho nominal.
+9. A branch de sessão foi publicada no remoto e passou a rastrear `origin/session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE`.
 
 ## Arquivos alterados
 - `.continuity/current-state.json`
@@ -60,7 +62,7 @@ O repositório já possuía uma branch remota de continuidade (`setup/continuity
 
 ## Testes e validações executados
 - `npm run continuity:check`: aprovado
-- `npm run session:start`: pendente de execução com árvore limpa após o commit da sessão
+- `npm run session:start`: aprovado com árvore limpa após o commit da sessão
 - `npm run validate`: aprovado
 - `npm run build`: aprovado dentro de `npm run validate`
 - Testes manuais:
@@ -73,7 +75,7 @@ Marque o que foi atingido:
 - [x] Scripts mínimos de continuidade adicionados ao repositório
 - [x] Pipeline de qualidade passa a validar continuidade
 - [x] Handoff e estado estruturado atualizados com o encerramento desta sessão
-- [ ] Branch publicada no remoto
+- [x] Branch publicada no remoto
 
 ## Resultado do bloco
 ### Concluído
@@ -82,15 +84,15 @@ Marque o que foi atingido:
 - O workflow de qualidade ganhou um check explícito para os artefatos de continuidade.
 
 ### Não concluído / impossibilidades
-- A branch de sessão ainda não foi publicada no remoto.
-- O encerramento formal da sessão ainda depende da atualização do estado estruturado e do handoff com os dados finais do bloco.
+- A PR de continuidade contra `main` ainda não foi aberta.
+- O BLOCO 1 de RLS / policies ainda não foi iniciado.
 
 ### Riscos remanescentes
 - O protocolo ainda depende de adoção disciplinada; ele agora tem automação mínima, mas não elimina desvio de processo por si só.
 - O check de continuidade valida consistência estrutural, não a veracidade operacional de Vercel e Supabase.
 
 ## Próxima ação recomendada
-Encerrar formalmente esta sessão atualizando `current-state`, `HANDOFF` e `session-log`, publicar a branch e então abrir a PR de continuidade antes de iniciar o BLOCO 1 de RLS / policies.
+Abrir a PR de continuidade contra `main` e, depois da revisão, iniciar o BLOCO 1 de RLS / policies.
 
 ## Atualizações obrigatórias de continuidade
 - [x] `docs/HANDOFF.md` atualizado
