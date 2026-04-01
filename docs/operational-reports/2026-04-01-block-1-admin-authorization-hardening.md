@@ -34,7 +34,7 @@ O frontend dizia "conta administrativa", mas o banco e as Edge Functions tratava
 
 ## Acoes executadas
 1. Foi confirmada no banco remoto a existencia de policies permissivas do tipo `TO authenticated USING (true)` sobre tabelas administrativas e sobre `storage.objects` do bucket `documents`.
-2. Foi criada a migration `20260401193000_harden_admin_authorization.sql`, que:
+2. Foi criada a migration de endurecimento administrativo, posteriormente alinhada no repositorio como `20260401213217_harden_admin_authorization.sql`, que:
    - cria `public.admin_users` como fonte canonica de autorizacao administrativa
    - cria `public.is_admin_user(...)` para uso no app e nas policies
    - remove as policies permissivas antigas
@@ -57,9 +57,8 @@ O frontend dizia "conta administrativa", mas o banco e as Edge Functions tratava
 - A proxima migration de deploy ja carrega a troca de policies para admin-only.
 
 ### Nao concluido
-- A migration ainda nao foi aplicada no projeto remoto.
-- O primeiro admin ainda nao foi provisionado em `public.admin_users`.
-- As funcoes remotas endurecidas ainda nao foram publicadas no ambiente operacional.
+- A validacao funcional do painel com conta autorizada e conta sem autorizacao ainda depende de um deploy do frontend com o novo gate administrativo.
+- O login administrativo via Google segue pendente no ambiente real.
 
 ## Validacoes executadas
 - `npm run validate`
@@ -79,6 +78,6 @@ where email = 'SEU_EMAIL_ADMIN_AQUI';
 Se a conta ja existir em `auth.users`, esse passo passa a liberar o painel, as leituras administrativas e as Edge Functions protegidas.
 
 ## Proxima acao recomendada
-Aplicar a migration no projeto Supabase oficial, provisionar explicitamente o primeiro admin em `public.admin_users`, publicar as Edge Functions endurecidas e validar o painel com:
+Publicar o frontend com o novo gate administrativo e validar o painel com:
 - uma conta autorizada
 - uma conta autenticada sem autorizacao administrativa

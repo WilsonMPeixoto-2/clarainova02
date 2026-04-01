@@ -39,9 +39,9 @@ Consequencia operacional:
 
 ## Atualizacao de 2026-04-01 - primitiva versionada de autorizacao administrativa
 
-O repositorio agora carrega uma migration nova para endurecer o acesso administrativo:
+O repositorio agora carrega a migration ativa de endurecimento do acesso administrativo:
 
-- `20260401193000_harden_admin_authorization.sql`
+- `20260401213217_harden_admin_authorization.sql`
 
 Essa migration introduz:
 
@@ -52,9 +52,14 @@ Essa migration introduz:
 
 Estado atual dessa frente:
 
-- versionado no repositorio: sim
-- aplicado no projeto remoto: ainda nao
-- primeiro admin provisionado em `admin_users`: ainda nao
+- versionado no repositorio: sim, alinhado com a versao efetivamente registrada no projeto remoto
+- aplicado no projeto remoto: sim
+- primeiro admin provisionado em `admin_users`: sim, `wilsonmp2@gmail.com`
+
+Nota operacional:
+
+- a aplicacao via Supabase MCP registrou a migration com a versao `20260401213217`
+- o repositorio foi alinhado para refletir exatamente essa versao oficial do projeto
 
 Consequencia operacional:
 
