@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { DownloadSimple, CircleNotch, ArrowsOut, ChatCircle, ArrowsIn, Sidebar, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
@@ -13,6 +14,7 @@ import {
   getChatResponseModePresentation,
 } from '@/lib/chat-response-mode';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useModalAccessibility } from '@/hooks/useModalAccessibility';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from 'sonner';
 
@@ -53,23 +55,24 @@ function formatSessionTitle(question: string) {
   return `${trimmed.slice(0, 73).trimEnd()}...`;
 }
 
-function ChatHeaderActionButton({
+const ChatHeaderActionButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & {
+  label: string;
+  visibleLabel?: string;
+  children: ReactNode;
+  showLabel?: boolean;
+}>(function ChatHeaderActionButton({
   label,
   visibleLabel,
   children,
   className = '',
   showLabel = false,
   ...buttonProps
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
-  label: string;
-  visibleLabel?: string;
-  children: ReactNode;
-  showLabel?: boolean;
-}) {
+}, ref) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
+          ref={ref}
           type="button"
           aria-label={label}
           title={label}
@@ -83,7 +86,7 @@ function ChatHeaderActionButton({
       <TooltipContent side="bottom">{label}</TooltipContent>
     </Tooltip>
   );
-}
+});
 
 const ChatSheet = () => {
   const {
@@ -107,6 +110,8 @@ const ChatSheet = () => {
   const [panelMode, setPanelMode] = useState<ChatPanelMode>('default');
   const [customWidth, setCustomWidth] = useState<number | null>(null);
   const isDraggingRef = useRef(false);
+  const sheetRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
@@ -183,16 +188,12 @@ const ChatSheet = () => {
     return () => window.clearInterval(interval);
   }, [isLoading, isStreaming]);
 
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        closeChat();
-      }
-    };
-
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, closeChat]);
+  useModalAccessibility({
+    active: isOpen,
+    containerRef: sheetRef,
+    initialFocusRef: closeButtonRef,
+    onClose: closeChat,
+  });
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -273,7 +274,11 @@ const ChatSheet = () => {
         : 'Pergunte para experimentar o modo didático da CLARA...'
       : responseModePresentation.placeholder;
 
-  return (
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
     <>
       <AnimatePresence>
         {isOpen && (
@@ -292,6 +297,7 @@ const ChatSheet = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.aside
+            ref={sheetRef}
             className={`chat-shell fixed top-0 right-0 z-[100] h-full flex flex-col border-l border-[hsl(var(--border-subtle))] ${panelMode === 'fullscreen' ? 'left-0 border-l-0' : ''}`}
             style={{ width: sheetWidth }}
             initial={{ x: '100%' }}
@@ -299,25 +305,9 @@ const ChatSheet = () => {
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 340, damping: 34 }}
             role="dialog"
-            aria-label="Chat com CLARA"
+            aria-labelledby="clara-chat-title"
             aria-modal="true"
-            onKeyDown={(e) => {
-              if (e.key === 'Tab') {
-                const focusable = e.currentTarget.querySelectorAll<HTMLElement>(
-                  'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-                );
-                if (focusable.length === 0) return;
-                const first = focusable[0];
-                const last = focusable[focusable.length - 1];
-                if (e.shiftKey && document.activeElement === first) {
-                  e.preventDefault();
-                  last.focus();
-                } else if (!e.shiftKey && document.activeElement === last) {
-                  e.preventDefault();
-                  first.focus();
-                }
-              }
-            }}
+            tabIndex={-1}
           >
             {/* Drag Handle para resize nativo pelo usuário */}
             {!isMobile && panelMode !== 'fullscreen' && (
@@ -340,7 +330,7 @@ const ChatSheet = () => {
                   <ChatCircle size={18} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">CLARA</p>
+                  <p id="clara-chat-title" className="text-sm font-semibold text-foreground">CLARA</p>
                   <div className="chat-header-meta-row">
                     <p className="text-[11px] text-muted-foreground">Apoio ao SEI-Rio</p>
                     <span className="chat-status-pill" data-mode={runtimeMode}>{runtimeLabel}</span>
@@ -403,6 +393,7 @@ const ChatSheet = () => {
                 )}
 
                 <ChatHeaderActionButton
+                  ref={closeButtonRef}
                   onClick={closeChat}
                   label="Fechar chat"
                 >
@@ -588,7 +579,8 @@ const ChatSheet = () => {
           </motion.aside>
         )}
       </AnimatePresence>
-    </>
+    </>,
+    document.body,
   );
 };
 

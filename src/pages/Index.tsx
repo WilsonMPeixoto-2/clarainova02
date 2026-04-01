@@ -11,6 +11,13 @@ const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 import Footer from "@/components/Footer";
 
+const GenericSkeleton = () => (
+  <div className="w-full py-24 px-6 flex flex-col items-center justify-center gap-8 animate-pulse">
+    <div className="w-full max-w-[280px] h-10 bg-white/5 rounded-xl" />
+    <div className="w-full max-w-4xl h-[400px] bg-white/5 rounded-2xl" />
+  </div>
+);
+
 const IndexContent = () => {
   const { openChat } = useChat();
   const location = useLocation();
@@ -64,7 +71,7 @@ const IndexContent = () => {
         <SoftWaveDivider />
         <div className="relative max-w-[100vw] overflow-hidden">
           <GlobalStars />
-          <Suspense fallback={null}>
+          <Suspense fallback={<GenericSkeleton />}>
             <FeaturesSection />
             <FAQSection />
           </Suspense>
