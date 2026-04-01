@@ -66,6 +66,28 @@ Consequencia operacional:
 - o painel e as funcoes administrativas deixam de depender apenas de sessao autenticada
 - a liberacao do acesso passa a exigir concessao explicita de admin no banco
 
+## Atualizacao de 2026-04-01 - deploy de producao do gate administrativo
+
+Depois do rollout remoto no Supabase, o frontend com o novo gate administrativo tambem foi publicado em producao no projeto Vercel `clarainova02`.
+
+Estado atual dessa frente:
+
+- preview publicada: sim
+- producao publicada: sim
+- alias oficial ativo: `https://clarainova02.vercel.app`
+- superficie publica de `/admin` servindo o build novo: confirmada
+- validacao autenticada em navegador com conta admin e conta nao admin: ainda pendente
+
+Motivo da pendencia:
+
+- nesta sessao nao havia credencial real de login por senha disponivel no repositorio
+- o Google OAuth continua desabilitado no projeto Supabase real, entao nao foi possivel fechar a validacao autenticada por esse caminho
+
+Consequencia operacional:
+
+- o ambiente publicado ja reflete o endurecimento de autorizacao administrativa
+- o proximo passo operacional passa a ser exclusivamente a validacao de acesso real em navegador
+
 ## Memoria operacional e continuidade
 
 Desde 2026-04-01, o repositorio passa a carregar uma trilha minima obrigatoria de continuidade no proprio Git:
