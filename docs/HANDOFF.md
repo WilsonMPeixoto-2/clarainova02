@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-01T17:16:32.165Z
+- Data/hora: 2026-04-01T17:19:02.265Z
 - Atualizado por: CODEX @ C04-084
 - Branch de referência: `session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE`
 - Commit de base oficial: `184276fa698f80acd522919e56e19cf8e66e1d49`
-- Head da sessão: `3671799483a0dc7510f4561169569b5e43251fed`
+- Head da sessão: `2e27d7fc532b88d2667393b635caf128947fcb50`
 - Último relatório: `docs/operational-reports/2026-04-01-block-0-continuity-bootstrap.md`
 
 ## Estado atual resumido
@@ -21,6 +21,7 @@
 - Scripts de continuidade adicionados ao repositório
 - Workflow de qualidade passou a validar continuidade
 - Prompt universal versionado em .continuity
+- Helper de Git corrigido para comandos com stdio herdado
 
 ## Itens pendentes
 - Publicar a branch de sessão no remoto
@@ -35,6 +36,7 @@
 ## Notas operacionais
 - A branch setup/continuity-protocol foi reaproveitada e rebased sobre origin/main antes da abertura desta sessão.
 - O worktree C:\repos\clarainova02-codex está bloqueado para uso isolado do Codex.
+- Durante o fetch de validacao, origin/setup/continuity-protocol avancou no remoto sem conflitar com esta branch de sessao.
 
 ## Regras rápidas para qualquer ferramenta
 1. fazer `git fetch origin --prune`
