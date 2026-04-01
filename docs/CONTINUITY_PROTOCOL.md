@@ -23,7 +23,21 @@ Antes de qualquer alteração, a ferramenta ou operador deve ler:
 - `docs/MIGRATION_STATUS.md`
 - relatório mais recente em `docs/operational-reports/`
 
-### 2. Nunca trabalhar diretamente em `main`
+### 2. Uma ferramenta = um worktree = uma branch de sessão
+Cada ferramenta deve trabalhar em um diretório isolado.
+
+Layout recomendado por máquina:
+- repositório-base: `.../clarainova02`
+- worktree do Codex: `.../clarainova02-codex`
+- worktree de outra IA: `.../clarainova02-<tool>`
+
+Se o worktree tiver uso recorrente, ele pode ser bloqueado com motivo:
+- `git worktree lock <path> --reason "<motivo>"`
+
+O utilitário local para abrir uma nova sessão é:
+- `npm run session:new -- --block BLOCO-1-RLS --worktree <path> --base origin/main`
+
+### 3. Nunca trabalhar diretamente em `main`
 Todo trabalho novo deve ocorrer em branch de sessão ou branch temática.
 
 Sugestão de convenção:
@@ -32,21 +46,54 @@ Sugestão de convenção:
 Exemplo:
 `session/2026-04-01/WORK/CODEX/BLOCO-1-RLS`
 
-### 3. Trabalho local não commitado não é estado confiável do projeto
+### 4. Trabalho local não commitado não é estado confiável do projeto
 Se uma sessão precisar ser interrompida, o estado aceitável é:
 - commitado
 - pushado
 - documentado
 
-### 4. Evitar `git stash` como mecanismo de continuidade
+### 5. Evitar `git stash` como mecanismo de continuidade
 Stash não é trilha confiável entre máquinas e ferramentas.
 
-### 5. Ao final de cada bloco ou sessão
+### 6. Ao final de cada bloco ou sessão
 É obrigatório atualizar:
 - `docs/HANDOFF.md`
 - `.continuity/current-state.json`
 - `.continuity/session-log.jsonl`
 - relatório detalhado em `docs/operational-reports/`
+
+### 7. Mudanças feitas fora do GitHub devem voltar para o repositório
+- migrations do Supabase devem existir como arquivos versionados
+- ajustes operacionais no Vercel ou Supabase devem ser refletidos em documentação operacional no mesmo bloco
+- nada relevante deve ficar apenas em dashboard
+
+## Automação mínima disponível
+
+### Verificação de abertura de sessão
+- `npm run session:start`
+
+Esse comando:
+- exige árvore local limpa
+- faz `git fetch origin --prune`
+- confirma presença dos arquivos obrigatórios
+- imprime o resumo atual da sessão e do `origin/main`
+
+### Atualização estruturada de encerramento
+- `npm run session:end -- --status partial --report docs/operational-reports/<arquivo>.md --next-action "<ação>"`
+
+Esse comando:
+- atualiza `.continuity/current-state.json`
+- recria `docs/HANDOFF.md` a partir do estado estruturado
+- acrescenta um evento em `.continuity/session-log.jsonl`
+
+### Validação para CI e PR
+- `npm run continuity:check`
+
+Esse comando valida:
+- existência dos arquivos obrigatórios de continuidade
+- integridade mínima de `.continuity/current-state.json`
+- consistência básica do `docs/HANDOFF.md`
+- parse do `.continuity/session-log.jsonl`
 
 ## Fluxo recomendado de abertura de sessão
 1. `git fetch origin --prune`
@@ -65,7 +112,7 @@ Stash não é trilha confiável entre máquinas e ferramentas.
 ## Estrutura dos arquivos de continuidade
 
 ### `docs/HANDOFF.md`
-Resumo humano curto e direto.
+Resumo humano curto e direto, renderizado a partir do estado estruturado.
 
 ### `.continuity/current-state.json`
 Estado legível por máquina/IA, com:

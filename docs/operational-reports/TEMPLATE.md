@@ -8,6 +8,7 @@
 - Ferramenta:
 - Commit de base:
 - Commit final:
+- Status final: `partial` ou `complete`
 
 ## Contexto
 Descreva o contexto em que o bloco foi executado e a motivação do trabalho.
@@ -29,6 +30,8 @@ Descreva, em ordem, o que foi feito.
 - 
 
 ## Testes e validações executados
+- `npm run continuity:check`:
+- `npm run session:start`:
 - `npm run validate`:
 - `npm run build`:
 - Testes manuais:
@@ -56,4 +59,5 @@ Descreva o próximo passo mais lógico.
 - [ ] `docs/HANDOFF.md` atualizado
 - [ ] `.continuity/current-state.json` atualizado
 - [ ] `.continuity/session-log.jsonl` atualizado
+- [ ] `.continuity/UNIVERSAL_SESSION_PROMPT.md` revisado se necessário
 - [ ] `docs/MIGRATION_STATUS.md` revisado se necessário
