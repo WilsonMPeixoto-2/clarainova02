@@ -18,12 +18,14 @@ export const requiredContinuityFiles = [
 ];
 
 export function git(args, options = {}) {
-  return execFileSync("git", args, {
+  const result = execFileSync("git", args, {
     cwd: repoRoot,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     ...options,
-  }).trim();
+  });
+
+  return typeof result === "string" ? result.trim() : "";
 }
 
 export function resolveRepoPath(...segments) {
