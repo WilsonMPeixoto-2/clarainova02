@@ -55,7 +55,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 4 — Consolidação operacional externa
 - Estado: `planned`
 - Objetivo: eliminar bloqueios externos que impedem operação previsível
-- Próxima ação: habilitar Google OAuth no Supabase, sanear quota/projeto/chave/modelo do Gemini e reprocessar embeddings reais
+- Próxima ação: executar o checklist operacional registrado em `docs/operational-reports/2026-04-02-block-4-preparation.md`, habilitando Google OAuth no Supabase, saneando quota/projeto/chave/modelo do Gemini e reprocessando embeddings reais
 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `planned`

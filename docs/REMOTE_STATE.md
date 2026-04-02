@@ -57,10 +57,22 @@
 - Google OAuth do admin:
   - status: `pendente`
   - evidência conhecida: Supabase respondeu `Unsupported provider: provider is not enabled`
+  - estado do código:
+    - `AdminAuth.tsx` já chama `signInWithOAuth({ provider: "google" })`
+    - o callback `/auth/callback` já está implementado
+    - a interface pública mantém Google como rota em habilitação por decisão consciente
+  - pendências externas conhecidas:
+    - habilitar provider no Supabase
+    - conferir `Client ID` e `Client Secret`
+    - alinhar redirect URLs no Supabase e no Google Console
 - Gemini / embeddings:
   - status: `instável`
   - situação conhecida: embeddings reais continuam sujeitos a indisponibilidade/quota do provedor
-  - implementação declarada no código: `gemini-embedding-001`
+  - implementação declarada no código:
+    - geração: `gemini-3.1-flash-lite-preview` com fallback para `gemini-3.1-pro-preview`
+    - embeddings: `gemini-embedding-2-preview`
+    - dimensionalidade esperada: `768`
+    - secret requerido nas functions: `GEMINI_API_KEY`
 - Corpus inicial:
   - status: `não concluído`
   - situação conhecida: existe prova operacional com 1 PDF, mas não há lote curado inicial fechado
