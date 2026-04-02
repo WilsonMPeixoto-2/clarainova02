@@ -2,34 +2,32 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "94677b6a6ec6aed8ab217fe5c2298ddd4c163322",
-  "current_phase": "Continuidade integrada em main; preparação do BLOCO 1",
-  "active_block": "BLOCO 1 — RLS, auth admin e reconciliação operacional",
-  "active_branch": "session/2026-04-02/HOME/CODEX/BLOCO-0-POST-MERGE",
+  "last_integrated_main_sha": "b67ffa98acaac237eb8cc8184d0cf00eebf1684d",
+  "current_phase": "Polimento institucional, presença pública e observabilidade enxuta",
+  "active_block": "BLOCO 2 — Polimento institucional, presença pública e observabilidade enxuta",
+  "active_branch": "session/2026-04-02/HOME/CODEX/BLOCO-2-PRELAUNCH-POLISH",
   "last_tool": "CODEX",
-  "last_machine": "HOME",
-  "last_update_utc": "2026-04-02T07:45:21.786Z",
+  "last_machine": "WILSON-MP",
+  "last_update_utc": "2026-04-02T08:47:49.280Z",
   "completed_items": [
-    "PR #12 mergeada em main no commit 94677b6a6ec6aed8ab217fe5c2298ddd4c163322",
-    "BLOCO 0 marcado como integrado em docs/BLOCK_PLAN.md",
-    "Estado remoto ajustado para refletir a continuidade oficial em main"
+    "Reforço institucional em Termos, Privacidade, README, MIGRATION_STATUS e metadados públicos",
+    "Nova imagem social dedicada e ajuste de OG/Twitter/PWA",
+    "Enriquecimento da observabilidade agregada no get-usage-stats e no painel admin"
   ],
   "pending_items": [
-    "Atualizar/rebasear a PR #13 sobre origin/main",
-    "Corrigir o bug do /admin para usuários sem sessão na branch da PR #13",
-    "Revisar e aceitar explicitamente a estratégia de reconciliação das migrations consolidadas"
+    "RLS/policies efetivas, verify_jwt nas functions administrativas e hardening Supabase",
+    "Google OAuth do admin, estabilidade do Gemini e carga curada real do corpus",
+    "Lapidação adicional da home pública e identidade visual final do PDF"
   ],
   "external_blockers": [
-    "Google OAuth do admin ainda pendente",
-    "API do Gemini ainda instável para embeddings reais",
-    "Corpus inicial curado ainda não carregado"
+    "Google OAuth do admin ainda depende de configuração externa no Supabase/Google",
+    "Embeddings reais ainda dependem da estabilidade externa do Gemini"
   ],
-  "next_action": "Atualizar a PR #13 sobre main, corrigir o bug do /admin para usuários sem sessão e revisar a estratégia de reconciliação das migrations antes de decidir o merge.",
+  "next_action": "Retomar a trilha de engenharia dura: revisar RLS/policies, endurecer JWT nas functions administrativas, destravar OAuth/Gemini e então voltar para corpus real e prova empírica do RAG.",
   "notes": [
-    "Com a continuidade integrada em main, o próximo foco oficial do repositório passa a ser o BLOCO 1.",
-    "A PR #13 continua exigindo atualização sobre a nova base antes de qualquer decisão de merge."
+    "Esta sessão avançou apenas frentes independentes de OAuth, corpus real e ingestão operacional."
   ],
-  "session_status": "partial",
-  "last_report": "docs/operational-reports/2026-04-02-block-0-main-integration.md",
-  "last_session_head_sha": "94677b6a6ec6aed8ab217fe5c2298ddd4c163322"
+  "session_status": "complete",
+  "last_report": "docs/operational-reports/2026-04-02-block-2-prelaunch-polish.md",
+  "last_session_head_sha": "b67ffa98acaac237eb8cc8184d0cf00eebf1684d"
 }

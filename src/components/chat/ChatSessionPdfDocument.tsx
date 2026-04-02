@@ -13,6 +13,12 @@ import {
   formatReferenceAbnt,
   stripMarkdownForPdf,
 } from '@/lib/clara-response';
+import {
+  SITE_AUTHOR_LABEL,
+  SITE_NAME,
+  SITE_PDF_SUBTITLE,
+  SITE_TAGLINE,
+} from '@/lib/site-identity';
 
 export type PdfChatMessage = {
   role: 'user' | 'assistant';
@@ -634,8 +640,8 @@ export function ChatSessionPdfDocument({
   return (
     <Document
       title={`CLARA - ${sessionTitle}`}
-      author="Wilson M. Peixoto"
-      subject="Registro exportado de sessao da CLARA"
+      author={SITE_AUTHOR_LABEL}
+      subject="Registro exportado de sessão da CLARA"
       creator="Projeto CLARA"
       language="pt-BR"
       creationDate={generatedAt}
@@ -647,11 +653,11 @@ export function ChatSessionPdfDocument({
             <BrandMark logoSrc={logoSrc} />
             <View>
               <Text style={styles.brandName}>CLARA</Text>
-              <Text style={styles.brandSubtitle}>Apoio ao uso do SEI-Rio e a rotinas administrativas</Text>
+              <Text style={styles.brandSubtitle}>{SITE_TAGLINE}</Text>
             </View>
           </View>
           <View style={styles.headerMeta}>
-            <Text style={styles.headerMetaLabel}>Documento CLARA</Text>
+            <Text style={styles.headerMetaLabel}>Sessão exportada</Text>
             <Text style={styles.headerMetaValue}>{formatDateTime(generatedAt)}</Text>
           </View>
         </View>
@@ -660,7 +666,7 @@ export function ChatSessionPdfDocument({
           <Text style={styles.introKicker}>Sessao registrada</Text>
           <Text style={styles.introTitle}>{sessionTitle}</Text>
           <Text style={styles.introText}>
-            Registro exportado do atendimento da CLARA, preparado para leitura posterior, compartilhamento interno e impressao do conteudo desta conversa.
+            {SITE_PDF_SUBTITLE} O conteúdo permanece sujeito à validação humana e aos documentos oficiais aplicáveis.
           </Text>
           <View style={styles.introMetaGrid}>
             <View style={styles.introMetaCard}>
@@ -710,7 +716,7 @@ export function ChatSessionPdfDocument({
         })}
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>CLARA · projeto autoral de Wilson M. Peixoto</Text>
+          <Text style={styles.footerText}>{SITE_NAME} · projeto autoral de Wilson M. Peixoto · apoio ao SEI-Rio</Text>
           <Text
             style={styles.footerText}
             render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} de ${totalPages}`}

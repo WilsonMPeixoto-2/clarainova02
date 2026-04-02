@@ -10,6 +10,7 @@ import { useLocation } from "react-router-dom";
 const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 import Footer from "@/components/Footer";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/site-identity";
 
 const GenericSkeleton = () => (
   <div className="w-full py-24 px-6 flex flex-col items-center justify-center gap-8 animate-pulse">
@@ -55,8 +56,8 @@ const IndexContent = () => {
   return (
     <div className="min-h-screen bg-background">
       <DocumentMeta 
-        title="CLARA — apoio ao uso do SEI-Rio e a rotinas administrativas"
-        description="CLARA é uma ferramenta de apoio para dúvidas sobre uso do SEI-Rio, documentos, tramitação, assinatura e etapas operacionais em rotinas administrativas."
+        title={SITE_TITLE}
+        description={SITE_DESCRIPTION}
       />
       <a
         href="#main-content"

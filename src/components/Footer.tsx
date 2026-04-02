@@ -1,5 +1,12 @@
 import { EnvelopeSimple, Sparkle, Phone, LinkedinLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
+import {
+  SITE_AUTHOR_NAME,
+  SITE_CONTACT_EMAIL,
+  SITE_CONTACT_MAILTO,
+  SITE_NAME,
+  SITE_PUBLIC_NATURE,
+} from '@/lib/site-identity';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -9,13 +16,14 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         <div className="footer-premium-grid">
           <div className="footer-brand-card">
-            <p className="footer-brand-kicker">CLARA / apoio operacional ao SEI-Rio</p>
-            <span className="footer-brand-title">CLARA</span>
+            <p className="footer-brand-kicker">{SITE_NAME} / apoio operacional ao SEI-Rio</p>
+            <span className="footer-brand-title">{SITE_NAME}</span>
             <p className="text-sm text-muted-foreground max-w-xl">
-              <span className="text-foreground font-medium">Autoria técnica e manutenção inicial:</span> Wilson M. Peixoto
+              <span className="text-foreground font-medium">Autoria técnica, manutenção inicial e responsabilidade pública atual:</span>{" "}
+              {SITE_AUTHOR_NAME}
             </p>
             <p className="text-xs text-muted-foreground/80 mb-6">
-              A referência à SME/RJ informa contexto profissional de atuação do autor. O ambiente público da CLARA permanece, nesta apresentação, como projeto autoral e não como canal institucional oficial.
+              {SITE_PUBLIC_NATURE}
             </p>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground/75">
@@ -23,9 +31,9 @@ const Footer = () => {
                 <Phone weight="duotone" className="w-3.5 h-3.5" aria-hidden="true" />
                 (21) 99497-4132
               </a>
-              <a href="mailto:wilsonmp2@gmail.com" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
+              <a href={SITE_CONTACT_MAILTO} className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
                 <EnvelopeSimple size={14} className="w-3.5 h-3.5" aria-hidden="true" />
-                wilsonmp2@gmail.com
+                {SITE_CONTACT_EMAIL}
               </a>
               <a
                 href="https://www.linkedin.com/in/wilsonmalafaia/"
@@ -38,7 +46,7 @@ const Footer = () => {
               </a>
             </div>
 
-            <p className="text-caption">© {currentYear} CLARA. Todos os direitos reservados.</p>
+            <p className="text-caption">© {currentYear} {SITE_NAME}. Todos os direitos reservados.</p>
           </div>
 
           <div className="flex flex-row flex-wrap sm:flex-nowrap justify-between gap-12 sm:gap-16 w-full lg:w-auto">
@@ -54,7 +62,7 @@ const Footer = () => {
             </nav>
             <nav className="flex flex-col gap-4" aria-label="Contato">
               <p className="text-xs font-semibold tracking-widest text-[hsl(var(--gold-1))] uppercase mb-1">Contato</p>
-              <a href="mailto:wilsonmp2@gmail.com" className="text-sm text-foreground/80 hover:text-foreground transition-colors">Email direto</a>
+              <a href={SITE_CONTACT_MAILTO} className="text-sm text-foreground/80 hover:text-foreground transition-colors">Email direto</a>
             </nav>
           </div>
         </div>
@@ -66,7 +74,7 @@ const Footer = () => {
               <Sparkle weight="fill" size={12} className="text-[hsl(var(--gold-1))] relative z-10" aria-hidden="true" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              A CLARA é uma ferramenta de apoio operacional e curadoria documental. A autoria e o contexto institucional informados neste site não a transformam, por si só, em canal oficial do SEI-Rio, da SME/RJ ou da Prefeitura do Rio. A validação humana e os documentos oficiais continuam prevalecendo em cada processo.
+              {SITE_NAME} é uma ferramenta digital de apoio operacional e curadoria documental. A validação humana, os fluxos oficiais da unidade competente e os documentos institucionais aplicáveis continuam prevalecendo em cada processo.
             </p>
           </div>
         </div>

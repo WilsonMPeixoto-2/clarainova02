@@ -38,6 +38,14 @@
 - Embeddings reais estaveis no provedor Gemini
 - Metricas agregadas vindas das Edge Functions
 
+## Identidade publica e governanca atual
+
+- A autoria tecnica e a manutencao inicial do ambiente publico sao identificadas como `Wilson M. Peixoto`
+- O site explicita que a CLARA e projeto autoral em maturacao e nao canal institucional oficial por si so
+- `Termos de Uso`, `Politica de Privacidade` e metadados publicos foram revisados para refletir o comportamento real do produto
+- O chat publico hoje trabalha com entrada textual; imagens e prints ainda nao fazem parte da interface publicada
+- A presenca externa usa Open Graph dedicado, manifesto PWA e exportacao de sessao em PDF com branding proprio
+
 ## Desenvolvimento
 
 ```sh

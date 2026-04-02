@@ -207,3 +207,30 @@ A camada institucional publica do produto foi revisada para refletir melhor o es
 - Metadados publicos passaram a identificar autoria e manutencao de forma menos generica
 
 Essa frente ficou mais madura institucionalmente, mas ainda devera ser revisitada quando novas capacidades de entrada ou observabilidade forem publicadas.
+
+---
+
+## Nota de andamento do BLOCO D
+
+A presenca publica da CLARA foi alinhada para reduzir a diferenca entre chat, PDF e compartilhamento externo:
+
+- metadados publicos passaram a usar descricao mais aderente ao estado real do produto
+- Open Graph e Twitter cards passaram a apontar para uma imagem social dedicada do projeto
+- manifesto PWA foi revisado para reforcar naming, descricao e instalacao com identidade consistente
+- a exportacao em PDF recebeu copy institucional e assinatura visual mais coerentes com a camada publica
+
+Essa frente melhorou a apresentacao externa do produto sem depender de Google OAuth, corpus real ou estabilizacao do Gemini.
+
+---
+
+## Nota de andamento do BLOCO 4
+
+O painel de metricas agregadas deixou de mostrar apenas volume bruto e passou a expor sinais mais proximos de saude do produto:
+
+- respostas grounded no mes
+- lacunas de cobertura sinalizadas em `query_analytics`
+- respostas degradadas por status
+- latencia media do atendimento
+- temas mais recorrentes do periodo
+
+Essa leitura continua agregada, sem identificar usuarios individualmente, mas melhora a capacidade de priorizar corpus, cobertura e estabilidade a partir do proprio uso da CLARA.

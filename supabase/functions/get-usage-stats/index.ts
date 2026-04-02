@@ -57,6 +57,36 @@ type CountQueryLike = {
   eq: (column: string, value: string) => CountQueryLike;
 };
 
+type ChatHealthRow = {
+  used_rag: boolean | null;
+  response_status: string | null;
+  latency_ms: number | null;
+};
+
+type QueryAnalyticsRow = {
+  topic_label: string | null;
+  needs_content_gap_review: boolean | null;
+};
+
+async function selectRecentRows<T>(
+  supabase: ReturnType<typeof createClient>,
+  table: string,
+  columns: string,
+  monthStart: string,
+): Promise<T[]> {
+  const { data, error } = await supabase
+    .from(table)
+    .select(columns)
+    .gte("created_at", monthStart);
+
+  if (error) {
+    console.warn(`Failed to read rows for ${table}:`, error.message);
+    return [];
+  }
+
+  return (data as T[] | null) ?? [];
+}
+
 async function countRecentRows(
   supabase: ReturnType<typeof createClient>,
   table: string,
@@ -111,7 +141,13 @@ Deno.serve(async (req) => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-    const [chatMessages, embeddingQueries, processedDocuments] = await Promise.all([
+    const [
+      chatMessages,
+      embeddingQueries,
+      processedDocuments,
+      chatHealthRows,
+      queryAnalyticsRows,
+    ] = await Promise.all([
       countRecentRows(supabase, "chat_metrics", monthStart),
       countRecentRows(supabase, "search_metrics", monthStart),
       countRecentRows(
@@ -119,6 +155,18 @@ Deno.serve(async (req) => {
         "documents",
         monthStart,
         (query) => query.eq("status", "processed"),
+      ),
+      selectRecentRows<ChatHealthRow>(
+        supabase,
+        "chat_metrics",
+        "used_rag,response_status,latency_ms",
+        monthStart,
+      ),
+      selectRecentRows<QueryAnalyticsRow>(
+        supabase,
+        "query_analytics",
+        "topic_label,needs_content_gap_review",
+        monthStart,
       ),
     ]);
 
@@ -152,12 +200,41 @@ Deno.serve(async (req) => {
       );
     }
 
+    const groundedAnswers = chatHealthRows.filter((row) => row.used_rag).length;
+    const degradedResponses = chatHealthRows.filter((row) =>
+      ["failed", "out_of_scope", "partial"].includes(row.response_status ?? "")
+    ).length;
+    const latencySamples = chatHealthRows
+      .map((row) => row.latency_ms)
+      .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+    const averageLatencyMs = latencySamples.length
+      ? Math.round(latencySamples.reduce((sum, value) => sum + value, 0) / latencySamples.length)
+      : null;
+    const contentGapReviews = queryAnalyticsRows.filter((row) => row.needs_content_gap_review).length;
+
+    const topicCounts = new Map<string, number>();
+    for (const row of queryAnalyticsRows) {
+      const topic = (row.topic_label ?? "").trim();
+      if (!topic) continue;
+      topicCounts.set(topic, (topicCounts.get(topic) ?? 0) + 1);
+    }
+
+    const topTopics = [...topicCounts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 3)
+      .map(([topic, count]) => ({ topic, count }));
+
     return new Response(
         JSON.stringify({
           month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
           chat_messages: chatMessages ?? fallbackCounts["chat_message"] ?? 0,
           embedding_queries: embeddingQueries ?? fallbackCounts["embedding_query"] ?? 0,
           client_side_ingestions: processedDocuments ?? fallbackCounts["client_side_ingestion"] ?? 0,
+          grounded_answers: groundedAnswers,
+          content_gap_reviews: contentGapReviews,
+          degraded_responses: degradedResponses,
+          average_latency_ms: averageLatencyMs,
+          top_topics: topTopics,
         }),
       { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );

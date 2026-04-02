@@ -1,19 +1,27 @@
 import { DocumentMeta } from "@/components/DocumentMeta";
 import LegalPageLayout from "@/components/LegalPageLayout";
+import {
+  SITE_AUTHOR_NAME,
+  SITE_CANONICAL_URL,
+  SITE_CONTACT_EMAIL,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_PUBLIC_NATURE,
+} from "@/lib/site-identity";
 
 const Termos = () => {
   const sections = [
     {
-      title: "1. Identificação do serviço e governança",
+      title: "1. Identificação do serviço e governança pública atual",
       content: (
         <>
           <p>A CLARA é uma ferramenta digital de apoio operacional ao uso do SEI-Rio e a rotinas administrativas correlatas. Ao acessar e utilizar a aplicação, você concorda com estes Termos de Uso.</p>
-          <p className="mt-4">Nesta versão pública, a autoria técnica identificada na aplicação é de Wilson M. Peixoto, com contato indicado no próprio site. A menção à SME/RJ informa contexto profissional de atuação do autor, mas não transforma, por si só, a CLARA em canal oficial do SEI-Rio, da SME/RJ, da Prefeitura do Rio ou em ato administrativo formal.</p>
+          <p className="mt-4">Nesta versão pública, a autoria técnica identificada na aplicação é de {SITE_AUTHOR_NAME}. {SITE_PUBLIC_NATURE}</p>
         </>
       ),
     },
     {
-      title: "2. O que a CLARA oferece",
+      title: "2. O que a CLARA oferece hoje",
       content: (
         <>
           <p>A CLARA foi desenhada para apoiar consultas operacionais e revisão de etapas recorrentes, especialmente quando o usuário precisa organizar a próxima ação antes de operar no processo administrativo.</p>
@@ -23,16 +31,17 @@ const Termos = () => {
             <li>apoiar a conferência de etapas antes de encaminhamentos e tramitações;</li>
             <li>oferecer respostas em modo direto ou didático, com referências documentais quando houver base suficiente.</li>
           </ul>
-          <p className="mt-4">O escopo pode evoluir, ser restringido ou ser reorganizado conforme a disponibilidade técnica, a governança da base documental e as decisões de manutenção do projeto.</p>
+          <p className="mt-4">O escopo pode evoluir, ser restringido ou ser reorganizado conforme a disponibilidade técnica, a governança da base documental e as decisões de manutenção do projeto. Funcionalidades em preparação, demonstração ou habilitação progressiva não constituem promessa irrevogável de disponibilidade contínua.</p>
         </>
       ),
     },
     {
-      title: "3. Escopo, natureza do serviço e limites de resposta",
+      title: "3. Natureza do serviço e limites de resposta",
       content: (
         <>
           <p>A CLARA não substitui decisão administrativa, leitura dos documentos oficiais, validação interna da unidade, análise normativa especializada, parecer jurídico, despacho ou manifestação formal.</p>
           <p className="mt-4">As respostas podem sintetizar procedimentos, apontar cautelas e sugerir conferências, mas não produzem efeito vinculante nem dispensam validação humana antes da prática de qualquer ato no processo.</p>
+          <p className="mt-4">Quando o assunto exigir interpretação normativa, decisão formal, autorização hierárquica ou verificação documental sensível, prevalecem os ritos oficiais da unidade competente.</p>
         </>
       ),
     },
@@ -61,10 +70,11 @@ const Termos = () => {
       ),
     },
     {
-      title: "6. Base documental, ambiente administrativo e evolução",
+      title: "6. Funcionalidades em evolução e ambiente administrativo",
       content: (
         <>
           <p>A base documental, a área administrativa e os fluxos de resposta da CLARA podem ser ajustados ao longo do projeto. Dependendo do ambiente operacional, o chat também pode entrar em modo de preparação, demonstração, manutenção ou resposta degradada.</p>
+          <p className="mt-4">No estado público atual, o chat principal não recebe arquivos, imagens ou prints de tela enviados pelo usuário final. Se esse modelo de entrada for alterado em versões futuras, estes Termos e a Política de Privacidade deverão refletir a nova capacidade.</p>
           <p className="mt-4">Mudanças de escopo, interface, provedores técnicos, corpus, autenticação ou comportamento não criam obrigação de manutenção permanente de funcionalidades experimentais, provisórias ou ainda em estabilização.</p>
         </>
       ),
@@ -81,7 +91,7 @@ const Termos = () => {
             <li>não produz efeito vinculante;</li>
             <li>não dispensa validação humana antes da execução do procedimento.</li>
           </ul>
-          <p className="mt-4">Dúvidas sobre estes Termos ou sobre a operação pública atual do projeto podem ser encaminhadas ao contato informado na aplicação: <strong>wilsonmp2@gmail.com</strong>.</p>
+          <p className="mt-4">Dúvidas sobre estes Termos ou sobre a operação pública atual do projeto podem ser encaminhadas ao contato informado na aplicação: <strong>{SITE_CONTACT_EMAIL}</strong>.</p>
         </>
       ),
     },
@@ -91,14 +101,14 @@ const Termos = () => {
     <>
       <DocumentMeta
         title="Termos de Uso — CLARA"
-        description="Termos de Uso da CLARA, com escopo do serviço, limites de responsabilidade, autoria identificada e regras de uso do ambiente público e administrativo."
-        canonical="https://clarainova02.vercel.app/termos"
+        description={`${SITE_DESCRIPTION} Termos de Uso com escopo do serviço, limites de responsabilidade, autoria identificada e regras do ambiente público e administrativo.`}
+        canonical={`${SITE_CANONICAL_URL}/termos`}
       />
       <LegalPageLayout
         kicker="Termos de Uso"
         title="Condições de uso compatíveis com o produto real"
         description="Natureza da CLARA, limites de responsabilidade, uso permitido e contornos institucionais da ferramenta no estado atual do projeto."
-        updatedAt="Última atualização: 31 de março de 2026"
+        updatedAt="Última atualização: 2 de abril de 2026"
         sections={sections}
       />
     </>

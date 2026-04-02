@@ -6,6 +6,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useChat } from '@/hooks/useChatStore';
 import { ClaraMonogram } from '@/components/ClaraMonogram';
 import { useModalAccessibility } from '@/hooks/useModalAccessibility';
+import { SITE_CONTACT_EMAIL, SITE_CONTACT_MAILTO, SITE_NAME } from '@/lib/site-identity';
 
 type NavItem = {
   label: string;
@@ -33,7 +34,7 @@ const Header = () => {
     { label: 'Perguntas frequentes', to: '/#faq' },
     { label: 'Política de Privacidade', to: '/privacidade', note: 'Uso e proteção de dados' },
     { label: 'Termos de Uso', to: '/termos', note: 'Condições de acesso ao serviço' },
-    { label: 'Contato', href: 'mailto:wilsonmp2@gmail.com', note: 'wilsonmp2@gmail.com' },
+    { label: 'Contato', href: SITE_CONTACT_MAILTO, note: SITE_CONTACT_EMAIL },
   ];
 
   const isActiveLink = (target: string) => {
@@ -67,9 +68,9 @@ const Header = () => {
             >
               <ClaraMonogram className="h-9 w-9 shrink-0" />
               <span className="header-brand-title text-xl font-bold tracking-tight text-foreground transition-opacity hover:opacity-80">
-                CLARA
+                {SITE_NAME}
               </span>
-              <span className="sr-only">CLARA - Página inicial</span>
+              <span className="sr-only">{SITE_NAME} - Página inicial</span>
             </Link>
 
             
@@ -132,7 +133,7 @@ const Header = () => {
                 <ClaraMonogram className="h-8 w-8" title="" />
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.11em] text-muted-foreground">Navegação</p>
-                  <p id="site-menu-title" className="text-sm font-semibold text-foreground">Menu CLARA</p>
+                  <p id="site-menu-title" className="text-sm font-semibold text-foreground">Menu {SITE_NAME}</p>
                 </div>
               </div>
               <button

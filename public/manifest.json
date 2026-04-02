@@ -2,7 +2,7 @@
   "id": "/",
   "name": "CLARA — Apoio operacional ao SEI-Rio",
   "short_name": "CLARA",
-  "description": "Ferramenta digital de apoio para documentos, assinatura, tramitação e etapas operacionais no SEI-Rio.",
+  "description": "Ferramenta digital de apoio para dúvidas sobre uso do SEI-Rio, com respostas em modo Direto ou Didático, referências quando houver base suficiente e exportação da sessão em PDF.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -31,6 +31,15 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-clara-public.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "label": "Cartão institucional da CLARA para compartilhamento e apresentação pública",
+      "form_factor": "wide"
     }
   ],
   "shortcuts": [

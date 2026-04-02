@@ -3,37 +3,35 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-02T07:45:21.786Z
-- Atualizado por: CODEX @ HOME
-- Branch de referência: `session/2026-04-02/HOME/CODEX/BLOCO-0-POST-MERGE`
-- Commit de base oficial: `94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
-- Head da sessão: `94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
-- Último relatório: `docs/operational-reports/2026-04-02-block-0-main-integration.md`
+- Data/hora: 2026-04-02T08:47:49.280Z
+- Atualizado por: CODEX @ WILSON-MP
+- Branch de referência: `session/2026-04-02/HOME/CODEX/BLOCO-2-PRELAUNCH-POLISH`
+- Commit de base oficial: `b67ffa98acaac237eb8cc8184d0cf00eebf1684d`
+- Head da sessão: `b67ffa98acaac237eb8cc8184d0cf00eebf1684d`
+- Último relatório: `docs/operational-reports/2026-04-02-block-2-prelaunch-polish.md`
 
 ## Estado atual resumido
-- Fase atual: Continuidade integrada em main; preparação do BLOCO 1
-- Bloco ativo: BLOCO 1 — RLS, auth admin e reconciliação operacional
-- Status da sessão: `partial`
-- Próxima ação recomendada: Atualizar a PR #13 sobre main, corrigir o bug do /admin para usuários sem sessão e revisar a estratégia de reconciliação das migrations antes de decidir o merge.
+- Fase atual: Polimento institucional, presença pública e observabilidade enxuta
+- Bloco ativo: BLOCO 2 — Polimento institucional, presença pública e observabilidade enxuta
+- Status da sessão: `complete`
+- Próxima ação recomendada: Retomar a trilha de engenharia dura: revisar RLS/policies, endurecer JWT nas functions administrativas, destravar OAuth/Gemini e então voltar para corpus real e prova empírica do RAG.
 
 ## Itens concluídos
-- PR #12 mergeada em main no commit 94677b6a6ec6aed8ab217fe5c2298ddd4c163322
-- BLOCO 0 marcado como integrado em docs/BLOCK_PLAN.md
-- Estado remoto ajustado para refletir a continuidade oficial em main
+- Reforço institucional em Termos, Privacidade, README, MIGRATION_STATUS e metadados públicos
+- Nova imagem social dedicada e ajuste de OG/Twitter/PWA
+- Enriquecimento da observabilidade agregada no get-usage-stats e no painel admin
 
 ## Itens pendentes
-- Atualizar/rebasear a PR #13 sobre origin/main
-- Corrigir o bug do /admin para usuários sem sessão na branch da PR #13
-- Revisar e aceitar explicitamente a estratégia de reconciliação das migrations consolidadas
+- RLS/policies efetivas, verify_jwt nas functions administrativas e hardening Supabase
+- Google OAuth do admin, estabilidade do Gemini e carga curada real do corpus
+- Lapidação adicional da home pública e identidade visual final do PDF
 
 ## Bloqueios externos
-- Google OAuth do admin ainda pendente
-- API do Gemini ainda instável para embeddings reais
-- Corpus inicial curado ainda não carregado
+- Google OAuth do admin ainda depende de configuração externa no Supabase/Google
+- Embeddings reais ainda dependem da estabilidade externa do Gemini
 
 ## Notas operacionais
-- Com a continuidade integrada em main, o próximo foco oficial do repositório passa a ser o BLOCO 1.
-- A PR #13 continua exigindo atualização sobre a nova base antes de qualquer decisão de merge.
+- Esta sessão avançou apenas frentes independentes de OAuth, corpus real e ingestão operacional.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade

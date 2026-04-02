@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { SITE_AUTHOR_LABEL } from '@/lib/site-identity';
 
 export interface DocumentMetaOptions {
   title: string;
@@ -10,7 +11,7 @@ export interface DocumentMetaOptions {
 export function DocumentMeta({
   title,
   description,
-  author = 'Wilson M. Peixoto - SME/RJ',
+  author = SITE_AUTHOR_LABEL,
   canonical,
 }: DocumentMetaOptions) {
   useEffect(() => {
