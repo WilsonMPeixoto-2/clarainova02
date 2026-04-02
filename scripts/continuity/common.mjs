@@ -11,9 +11,11 @@ export const requiredContinuityFiles = [
   ".continuity/current-state.json",
   ".continuity/session-log.jsonl",
   ".continuity/UNIVERSAL_SESSION_PROMPT.md",
+  "docs/BLOCK_PLAN.md",
   "docs/CONTINUITY_PROTOCOL.md",
   "docs/HANDOFF.md",
   "docs/MIGRATION_STATUS.md",
+  "docs/REMOTE_STATE.md",
   "docs/operational-reports/TEMPLATE.md",
 ];
 
@@ -209,16 +211,25 @@ ${formatBulletList(state.external_blockers)}
 ## Notas operacionais
 ${formatBulletList(state.notes)}
 
-## Regras rápidas para qualquer ferramenta
-1. fazer \`git fetch origin --prune\`
-2. tratar \`origin/main\` como verdade oficial
-3. ler:
+## Preambulo obrigatório para qualquer IA
+1. tratar \`origin/main\` como única fonte oficial de verdade
+2. ler, nesta ordem:
    - \`.continuity/current-state.json\`
    - \`docs/HANDOFF.md\`
    - \`docs/MIGRATION_STATUS.md\`
    - último relatório em \`docs/operational-reports/\`
-4. trabalhar em branch de sessão, nunca direto em \`main\`
-5. ao encerrar, deixar tudo commitado, pushado e documentado
+3. depois confirmar:
+   - bloco ativo
+   - branch correta
+   - itens concluídos
+   - itens pendentes
+   - próxima ação recomendada
+4. complementar a leitura com:
+   - \`docs/BLOCK_PLAN.md\`
+   - \`docs/REMOTE_STATE.md\`
+5. não continuar se houver divergência entre o contexto local e o contexto registrado no repositório sem explicitar essa divergência
+6. trabalhar em branch de sessão, nunca direto em \`main\`
+7. ao encerrar, deixar tudo commitado, pushado e documentado
 `;
 }
 

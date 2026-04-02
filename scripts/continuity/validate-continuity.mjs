@@ -66,6 +66,18 @@ if (!handoff.includes(state.last_integrated_main_sha)) {
   throw new Error("docs/HANDOFF.md não referencia o commit de base oficial atual");
 }
 
+const requiredHandoffMarkers = [
+  "## Preambulo obrigatório para qualquer IA",
+  "docs/BLOCK_PLAN.md",
+  "docs/REMOTE_STATE.md",
+];
+
+for (const marker of requiredHandoffMarkers) {
+  if (!handoff.includes(marker)) {
+    throw new Error(`docs/HANDOFF.md não contém o marcador obrigatório: ${marker}`);
+  }
+}
+
 if (logEntries.length === 0) {
   throw new Error(".continuity/session-log.jsonl não pode ficar vazio");
 }

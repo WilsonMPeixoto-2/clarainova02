@@ -8,13 +8,23 @@ Antes de agir neste repositório, siga este protocolo obrigatoriamente:
    - `docs/HANDOFF.md`
    - `docs/MIGRATION_STATUS.md`
    - relatório mais recente em `docs/operational-reports/`
-3. Não continue se a árvore estiver suja sem registro.
-4. Não trabalhe diretamente em `main`.
-5. Trabalhe apenas na branch de sessão indicada no handoff, ou crie nova branch de sessão seguindo a convenção do projeto.
-6. Ao final:
+3. Só depois confirme:
+   - qual é o bloco ativo
+   - qual é a branch correta
+   - o que já foi concluído
+   - o que ficou pendente
+   - qual é a próxima ação recomendada
+4. Complete o contexto com:
+   - `docs/BLOCK_PLAN.md`
+   - `docs/REMOTE_STATE.md`
+5. Não continue se a árvore estiver suja sem registro.
+6. Não continue se houver divergência entre o contexto local e o contexto registrado no repositório sem antes explicitar essa divergência.
+7. Não trabalhe diretamente em `main`.
+8. Trabalhe apenas na branch de sessão indicada no handoff, ou crie nova branch de sessão seguindo a convenção do projeto.
+9. Ao final:
    - atualize `docs/HANDOFF.md`
    - atualize `.continuity/current-state.json`
    - acrescente evento em `.continuity/session-log.jsonl`
    - crie relatório detalhado em `docs/operational-reports/`
-7. Se houver impossibilidade, registre claramente o bloqueio e a próxima ação recomendada.
-8. Se detectar divergência entre estado local e GitHub, pare e trate isso primeiro; não tente continuar assumindo contexto.
+   - revise `docs/BLOCK_PLAN.md` e `docs/REMOTE_STATE.md` se o bloco tiver mudado a ordem planejada ou o ambiente remoto
+10. Se houver impossibilidade, registre claramente o bloqueio e a próxima ação recomendada.

@@ -14,6 +14,35 @@ Não são fontes oficiais de verdade:
 - memória de ferramenta de IA
 - cópia não publicada de arquivos
 
+## Preambulo obrigatório para qualquer IA
+Antes de qualquer ação neste repositório, a ferramenta deve obrigatoriamente:
+
+1. tratar `origin/main` como única fonte oficial de verdade
+2. ler, nesta ordem:
+   - `.continuity/current-state.json`
+   - `docs/HANDOFF.md`
+   - `docs/MIGRATION_STATUS.md`
+   - o relatório mais recente em `docs/operational-reports/`
+3. só depois confirmar:
+   - qual é o bloco ativo
+   - qual é a branch correta
+   - o que já foi concluído
+   - o que ficou pendente
+   - qual é a próxima ação recomendada
+4. complementar a leitura com:
+   - `docs/BLOCK_PLAN.md`
+   - `docs/REMOTE_STATE.md`
+5. não continuar se houver divergência entre o contexto local e o contexto registrado no repositório sem antes explicitar essa divergência
+6. ao final, atualizar novamente os arquivos de continuidade e registrar o resultado do bloco
+
+## Camadas do sistema de continuidade
+- `origin/main`: verdade oficial integrada
+- `.continuity/current-state.json`: estado estruturado e legível por máquina
+- `docs/HANDOFF.md`: resumo humano do estado corrente
+- `docs/BLOCK_PLAN.md`: ordem canônica de execução, dependências e travas entre blocos
+- `docs/REMOTE_STATE.md`: fotografia do ambiente remoto canônico
+- `docs/operational-reports/`: histórico detalhado de cada bloco ou intervenção operacional
+
 ## Regras obrigatórias
 
 ### 1. Uma sessão de trabalho sempre começa com leitura de contexto
@@ -22,6 +51,10 @@ Antes de qualquer alteração, a ferramenta ou operador deve ler:
 - `docs/HANDOFF.md`
 - `docs/MIGRATION_STATUS.md`
 - relatório mais recente em `docs/operational-reports/`
+
+Depois da leitura mínima, a ferramenta deve checar:
+- `docs/BLOCK_PLAN.md`
+- `docs/REMOTE_STATE.md`
 
 ### 2. Uma ferramenta = um worktree = uma branch de sessão
 Cada ferramenta deve trabalhar em um diretório isolado.
@@ -114,6 +147,9 @@ Esse comando valida:
 ### `docs/HANDOFF.md`
 Resumo humano curto e direto, renderizado a partir do estado estruturado.
 
+### `docs/BLOCK_PLAN.md`
+Plano canônico dos blocos, com status, dependências, critérios de entrada e critérios de saída.
+
 ### `.continuity/current-state.json`
 Estado legível por máquina/IA, com:
 - fase atual
@@ -127,6 +163,9 @@ Estado legível por máquina/IA, com:
 
 ### `.continuity/session-log.jsonl`
 Log append-only de eventos relevantes de sessão.
+
+### `docs/REMOTE_STATE.md`
+Registro do ambiente remoto oficial, incluindo GitHub, Supabase, Vercel, funções publicadas e bloqueios externos.
 
 ### `docs/operational-reports/`
 Relatórios detalhados por bloco, com contexto, ações, testes, critérios de aceite e pendências.
