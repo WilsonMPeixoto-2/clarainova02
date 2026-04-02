@@ -11,12 +11,11 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 
 ## Linha mestra atual
 - Fonte oficial integrada: `origin/main @ 86d3c18c8d95b0ad8f518863ac75da66a7826b55`
-- Frente imediata mais importante: reconciliar no repositório o hardening já existente no Supabase oficial sem quebrar a conta provisionada já usada no admin
+- Frente imediata mais importante: consolidar em `main` o hardening de Supabase já reconciliado e abrir a trilha operacional externa
 - Ordem de execução atualmente aceita:
-  1. confirmar no banco remoto o estado efetivo de `RLS` e das policies administrativas
-  2. endurecer `verify_jwt` em `embed-chunks` e `get-usage-stats`
-  3. versionar o contrato de `admin_users` / `is_admin_user()` ou reconciliar a cadeia de migrations antes de qualquer `db push`
-  4. só então avançar para Google OAuth, Gemini e corpus real
+  1. integrar a reconciliação canônica de migrations e auth administrativo feita em BLOCO 3
+  2. avançar para Google OAuth, Gemini e embeddings reais
+  3. depois formar corpus curado e medir o RAG real
 
 ## Blocos oficiais
 
@@ -25,7 +24,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 | 0 | Continuidade e automação mínima | `integrated` | `origin/main` | necessidade de consolidar o protocolo no repositório oficial | continuidade oficial integrada em `main` |
 | 1 | Certificação operacional do ambiente real | `integrated` | Bloco 0 integrado | baseline estável e Supabase/Vercel apontando para o projeto oficial | login provisionado real, upload real, grounding real e produção publicada |
 | 2 | Polimento institucional, presença pública e observabilidade enxuta | `integrated` | Bloco 1 integrado | produto já operacional nas frentes centrais | camada institucional, OG/PWA, PDF e métricas agregadas fortalecidos em `main` |
-| 3 | Hardening Supabase, RLS e JWT administrativo | `in_progress` | Bloco 2 integrado | produto operando com conta provisionada e functions administrativas ainda permissivas | policies públicas fechadas, JWT de borda endurecido e estado remoto/documental alinhado |
+| 3 | Hardening Supabase, RLS e JWT administrativo | `ready_to_integrate` | Bloco 2 integrado | produto operando com conta provisionada e functions administrativas ainda permissivas | policies públicas fechadas, JWT de borda endurecido e estado remoto/documental alinhado |
 | 4 | Consolidação operacional externa | `planned` | Bloco 3 estabilizado | camada interna segura e previsível | Google OAuth funcional, Gemini saneado e embeddings reais reprocessados |
 | 5 | Corpus inicial real e prova empírica do RAG | `planned` | Bloco 4 integrado | operação externa previsível e sem bloqueio crítico | lote curado carregado, perguntas reais classificadas e cobertura medida |
 | 6 | Acessibilidade, hotspots e testes de sustentação | `planned` | Bloco 5 em trilha segura | segurança, OAuth/Gemini e corpus já suficientemente estáveis | menu móvel, modais, hotspots de manutenção e cobertura de testes mais robustos |
@@ -46,13 +45,12 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Resultado: termos, privacidade, OG/PWA, PDF e métricas agregadas fortalecidos em `main`
 
 ### Bloco 3 — Hardening Supabase, RLS e JWT administrativo
-- Estado: `in_progress`
+- Estado: `ready_to_integrate`
 - Branch associada: `session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING`
-- Próxima ação: reconciliar conscientemente o histórico de migrations local/remoto antes de usar `db push`, agora que o contrato de `public.admin_users` / `public.is_admin_user()` já foi versionado no repositório
+- Próxima ação: integrar a branch atual depois de revisar o diff final do hardening reconciliado
 - Pendências conhecidas:
-  - o banco remoto já está com `RLS` fechado nessas tabelas e o contrato de `admin_users` / `is_admin_user()` começou a ser trazido para o repositório, mas a cadeia de migrations ainda não está reconciliada
   - `embed-chunks` e `get-usage-stats` já foram republicadas com `verify_jwt` endurecido
-  - a cadeia de migrations local e remota continua divergente, tornando `db push` inseguro sem reconciliação
+  - a linha principal ainda precisa absorver a cadeia canônica de migrations antes de abrir BLOCO 4
 
 ### Bloco 4 — Consolidação operacional externa
 - Estado: `planned`

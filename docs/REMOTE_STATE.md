@@ -42,20 +42,18 @@
 
 ## Estado operacional externo conhecido
 - Hardening Supabase / RLS:
-  - status: `em andamento`
+  - status: `reconciliado nesta branch`
   - situação conhecida:
     - este ambiente já consulta o Postgres remoto oficial do projeto `jasqctuzeznwdtbcuixn`
     - as tabelas `ingestion_jobs`, `document_processing_events`, `chat_metrics`, `search_metrics` e `query_analytics` já estão com `RLS` habilitado e sem policies para `public`/`anon`
     - o banco remoto usa policies administrativas baseadas em `public.is_admin_user()` e na tabela `public.admin_users`
-    - o repositório local já passou a versionar esse contrato em `20260402112000_version_admin_users_contract.sql`
-    - a migration local `20260402113000_harden_operational_analytics_access.sql` foi ajustada para não regredir esse estado mais seguro quando o helper existir
-    - `supabase db push` continua inseguro neste clone porque o histórico remoto de migrations diverge fortemente do diretório local
-    - `supabase migration list` mostrou quatro versões remotas sem arquivo local correspondente:
-      - `20260328230351`
-      - `20260329001517`
-      - `20260329001619`
-      - `20260401213217`
-    - a mesma consulta também mostrou que as migrations locais versionadas neste clone ainda não aparecem como aplicadas no histórico remoto, apesar de o schema real já conter parte importante desse estado
+    - o repositório local agora foi alinhado à mesma cadeia canônica de migrations registrada no remoto:
+      - `20260328230351_clara_foundation_tables_and_indexes.sql`
+      - `20260329001517_clara_rls_policies_and_search_functions.sql`
+      - `20260329001619_clara_check_rate_limit_function.sql`
+      - `20260401213217_harden_admin_authorization.sql`
+    - `supabase migration list` voltou a alinhar local e remoto sem versões faltantes
+    - `supabase db push --dry-run` agora retorna `Remote database is up to date`
 - Google OAuth do admin:
   - status: `pendente`
   - evidência conhecida: Supabase respondeu `Unsupported provider: provider is not enabled`
@@ -68,8 +66,6 @@
   - situação conhecida: existe prova operacional com 1 PDF, mas não há lote curado inicial fechado
 
 ## Divergências remotas que exigem cuidado
-- o endurecimento de `verify_jwt` nas functions administrativas já foi publicado e o fechamento de `RLS` foi confirmado no banco remoto, mas o contrato de `admin_users`/`is_admin_user()` ainda não está versionado neste clone
-- o banco remoto contém versões de migration ausentes no diretório local e, ao mesmo tempo, não reconhece como aplicadas as migrations locais deste clone; qualquer `db push` cego pode sobrescrever um estado já mais seguro
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
 - embeddings reais continuam sujeitos à estabilidade externa do Gemini
 

@@ -8,7 +8,7 @@
 - Ferramenta: `CODEX`
 - Commit de base: `86d3c18c8d95b0ad8f518863ac75da66a7826b55`
 - Commit final: registrado no commit de encerramento desta sessão
-- Status final: `partial`
+- Status final: `reconciliado nesta branch`
 
 ## Contexto
 Depois do BLOCO 2 integrado em `main`, a próxima frente prioritária voltou a ser segurança estrutural. A auditoria consolidada já apontava dois riscos altos e objetivos:
@@ -21,7 +21,7 @@ Ao mesmo tempo, o baseline operacional atual ainda depende de conta provisionada
 ## Objetivo do bloco
 - fechar a reabertura pública de tabelas operacionais e analíticas sem alterar silenciosamente o modelo atual de acesso administrativo
 - endurecer a borda das functions administrativas com verificação de JWT no gateway do Supabase
-- registrar com precisão o que foi aplicado remotamente e o que ainda depende de credencial de banco
+- registrar com precisão o que foi aplicado remotamente e reconciliar a cadeia local de migrations com o histórico canônico do projeto oficial
 
 ## Arquivos lidos antes de editar
 - `.continuity/current-state.json`
@@ -41,37 +41,37 @@ Ao mesmo tempo, o baseline operacional atual ainda depende de conta provisionada
 - a migration `20260315170000_ingestion_governance.sql` já havia criado policies autenticadas razoáveis para `ingestion_jobs`, `document_processing_events`, `search_metrics`, `chat_metrics` e `query_analytics`
 - a migration `20260316112905_65adc4f0-434c-4838-af94-9e7ab3316760.sql` somou policies `TO public` por cima desse baseline, reabrindo acesso indevido
 - `embed-chunks` e `get-usage-stats` continuavam com `verify_jwt = false`, apesar de exigirem autenticação manual no código
-- não existe em `main` um contrato versionado de papéis administrativos (`admin_users`) que permita endurecer agora para admin-only sem risco de quebrar a conta provisionada usada na operação real
+- não existia em `main` um histórico de migrations compatível com o que o Supabase oficial já registra como baseline canônico
 
 ## Ações executadas
 - alterei `supabase/config.toml` para:
   - `embed-chunks verify_jwt = true`
   - `get-usage-stats verify_jwt = true`
   - manter `chat verify_jwt = false`
-- criei a migration `supabase/migrations/20260402113000_harden_operational_analytics_access.sql` para:
-  - remover as policies públicas de `ingestion_jobs`
-  - remover as policies públicas de `document_processing_events`
-  - remover as policies públicas de `chat_metrics`
-  - remover as policies públicas de `search_metrics`
-  - remover as policies públicas de `query_analytics`
-  - reafirmar policies autenticadas compatíveis com o estado atual do projeto
 - republiquei no projeto oficial `jasqctuzeznwdtbcuixn`:
   - `embed-chunks` -> versão remota observada `7`
   - `get-usage-stats` -> versão remota observada `7`
 - conectei este clone ao Postgres remoto oficial e validei o estado real das policies via `supabase db query`
 - confirmei que o banco remoto já está sem policies para `public`/`anon` nas tabelas operacionais/analíticas analisadas
 - confirmei que o ambiente remoto usa `public.is_admin_user()` apoiada em `public.admin_users`, artefatos ainda não versionados neste clone
-- reescrevi a migration `20260402113000_harden_operational_analytics_access.sql` para:
-  - fechar acesso público em qualquer ambiente
-  - espelhar o estado admin-only quando `is_admin_user()` existir
-  - preservar apenas o baseline autenticado em ambientes onde esse helper ainda não exista
-- versionei no repositório o contrato remoto de `public.admin_users` e `public.is_admin_user()` em `20260402112000_version_admin_users_contract.sql`
+- substituí a cadeia local antiga de 19 migrations incrementais por quatro migrations canônicas extraídas do próprio histórico remoto:
+  - `20260328230351_clara_foundation_tables_and_indexes.sql`
+  - `20260329001517_clara_rls_policies_and_search_functions.sql`
+  - `20260329001619_clara_check_rate_limit_function.sql`
+  - `20260401213217_harden_admin_authorization.sql`
+- removi as duas migrations locais provisórias de reconciliação (`20260402112000` e `20260402113000`) porque o histórico remoto já possui baseline canônico mais fiel
+- validei a reconciliação com:
+  - `supabase migration list` agora alinhando local e remoto
+  - `supabase db push --dry-run` retornando `Remote database is up to date`
 
 ## Arquivos alterados
 - `supabase/config.toml`
 - `supabase/functions/get-usage-stats/index.ts`
-- `supabase/migrations/20260402112000_version_admin_users_contract.sql`
-- `supabase/migrations/20260402113000_harden_operational_analytics_access.sql`
+- `supabase/migrations/20260328230351_clara_foundation_tables_and_indexes.sql`
+- `supabase/migrations/20260329001517_clara_rls_policies_and_search_functions.sql`
+- `supabase/migrations/20260329001619_clara_check_rate_limit_function.sql`
+- `supabase/migrations/20260401213217_harden_admin_authorization.sql`
+- remoção das migrations incrementais antigas que não correspondiam mais ao histórico remoto
 - `docs/BLOCK_PLAN.md`
 - `docs/REMOTE_STATE.md`
 - `docs/MIGRATION_STATUS.md`
@@ -88,35 +88,32 @@ Ao mesmo tempo, o baseline operacional atual ainda depende de conta provisionada
 - `supabase db query` em `pg_proc` para `public.is_admin_user()`
 - `supabase db query` em `information_schema.tables` para `public.admin_users`
 - `supabase migration list`
+- `supabase db push --dry-run`
 
 ## Resultado do bloco
 ### Concluído
 - o endurecimento de JWT na borda das functions administrativas foi aplicado no projeto oficial
 - o Postgres remoto oficial foi acessado e o fechamento de `RLS` nessas tabelas foi confirmado em produção
-- a correção de `RLS` ficou pronta, versionada e isolada em migration incremental compatível com o estado remoto mais seguro
-- o repositório passou a conhecer o contrato remoto de `public.admin_users` / `public.is_admin_user()`
+- a cadeia local de migrations foi reconciliada com o histórico canônico registrado no Supabase oficial
+- o repositório passou a refletir diretamente o contrato remoto de `public.admin_users` / `public.is_admin_user()`
+- `supabase db push` voltou a ser seguro nesta branch do ponto de vista de histórico, pelo menos em modo `--dry-run`
 - a continuidade oficial deixou de apontar para a linha antiga baseada na PR `#13`
 
 ### Não concluído / impossibilidades
-- a cadeia de migrations local continua divergente da cadeia remota, então `supabase db push` continua impróprio neste clone
-- a divergencia confirmada por `supabase migration list` inclui:
-  - versoes remotas sem arquivo local correspondente:
-    - `20260328230351`
-    - `20260329001517`
-    - `20260329001619`
-    - `20260401213217`
-  - historico remoto que nao reconhece como aplicadas as migrations locais versionadas neste clone, apesar de o schema real ja refletir parte relevante delas
+- a branch ainda precisa ser integrada na linha principal para que `origin/main` passe a carregar essa cadeia canônica
+- Google OAuth do admin e estabilidade do Gemini continuam fora do escopo resolvido neste bloco
 
 ### Riscos remanescentes
-- o repositório ainda não reproduz integralmente o modelo administrativo do Supabase oficial
-- um `db push` sem reconciliação de histórico pode sobrescrever um estado de banco já mais seguro do que o diretório local
+- a linha principal ainda não absorveu esta reconciliação
+- Google OAuth do admin continua desabilitado no Supabase real
+- embeddings reais continuam sujeitos à estabilidade externa do Gemini
 
 ## Próxima ação recomendada
-Reconciliar conscientemente a cadeia de migrations local/remota antes de qualquer `db push`; depois disso, verificar novamente o admin e só então seguir para Google OAuth, Gemini e corpus real.
+Integrar a branch atual e, em seguida, abrir BLOCO 4 para Google OAuth do admin, Gemini e reprocessamento real de embeddings.
 
 ## Atualizações obrigatórias de continuidade
-- [ ] `docs/HANDOFF.md` atualizado
-- [ ] `.continuity/current-state.json` atualizado
+- [x] `docs/HANDOFF.md` atualizado
+- [x] `.continuity/current-state.json` atualizado
 - [ ] `.continuity/session-log.jsonl` atualizado
 - [x] `docs/BLOCK_PLAN.md` atualizado
 - [x] `docs/REMOTE_STATE.md` atualizado

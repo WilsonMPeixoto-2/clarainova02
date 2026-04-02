@@ -241,12 +241,6 @@ Essa leitura continua agregada, sem identificar usuarios individualmente, mas me
 
 A trilha de endurecimento de `Supabase` e `Edge Functions` foi retomada a partir do baseline oficial em `main`:
 
-- uma migration incremental (`20260402113000_harden_operational_analytics_access.sql`) foi preparada para remover a reabertura publica indevida de:
-  - `ingestion_jobs`
-  - `document_processing_events`
-  - `chat_metrics`
-  - `search_metrics`
-  - `query_analytics`
 - `embed-chunks` e `get-usage-stats` foram republicadas no projeto oficial com `verify_jwt` endurecido na borda
 - o `chat` permaneceu publico por decisao consciente
 
@@ -260,20 +254,18 @@ Verificacao remota adicional desta rodada:
   - `search_metrics`
   - `query_analytics`
 - o modelo remoto usa `public.is_admin_user()` apoiada em `public.admin_users`
-- esse contrato administrativo remoto passou a ser versionado no repositorio em `20260402112000_version_admin_users_contract.sql`
-- `supabase migration list` revelou divergencia forte entre o historico remoto e o diretorio local:
-  - versoes remotas sem arquivo local correspondente:
-    - `20260328230351`
-    - `20260329001517`
-    - `20260329001619`
-    - `20260401213217`
-  - o historico remoto tambem nao reconhece como aplicadas as migrations locais versionadas neste clone, apesar de o schema efetivo ja conter parte relevante desse estado
+- o repositorio local foi reconciliado para usar a mesma cadeia canonica de migrations do remoto:
+  - `20260328230351_clara_foundation_tables_and_indexes.sql`
+  - `20260329001517_clara_rls_policies_and_search_functions.sql`
+  - `20260329001619_clara_check_rate_limit_function.sql`
+  - `20260401213217_harden_admin_authorization.sql`
+- `supabase migration list` passou a alinhar completamente local e remoto
+- `supabase db push --dry-run` agora retorna `Remote database is up to date`
 
 Consequencia pratica:
 
 - o endurecimento das functions administrativas ja avancou no ambiente remoto
-- o estado remoto efetivo ja esta mais seguro do que a cadeia local de migrations sugeria
-- a pendencia principal deixou de ser "aplicar RLS" e passou a ser "reconciliar no repositorio o contrato remoto de `admin_users` / `is_admin_user()` e o historico de migrations"
-- ate essa reconciliacao existir, `supabase db push` segue sendo uma operacao de alto risco neste clone
+- o estado remoto efetivo ja esta espelhado pela cadeia de migrations local desta branch
+- a pendencia principal deixou de ser "hardening Supabase" e passou a ser "integrar esse estado em `main` e retomar a consolidacao operacional externa"
 
-O BLOCO 3 so podera ser considerado fechado quando o repositório reproduzir com segurança esse contrato administrativo remoto e a trilha de migrations deixar de tornar `supabase db push` uma operacao arriscada neste clone.
+O BLOCO 3 pode ser considerado tecnicamente reconciliado nesta branch de sessao. O proximo passo e integrar esse hardening na linha principal e abrir a trilha de BLOCO 4.

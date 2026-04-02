@@ -1,1 +1,0 @@
-UPDATE documents SET status = 'error' WHERE status = 'processing'
