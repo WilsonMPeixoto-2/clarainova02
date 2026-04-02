@@ -20,6 +20,15 @@
 - Expectativa operacional atual:
   - a produção deve refletir o baseline publicado a partir de `main`
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
+- Deploy canônico mais recente observado:
+  - source: `git`
+  - status: `READY`
+  - deployment id: `dpl_2Y5BWMUEK5aGK8cf15Rj28arVnWY`
+  - commit publicado: `0174205ba2ead464c9c8dad7b61e6e63b59ea206`
+  - aliases observados:
+    - `https://clarainova02.vercel.app`
+    - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`
+    - `https://clarainova02-git-main-wilson-m-peixotos-projects.vercel.app`
 
 ## Supabase
 - Projeto oficial: `jasqctuzeznwdtbcuixn`

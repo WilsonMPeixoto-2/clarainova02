@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "a91649f15cc8b8bcde964525ebe272065931482f",
+  "last_integrated_main_sha": "0174205ba2ead464c9c8dad7b61e6e63b59ea206",
   "current_phase": "Pré-lançamento com BLOCO 3 integrado em main e BLOCO 4 pronto para execução operacional externa",
   "active_block": "BLOCO 4 — Consolidação operacional externa",
   "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-02T23:58:00.000Z",
+  "last_update_utc": "2026-04-03T00:10:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -17,7 +17,8 @@
     "supabase migration list e supabase db push --dry-run voltaram a indicar sincronização segura entre repositório e banco remoto",
     "BLOCK_PLAN, REMOTE_STATE e MIGRATION_STATUS alinhados à trilha atual de segurança",
     "Checklist operacional do BLOCO 4 foi documentado com exigências concretas de Google OAuth, Gemini e reprocessamento de embeddings",
-    "A trilha de hardening do BLOCO 3 foi integrada em main por fast-forward"
+    "A trilha de hardening do BLOCO 3 foi integrada em main por fast-forward",
+    "A integração de main gerou deploy canônico READY via GitHub/Vercel no projeto clarainova02"
   ],
   "pending_items": [
     "Executar o checklist operacional do BLOCO 4 no Supabase e no Google para destravar Google OAuth e embeddings reais",
@@ -33,9 +34,10 @@
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
     "O preparo do BLOCO 4 foi registrado sem tocar em ROADMAP_FUTURO.md nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.",
-    "Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3."
+    "Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.",
+    "As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção."
   ],
   "session_status": "integrated",
-  "last_report": "docs/operational-reports/2026-04-02-block-4-preparation.md",
-  "last_session_head_sha": "a91649f15cc8b8bcde964525ebe272065931482f"
+  "last_report": "docs/operational-reports/2026-04-02-main-integration-and-production-deploy.md",
+  "last_session_head_sha": "0174205ba2ead464c9c8dad7b61e6e63b59ea206"
 }
