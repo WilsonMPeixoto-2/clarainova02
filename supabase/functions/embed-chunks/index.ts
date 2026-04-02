@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { GoogleGenAI } from "npm:@google/genai";
+import { requireAdminUser } from "../_shared/admin-access.ts";
 
 const ALLOWED_ORIGINS = [
   "https://clarainova02.vercel.app",
@@ -92,38 +93,6 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getBearerToken(req: Request): string | null {
-  const authorization = req.headers.get("authorization") ?? "";
-  if (!authorization.toLowerCase().startsWith("bearer ")) return null;
-  const token = authorization.slice(7).trim();
-  return token || null;
-}
-
-async function requireAuthenticatedUser(
-  req: Request,
-  supabaseUrl: string,
-  supabaseAnonKey: string,
-) {
-  const accessToken = getBearerToken(req);
-  if (!accessToken) return null;
-
-  const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-    global: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  });
-
-  const { data, error } = await authClient.auth.getUser();
-  if (error || !data.user) {
-    console.warn("embed-chunks auth rejected:", error?.message ?? "no user");
-    return null;
-  }
-
-  return data.user;
-}
-
 async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string) {
   for (let attempt = 0; attempt <= EMBED_RETRY_DELAYS_MS.length; attempt++) {
     try {
@@ -189,11 +158,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    const authenticatedUser = await requireAuthenticatedUser(req, supabaseUrl, supabaseAnonKey);
-    if (!authenticatedUser) {
+    const adminAccess = await requireAdminUser(req, supabaseUrl, supabaseAnonKey, supabaseKey);
+    if (!adminAccess.ok) {
       return new Response(
-        JSON.stringify({ ok: false, error: "AUTH:UNAUTHORIZED", request_id }),
-        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+        JSON.stringify({ ok: false, error: adminAccess.code, details: adminAccess.message, request_id }),
+        { status: adminAccess.status, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -242,7 +211,7 @@ Deno.serve(async (req) => {
         start_index,
         requested_chunks: chunks.length,
         valid_chunks: validChunks.length,
-        requested_by: authenticatedUser.id,
+        requested_by: adminAccess.user.id,
       },
     });
 

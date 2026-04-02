@@ -17,6 +17,77 @@ Ultima atualizacao: 2026-03-31
 
 **O BLOCO 1 saiu do estado "apenas pronto no codigo" e passou para "operacionalmente provado" nas frentes centrais de ambiente, autenticacao administrativa por conta provisionada, ingestao real e resposta grounded em producao.**
 
+## Atualizacao de 2026-04-01 - reconciliacao da linha historica de migrations
+
+Foi confirmada uma divergencia entre o historico local de `supabase/migrations/` e o historico oficial gravado no projeto remoto `jasqctuzeznwdtbcuixn`.
+
+O banco remoto registra apenas 3 migrations consolidadas:
+
+- `20260328230351_clara_foundation_tables_and_indexes`
+- `20260329001517_clara_rls_policies_and_search_functions`
+- `20260329001619_clara_check_rate_limit_function`
+
+Por isso, em 2026-04-01:
+
+- as 19 migrations incrementais antigas foram arquivadas em `supabase/migrations_archive/2026-04-01-pre-consolidation/`
+- a pasta ativa `supabase/migrations/` passou a refletir exatamente as 3 migrations consolidadas do remoto
+
+Consequencia operacional:
+
+- o repositório volta a representar o caminho real do banco oficial
+- qualquer nova migration de RLS deve partir dessa linha historica consolidada, e nao da cadeia incremental antiga
+
+## Atualizacao de 2026-04-01 - primitiva versionada de autorizacao administrativa
+
+O repositorio agora carrega a migration ativa de endurecimento do acesso administrativo:
+
+- `20260401213217_harden_admin_authorization.sql`
+
+Essa migration introduz:
+
+- `public.admin_users` como fonte canonica de permissao administrativa
+- `public.is_admin_user(...)` para gate do frontend e uso em policies
+- troca das policies amplas de `authenticated` por policies `admin-only` nas tabelas administrativas e no bucket `documents`
+- endurecimento previsto para `embed-chunks` e `get-usage-stats`
+
+Estado atual dessa frente:
+
+- versionado no repositorio: sim, alinhado com a versao efetivamente registrada no projeto remoto
+- aplicado no projeto remoto: sim
+- primeiro admin provisionado em `admin_users`: sim, `wilsonmp2@gmail.com`
+
+Nota operacional:
+
+- a aplicacao via Supabase MCP registrou a migration com a versao `20260401213217`
+- o repositorio foi alinhado para refletir exatamente essa versao oficial do projeto
+
+Consequencia operacional:
+
+- o painel e as funcoes administrativas deixam de depender apenas de sessao autenticada
+- a liberacao do acesso passa a exigir concessao explicita de admin no banco
+
+## Atualizacao de 2026-04-01 - deploy de producao do gate administrativo
+
+Depois do rollout remoto no Supabase, o frontend com o novo gate administrativo tambem foi publicado em producao no projeto Vercel `clarainova02`.
+
+Estado atual dessa frente:
+
+- preview publicada: sim
+- producao publicada: sim
+- alias oficial ativo: `https://clarainova02.vercel.app`
+- superficie publica de `/admin` servindo o build novo: confirmada
+- validacao autenticada em navegador com conta admin e conta nao admin: ainda pendente
+
+Motivo da pendencia:
+
+- nesta sessao nao havia credencial real de login por senha disponivel no repositorio
+- o Google OAuth continua desabilitado no projeto Supabase real, entao nao foi possivel fechar a validacao autenticada por esse caminho
+
+Consequencia operacional:
+
+- o ambiente publicado ja reflete o endurecimento de autorizacao administrativa
+- o proximo passo operacional passa a ser exclusivamente a validacao de acesso real em navegador
+
 ## Memoria operacional e continuidade
 
 Desde 2026-04-01, o repositorio passa a carregar uma trilha minima obrigatoria de continuidade no proprio Git:

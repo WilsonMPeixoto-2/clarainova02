@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { requireAdminUser } from "../_shared/admin-access.ts";
 
 const ALLOWED_ORIGINS = [
   "https://clarainova02.vercel.app",
@@ -19,38 +20,6 @@ function buildCorsHeaders(req: Request) {
       "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
     "Vary": "Origin",
   };
-}
-
-function getBearerToken(req: Request): string | null {
-  const authorization = req.headers.get("authorization") ?? "";
-  if (!authorization.toLowerCase().startsWith("bearer ")) return null;
-  const token = authorization.slice(7).trim();
-  return token || null;
-}
-
-async function requireAuthenticatedUser(
-  req: Request,
-  supabaseUrl: string,
-  supabaseAnonKey: string,
-) {
-  const accessToken = getBearerToken(req);
-  if (!accessToken) return null;
-
-  const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-    global: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  });
-
-  const { data, error } = await authClient.auth.getUser();
-  if (error || !data.user) {
-    console.warn("get-usage-stats auth rejected:", error?.message ?? "no user");
-    return null;
-  }
-
-  return data.user;
 }
 
 type CountQueryLike = {
@@ -98,11 +67,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    const authenticatedUser = await requireAuthenticatedUser(req, supabaseUrl, supabaseAnonKey);
-    if (!authenticatedUser) {
+    const adminAccess = await requireAdminUser(req, supabaseUrl, supabaseAnonKey, supabaseKey);
+    if (!adminAccess.ok) {
       return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
-        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+        JSON.stringify({ error: adminAccess.message, code: adminAccess.code }),
+        { status: adminAccess.status, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 

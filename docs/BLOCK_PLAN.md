@@ -38,10 +38,11 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 1 — RLS, auth admin e reconciliação operacional
 - Estado: `in_review`
 - Branch/PR associada: `session/2026-04-01/C04-084/CODEX/BLOCO-1-RLS` / PR `#13`
-- Próxima ação: rebasear ou atualizar a PR `#13` sobre `main`
+- Próxima ação: validar o `/admin` com contas reais e revisar a estratégia de reconciliação das migrations antes de decidir o merge
 - Pendências conhecidas:
-  - corrigir o loading infinito do `/admin` para usuário sem sessão
+  - validar o fluxo do `/admin` com conta admin real e conta autenticada sem permissão
   - documentar e aceitar explicitamente a estratégia de reconciliação das migrations consolidadas
+  - garantir que a PR `#13` aponte para `main` no GitHub após o rebase
 
 ### Fase 2 — Acessibilidade e robustez de navegação
 - Estado: `planned`
