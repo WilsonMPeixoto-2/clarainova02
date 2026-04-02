@@ -14,8 +14,8 @@
 - PR já integrada:
   - PR `#12` — continuidade e automação mínima — mergeada em `2026-04-02T07:43:05Z`
 - Dependência atual entre branches/PRs:
-  - a PR `#13` ainda precisa ser atualizada para refletir a nova `main`
-  - ordem aceita a partir deste ponto: atualizar a `#13`, revisar riscos e só então decidir o merge
+  - a branch da PR `#13` foi rebaseada sobre `origin/main` em 2026-04-02
+  - a decisão de merge da `#13` continua bloqueada por revisão técnica e validação autenticada
 
 ## Vercel
 - Projeto canônico: `clarainova02`
@@ -57,8 +57,8 @@
 
 ## Divergências remotas que exigem cuidado
 - o estado remoto do Supabase já avançou além de `main` em algumas funções administrativas
-- a PR `#13` ainda carrega trabalho baseado numa linha anterior à integração formal da continuidade
-- por isso, nenhuma ferramenta deve assumir que a PR `#13` já está pronta para merge sem atualização sobre `main`
+- a PR `#13` ainda não deve ser tratada como pronta para merge sem revisão da estratégia de migrations consolidadas
+- a validação autenticada do `/admin` ainda depende de contas reais para prova operacional final
 
 ## Regras de atualização deste arquivo
 - Atualize este arquivo sempre que mudar algo em:

@@ -22,7 +22,7 @@ interface Props {
 export default function AdminAuth({ children }: Props) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(() => hasSupabaseConfig);
-  const [adminAccess, setAdminAccess] = useState<"checking" | "allowed" | "forbidden" | "error">("checking");
+  const [adminAccess, setAdminAccess] = useState<"checking" | "signed_out" | "allowed" | "forbidden" | "error">("checking");
   const [adminAccessMessage, setAdminAccessMessage] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,7 +44,7 @@ export default function AdminAuth({ children }: Props) {
       setAdminAccessMessage(null);
 
       if (!nextSession) {
-        setAdminAccess("checking");
+        setAdminAccess("signed_out");
         setLoading(false);
         return;
       }

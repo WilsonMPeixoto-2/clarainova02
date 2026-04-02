@@ -3,37 +3,37 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-02T07:45:21.786Z
+- Data/hora: 2026-04-02T07:56:02.749Z
 - Atualizado por: CODEX @ HOME
-- Branch de referência: `session/2026-04-02/HOME/CODEX/BLOCO-0-POST-MERGE`
-- Commit de base oficial: `94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
-- Head da sessão: `94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
-- Último relatório: `docs/operational-reports/2026-04-02-block-0-main-integration.md`
+- Branch de referência: `session/2026-04-01/C04-084/CODEX/BLOCO-1-RLS`
+- Commit de base oficial: `b67ffa98acaac237eb8cc8184d0cf00eebf1684d`
+- Head da sessão: `665145fa83a94446690b56c17dce0c3bd45a23d5`
+- Último relatório: `docs/operational-reports/2026-04-02-block-1-rebase-and-admin-login-fix.md`
 
 ## Estado atual resumido
-- Fase atual: Continuidade integrada em main; preparação do BLOCO 1
+- Fase atual: BLOCO 1 rebaseado sobre main; validação autenticada e revisão de migrations pendentes
 - Bloco ativo: BLOCO 1 — RLS, auth admin e reconciliação operacional
 - Status da sessão: `partial`
-- Próxima ação recomendada: Atualizar a PR #13 sobre main, corrigir o bug do /admin para usuários sem sessão e revisar a estratégia de reconciliação das migrations antes de decidir o merge.
+- Próxima ação recomendada: Empurrar a branch rebaseada da PR #13, ajustar a base da PR para main e então decidir entre validar o /admin com contas reais ou revisar primeiro a estratégia das migrations consolidadas.
 
 ## Itens concluídos
-- PR #12 mergeada em main no commit 94677b6a6ec6aed8ab217fe5c2298ddd4c163322
-- BLOCO 0 marcado como integrado em docs/BLOCK_PLAN.md
-- Estado remoto ajustado para refletir a continuidade oficial em main
+- Branch da PR #13 rebaseada sobre origin/main em 2026-04-02
+- Loading infinito do /admin corrigido para usuários sem sessão
+- Teste de interface adicionado para o cenário sem sessão
+- npm run validate voltou a passar na branch rebaseada
 
 ## Itens pendentes
-- Atualizar/rebasear a PR #13 sobre origin/main
-- Corrigir o bug do /admin para usuários sem sessão na branch da PR #13
+- Atualizar a base da PR #13 para main no GitHub
+- Validar o /admin em produção com conta admin real e conta autenticada sem permissão
 - Revisar e aceitar explicitamente a estratégia de reconciliação das migrations consolidadas
 
 ## Bloqueios externos
-- Google OAuth do admin ainda pendente
-- API do Gemini ainda instável para embeddings reais
-- Corpus inicial curado ainda não carregado
+- Google OAuth do admin ainda não está habilitado no projeto real
+- A validação autenticada final ainda depende de credenciais reais
 
 ## Notas operacionais
-- Com a continuidade integrada em main, o próximo foco oficial do repositório passa a ser o BLOCO 1.
-- A PR #13 continua exigindo atualização sobre a nova base antes de qualquer decisão de merge.
+- Durante o rebase, os conflitos ficaram restritos aos arquivos de continuidade e foram resolvidos preservando a base oficial de main.
+- O principal risco técnico remanescente da PR #13 continua sendo a estratégia operacional das migrations consolidadas.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade
