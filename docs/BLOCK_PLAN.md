@@ -10,53 +10,62 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ 94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
-- Frente imediata mais importante: atualizar a PR `#13` sobre a nova `main` e revisar os riscos técnicos antes do merge
-- Ordem de integração atualmente aceita:
-  1. atualizar/rebasear a PR `#13` de RLS sobre a nova `main`
-  2. corrigir o bug do `/admin` e revisar a estratégia de reconciliação de migrations
-  3. só então retomar blocos de produto, acessibilidade ou operação externa
+- Fonte oficial integrada: `origin/main @ 86d3c18c8d95b0ad8f518863ac75da66a7826b55`
+- Frente imediata mais importante: fechar o hardening de `Supabase` e `Edge Functions` sem quebrar a conta provisionada já usada no admin
+- Ordem de execução atualmente aceita:
+  1. preparar e aplicar o fechamento das policies públicas indevidas nas tabelas operacionais/analíticas
+  2. endurecer `verify_jwt` em `embed-chunks` e `get-usage-stats`
+  3. validar a camada remota de auth/policies antes de avançar para Google OAuth, Gemini e corpus real
 
 ## Blocos oficiais
 
 | Ordem | Bloco | Status | Dependências | Entrada | Saída |
 |---|---|---|---|---|---|
 | 0 | Continuidade e automação mínima | `integrated` | `origin/main` | necessidade de consolidar o protocolo no repositório oficial | continuidade oficial integrada em `main` |
-| 1 | RLS, auth admin e reconciliação operacional | `in_review` | Bloco 0 integrado | Continuidade já oficial em `main` | PR `#13` atualizada, bug de `/admin` corrigido e estratégia de migrations aceita conscientemente |
-| 2 | Acessibilidade e robustez de navegação | `planned` | Bloco 1 integrado | Auth admin e superfícies dialogais estáveis | menu móvel, chat e modais sem ruído na árvore de acessibilidade |
-| 3 | Consolidação operacional externa | `planned` | Bloco 2 integrado | Fluxo interno estável para validar operação real | Google OAuth funcional, Gemini saneado e prova de embeddings reais executada |
-| 4 | Corpus inicial real e prova empírica do RAG | `planned` | Bloco 3 integrado | Operação externa previsível e sem bloqueio crítico | lote inicial curado carregado, 20 perguntas classificadas e cobertura medida |
+| 1 | Certificação operacional do ambiente real | `integrated` | Bloco 0 integrado | baseline estável e Supabase/Vercel apontando para o projeto oficial | login provisionado real, upload real, grounding real e produção publicada |
+| 2 | Polimento institucional, presença pública e observabilidade enxuta | `integrated` | Bloco 1 integrado | produto já operacional nas frentes centrais | camada institucional, OG/PWA, PDF e métricas agregadas fortalecidos em `main` |
+| 3 | Hardening Supabase, RLS e JWT administrativo | `in_progress` | Bloco 2 integrado | produto operando com conta provisionada e functions administrativas ainda permissivas | policies públicas fechadas, JWT de borda endurecido e estado remoto/documental alinhado |
+| 4 | Consolidação operacional externa | `planned` | Bloco 3 estabilizado | camada interna segura e previsível | Google OAuth funcional, Gemini saneado e embeddings reais reprocessados |
+| 5 | Corpus inicial real e prova empírica do RAG | `planned` | Bloco 4 integrado | operação externa previsível e sem bloqueio crítico | lote curado carregado, perguntas reais classificadas e cobertura medida |
+| 6 | Acessibilidade, hotspots e testes de sustentação | `planned` | Bloco 5 em trilha segura | segurança, OAuth/Gemini e corpus já suficientemente estáveis | menu móvel, modais, hotspots de manutenção e cobertura de testes mais robustos |
 
 ## Próxima ação por bloco
 
 ### Bloco 0 — Continuidade e automação mínima
 - Estado: `integrated`
-- Branch/PR associada: `session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE` / PR `#12`
-- Resultado: PR `#12` mergeada em `main` no commit `94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
-- Observação: `docs/BLOCK_PLAN.md` e `docs/REMOTE_STATE.md` já fazem parte do baseline oficial
+- Resultado: protocolo, handoff, estado estruturado e automações já fazem parte do baseline oficial em `main`
 
-### Bloco 1 — RLS, auth admin e reconciliação operacional
-- Estado: `in_review`
-- Branch/PR associada: `session/2026-04-01/C04-084/CODEX/BLOCO-1-RLS` / PR `#13`
-- Próxima ação: rebasear ou atualizar a PR `#13` sobre `main`
+### Bloco 1 — Certificação operacional do ambiente real
+- Estado: `integrated`
+- Resultado: ambiente real provado com conta provisionada, upload real, grounding real e produção publicada
+- Observação: Google OAuth e embeddings reais continuam como pendências externas específicas, não como invalidação do baseline operacional
+
+### Bloco 2 — Polimento institucional, presença pública e observabilidade enxuta
+- Estado: `integrated`
+- Resultado: termos, privacidade, OG/PWA, PDF e métricas agregadas fortalecidos em `main`
+
+### Bloco 3 — Hardening Supabase, RLS e JWT administrativo
+- Estado: `in_progress`
+- Branch associada: `session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING`
+- Próxima ação: aplicar no banco remoto a migration `20260402113000_harden_operational_analytics_access.sql` e verificar o comportamento de admin/metrics após o fechamento das policies públicas
 - Pendências conhecidas:
-  - corrigir o loading infinito do `/admin` para usuário sem sessão
-  - documentar e aceitar explicitamente a estratégia de reconciliação das migrations consolidadas
+  - este ambiente não possui credencial de Postgres para `db push`
+  - `embed-chunks` e `get-usage-stats` já foram republicadas com `verify_jwt` endurecido, mas a migration de RLS ainda precisa chegar ao banco oficial
 
-### Fase 2 — Acessibilidade e robustez de navegação
-- Estado: `planned`
-- Objetivo: corrigir problemas reais de UX/a11y antes que virem dívida invisível
-- Próxima ação: desmontar o menu móvel quando fechado ou aplicar `inert` + focus trap robusto; depois revisar chat e demais superfícies dialogais
-
-### Fase 3 — Consolidação operacional externa
+### Bloco 4 — Consolidação operacional externa
 - Estado: `planned`
 - Objetivo: eliminar bloqueios externos que impedem operação previsível
-- Próxima ação: habilitar Google OAuth no Supabase, sanear quota/projeto/chave/modelo do Gemini e reprocessar um documento de prova com embeddings reais
+- Próxima ação: habilitar Google OAuth no Supabase, sanear quota/projeto/chave/modelo do Gemini e reprocessar embeddings reais
 
-### Fase 4 — Corpus inicial real e prova empírica do RAG
+### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `planned`
 - Objetivo: transformar a CLARA de tecnicamente pronta em documentalmente confiável
-- Próxima ação: montar lote curado de 5–10 PDFs, carregar por prioridade e medir 20 perguntas reais antes de mexer em thresholds ou retrieval
+- Próxima ação: montar lote curado de 5–10 PDFs, carregar por prioridade e medir perguntas reais antes de mexer em retrieval
+
+### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
+- Estado: `planned`
+- Objetivo: reduzir dívida invisível de UX, manutenção e regressão
+- Próxima ação: revisar menu móvel, superfícies dialogais, hotspots de arquivos grandes e cobertura de testes em áreas sensíveis
 
 ## Regra para mudança de prioridade
 Se qualquer ferramenta precisar pular a ordem acima, a mudança só é válida quando:

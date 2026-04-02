@@ -5,6 +5,8 @@ const ALLOWED_ORIGINS = [
   "https://clara.sme.rio",
 ];
 
+// Esta function deve permanecer protegida por JWT no gateway do Supabase.
+
 function getCorsOrigin(req: Request): string {
   const origin = req.headers.get("origin") ?? "";
   if (ALLOWED_ORIGINS.includes(origin)) return origin;

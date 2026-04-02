@@ -234,3 +234,30 @@ O painel de metricas agregadas deixou de mostrar apenas volume bruto e passou a 
 - temas mais recorrentes do periodo
 
 Essa leitura continua agregada, sem identificar usuarios individualmente, mas melhora a capacidade de priorizar corpus, cobertura e estabilidade a partir do proprio uso da CLARA.
+
+---
+
+## Nota de andamento do BLOCO 3
+
+A trilha de endurecimento de `Supabase` e `Edge Functions` foi retomada a partir do baseline oficial em `main`:
+
+- uma migration incremental (`20260402113000_harden_operational_analytics_access.sql`) foi preparada para remover a reabertura publica indevida de:
+  - `ingestion_jobs`
+  - `document_processing_events`
+  - `chat_metrics`
+  - `search_metrics`
+  - `query_analytics`
+- `embed-chunks` e `get-usage-stats` foram republicadas no projeto oficial com `verify_jwt` endurecido na borda
+- o `chat` permaneceu publico por decisao consciente
+
+Limitacao operacional desta rodada:
+
+- este ambiente nao possui senha do Postgres nem projeto local linkado para executar `supabase db push`
+- por isso, o fechamento remoto de `RLS` ainda depende de aplicar a migration em um ambiente com credencial de banco
+
+Consequencia pratica:
+
+- o endurecimento das functions administrativas ja avancou no ambiente remoto
+- a correcao estrutural principal de banco ficou pronta e versionada, mas ainda nao esta aplicada no projeto Supabase oficial
+
+O BLOCO 3 so podera ser considerado fechado quando a migration de `RLS` for aplicada no banco remoto e o comportamento administrativo for verificado novamente.

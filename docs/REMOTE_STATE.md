@@ -2,20 +2,17 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-02
-- Base local usada na verificação: `origin/main @ 94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
+- Base local usada na verificação: `origin/main @ 86d3c18c8d95b0ad8f518863ac75da66a7826b55`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
-- PRs abertas relevantes:
-  - PR `#13` — RLS, auth admin e reconciliação de migrations
-- PR já integrada:
-  - PR `#12` — continuidade e automação mínima — mergeada em `2026-04-02T07:43:05Z`
-- Dependência atual entre branches/PRs:
-  - a PR `#13` ainda precisa ser atualizada para refletir a nova `main`
-  - ordem aceita a partir deste ponto: atualizar a `#13`, revisar riscos e só então decidir o merge
+- `origin/main` atualmente alinhada ao commit: `86d3c18c8d95b0ad8f518863ac75da66a7826b55`
+- Trabalho local em andamento fora de `main`:
+  - branch de sessão `session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING`
+- Observação de continuidade:
+  - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
 
 ## Vercel
 - Projeto canônico: `clarainova02`
@@ -36,14 +33,20 @@
   - última atualização observada: `2026-04-01 06:51:26 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
-  - versão observada: `6`
-  - última atualização observada: `2026-04-01 21:33:47 UTC`
+  - versão observada: `7`
+  - última atualização observada: `2026-04-02 20:48:47 UTC`
 - `get-usage-stats`
   - status: `ACTIVE`
-  - versão observada: `6`
-  - última atualização observada: `2026-04-01 21:34:28 UTC`
+  - versão observada: `7`
+  - última atualização observada: `2026-04-02 20:49:53 UTC`
 
 ## Estado operacional externo conhecido
+- Hardening Supabase / RLS:
+  - status: `em andamento`
+  - situação conhecida:
+    - migration `20260402113000_harden_operational_analytics_access.sql` preparada localmente
+    - este ambiente não possui senha de Postgres nem projeto linkado para `supabase db push`
+    - a aplicação remota da migration continua pendente de um ambiente com credencial de banco
 - Google OAuth do admin:
   - status: `pendente`
   - evidência conhecida: Supabase respondeu `Unsupported provider: provider is not enabled`
@@ -56,9 +59,9 @@
   - situação conhecida: existe prova operacional com 1 PDF, mas não há lote curado inicial fechado
 
 ## Divergências remotas que exigem cuidado
-- o estado remoto do Supabase já avançou além de `main` em algumas funções administrativas
-- a PR `#13` ainda carrega trabalho baseado numa linha anterior à integração formal da continuidade
-- por isso, nenhuma ferramenta deve assumir que a PR `#13` já está pronta para merge sem atualização sobre `main`
+- o endurecimento de `verify_jwt` nas functions administrativas já foi publicado, mas o fechamento de `RLS` ainda depende de aplicar a migration no banco remoto
+- Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
+- embeddings reais continuam sujeitos à estabilidade externa do Gemini
 
 ## Regras de atualização deste arquivo
 - Atualize este arquivo sempre que mudar algo em:
