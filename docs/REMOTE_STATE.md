@@ -2,19 +2,20 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-02
-- Base local usada na verificação: `origin/main @ 184276fa698f80acd522919e56e19cf8e66e1d49`
+- Base local usada na verificação: `origin/main @ 94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `184276fa698f80acd522919e56e19cf8e66e1d49`
+- `origin/main` atualmente alinhada ao commit: `94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
 - PRs abertas relevantes:
-  - PR `#12` — continuidade e automação mínima
   - PR `#13` — RLS, auth admin e reconciliação de migrations
-- Dependência atual entre PRs:
-  - a PR `#13` ainda se baseia na branch da PR `#12`
-  - ordem aceita de integração: `#12` primeiro, `#13` depois
+- PR já integrada:
+  - PR `#12` — continuidade e automação mínima — mergeada em `2026-04-02T07:43:05Z`
+- Dependência atual entre branches/PRs:
+  - a PR `#13` ainda precisa ser atualizada para refletir a nova `main`
+  - ordem aceita a partir deste ponto: atualizar a `#13`, revisar riscos e só então decidir o merge
 
 ## Vercel
 - Projeto canônico: `clarainova02`
@@ -55,9 +56,9 @@
   - situação conhecida: existe prova operacional com 1 PDF, mas não há lote curado inicial fechado
 
 ## Divergências remotas que exigem cuidado
-- `origin/main` ainda não contém a infraestrutura de continuidade publicada na PR `#12`
 - o estado remoto do Supabase já avançou além de `main` em algumas funções administrativas
-- por isso, nenhuma ferramenta deve assumir que o código em `main` sozinho descreve todo o estado operacional atual
+- a PR `#13` ainda carrega trabalho baseado numa linha anterior à integração formal da continuidade
+- por isso, nenhuma ferramenta deve assumir que a PR `#13` já está pronta para merge sem atualização sobre `main`
 
 ## Regras de atualização deste arquivo
 - Atualize este arquivo sempre que mudar algo em:

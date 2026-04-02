@@ -10,18 +10,18 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ 184276fa698f80acd522919e56e19cf8e66e1d49`
-- Frente imediata mais importante: consolidar a infraestrutura de continuidade em `main`
+- Fonte oficial integrada: `origin/main @ 94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
+- Frente imediata mais importante: atualizar a PR `#13` sobre a nova `main` e revisar os riscos técnicos antes do merge
 - Ordem de integração atualmente aceita:
-  1. mergear a PR `#12` de continuidade
-  2. atualizar/rebasear a PR `#13` de RLS sobre a nova `main`
+  1. atualizar/rebasear a PR `#13` de RLS sobre a nova `main`
+  2. corrigir o bug do `/admin` e revisar a estratégia de reconciliação de migrations
   3. só então retomar blocos de produto, acessibilidade ou operação externa
 
 ## Blocos oficiais
 
 | Ordem | Bloco | Status | Dependências | Entrada | Saída |
 |---|---|---|---|---|---|
-| 0 | Continuidade e automação mínima | `open_pr` | `origin/main` | `main` ainda não contém os artefatos de continuidade | PR `#12` mergeada ou equivalente integrado em `main` |
+| 0 | Continuidade e automação mínima | `integrated` | `origin/main` | necessidade de consolidar o protocolo no repositório oficial | continuidade oficial integrada em `main` |
 | 1 | RLS, auth admin e reconciliação operacional | `in_review` | Bloco 0 integrado | Continuidade já oficial em `main` | PR `#13` atualizada, bug de `/admin` corrigido e estratégia de migrations aceita conscientemente |
 | 2 | Acessibilidade e robustez de navegação | `planned` | Bloco 1 integrado | Auth admin e superfícies dialogais estáveis | menu móvel, chat e modais sem ruído na árvore de acessibilidade |
 | 3 | Consolidação operacional externa | `planned` | Bloco 2 integrado | Fluxo interno estável para validar operação real | Google OAuth funcional, Gemini saneado e prova de embeddings reais executada |
@@ -30,15 +30,15 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ## Próxima ação por bloco
 
 ### Bloco 0 — Continuidade e automação mínima
-- Estado: `open_pr`
+- Estado: `integrated`
 - Branch/PR associada: `session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE` / PR `#12`
-- Próxima ação: revisar e mergear a PR `#12`
-- Observação: esta branch de reforço existe para endurecer o sistema antes da integração definitiva
+- Resultado: PR `#12` mergeada em `main` no commit `94677b6a6ec6aed8ab217fe5c2298ddd4c163322`
+- Observação: `docs/BLOCK_PLAN.md` e `docs/REMOTE_STATE.md` já fazem parte do baseline oficial
 
 ### Bloco 1 — RLS, auth admin e reconciliação operacional
 - Estado: `in_review`
 - Branch/PR associada: `session/2026-04-01/C04-084/CODEX/BLOCO-1-RLS` / PR `#13`
-- Próxima ação: depois do merge da PR `#12`, rebasear ou atualizar a PR `#13` sobre `main`
+- Próxima ação: rebasear ou atualizar a PR `#13` sobre `main`
 - Pendências conhecidas:
   - corrigir o loading infinito do `/admin` para usuário sem sessão
   - documentar e aceitar explicitamente a estratégia de reconciliação das migrations consolidadas

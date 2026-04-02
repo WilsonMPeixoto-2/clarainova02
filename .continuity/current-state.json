@@ -2,34 +2,34 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "184276fa698f80acd522919e56e19cf8e66e1d49",
-  "current_phase": "Infraestrutura de continuidade reforçada e memória operacional",
-  "active_block": "BLOCO 0 — Continuidade reforçada e memória operacional",
-  "active_branch": "session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE",
+  "last_integrated_main_sha": "94677b6a6ec6aed8ab217fe5c2298ddd4c163322",
+  "current_phase": "Continuidade integrada em main; preparação do BLOCO 1",
+  "active_block": "BLOCO 1 — RLS, auth admin e reconciliação operacional",
+  "active_branch": "session/2026-04-02/HOME/CODEX/BLOCO-0-POST-MERGE",
   "last_tool": "CODEX",
   "last_machine": "HOME",
-  "last_update_utc": "2026-04-02T05:46:25.571Z",
+  "last_update_utc": "2026-04-02T07:45:21.786Z",
   "completed_items": [
-    "Plano canônico de blocos versionado em docs/BLOCK_PLAN.md",
-    "Estado remoto canônico versionado em docs/REMOTE_STATE.md",
-    "Preambulo obrigatório incorporado ao protocolo e ao prompt universal",
-    "Automação de continuidade endurecida para exigir BLOCK_PLAN e REMOTE_STATE"
+    "PR #12 mergeada em main no commit 94677b6a6ec6aed8ab217fe5c2298ddd4c163322",
+    "BLOCO 0 marcado como integrado em docs/BLOCK_PLAN.md",
+    "Estado remoto ajustado para refletir a continuidade oficial em main"
   ],
   "pending_items": [
-    "Revisar e mergear a PR #12 em origin/main",
-    "Atualizar/rebasear a PR #13 após a integração do bloco de continuidade"
+    "Atualizar/rebasear a PR #13 sobre origin/main",
+    "Corrigir o bug do /admin para usuários sem sessão na branch da PR #13",
+    "Revisar e aceitar explicitamente a estratégia de reconciliação das migrations consolidadas"
   ],
   "external_blockers": [
     "Google OAuth do admin ainda pendente",
     "API do Gemini ainda instável para embeddings reais",
     "Corpus inicial curado ainda não carregado"
   ],
-  "next_action": "Revisar e mergear a PR #12 em main; depois atualizar a PR #13 sobre a nova base.",
+  "next_action": "Atualizar a PR #13 sobre main, corrigir o bug do /admin para usuários sem sessão e revisar a estratégia de reconciliação das migrations antes de decidir o merge.",
   "notes": [
-    "Esta PR de continuidade agora concentra também BLOCK_PLAN e REMOTE_STATE.",
-    "A ordem de integração aceita segue sendo PR #12 antes da PR #13."
+    "Com a continuidade integrada em main, o próximo foco oficial do repositório passa a ser o BLOCO 1.",
+    "A PR #13 continua exigindo atualização sobre a nova base antes de qualquer decisão de merge."
   ],
   "session_status": "partial",
-  "last_report": "docs/operational-reports/2026-04-02-block-0-continuity-hardening.md",
-  "last_session_head_sha": "de856b97cc26797231501d96d8bd08e3fa3ab747"
+  "last_report": "docs/operational-reports/2026-04-02-block-0-main-integration.md",
+  "last_session_head_sha": "94677b6a6ec6aed8ab217fe5c2298ddd4c163322"
 }
