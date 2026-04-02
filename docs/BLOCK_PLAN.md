@@ -10,12 +10,12 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ 86d3c18c8d95b0ad8f518863ac75da66a7826b55`
-- Frente imediata mais importante: consolidar em `main` o hardening de Supabase já reconciliado e abrir a trilha operacional externa
+- Fonte oficial integrada: `origin/main @ a91649f15cc8b8bcde964525ebe272065931482f`
+- Frente imediata mais importante: executar o checklist operacional externo do BLOCO 4 e só depois abrir a trilha de corpus real
 - Ordem de execução atualmente aceita:
-  1. integrar a reconciliação canônica de migrations e auth administrativo feita em BLOCO 3
-  2. avançar para Google OAuth, Gemini e embeddings reais
-  3. depois formar corpus curado e medir o RAG real
+  1. executar o checklist operacional externo de Google OAuth, Gemini e embeddings reais
+  2. depois formar corpus curado e medir o RAG real
+  3. por fim atacar acessibilidade, hotspots e testes de sustentação
 
 ## Blocos oficiais
 
@@ -45,12 +45,12 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Resultado: termos, privacidade, OG/PWA, PDF e métricas agregadas fortalecidos em `main`
 
 ### Bloco 3 — Hardening Supabase, RLS e JWT administrativo
-- Estado: `ready_to_integrate`
-- Branch associada: `session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING`
-- Próxima ação: integrar a branch atual depois de revisar o diff final do hardening reconciliado
+- Estado: `integrated`
+- Branch associada: `main`
+- Resultado: cadeia canônica de migrations e endurecimento administrativo já incorporados na linha principal
 - Pendências conhecidas:
   - `embed-chunks` e `get-usage-stats` já foram republicadas com `verify_jwt` endurecido
-  - a linha principal ainda precisa absorver a cadeia canônica de migrations antes de abrir BLOCO 4
+  - a execução do BLOCO 4 continua dependente de configuração externa no Supabase/Google
 
 ### Bloco 4 — Consolidação operacional externa
 - Estado: `planned`

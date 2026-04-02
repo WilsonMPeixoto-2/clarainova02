@@ -3,17 +3,17 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-02T23:25:00.000Z
+- Data/hora: 2026-04-02T23:58:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING`
-- Commit de base oficial: `86d3c18c8d95b0ad8f518863ac75da66a7826b55`
-- Head da sessão: `5269d66f2f7aacad4d685de37a4fe497a2cb0b43`
+- Branch de referência: `main`
+- Commit de base oficial: `a91649f15cc8b8bcde964525ebe272065931482f`
+- Head da sessão: `a91649f15cc8b8bcde964525ebe272065931482f`
 - Último relatório: `docs/operational-reports/2026-04-02-block-4-preparation.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com hardening Supabase reconciliado nesta branch e checklist operacional externo já preparado para a sequência
-- Bloco ativo: BLOCO 3 — Hardening Supabase, RLS e JWT administrativo
-- Status da sessão: `partial`
+- Fase atual: Pré-lançamento com BLOCO 3 integrado em main e BLOCO 4 pronto para execução operacional externa
+- Bloco ativo: BLOCO 4 — Consolidação operacional externa
+- Status da sessão: `integrated`
 - Próxima ação recomendada: Executar o checklist documentado de BLOCO 4 no Supabase e no Google, registrar o resultado em REMOTE_STATE e então abrir a trilha dedicada para Google OAuth do admin, Gemini e reprocessamento real de embeddings.
 
 ## Itens concluídos
@@ -24,9 +24,9 @@
 - `supabase migration list` e `supabase db push --dry-run` voltaram a indicar sincronização segura entre repositório e banco remoto
 - BLOCK_PLAN, REMOTE_STATE e MIGRATION_STATUS alinhados à trilha atual de segurança
 - Checklist operacional do BLOCO 4 documentado com exigências concretas para Google OAuth, Gemini e reprocessamento de embeddings
+- A trilha de hardening do BLOCO 3 foi integrada em `main` por fast-forward
 
 ## Itens pendentes
-- Integrar esta branch de hardening na linha principal sem perder o estado oficial já verificado no Supabase
 - Executar o checklist operacional do BLOCO 4 no Supabase e no Google para destravar Google OAuth e embeddings reais
 - Retomar corpus real depois do saneamento operacional externo
 - Abrir a próxima branch dedicada de BLOCO 4 quando a frente externa sair do preparo e entrar em execução
@@ -39,6 +39,7 @@
 - A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.
 - O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.
 - O preparo do BLOCO 4 foi registrado sem tocar em `ROADMAP_FUTURO.md` nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.
+- Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade
