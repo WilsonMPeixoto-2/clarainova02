@@ -2,32 +2,33 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "70be0cb523d4e0d39ce5a405a4afcc12e63d5d64",
-  "current_phase": "Pré-lançamento com polimento institucional e observabilidade integrados em main",
-  "active_block": "BLOCO 2 integrado em main; retomada da trilha de engenharia dura",
-  "active_branch": "main",
+  "last_integrated_main_sha": "86d3c18c8d95b0ad8f518863ac75da66a7826b55",
+  "current_phase": "Pré-lançamento com hardening Supabase e JWT administrativo em andamento",
+  "active_block": "BLOCO 3 — Hardening Supabase, RLS e JWT administrativo",
+  "active_branch": "session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-02T08:52:30.546Z",
+  "last_update_utc": "2026-04-02T20:53:00.116Z",
   "completed_items": [
-    "BLOCO 2 integrado em origin/main via commit 70be0cb523d4e0d39ce5a405a4afcc12e63d5d64",
-    "Camada institucional, metadados públicos, OG/PWA e identidade do PDF fortalecidos",
-    "Observabilidade agregada do admin ampliada com grounded answers, gaps, degradação, latência e tópicos"
+    "Migration incremental pronta para fechar a reabertura pública de ingestion_jobs, document_processing_events, chat_metrics, search_metrics e query_analytics",
+    "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
+    "BLOCK_PLAN, REMOTE_STATE e MIGRATION_STATUS alinhados à trilha atual de segurança"
   ],
   "pending_items": [
-    "RLS/policies efetivas, verify_jwt nas functions administrativas e hardening Supabase",
-    "Google OAuth do admin, estabilidade do Gemini e carga curada real do corpus",
-    "Prova operacional do RAG, calibração empírica e admin como cockpit leve de saúde do produto"
+    "Aplicar a migration de RLS no banco remoto oficial e verificar o comportamento administrativo após o hardening",
+    "Confirmar em ambiente real o fechamento efetivo das tabelas operacionais/analíticas após o db push",
+    "Retomar Google OAuth, Gemini e corpus real depois do hardening Supabase"
   ],
   "external_blockers": [
-    "Google OAuth do admin ainda depende de configuração externa no Supabase/Google",
-    "Embeddings reais ainda dependem da estabilidade externa do Gemini"
+    "Este ambiente não possui SUPABASE_DB_PASSWORD nem projeto local linkado para executar supabase db push",
+    "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
+    "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Partir de origin/main para revisar RLS/policies, endurecer JWT nas functions administrativas e destravar OAuth/Gemini antes de entrar em corpus real, prova empírica do RAG e novos refinamentos.",
+  "next_action": "Aplicar a migration 20260402113000_harden_operational_analytics_access.sql em um ambiente com credencial de banco do projeto jasqctuzeznwdtbcuixn, verificar o admin após o fechamento das policies públicas e só então seguir para Google OAuth, Gemini e corpus real.",
   "notes": [
-    "Main volta a ser a fonte oficial com o BLOCO 2 já incorporado; a próxima frente técnica prioritária volta a ser segurança, integrações externas e corpus real."
+    "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main."
   ],
   "session_status": "partial",
-  "last_report": "docs/operational-reports/2026-04-02-block-2-prelaunch-polish.md",
-  "last_session_head_sha": "70be0cb523d4e0d39ce5a405a4afcc12e63d5d64"
+  "last_report": "docs/operational-reports/2026-04-02-block-3-supabase-hardening.md",
+  "last_session_head_sha": "8a3a91738164afaca9bdffc1e20b9651906e819e"
 }

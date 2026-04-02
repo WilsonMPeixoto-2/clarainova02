@@ -3,35 +3,36 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-02T08:52:30.546Z
+- Data/hora: 2026-04-02T20:53:00.116Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `main`
-- Commit de base oficial: `70be0cb523d4e0d39ce5a405a4afcc12e63d5d64`
-- Head da sessão: `70be0cb523d4e0d39ce5a405a4afcc12e63d5d64`
-- Último relatório: `docs/operational-reports/2026-04-02-block-2-prelaunch-polish.md`
+- Branch de referência: `session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING`
+- Commit de base oficial: `86d3c18c8d95b0ad8f518863ac75da66a7826b55`
+- Head da sessão: `8a3a91738164afaca9bdffc1e20b9651906e819e`
+- Último relatório: `docs/operational-reports/2026-04-02-block-3-supabase-hardening.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com polimento institucional e observabilidade integrados em main
-- Bloco ativo: BLOCO 2 integrado em main; retomada da trilha de engenharia dura
+- Fase atual: Pré-lançamento com hardening Supabase e JWT administrativo em andamento
+- Bloco ativo: BLOCO 3 — Hardening Supabase, RLS e JWT administrativo
 - Status da sessão: `partial`
-- Próxima ação recomendada: Partir de origin/main para revisar RLS/policies, endurecer JWT nas functions administrativas e destravar OAuth/Gemini antes de entrar em corpus real, prova empírica do RAG e novos refinamentos.
+- Próxima ação recomendada: Aplicar a migration 20260402113000_harden_operational_analytics_access.sql em um ambiente com credencial de banco do projeto jasqctuzeznwdtbcuixn, verificar o admin após o fechamento das policies públicas e só então seguir para Google OAuth, Gemini e corpus real.
 
 ## Itens concluídos
-- BLOCO 2 integrado em origin/main via commit 70be0cb523d4e0d39ce5a405a4afcc12e63d5d64
-- Camada institucional, metadados públicos, OG/PWA e identidade do PDF fortalecidos
-- Observabilidade agregada do admin ampliada com grounded answers, gaps, degradação, latência e tópicos
+- Migration incremental pronta para fechar a reabertura pública de ingestion_jobs, document_processing_events, chat_metrics, search_metrics e query_analytics
+- embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido
+- BLOCK_PLAN, REMOTE_STATE e MIGRATION_STATUS alinhados à trilha atual de segurança
 
 ## Itens pendentes
-- RLS/policies efetivas, verify_jwt nas functions administrativas e hardening Supabase
-- Google OAuth do admin, estabilidade do Gemini e carga curada real do corpus
-- Prova operacional do RAG, calibração empírica e admin como cockpit leve de saúde do produto
+- Aplicar a migration de RLS no banco remoto oficial e verificar o comportamento administrativo após o hardening
+- Confirmar em ambiente real o fechamento efetivo das tabelas operacionais/analíticas após o db push
+- Retomar Google OAuth, Gemini e corpus real depois do hardening Supabase
 
 ## Bloqueios externos
-- Google OAuth do admin ainda depende de configuração externa no Supabase/Google
-- Embeddings reais ainda dependem da estabilidade externa do Gemini
+- Este ambiente não possui SUPABASE_DB_PASSWORD nem projeto local linkado para executar supabase db push
+- Google OAuth do admin continua dependente de configuração externa no Supabase/Google
+- Embeddings reais continuam sujeitos à estabilidade externa do Gemini
 
 ## Notas operacionais
-- Main volta a ser a fonte oficial com o BLOCO 2 já incorporado; a próxima frente técnica prioritária volta a ser segurança, integrações externas e corpus real.
+- A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade
