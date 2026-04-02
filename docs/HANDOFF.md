@@ -3,35 +3,35 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-02T08:47:49.280Z
+- Data/hora: 2026-04-02T08:52:30.546Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-02/HOME/CODEX/BLOCO-2-PRELAUNCH-POLISH`
-- Commit de base oficial: `b67ffa98acaac237eb8cc8184d0cf00eebf1684d`
-- Head da sessão: `b67ffa98acaac237eb8cc8184d0cf00eebf1684d`
+- Branch de referência: `main`
+- Commit de base oficial: `70be0cb523d4e0d39ce5a405a4afcc12e63d5d64`
+- Head da sessão: `70be0cb523d4e0d39ce5a405a4afcc12e63d5d64`
 - Último relatório: `docs/operational-reports/2026-04-02-block-2-prelaunch-polish.md`
 
 ## Estado atual resumido
-- Fase atual: Polimento institucional, presença pública e observabilidade enxuta
-- Bloco ativo: BLOCO 2 — Polimento institucional, presença pública e observabilidade enxuta
-- Status da sessão: `complete`
-- Próxima ação recomendada: Retomar a trilha de engenharia dura: revisar RLS/policies, endurecer JWT nas functions administrativas, destravar OAuth/Gemini e então voltar para corpus real e prova empírica do RAG.
+- Fase atual: Pré-lançamento com polimento institucional e observabilidade integrados em main
+- Bloco ativo: BLOCO 2 integrado em main; retomada da trilha de engenharia dura
+- Status da sessão: `partial`
+- Próxima ação recomendada: Partir de origin/main para revisar RLS/policies, endurecer JWT nas functions administrativas e destravar OAuth/Gemini antes de entrar em corpus real, prova empírica do RAG e novos refinamentos.
 
 ## Itens concluídos
-- Reforço institucional em Termos, Privacidade, README, MIGRATION_STATUS e metadados públicos
-- Nova imagem social dedicada e ajuste de OG/Twitter/PWA
-- Enriquecimento da observabilidade agregada no get-usage-stats e no painel admin
+- BLOCO 2 integrado em origin/main via commit 70be0cb523d4e0d39ce5a405a4afcc12e63d5d64
+- Camada institucional, metadados públicos, OG/PWA e identidade do PDF fortalecidos
+- Observabilidade agregada do admin ampliada com grounded answers, gaps, degradação, latência e tópicos
 
 ## Itens pendentes
 - RLS/policies efetivas, verify_jwt nas functions administrativas e hardening Supabase
 - Google OAuth do admin, estabilidade do Gemini e carga curada real do corpus
-- Lapidação adicional da home pública e identidade visual final do PDF
+- Prova operacional do RAG, calibração empírica e admin como cockpit leve de saúde do produto
 
 ## Bloqueios externos
 - Google OAuth do admin ainda depende de configuração externa no Supabase/Google
 - Embeddings reais ainda dependem da estabilidade externa do Gemini
 
 ## Notas operacionais
-- Esta sessão avançou apenas frentes independentes de OAuth, corpus real e ingestão operacional.
+- Main volta a ser a fonte oficial com o BLOCO 2 já incorporado; a próxima frente técnica prioritária volta a ser segurança, integrações externas e corpus real.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade

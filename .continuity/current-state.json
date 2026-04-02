@@ -2,32 +2,32 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "b67ffa98acaac237eb8cc8184d0cf00eebf1684d",
-  "current_phase": "Polimento institucional, presença pública e observabilidade enxuta",
-  "active_block": "BLOCO 2 — Polimento institucional, presença pública e observabilidade enxuta",
-  "active_branch": "session/2026-04-02/HOME/CODEX/BLOCO-2-PRELAUNCH-POLISH",
+  "last_integrated_main_sha": "70be0cb523d4e0d39ce5a405a4afcc12e63d5d64",
+  "current_phase": "Pré-lançamento com polimento institucional e observabilidade integrados em main",
+  "active_block": "BLOCO 2 integrado em main; retomada da trilha de engenharia dura",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-02T08:47:49.280Z",
+  "last_update_utc": "2026-04-02T08:52:30.546Z",
   "completed_items": [
-    "Reforço institucional em Termos, Privacidade, README, MIGRATION_STATUS e metadados públicos",
-    "Nova imagem social dedicada e ajuste de OG/Twitter/PWA",
-    "Enriquecimento da observabilidade agregada no get-usage-stats e no painel admin"
+    "BLOCO 2 integrado em origin/main via commit 70be0cb523d4e0d39ce5a405a4afcc12e63d5d64",
+    "Camada institucional, metadados públicos, OG/PWA e identidade do PDF fortalecidos",
+    "Observabilidade agregada do admin ampliada com grounded answers, gaps, degradação, latência e tópicos"
   ],
   "pending_items": [
     "RLS/policies efetivas, verify_jwt nas functions administrativas e hardening Supabase",
     "Google OAuth do admin, estabilidade do Gemini e carga curada real do corpus",
-    "Lapidação adicional da home pública e identidade visual final do PDF"
+    "Prova operacional do RAG, calibração empírica e admin como cockpit leve de saúde do produto"
   ],
   "external_blockers": [
     "Google OAuth do admin ainda depende de configuração externa no Supabase/Google",
     "Embeddings reais ainda dependem da estabilidade externa do Gemini"
   ],
-  "next_action": "Retomar a trilha de engenharia dura: revisar RLS/policies, endurecer JWT nas functions administrativas, destravar OAuth/Gemini e então voltar para corpus real e prova empírica do RAG.",
+  "next_action": "Partir de origin/main para revisar RLS/policies, endurecer JWT nas functions administrativas e destravar OAuth/Gemini antes de entrar em corpus real, prova empírica do RAG e novos refinamentos.",
   "notes": [
-    "Esta sessão avançou apenas frentes independentes de OAuth, corpus real e ingestão operacional."
+    "Main volta a ser a fonte oficial com o BLOCO 2 já incorporado; a próxima frente técnica prioritária volta a ser segurança, integrações externas e corpus real."
   ],
-  "session_status": "complete",
+  "session_status": "partial",
   "last_report": "docs/operational-reports/2026-04-02-block-2-prelaunch-polish.md",
-  "last_session_head_sha": "b67ffa98acaac237eb8cc8184d0cf00eebf1684d"
+  "last_session_head_sha": "70be0cb523d4e0d39ce5a405a4afcc12e63d5d64"
 }
