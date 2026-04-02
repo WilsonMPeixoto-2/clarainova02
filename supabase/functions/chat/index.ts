@@ -901,7 +901,7 @@ Deno.serve(async (req) => {
         try {
           const embeddingResult = await withTimeout(
             ai.models.embedContent({
-              model: 'gemini-embedding-001',
+              model: 'gemini-embedding-2-preview',
               contents: lastUserMessage.content,
               config: { outputDimensionality: 768 },
             }),
@@ -912,7 +912,7 @@ Deno.serve(async (req) => {
           const queryEmbedding = embeddingResult.embeddings?.[0]?.values;
           if (queryEmbedding && queryEmbedding.length === EMBEDDING_DIM) {
             queryEmbeddingPayload = JSON.stringify(queryEmbedding);
-            queryEmbeddingModel = 'gemini-embedding-001';
+            queryEmbeddingModel = 'gemini-embedding-2-preview';
           }
         } catch (embeddingError) {
           console.warn('Query embedding fallback to keyword-only retrieval:', embeddingError);

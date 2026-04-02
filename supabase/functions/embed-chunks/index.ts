@@ -22,7 +22,7 @@ function buildCorsHeaders(req: Request) {
   };
 }
 
-const EMBEDDING_MODEL = "gemini-embedding-001";
+const EMBEDDING_MODEL = "gemini-embedding-2-preview";
 const EMBEDDING_DIM = 768;
 const EMBED_TIMEOUT_MS = 15_000;
 const EMBED_RETRY_DELAYS_MS = [1500, 3000, 6000];
