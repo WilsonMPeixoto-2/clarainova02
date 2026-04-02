@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-02T05:40:49.343Z
+- Data/hora: 2026-04-02T05:46:25.571Z
 - Atualizado por: CODEX @ HOME
-- Branch de referência: `session/2026-04-02/HOME/CODEX/BLOCO-0-CONTINUIDADE-PLUS`
+- Branch de referência: `session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE`
 - Commit de base oficial: `184276fa698f80acd522919e56e19cf8e66e1d49`
-- Head da sessão: `67352fbdef0d4996637b3b3aaed3d6ec44cde85f`
+- Head da sessão: `de856b97cc26797231501d96d8bd08e3fa3ab747`
 - Último relatório: `docs/operational-reports/2026-04-02-block-0-continuity-hardening.md`
 
 ## Estado atual resumido
 - Fase atual: Infraestrutura de continuidade reforçada e memória operacional
 - Bloco ativo: BLOCO 0 — Continuidade reforçada e memória operacional
 - Status da sessão: `partial`
-- Próxima ação recomendada: Integrar a base de continuidade em main, atualizar a PR #13 sobre essa base e só então seguir para RLS/auth admin.
+- Próxima ação recomendada: Revisar e mergear a PR #12 em main; depois atualizar a PR #13 sobre a nova base.
 
 ## Itens concluídos
 - Plano canônico de blocos versionado em docs/BLOCK_PLAN.md
@@ -23,7 +23,7 @@
 - Automação de continuidade endurecida para exigir BLOCK_PLAN e REMOTE_STATE
 
 ## Itens pendentes
-- Integrar a infraestrutura de continuidade em origin/main
+- Revisar e mergear a PR #12 em origin/main
 - Atualizar/rebasear a PR #13 após a integração do bloco de continuidade
 
 ## Bloqueios externos
@@ -32,7 +32,7 @@
 - Corpus inicial curado ainda não carregado
 
 ## Notas operacionais
-- Esta branch reforça a PR #12 sem substituir a necessidade de mergeá-la em main.
+- Esta PR de continuidade agora concentra também BLOCK_PLAN e REMOTE_STATE.
 - A ordem de integração aceita segue sendo PR #12 antes da PR #13.
 
 ## Preambulo obrigatório para qualquer IA

@@ -5,10 +5,10 @@
   "last_integrated_main_sha": "184276fa698f80acd522919e56e19cf8e66e1d49",
   "current_phase": "Infraestrutura de continuidade reforçada e memória operacional",
   "active_block": "BLOCO 0 — Continuidade reforçada e memória operacional",
-  "active_branch": "session/2026-04-02/HOME/CODEX/BLOCO-0-CONTINUIDADE-PLUS",
+  "active_branch": "session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE",
   "last_tool": "CODEX",
   "last_machine": "HOME",
-  "last_update_utc": "2026-04-02T05:40:49.343Z",
+  "last_update_utc": "2026-04-02T05:46:25.571Z",
   "completed_items": [
     "Plano canônico de blocos versionado em docs/BLOCK_PLAN.md",
     "Estado remoto canônico versionado em docs/REMOTE_STATE.md",
@@ -16,7 +16,7 @@
     "Automação de continuidade endurecida para exigir BLOCK_PLAN e REMOTE_STATE"
   ],
   "pending_items": [
-    "Integrar a infraestrutura de continuidade em origin/main",
+    "Revisar e mergear a PR #12 em origin/main",
     "Atualizar/rebasear a PR #13 após a integração do bloco de continuidade"
   ],
   "external_blockers": [
@@ -24,12 +24,12 @@
     "API do Gemini ainda instável para embeddings reais",
     "Corpus inicial curado ainda não carregado"
   ],
-  "next_action": "Integrar a base de continuidade em main, atualizar a PR #13 sobre essa base e só então seguir para RLS/auth admin.",
+  "next_action": "Revisar e mergear a PR #12 em main; depois atualizar a PR #13 sobre a nova base.",
   "notes": [
-    "Esta branch reforça a PR #12 sem substituir a necessidade de mergeá-la em main.",
+    "Esta PR de continuidade agora concentra também BLOCK_PLAN e REMOTE_STATE.",
     "A ordem de integração aceita segue sendo PR #12 antes da PR #13."
   ],
   "session_status": "partial",
   "last_report": "docs/operational-reports/2026-04-02-block-0-continuity-hardening.md",
-  "last_session_head_sha": "67352fbdef0d4996637b3b3aaed3d6ec44cde85f"
+  "last_session_head_sha": "de856b97cc26797231501d96d8bd08e3fa3ab747"
 }
