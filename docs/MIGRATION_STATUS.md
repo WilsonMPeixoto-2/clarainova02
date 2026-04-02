@@ -250,14 +250,30 @@ A trilha de endurecimento de `Supabase` e `Edge Functions` foi retomada a partir
 - `embed-chunks` e `get-usage-stats` foram republicadas no projeto oficial com `verify_jwt` endurecido na borda
 - o `chat` permaneceu publico por decisao consciente
 
-Limitacao operacional desta rodada:
+Verificacao remota adicional desta rodada:
 
-- este ambiente nao possui senha do Postgres nem projeto local linkado para executar `supabase db push`
-- por isso, o fechamento remoto de `RLS` ainda depende de aplicar a migration em um ambiente com credencial de banco
+- este ambiente passou a consultar o Postgres remoto oficial do projeto `jasqctuzeznwdtbcuixn`
+- o banco remoto ja esta sem policies para `public`/`anon` em:
+  - `ingestion_jobs`
+  - `document_processing_events`
+  - `chat_metrics`
+  - `search_metrics`
+  - `query_analytics`
+- o modelo remoto usa `public.is_admin_user()` apoiada em `public.admin_users`
+- esse contrato administrativo remoto passou a ser versionado no repositorio em `20260402112000_version_admin_users_contract.sql`
+- `supabase migration list` revelou divergencia forte entre o historico remoto e o diretorio local:
+  - versoes remotas sem arquivo local correspondente:
+    - `20260328230351`
+    - `20260329001517`
+    - `20260329001619`
+    - `20260401213217`
+  - o historico remoto tambem nao reconhece como aplicadas as migrations locais versionadas neste clone, apesar de o schema efetivo ja conter parte relevante desse estado
 
 Consequencia pratica:
 
 - o endurecimento das functions administrativas ja avancou no ambiente remoto
-- a correcao estrutural principal de banco ficou pronta e versionada, mas ainda nao esta aplicada no projeto Supabase oficial
+- o estado remoto efetivo ja esta mais seguro do que a cadeia local de migrations sugeria
+- a pendencia principal deixou de ser "aplicar RLS" e passou a ser "reconciliar no repositorio o contrato remoto de `admin_users` / `is_admin_user()` e o historico de migrations"
+- ate essa reconciliacao existir, `supabase db push` segue sendo uma operacao de alto risco neste clone
 
-O BLOCO 3 so podera ser considerado fechado quando a migration de `RLS` for aplicada no banco remoto e o comportamento administrativo for verificado novamente.
+O BLOCO 3 so podera ser considerado fechado quando o repositório reproduzir com segurança esse contrato administrativo remoto e a trilha de migrations deixar de tornar `supabase db push` uma operacao arriscada neste clone.

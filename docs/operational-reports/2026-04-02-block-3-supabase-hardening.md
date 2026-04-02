@@ -58,10 +58,19 @@ Ao mesmo tempo, o baseline operacional atual ainda depende de conta provisionada
 - republiquei no projeto oficial `jasqctuzeznwdtbcuixn`:
   - `embed-chunks` -> versão remota observada `7`
   - `get-usage-stats` -> versão remota observada `7`
+- conectei este clone ao Postgres remoto oficial e validei o estado real das policies via `supabase db query`
+- confirmei que o banco remoto já está sem policies para `public`/`anon` nas tabelas operacionais/analíticas analisadas
+- confirmei que o ambiente remoto usa `public.is_admin_user()` apoiada em `public.admin_users`, artefatos ainda não versionados neste clone
+- reescrevi a migration `20260402113000_harden_operational_analytics_access.sql` para:
+  - fechar acesso público em qualquer ambiente
+  - espelhar o estado admin-only quando `is_admin_user()` existir
+  - preservar apenas o baseline autenticado em ambientes onde esse helper ainda não exista
+- versionei no repositório o contrato remoto de `public.admin_users` e `public.is_admin_user()` em `20260402112000_version_admin_users_contract.sql`
 
 ## Arquivos alterados
 - `supabase/config.toml`
 - `supabase/functions/get-usage-stats/index.ts`
+- `supabase/migrations/20260402112000_version_admin_users_contract.sql`
 - `supabase/migrations/20260402113000_harden_operational_analytics_access.sql`
 - `docs/BLOCK_PLAN.md`
 - `docs/REMOTE_STATE.md`
@@ -74,23 +83,36 @@ Ao mesmo tempo, o baseline operacional atual ainda depende de conta provisionada
 - `supabase functions deploy embed-chunks --project-ref jasqctuzeznwdtbcuixn --use-api`
 - `supabase functions deploy get-usage-stats --project-ref jasqctuzeznwdtbcuixn --use-api`
 - `supabase functions list --project-ref jasqctuzeznwdtbcuixn`
+- `supabase db query "select current_user, current_database();" --linked`
+- `supabase db query` em `pg_policies` para `ingestion_jobs`, `document_processing_events`, `chat_metrics`, `search_metrics` e `query_analytics`
+- `supabase db query` em `pg_proc` para `public.is_admin_user()`
+- `supabase db query` em `information_schema.tables` para `public.admin_users`
+- `supabase migration list`
 
 ## Resultado do bloco
 ### Concluído
 - o endurecimento de JWT na borda das functions administrativas foi aplicado no projeto oficial
-- a correção de `RLS` ficou pronta, versionada e isolada em migration incremental
+- o Postgres remoto oficial foi acessado e o fechamento de `RLS` nessas tabelas foi confirmado em produção
+- a correção de `RLS` ficou pronta, versionada e isolada em migration incremental compatível com o estado remoto mais seguro
+- o repositório passou a conhecer o contrato remoto de `public.admin_users` / `public.is_admin_user()`
 - a continuidade oficial deixou de apontar para a linha antiga baseada na PR `#13`
 
 ### Não concluído / impossibilidades
-- a migration de banco ainda não foi aplicada no Supabase remoto
-- este ambiente não possui `SUPABASE_DB_PASSWORD`, `SUPABASE_DB_URL` ou projeto local linkado para executar `supabase db push`
+- a cadeia de migrations local continua divergente da cadeia remota, então `supabase db push` continua impróprio neste clone
+- a divergencia confirmada por `supabase migration list` inclui:
+  - versoes remotas sem arquivo local correspondente:
+    - `20260328230351`
+    - `20260329001517`
+    - `20260329001619`
+    - `20260401213217`
+  - historico remoto que nao reconhece como aplicadas as migrations locais versionadas neste clone, apesar de o schema real ja refletir parte relevante delas
 
 ### Riscos remanescentes
-- enquanto a migration não chegar ao banco oficial, as tabelas operacionais/analíticas continuam expostas segundo o estado remoto atual
-- o projeto ainda não possui um modelo versionado de `admin_users` para endurecer a autorização além do simples estado autenticado
+- o repositório ainda não reproduz integralmente o modelo administrativo do Supabase oficial
+- um `db push` sem reconciliação de histórico pode sobrescrever um estado de banco já mais seguro do que o diretório local
 
 ## Próxima ação recomendada
-Aplicar a migration `20260402113000_harden_operational_analytics_access.sql` em um ambiente com credencial de banco do projeto `jasqctuzeznwdtbcuixn`, verificar o comportamento do admin após o fechamento das policies públicas e só então seguir para Google OAuth, Gemini e corpus real.
+Reconciliar conscientemente a cadeia de migrations local/remota antes de qualquer `db push`; depois disso, verificar novamente o admin e só então seguir para Google OAuth, Gemini e corpus real.
 
 ## Atualizações obrigatórias de continuidade
 - [ ] `docs/HANDOFF.md` atualizado

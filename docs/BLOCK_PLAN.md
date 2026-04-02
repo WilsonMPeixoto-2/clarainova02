@@ -11,11 +11,12 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 
 ## Linha mestra atual
 - Fonte oficial integrada: `origin/main @ 86d3c18c8d95b0ad8f518863ac75da66a7826b55`
-- Frente imediata mais importante: fechar o hardening de `Supabase` e `Edge Functions` sem quebrar a conta provisionada já usada no admin
+- Frente imediata mais importante: reconciliar no repositório o hardening já existente no Supabase oficial sem quebrar a conta provisionada já usada no admin
 - Ordem de execução atualmente aceita:
-  1. preparar e aplicar o fechamento das policies públicas indevidas nas tabelas operacionais/analíticas
+  1. confirmar no banco remoto o estado efetivo de `RLS` e das policies administrativas
   2. endurecer `verify_jwt` em `embed-chunks` e `get-usage-stats`
-  3. validar a camada remota de auth/policies antes de avançar para Google OAuth, Gemini e corpus real
+  3. versionar o contrato de `admin_users` / `is_admin_user()` ou reconciliar a cadeia de migrations antes de qualquer `db push`
+  4. só então avançar para Google OAuth, Gemini e corpus real
 
 ## Blocos oficiais
 
@@ -47,10 +48,11 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 3 — Hardening Supabase, RLS e JWT administrativo
 - Estado: `in_progress`
 - Branch associada: `session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING`
-- Próxima ação: aplicar no banco remoto a migration `20260402113000_harden_operational_analytics_access.sql` e verificar o comportamento de admin/metrics após o fechamento das policies públicas
+- Próxima ação: reconciliar conscientemente o histórico de migrations local/remoto antes de usar `db push`, agora que o contrato de `public.admin_users` / `public.is_admin_user()` já foi versionado no repositório
 - Pendências conhecidas:
-  - este ambiente não possui credencial de Postgres para `db push`
-  - `embed-chunks` e `get-usage-stats` já foram republicadas com `verify_jwt` endurecido, mas a migration de RLS ainda precisa chegar ao banco oficial
+  - o banco remoto já está com `RLS` fechado nessas tabelas e o contrato de `admin_users` / `is_admin_user()` começou a ser trazido para o repositório, mas a cadeia de migrations ainda não está reconciliada
+  - `embed-chunks` e `get-usage-stats` já foram republicadas com `verify_jwt` endurecido
+  - a cadeia de migrations local e remota continua divergente, tornando `db push` inseguro sem reconciliação
 
 ### Bloco 4 — Consolidação operacional externa
 - Estado: `planned`
