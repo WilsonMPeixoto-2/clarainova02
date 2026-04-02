@@ -47,6 +47,8 @@ console.log(`- fase atual: ${state.current_phase}`);
 console.log(`- bloco ativo: ${state.active_block}`);
 console.log(`- ultimo relatorio: ${latestReport}`);
 console.log(`- handoff: ${resolveRepoPath("docs/HANDOFF.md")}`);
+console.log(`- block plan: ${resolveRepoPath("docs/BLOCK_PLAN.md")}`);
+console.log(`- remote state: ${resolveRepoPath("docs/REMOTE_STATE.md")}`);
 
 if (state.active_branch !== branch) {
   console.log(

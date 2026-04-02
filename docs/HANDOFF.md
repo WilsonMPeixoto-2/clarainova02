@@ -3,30 +3,28 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-01T17:20:15.950Z
-- Atualizado por: CODEX @ C04-084
-- Branch de referência: `session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE`
+- Data/hora: 2026-04-02T05:40:49.343Z
+- Atualizado por: CODEX @ HOME
+- Branch de referência: `session/2026-04-02/HOME/CODEX/BLOCO-0-CONTINUIDADE-PLUS`
 - Commit de base oficial: `184276fa698f80acd522919e56e19cf8e66e1d49`
-- Head da sessão: `0d2a8b7df315989772fa74086bc5281bcff3d63c`
-- Último relatório: `docs/operational-reports/2026-04-01-block-0-continuity-bootstrap.md`
+- Head da sessão: `67352fbdef0d4996637b3b3aaed3d6ec44cde85f`
+- Último relatório: `docs/operational-reports/2026-04-02-block-0-continuity-hardening.md`
 
 ## Estado atual resumido
-- Fase atual: Infraestrutura de continuidade e endurecimento operacional
-- Bloco ativo: BLOCO 0 — Continuidade e automação mínima
+- Fase atual: Infraestrutura de continuidade reforçada e memória operacional
+- Bloco ativo: BLOCO 0 — Continuidade reforçada e memória operacional
 - Status da sessão: `partial`
-- Próxima ação recomendada: Abrir a PR de continuidade contra main; depois, iniciar BLOCO 1 — RLS / policies.
+- Próxima ação recomendada: Integrar a base de continuidade em main, atualizar a PR #13 sobre essa base e só então seguir para RLS/auth admin.
 
 ## Itens concluídos
-- Worktree isolado do Codex criado e bloqueado
-- Scripts de continuidade adicionados ao repositório
-- Workflow de qualidade passou a validar continuidade
-- Prompt universal versionado em .continuity
-- Helper de Git corrigido para comandos com stdio herdado
-- Branch de sessão publicada no remoto
+- Plano canônico de blocos versionado em docs/BLOCK_PLAN.md
+- Estado remoto canônico versionado em docs/REMOTE_STATE.md
+- Preambulo obrigatório incorporado ao protocolo e ao prompt universal
+- Automação de continuidade endurecida para exigir BLOCK_PLAN e REMOTE_STATE
 
 ## Itens pendentes
-- Abrir PR de continuidade contra main
-- Iniciar BLOCO 1 — RLS / policies
+- Integrar a infraestrutura de continuidade em origin/main
+- Atualizar/rebasear a PR #13 após a integração do bloco de continuidade
 
 ## Bloqueios externos
 - Google OAuth do admin ainda pendente
@@ -34,18 +32,25 @@
 - Corpus inicial curado ainda não carregado
 
 ## Notas operacionais
-- A branch setup/continuity-protocol foi reaproveitada e rebased sobre origin/main antes da abertura desta sessão.
-- O worktree C:\repos\clarainova02-codex está bloqueado para uso isolado do Codex.
-- Durante o fetch de validacao, origin/setup/continuity-protocol avancou no remoto sem conflitar com esta branch de sessao.
-- A branch de sessao foi publicada em origin/session/2026-04-01/C04-084/CODEX/BLOCO-0-CONTINUIDADE.
+- Esta branch reforça a PR #12 sem substituir a necessidade de mergeá-la em main.
+- A ordem de integração aceita segue sendo PR #12 antes da PR #13.
 
-## Regras rápidas para qualquer ferramenta
-1. fazer `git fetch origin --prune`
-2. tratar `origin/main` como verdade oficial
-3. ler:
+## Preambulo obrigatório para qualquer IA
+1. tratar `origin/main` como única fonte oficial de verdade
+2. ler, nesta ordem:
    - `.continuity/current-state.json`
    - `docs/HANDOFF.md`
    - `docs/MIGRATION_STATUS.md`
    - último relatório em `docs/operational-reports/`
-4. trabalhar em branch de sessão, nunca direto em `main`
-5. ao encerrar, deixar tudo commitado, pushado e documentado
+3. depois confirmar:
+   - bloco ativo
+   - branch correta
+   - itens concluídos
+   - itens pendentes
+   - próxima ação recomendada
+4. complementar a leitura com:
+   - `docs/BLOCK_PLAN.md`
+   - `docs/REMOTE_STATE.md`
+5. não continuar se houver divergência entre o contexto local e o contexto registrado no repositório sem explicitar essa divergência
+6. trabalhar em branch de sessão, nunca direto em `main`
+7. ao encerrar, deixar tudo commitado, pushado e documentado
