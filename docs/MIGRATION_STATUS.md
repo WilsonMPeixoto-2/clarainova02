@@ -17,6 +17,33 @@ Ultima atualizacao: 2026-03-31
 
 **O BLOCO 1 saiu do estado "apenas pronto no codigo" e passou para "operacionalmente provado" nas frentes centrais de ambiente, autenticacao administrativa por conta provisionada, ingestao real e resposta grounded em producao.**
 
+## Memoria operacional e continuidade
+
+Desde 2026-04-01, o repositorio passa a carregar uma trilha minima obrigatoria de continuidade no proprio Git:
+
+- `docs/HANDOFF.md`
+- `docs/BLOCK_PLAN.md`
+- `docs/REMOTE_STATE.md`
+- `.continuity/current-state.json`
+- `.continuity/session-log.jsonl`
+- `.continuity/UNIVERSAL_SESSION_PROMPT.md`
+- `docs/operational-reports/`
+
+Automacoes locais disponiveis:
+
+- `npm run session:new`
+- `npm run session:start`
+- `npm run session:end`
+- `npm run continuity:check`
+
+Consequencia operacional:
+
+- `origin/main` continua sendo a unica verdade oficial
+- a ordem canônica dos blocos passa a ficar explícita em `docs/BLOCK_PLAN.md`
+- o ambiente remoto oficial passa a ficar documentado em `docs/REMOTE_STATE.md`
+- nenhuma sessao deve terminar apenas com trabalho local
+- qualquer ajuste em Vercel ou Supabase precisa deixar rastro no repositorio no mesmo bloco de trabalho
+
 ---
 
 ## Projeto Supabase de referencia
