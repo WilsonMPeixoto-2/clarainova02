@@ -3,12 +3,12 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T18:40:00.000Z
+- Data/hora: 2026-04-03T19:46:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Head da sessão: `1e919b38ab9ece7b3f24be4b5e1f863d63b9ffe5`
-- Último relatório: `docs/operational-reports/2026-04-03-chat-persistence-hardening.md`
+- Head da sessão: `8c3cf2a3c84caefd95353bb2187e50dcdebc7efc`
+- Último relatório: `docs/operational-reports/2026-04-03-admin-access-path.md`
 
 ## Estado atual resumido
 - Fase atual: Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em implementação local: contrato novo do Gemini já provado em produção
@@ -49,6 +49,9 @@
 - A persistência do chat agora usa schema versionado com retrocompatibilidade para payload legado
 - O `ChatProvider` agora é coberto na hidratação do histórico persistido
 - `npm run validate` voltou a passar com `70` testes
+- A home agora oferece caminho discreto para `/admin` no drawer móvel e no footer público
+- `Header` e `Footer` agora cobrem explicitamente a descoberta pública do acesso administrativo
+- `npm run validate` voltou a passar com `71` testes
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível

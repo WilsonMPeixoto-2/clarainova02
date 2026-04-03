@@ -8,7 +8,7 @@
   "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T18:40:00.000Z",
+  "last_update_utc": "2026-04-03T19:46:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -43,7 +43,10 @@
     "`npm run validate` passou novamente com 67 testes apos a nova suite de DocumentMeta",
     "A persistencia do chat agora usa schema versionado com retrocompatibilidade para payload legado em array",
     "O `ChatProvider` passou a ser testado diretamente na hidratacao do historico legado e versionado",
-    "`npm run validate` passou novamente com 70 testes apos o endurecimento da persistencia do chat"
+    "`npm run validate` passou novamente com 70 testes apos o endurecimento da persistencia do chat",
+    "A home passou a expor um caminho discreto para `/admin` no drawer móvel e no footer público",
+    "`Header` e `Footer` agora cobrem explicitamente a descoberta pública do acesso administrativo",
+    "`npm run validate` passou novamente com 71 testes apos o ajuste de navegabilidade do admin"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
@@ -69,6 +72,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-chat-persistence-hardening.md",
-  "last_session_head_sha": "1e919b38ab9ece7b3f24be4b5e1f863d63b9ffe5"
+  "last_report": "docs/operational-reports/2026-04-03-admin-access-path.md",
+  "last_session_head_sha": "8c3cf2a3c84caefd95353bb2187e50dcdebc7efc"
 }
