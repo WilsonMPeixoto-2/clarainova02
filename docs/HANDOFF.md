@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T18:33:00.000Z
+- Data/hora: 2026-04-03T18:40:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Head da sessão: `c903814c000428dff775f003793579304ad0c9ff`
+- Head da sessão: `1e919b38ab9ece7b3f24be4b5e1f863d63b9ffe5`
 - Último relatório: `docs/operational-reports/2026-04-03-chat-persistence-hardening.md`
 
 ## Estado atual resumido
@@ -51,11 +51,10 @@
 - `npm run validate` voltou a passar com `70` testes
 
 ## Itens pendentes
-- Publicar a rodada do BLOCO 4C na branch de sessão
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
 - Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
-- Decidir se a rodada paralela de refinamento do `ChatSheet` sobe junto com o BLOCO 4C ou em integração separada
+- Decidir se os refinamentos paralelos de chat/layout sobem junto com o BLOCO 4C ou em integração separada
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
