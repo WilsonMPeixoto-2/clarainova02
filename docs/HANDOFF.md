@@ -3,12 +3,12 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T17:49:00.000Z
+- Data/hora: 2026-04-03T18:25:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - Head da sessão: `34023a8bd38617c3c8c8c2f0726ef24d8f4ae56b`
-- Último relatório: `docs/operational-reports/2026-04-03-chat-layout-refinements.md`
+- Último relatório: `docs/operational-reports/2026-04-03-header-navigation-tests.md`
 
 ## Estado atual resumido
 - Fase atual: Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em implementação local: contrato novo do Gemini já provado em produção
@@ -42,6 +42,8 @@
 - O BLOCO 4C já ganhou `document_hash` no fluxo de ingestão, preflight de duplicidade, concorrência controlada em `embed-chunks` e testes mínimos do pipeline
 - `npm run validate` voltou a passar com `61` testes
 - A aba do chat recebeu refinamentos seguros de usabilidade e estética: `ClaraMonogram`, `textarea` com auto-resize, envio por `Enter`, quebra de linha com `Shift+Enter` e resize com suporte por teclado
+- O `Header` agora possui cobertura direta para drawer móvel, links principais e acionamento do chat
+- `npm run validate` voltou a passar com `65` testes
 
 ## Itens pendentes
 - Publicar a rodada do BLOCO 4C na branch de sessão
