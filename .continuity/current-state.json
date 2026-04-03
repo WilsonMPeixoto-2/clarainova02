@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "fdd85e5c32d6617c6cefc5ed8a611106311d4f5e",
-  "current_phase": "Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em implementação local: contrato novo do Gemini provado em produção e pipeline de ingestão em endurecimento",
+  "last_integrated_main_sha": "6b6e28c7dfddfdf517dfea6e7c151314c086c2f9",
+  "current_phase": "Pré-lançamento com BLOCO 4C integrado em main: ingestão endurecida, refinamentos de chat publicados no repositório e validação remota de deduplicação ainda pendente",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
-  "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T19:46:00.000Z",
+  "last_update_utc": "2026-04-03T20:00:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -46,18 +46,20 @@
     "`npm run validate` passou novamente com 70 testes apos o endurecimento da persistencia do chat",
     "A home passou a expor um caminho discreto para `/admin` no drawer móvel e no footer público",
     "`Header` e `Footer` agora cobrem explicitamente a descoberta pública do acesso administrativo",
-    "`npm run validate` passou novamente com 71 testes apos o ajuste de navegabilidade do admin"
+    "`npm run validate` passou novamente com 71 testes apos o ajuste de navegabilidade do admin",
+    "A rodada do BLOCO 4C foi integrada em `main` com endurecimento da ingestão, melhorias de usabilidade do chat e cobertura adicional de testes"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
+    "Confirmar em produção o deploy canônico da integração do BLOCO 4C",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto",
-    "Decidir se os refinamentos paralelos de chat/layout sobem junto com o BLOCO 4C ou em integração separada"
+    "Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Validar a deduplicação em ambiente real com novo upload controlado e, se o resultado for estável, preparar a integração do BLOCO 4C antes da carga curada do corpus.",
+  "next_action": "Confirmar o deploy canônico de produção desta integração em main e depois executar o teste remoto de deduplicação com upload controlado do mesmo PDF.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -72,6 +74,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-admin-access-path.md",
-  "last_session_head_sha": "8c3cf2a3c84caefd95353bb2187e50dcdebc7efc"
+  "last_report": "docs/operational-reports/2026-04-03-main-integration-and-production-deploy-block-4c.md",
+  "last_session_head_sha": "6b6e28c7dfddfdf517dfea6e7c151314c086c2f9"
 }

@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T19:46:00.000Z
+- Data/hora: 2026-04-03T20:00:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
-- Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Head da sessão: `8c3cf2a3c84caefd95353bb2187e50dcdebc7efc`
-- Último relatório: `docs/operational-reports/2026-04-03-admin-access-path.md`
+- Branch de referência: `main`
+- Commit de base oficial: `6b6e28c7dfddfdf517dfea6e7c151314c086c2f9`
+- Head da sessão: `6b6e28c7dfddfdf517dfea6e7c151314c086c2f9`
+- Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-block-4c.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em implementação local: contrato novo do Gemini já provado em produção
+- Fase atual: Pré-lançamento com BLOCO 4C integrado em main: ingestão endurecida, refinamentos de chat publicados no repositório e validação remota de deduplicação ainda pendente
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: Publicar a rodada local do BLOCO 4C e validar a deduplicação em ambiente real com novo upload controlado antes da carga curada do corpus.
+- Próxima ação recomendada: Confirmar o deploy canônico desta integração e depois validar a deduplicação em ambiente real com novo upload controlado antes da carga curada do corpus.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -52,12 +52,13 @@
 - A home agora oferece caminho discreto para `/admin` no drawer móvel e no footer público
 - `Header` e `Footer` agora cobrem explicitamente a descoberta pública do acesso administrativo
 - `npm run validate` voltou a passar com `71` testes
+- A rodada do BLOCO 4C foi integrada em `main` com endurecimento da ingestão, melhorias de usabilidade do chat e cobertura adicional de testes
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
+- Confirmar em produção o deploy canônico da integração do BLOCO 4C
 - Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
-- Decidir se os refinamentos paralelos de chat/layout sobem junto com o BLOCO 4C ou em integração separada
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
