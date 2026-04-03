@@ -22,8 +22,10 @@ function buildCorsHeaders(req: Request) {
   };
 }
 
-const EMBEDDING_MODEL = "gemini-embedding-001";
+const EMBEDDING_MODEL = "gemini-embedding-2-preview";
 const EMBEDDING_DIM = 768;
+const DOCUMENT_EMBEDDING_TASK_TYPE = "RETRIEVAL_DOCUMENT";
+const EMBEDDING_NORMALIZATION = "l2";
 const EMBED_TIMEOUT_MS = 15_000;
 const EMBED_RETRY_DELAYS_MS = [1500, 3000, 6000];
 
@@ -49,6 +51,14 @@ interface ParsedChunkMetadata {
   sourceTag: string | null;
 }
 
+interface StructuredChunkPayload {
+  content: string;
+  pageStart: number | null;
+  pageEnd: number | null;
+  sectionTitle: string | null;
+  sourceTag: string | null;
+}
+
 function parseChunkMetadata(content: string): ParsedChunkMetadata {
   const sourceMatch = content.match(/^\[Fonte:\s*([^\]|]+?)(?:\s*\|\s*P[aá]gina:\s*([0-9]+)(?:\s*-\s*([0-9]+))?)?\]/i);
   const firstPage = sourceMatch?.[2] ? Number.parseInt(sourceMatch[2], 10) : Number.NaN;
@@ -59,6 +69,68 @@ function parseChunkMetadata(content: string): ParsedChunkMetadata {
     pageStart: Number.isFinite(firstPage) ? firstPage : null,
     pageEnd: Number.isFinite(lastPage) ? lastPage : Number.isFinite(firstPage) ? firstPage : null,
   };
+}
+
+function normalizeIncomingChunk(chunk: unknown): StructuredChunkPayload | null {
+  if (typeof chunk === "string") {
+    const parsedMetadata = parseChunkMetadata(chunk);
+    const normalizedContent = chunk.replace(/^\[Fonte:[^\]]+\]\s*/i, "").trim();
+
+    if (normalizedContent.length < 3) {
+      return null;
+    }
+
+    return {
+      content: normalizedContent,
+      pageStart: parsedMetadata.pageStart,
+      pageEnd: parsedMetadata.pageEnd,
+      sectionTitle: null,
+      sourceTag: parsedMetadata.sourceTag,
+    };
+  }
+
+  if (typeof chunk !== "object" || chunk === null) {
+    return null;
+  }
+
+  const candidate = chunk as {
+    content?: unknown;
+    pageStart?: unknown;
+    pageEnd?: unknown;
+    sectionTitle?: unknown;
+    sourceTag?: unknown;
+  };
+  const normalizedContent = typeof candidate.content === "string" ? candidate.content.trim() : "";
+
+  if (normalizedContent.length < 3) {
+    return null;
+  }
+
+  return {
+    content: normalizedContent,
+    pageStart: typeof candidate.pageStart === "number" ? candidate.pageStart : null,
+    pageEnd: typeof candidate.pageEnd === "number" ? candidate.pageEnd : null,
+    sectionTitle: typeof candidate.sectionTitle === "string" ? candidate.sectionTitle.trim() || null : null,
+    sourceTag: typeof candidate.sourceTag === "string" ? candidate.sourceTag.trim() || null : null,
+  };
+}
+
+function normalizeL2(values: number[]): number[] {
+  const norm = Math.sqrt(values.reduce((sum, value) => sum + value * value, 0));
+  if (!Number.isFinite(norm) || norm === 0) {
+    return values;
+  }
+
+  return values.map((value) => value / norm);
+}
+
+function estimateTokenCount(value: string): number {
+  return Math.max(1, Math.ceil(value.length / 4));
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const buffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(buffer)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 async function safeLogEvent(
@@ -124,14 +196,23 @@ async function requireAuthenticatedUser(
   return data.user;
 }
 
-async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string) {
+async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string, title?: string | null) {
   for (let attempt = 0; attempt <= EMBED_RETRY_DELAYS_MS.length; attempt++) {
     try {
+      const config: Record<string, unknown> = {
+        outputDimensionality: EMBEDDING_DIM,
+        taskType: DOCUMENT_EMBEDDING_TASK_TYPE,
+      };
+
+      if (title && title.trim()) {
+        config.title = title.trim();
+      }
+
       const result = await Promise.race([
         ai.models.embedContent({
           model: EMBEDDING_MODEL,
           contents: text,
-          config: { outputDimensionality: EMBEDDING_DIM },
+          config,
         }),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("EMBED_TIMEOUT")), EMBED_TIMEOUT_MS)
@@ -144,7 +225,7 @@ async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string) {
         return null;
       }
 
-      return values;
+      return normalizeL2(values);
     } catch (err: unknown) {
       const msg = getErrorMessage(err);
       console.error("Embedding error:", msg);
@@ -197,7 +278,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { document_id, chunks, start_index = 0, ingestion_job_id = null } = await req.json();
+    const { document_id, chunks, start_index = 0, ingestion_job_id = null, title = null } = await req.json();
+    const normalizedTitle = typeof title === "string" && title.trim().length > 0 ? title.trim() : null;
 
     if (!document_id || !chunks || !Array.isArray(chunks) || chunks.length === 0) {
       return new Response(
@@ -213,7 +295,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const validChunks = chunks.filter((c: string) => c && c.trim().length >= 3);
+    const validChunks = chunks
+      .map((chunk: unknown) => normalizeIncomingChunk(chunk))
+      .filter((chunk: StructuredChunkPayload | null): chunk is StructuredChunkPayload => chunk !== null);
 
     if (validChunks.length === 0) {
       return new Response(
@@ -243,28 +327,48 @@ Deno.serve(async (req) => {
         requested_chunks: chunks.length,
         valid_chunks: validChunks.length,
         requested_by: authenticatedUser.id,
+        embedding_model: EMBEDDING_MODEL,
+        embedding_dim: EMBEDDING_DIM,
+        task_type: DOCUMENT_EMBEDDING_TASK_TYPE,
+        title_used: normalizedTitle,
       },
     });
 
     const embeddingStart = Date.now();
     const embeddings: Array<number[] | null> = [];
-    for (const text of validChunks) {
-      embeddings.push(await generateEmbeddingWithRetry(ai, text));
+    for (const chunk of validChunks) {
+      embeddings.push(await generateEmbeddingWithRetry(ai, chunk.content, normalizedTitle));
     }
     const embedding_ms = Date.now() - embeddingStart;
 
     // Build rows using ONLY columns that exist in document_chunks
-    const rows = validChunks.map((content: string, i: number) => {
-      const { pageStart, pageEnd } = parseChunkMetadata(content);
+    const rows = await Promise.all(validChunks.map(async (chunk: StructuredChunkPayload, i: number) => {
+      const embeddedAt = embeddings[i] ? new Date().toISOString() : null;
       return {
         document_id,
-        content,
+        content: chunk.content,
         embedding: embeddings[i] ? JSON.stringify(embeddings[i]) : null,
         chunk_index: start_index + i,
-        page_start: pageStart,
-        page_end: pageEnd,
+        page_start: chunk.pageStart,
+        page_end: chunk.pageEnd,
+        section_title: chunk.sectionTitle,
+        text_hash: await sha256Hex(chunk.content),
+        char_count: chunk.content.length,
+        token_count_estimate: estimateTokenCount(chunk.content),
+        embedding_model: EMBEDDING_MODEL,
+        embedding_dim: EMBEDDING_DIM,
+        embedded_at: embeddedAt,
+        chunk_metadata_json: {
+          source_tag: chunk.sourceTag,
+          page_start: chunk.pageStart,
+          page_end: chunk.pageEnd,
+          section_title: chunk.sectionTitle,
+          task_type: DOCUMENT_EMBEDDING_TASK_TYPE,
+          title_used: normalizedTitle,
+          normalization: EMBEDDING_NORMALIZATION,
+        },
       };
-    });
+    }));
 
     const dbStart = Date.now();
     const { error: upsertErr } = await supabase

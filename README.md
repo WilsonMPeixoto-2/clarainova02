@@ -38,6 +38,13 @@
 - Embeddings reais estaveis no provedor Gemini
 - Metricas agregadas vindas das Edge Functions
 
+## Modelos Gemini declarados no codigo
+
+- Geracao principal do chat: `gemini-3.1-flash-lite-preview`
+- Fallback gerativo do chat: `gemini-3.1-pro-preview`
+- Embedding de consulta e documento: `gemini-embedding-2-preview`
+- Dimensionalidade vetorial atual: `768`
+
 ## Identidade publica e governanca atual
 
 - A autoria tecnica e a manutencao inicial do ambiente publico sao identificadas como `Wilson M. Peixoto`

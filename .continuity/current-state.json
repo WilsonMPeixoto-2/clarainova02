@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "0174205ba2ead464c9c8dad7b61e6e63b59ea206",
-  "current_phase": "Pré-lançamento com BLOCO 3 integrado em main e BLOCO 4 pronto para execução operacional externa",
-  "active_block": "BLOCO 4 — Consolidação operacional externa",
-  "active_branch": "main",
+  "last_integrated_main_sha": "b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5",
+  "current_phase": "Pré-lançamento com BLOCO 4A em execução para alinhar o código ao contrato Gemini e ao novo embedding antes da ingestão real",
+  "active_block": "BLOCO 4A — Alinhamento Gemini e contrato de embedding",
+  "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMINI-EMBEDDING-CONTRACT",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T00:10:00.000Z",
+  "last_update_utc": "2026-04-03T04:48:16.325Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -21,23 +21,25 @@
     "A integração de main gerou deploy canônico READY via GitHub/Vercel no projeto clarainova02"
   ],
   "pending_items": [
-    "Executar o checklist operacional do BLOCO 4 no Supabase e no Google para destravar Google OAuth e embeddings reais",
-    "Retomar corpus real depois do saneamento operacional externo",
-    "Abrir a próxima branch dedicada de BLOCO 4 quando a frente externa sair do preparo e entrar em execução"
+    "Verificar contaminação entre gerações de embeddings no corpus remoto antes da ingestão séria",
+    "Executar smoke test remoto com 1 PDF real e 1–3 perguntas grounded após o pacote técnico do embedding",
+    "Integrar a branch 4A em main sem perder o rastreio da pilha Gemini declarada no código",
+    "Executar o BLOCO 4B com deduplicação, paralelismo controlado e preparação da carga curada do corpus"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Executar o checklist documentado de BLOCO 4 no Supabase e no Google, registrar o resultado em REMOTE_STATE e então abrir a trilha dedicada para Google OAuth do admin, Gemini e reprocessamento real de embeddings.",
+  "next_action": "Verificar o estado real do corpus remoto, decidir re-embed/limpeza de legado e executar o smoke test remoto com 1 PDF e perguntas grounded antes de liberar a carga curada.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
     "O preparo do BLOCO 4 foi registrado sem tocar em ROADMAP_FUTURO.md nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.",
     "Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.",
-    "As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção."
+    "As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção.",
+    "Esta branch substitui a pilha Gemini antiga declarada em main e passa a explicitar 3.1 preview + gemini-embedding-2-preview com taskType, title, normalização L2 e metadados persistidos."
   ],
-  "session_status": "integrated",
-  "last_report": "docs/operational-reports/2026-04-02-main-integration-and-production-deploy.md",
-  "last_session_head_sha": "0174205ba2ead464c9c8dad7b61e6e63b59ea206"
+  "session_status": "partial",
+  "last_report": "docs/operational-reports/2026-04-03-block-4a-gemini-embedding-contract.md",
+  "last_session_head_sha": "b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5"
 }

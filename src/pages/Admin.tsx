@@ -26,6 +26,7 @@ import {
   KNOWLEDGE_INGESTION_PRIORITY_LABELS,
   KNOWLEDGE_TOPIC_SCOPE_LABELS,
 } from "@/lib/knowledge-document-classifier";
+import type { PreparedChunk } from "@/lib/admin-ingestion";
 
 const AdminDocumentsCard = lazy(() => import("@/components/admin/AdminDocumentsCard"));
 const UsageStatsCard = lazy(() => import("@/components/UsageStatsCard"));
@@ -112,13 +113,14 @@ function formatTimer(seconds: number): string {
 
 async function embedBatchWithRetry(
   documentId: string,
-  batch: string[],
+  batch: PreparedChunk[],
   startIndex: number,
+  title: string,
   signal?: AbortSignal,
 ): Promise<{ saved: number; embedded: number; failedEmbeddings: number; requestId?: string }> {
   return withRetry(async () => {
     const { data: fnData, error: fnErr } = await supabase.functions.invoke("embed-chunks", {
-      body: { document_id: documentId, chunks: batch, start_index: startIndex },
+      body: { document_id: documentId, chunks: batch, start_index: startIndex, title },
     });
 
     if (fnErr) {
@@ -376,7 +378,7 @@ export default function Admin() {
 
   const sendChunksInBatches = async (
     documentId: string,
-    chunks: string[],
+    chunks: PreparedChunk[],
     fileName: string,
     abortSignal: AbortSignal,
     existingChunkHealth?: DocumentChunkHealth,
@@ -389,7 +391,7 @@ export default function Admin() {
   }> => {
     const totalChunks = chunks.length;
     const embeddedIndexes = existingChunkHealth?.embeddedIndexes ?? new Set<number>();
-    const chunksToSend: { chunk: string; index: number }[] = [];
+    const chunksToSend: { chunk: PreparedChunk; index: number }[] = [];
 
     for (let index = 0; index < chunks.length; index++) {
       if (!embeddedIndexes.has(index)) {
@@ -447,7 +449,7 @@ export default function Admin() {
       const batchStartIndex = batchItems[0].index;
 
       try {
-        const result = await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, abortSignal);
+        const result = await embedBatchWithRetry(documentId, batchChunks, batchStartIndex, fileName, abortSignal);
         if (result.requestId) {
           requestIds.push(result.requestId);
         }

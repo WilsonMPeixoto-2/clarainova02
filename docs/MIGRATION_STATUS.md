@@ -17,6 +17,18 @@ Ultima atualizacao: 2026-03-31
 
 **O BLOCO 1 saiu do estado "apenas pronto no codigo" e passou para "operacionalmente provado" nas frentes centrais de ambiente, autenticacao administrativa por conta provisionada, ingestao real e resposta grounded em producao.**
 
+## Nota operacional recente
+
+Em 2026-04-03, a branch de sessão `session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMINI-EMBEDDING-CONTRACT` passou a alinhar o código ao contrato Gemini efetivamente adotado no ambiente:
+
+- geração com `gemini-3.1-flash-lite-preview` e fallback `gemini-3.1-pro-preview`
+- embeddings com `gemini-embedding-2-preview`
+- `taskType` explícito para query/documento
+- normalização L2 em `768`
+- chunks estruturados e metadados de embedding persistidos
+
+Essa atualização ainda depende de smoke test remoto antes de ser tratada como estado integrado em `main`.
+
 ## Memoria operacional e continuidade
 
 Desde 2026-04-01, o repositorio passa a carregar uma trilha minima obrigatoria de continuidade no proprio Git:

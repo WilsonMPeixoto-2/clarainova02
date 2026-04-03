@@ -10,9 +10,10 @@
 - Branch oficial integrada: `origin/main`
 - `origin/main` atualmente alinhada ao commit: `86d3c18c8d95b0ad8f518863ac75da66a7826b55`
 - Trabalho local em andamento fora de `main`:
-  - branch de sessão `session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING`
+  - branch de sessão `session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMINI-EMBEDDING-CONTRACT`
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
+  - a branch `BLOCO-4A-GEMINI-EMBEDDING-CONTRACT` ainda não alterou a produção; ela alinha o código ao contrato Gemini novo antes do smoke test remoto
 
 ## Vercel
 - Projeto canônico: `clarainova02`

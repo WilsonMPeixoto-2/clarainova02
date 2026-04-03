@@ -39,6 +39,8 @@ const EMBEDDING_TIMEOUT_MS = 10_000;
 const SEARCH_TIMEOUT_MS = 8_000;
 const GENERATION_TIMEOUT_MS = 45_000;
 const EMBEDDING_DIM = 768;
+const QUERY_EMBEDDING_MODEL = 'gemini-embedding-2-preview';
+const QUERY_EMBEDDING_TASK_TYPE = 'RETRIEVAL_QUERY';
 const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
 type ChatResponseMode = (typeof CHAT_RESPONSE_MODES)[number];
 const DEFAULT_CHAT_RESPONSE_MODE: ChatResponseMode = 'didatico';
@@ -233,9 +235,8 @@ REGRAS DE SEGURANÇA
 // ============================================================
 
 const GEMINI_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-pro',
+  'gemini-3.1-flash-lite-preview',
+  'gemini-3.1-pro-preview',
 ];
 
 type HybridSearchChunk = {
@@ -368,6 +369,15 @@ function averageScore(chunks: HybridSearchChunk[]): number | null {
   if (chunks.length === 0) return null;
   const sum = chunks.reduce((total, chunk) => total + chunk.similarity, 0);
   return sum / chunks.length;
+}
+
+function normalizeL2(values: number[]): number[] {
+  const norm = Math.sqrt(values.reduce((sum, value) => sum + value * value, 0));
+  if (!Number.isFinite(norm) || norm === 0) {
+    return values;
+  }
+
+  return values.map((value) => value / norm);
 }
 
 function extractChecklistItems(chunks: HybridSearchChunk[]): string[] {
@@ -901,9 +911,12 @@ Deno.serve(async (req) => {
         try {
           const embeddingResult = await withTimeout(
             ai.models.embedContent({
-              model: 'gemini-embedding-001',
+              model: QUERY_EMBEDDING_MODEL,
               contents: lastUserMessage.content,
-              config: { outputDimensionality: 768 },
+              config: {
+                outputDimensionality: EMBEDDING_DIM,
+                taskType: QUERY_EMBEDDING_TASK_TYPE,
+              },
             }),
             EMBEDDING_TIMEOUT_MS,
             'embedding',
@@ -911,8 +924,8 @@ Deno.serve(async (req) => {
 
           const queryEmbedding = embeddingResult.embeddings?.[0]?.values;
           if (queryEmbedding && queryEmbedding.length === EMBEDDING_DIM) {
-            queryEmbeddingPayload = JSON.stringify(queryEmbedding);
-            queryEmbeddingModel = 'gemini-embedding-001';
+            queryEmbeddingPayload = JSON.stringify(normalizeL2(queryEmbedding));
+            queryEmbeddingModel = QUERY_EMBEDDING_MODEL;
           }
         } catch (embeddingError) {
           console.warn('Query embedding fallback to keyword-only retrieval:', embeddingError);

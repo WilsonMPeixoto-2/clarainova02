@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T00:10:00.000Z
+- Data/hora: 2026-04-03T04:48:16.325Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `main`
-- Commit de base oficial: `0174205ba2ead464c9c8dad7b61e6e63b59ea206`
-- Head da sessão: `0174205ba2ead464c9c8dad7b61e6e63b59ea206`
-- Último relatório: `docs/operational-reports/2026-04-02-main-integration-and-production-deploy.md`
+- Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMINI-EMBEDDING-CONTRACT`
+- Commit de base oficial: `b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5`
+- Head da sessão: `b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5`
+- Último relatório: `docs/operational-reports/2026-04-03-block-4a-gemini-embedding-contract.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 3 integrado em main e BLOCO 4 pronto para execução operacional externa
-- Bloco ativo: BLOCO 4 — Consolidação operacional externa
-- Status da sessão: `integrated`
-- Próxima ação recomendada: Executar o checklist documentado de BLOCO 4 no Supabase e no Google, registrar o resultado em REMOTE_STATE e então abrir a trilha dedicada para Google OAuth do admin, Gemini e reprocessamento real de embeddings.
+- Fase atual: Pré-lançamento com BLOCO 4A em execução para alinhar o código ao contrato Gemini e ao novo embedding antes da ingestão real
+- Bloco ativo: BLOCO 4A — Alinhamento Gemini e contrato de embedding
+- Status da sessão: `partial`
+- Próxima ação recomendada: Verificar o estado real do corpus remoto, decidir re-embed/limpeza de legado e executar o smoke test remoto com 1 PDF e perguntas grounded antes de liberar a carga curada.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -26,11 +26,17 @@
 - Checklist operacional do BLOCO 4 documentado com exigências concretas para Google OAuth, Gemini e reprocessamento de embeddings
 - A trilha de hardening do BLOCO 3 foi integrada em `main` por fast-forward
 - A integração em `main` gerou deploy canônico `READY` via GitHub/Vercel no projeto `clarainova02`
+- Esta branch alinhou o código à pilha Gemini 3.1 preview e `gemini-embedding-2-preview`
+- Query embedding agora usa `taskType: RETRIEVAL_QUERY` com normalização L2 em `768`
+- Document embedding agora usa `taskType: RETRIEVAL_DOCUMENT`, `title`, normalização L2 e persistência de metadados de embedding
+- O frontend de ingestão passou a enviar chunks estruturados, sem prefixos artificiais no texto semântico
+- `npm run validate` passou na branch de sessão
 
 ## Itens pendentes
-- Executar o checklist operacional do BLOCO 4 no Supabase e no Google para destravar Google OAuth e embeddings reais
-- Retomar corpus real depois do saneamento operacional externo
-- Abrir a próxima branch dedicada de BLOCO 4 quando a frente externa sair do preparo e entrar em execução
+- Verificar contaminação entre gerações de embeddings no corpus remoto antes da ingestão séria
+- Executar smoke test remoto com 1 PDF real e 1–3 perguntas grounded
+- Integrar a branch 4A em `main` sem perder o rastreio da pilha Gemini declarada no código
+- Executar o BLOCO 4B com deduplicação, paralelismo controlado e preparação da carga curada do corpus
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
@@ -42,6 +48,7 @@
 - O preparo do BLOCO 4 foi registrado sem tocar em `ROADMAP_FUTURO.md` nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.
 - Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.
 - As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção.
+- Esta branch ainda não alterou a produção. Ela só alinhou o código e a documentação mínima ao contrato novo do Gemini antes do smoke test remoto.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade

@@ -12,10 +12,18 @@ export interface PageText {
   text: string;
 }
 
+export interface PreparedChunk {
+  content: string;
+  pageStart: number | null;
+  pageEnd: number | null;
+  sectionTitle: string | null;
+  sourceTag: string | null;
+}
+
 export interface PreparedPdfIngestion {
   pages: PageText[];
   fullText: string;
-  chunks: string[];
+  chunks: PreparedChunk[];
 }
 
 export function sanitizeFileName(name: string) {
@@ -65,12 +73,18 @@ export async function preparePdfIngestion(
     throw new Error("PDF parece estar vazio ou conter apenas imagens (sem texto extraível).");
   }
 
-  const chunks: string[] = [];
+  const chunks: PreparedChunk[] = [];
   for (const page of pages) {
     if (!page.text.trim()) continue;
     const pageChunks = await splitWithLangChain(page.text);
     for (const chunk of pageChunks) {
-      chunks.push(`[Fonte: ${file.name} | Página: ${page.pageNumber}]\n\n${chunk}`);
+      chunks.push({
+        content: chunk,
+        pageStart: page.pageNumber,
+        pageEnd: page.pageNumber,
+        sectionTitle: null,
+        sourceTag: file.name,
+      });
     }
   }
 
