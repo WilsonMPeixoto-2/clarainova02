@@ -8,7 +8,7 @@
   "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T18:29:00.000Z",
+  "last_update_utc": "2026-04-03T18:33:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -40,7 +40,10 @@
     "O Header agora possui cobertura direta de componente para drawer movel, navegacao principal e acionamento do chat",
     "`npm run validate` passou novamente com 65 testes apos a nova suite de Header",
     "DocumentMeta agora possui cobertura direta para titulo, metadados OG/Twitter/author/description e canonical",
-    "`npm run validate` passou novamente com 67 testes apos a nova suite de DocumentMeta"
+    "`npm run validate` passou novamente com 67 testes apos a nova suite de DocumentMeta",
+    "A persistencia do chat agora usa schema versionado com retrocompatibilidade para payload legado em array",
+    "O `ChatProvider` passou a ser testado diretamente na hidratacao do historico legado e versionado",
+    "`npm run validate` passou novamente com 70 testes apos o endurecimento da persistencia do chat"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
@@ -67,6 +70,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-document-meta-tests.md",
+  "last_report": "docs/operational-reports/2026-04-03-chat-persistence-hardening.md",
   "last_session_head_sha": "c903814c000428dff775f003793579304ad0c9ff"
 }

@@ -3,12 +3,12 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T18:29:00.000Z
+- Data/hora: 2026-04-03T18:33:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - Head da sessão: `c903814c000428dff775f003793579304ad0c9ff`
-- Último relatório: `docs/operational-reports/2026-04-03-document-meta-tests.md`
+- Último relatório: `docs/operational-reports/2026-04-03-chat-persistence-hardening.md`
 
 ## Estado atual resumido
 - Fase atual: Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em implementação local: contrato novo do Gemini já provado em produção
@@ -46,6 +46,9 @@
 - `npm run validate` voltou a passar com `65` testes
 - `DocumentMeta` agora possui cobertura direta para título, description, author, OG/Twitter e canonical
 - `npm run validate` voltou a passar com `67` testes
+- A persistência do chat agora usa schema versionado com retrocompatibilidade para payload legado
+- O `ChatProvider` agora é coberto na hidratação do histórico persistido
+- `npm run validate` voltou a passar com `70` testes
 
 ## Itens pendentes
 - Publicar a rodada do BLOCO 4C na branch de sessão

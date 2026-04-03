@@ -1,6 +1,24 @@
+import { createElement } from 'react';
+import { render, screen } from '@testing-library/react';
+
+import { ChatProvider, useChat } from '@/hooks/useChatStore';
+
 describe('chat persistence (localStorage)', () => {
   const STORAGE_KEY = 'clara-chat-history';
   const RESPONSE_MODE_KEY = 'clara-chat-response-mode';
+  const STORAGE_VERSION = 1;
+
+  function ChatPersistenceProbe() {
+    const { messages, responseMode } = useChat();
+
+    return createElement(
+      'div',
+      null,
+      createElement('span', { 'data-testid': 'message-count' }, messages.length),
+      createElement('span', { 'data-testid': 'response-mode' }, responseMode),
+      createElement('span', { 'data-testid': 'first-message' }, messages[0]?.content ?? ''),
+    );
+  }
 
   beforeEach(() => {
     localStorage.clear();
@@ -15,12 +33,13 @@ describe('chat persistence (localStorage)', () => {
       { role: 'user' as const, content: 'Olá' },
       { role: 'assistant' as const, content: 'Olá! Como posso ajudar?', structuredResponse: null },
     ];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: STORAGE_VERSION, messages }));
 
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
-    expect(stored).toHaveLength(2);
-    expect(stored[0].content).toBe('Olá');
-    expect(stored[1].role).toBe('assistant');
+    expect(stored.version).toBe(STORAGE_VERSION);
+    expect(stored.messages).toHaveLength(2);
+    expect(stored.messages[0].content).toBe('Olá');
+    expect(stored.messages[1].role).toBe('assistant');
   });
 
   it('handles corrupt localStorage gracefully', () => {
@@ -54,10 +73,60 @@ describe('chat persistence (localStorage)', () => {
     }));
 
     const toSave = messages.slice(-maxMessages);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: STORAGE_VERSION, messages: toSave }));
 
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
-    expect(stored).toHaveLength(50);
-    expect(stored[0].content).toBe('Message 10');
+    expect(stored.messages).toHaveLength(50);
+    expect(stored.messages[0].content).toBe('Message 10');
+  });
+
+  it('accepts legacy array payloads during migration', () => {
+    const legacyMessages = [
+      { role: 'user' as const, content: 'Mensagem antiga' },
+      { role: 'assistant' as const, content: 'Resposta antiga', structuredResponse: null },
+    ];
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(legacyMessages));
+
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+    expect(Array.isArray(stored)).toBe(true);
+    expect(stored[0].content).toBe('Mensagem antiga');
+  });
+
+  it('hydrates legacy array payloads through the provider', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        { role: 'user', content: 'Pergunta legado' },
+        { role: 'assistant', content: 'Resposta legado', structuredResponse: null },
+      ]),
+    );
+    localStorage.setItem(RESPONSE_MODE_KEY, 'didatico');
+
+    render(createElement(ChatProvider, null, createElement(ChatPersistenceProbe)));
+
+    expect(screen.getByTestId('message-count')).toHaveTextContent('2');
+    expect(screen.getByTestId('response-mode')).toHaveTextContent('didatico');
+    expect(screen.getByTestId('first-message')).toHaveTextContent('Pergunta legado');
+  });
+
+  it('hydrates versioned payloads through the provider', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: STORAGE_VERSION,
+        messages: [
+          { role: 'user', content: 'Pergunta versionada' },
+          { role: 'assistant', content: 'Resposta versionada', structuredResponse: null },
+        ],
+      }),
+    );
+    localStorage.setItem(RESPONSE_MODE_KEY, 'direto');
+
+    render(createElement(ChatProvider, null, createElement(ChatPersistenceProbe)));
+
+    expect(screen.getByTestId('message-count')).toHaveTextContent('2');
+    expect(screen.getByTestId('response-mode')).toHaveTextContent('direto');
+    expect(screen.getByTestId('first-message')).toHaveTextContent('Pergunta versionada');
   });
 });

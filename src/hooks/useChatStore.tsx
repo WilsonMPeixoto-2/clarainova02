@@ -46,14 +46,41 @@ const CHAT_API_CONFIG = getDefaultChatApiConfig();
 const CHAT_STORAGE_KEY = 'clara-chat-history';
 const CHAT_RESPONSE_MODE_STORAGE_KEY = 'clara-chat-response-mode';
 const MAX_PERSISTED_MESSAGES = 50;
+const CHAT_STORAGE_VERSION = 1;
+
+interface PersistedChatHistory {
+  version: number;
+  messages: ChatMessage[];
+}
+
+function isChatMessageArray(value: unknown): value is ChatMessage[] {
+  return Array.isArray(value) && value.every((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const candidate = item as Partial<ChatMessage>;
+    return (candidate.role === 'user' || candidate.role === 'assistant') && typeof candidate.content === 'string';
+  });
+}
 
 function loadPersistedMessages(): ChatMessage[] {
   try {
     const raw = localStorage.getItem(CHAT_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.slice(-MAX_PERSISTED_MESSAGES);
+
+    if (isChatMessageArray(parsed)) {
+      return parsed.slice(-MAX_PERSISTED_MESSAGES);
+    }
+
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      (parsed as PersistedChatHistory).version === CHAT_STORAGE_VERSION &&
+      isChatMessageArray((parsed as PersistedChatHistory).messages)
+    ) {
+      return (parsed as PersistedChatHistory).messages.slice(-MAX_PERSISTED_MESSAGES);
+    }
+
+    return [];
   } catch {
     return [];
   }
@@ -62,7 +89,11 @@ function loadPersistedMessages(): ChatMessage[] {
 function persistMessages(messages: ChatMessage[]) {
   try {
     const toSave = messages.slice(-MAX_PERSISTED_MESSAGES);
-    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
+    const payload: PersistedChatHistory = {
+      version: CHAT_STORAGE_VERSION,
+      messages: toSave,
+    };
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(payload));
   } catch {
     // Storage full or unavailable — silently ignore
   }
