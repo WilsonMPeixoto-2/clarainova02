@@ -3,12 +3,12 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T08:36:00.000Z
+- Data/hora: 2026-04-03T17:49:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Head da sessão: `1fe4bc0d5cd1702f31b7cab000dbe7885ef55a63`
-- Último relatório: `docs/operational-reports/2026-04-03-progress-report-deep-analysis-and-4c.md`
+- Head da sessão: `34023a8bd38617c3c8c8c2f0726ef24d8f4ae56b`
+- Último relatório: `docs/operational-reports/2026-04-03-chat-layout-refinements.md`
 
 ## Estado atual resumido
 - Fase atual: Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em implementação local: contrato novo do Gemini já provado em produção
@@ -41,12 +41,14 @@
 - A análise profunda do repositório e das branches paralelas foi concluída
 - O BLOCO 4C já ganhou `document_hash` no fluxo de ingestão, preflight de duplicidade, concorrência controlada em `embed-chunks` e testes mínimos do pipeline
 - `npm run validate` voltou a passar com `61` testes
+- A aba do chat recebeu refinamentos seguros de usabilidade e estética: `ClaraMonogram`, `textarea` com auto-resize, envio por `Enter`, quebra de linha com `Shift+Enter` e resize com suporte por teclado
 
 ## Itens pendentes
 - Publicar a rodada do BLOCO 4C na branch de sessão
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
 - Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
+- Decidir se a rodada paralela de refinamento do `ChatSheet` sobe junto com o BLOCO 4C ou em integração separada
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google

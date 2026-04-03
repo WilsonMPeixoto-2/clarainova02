@@ -8,7 +8,7 @@
   "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T08:36:00.000Z",
+  "last_update_utc": "2026-04-03T17:49:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -35,12 +35,14 @@
     "O BLOCO 4C já ganhou `document_hash` no fluxo de ingestão, preflight de duplicidade e tratamento gracioso de corrida no insert do documento",
     "O `embed-chunks` passou a gerar embeddings com concorrência controlada em lotes pequenos (`3` simultâneos)",
     "Novos testes cobrem hash do arquivo, chunks estruturados sem prefixo artificial, normalização L2 e metadados do contrato de embedding",
-    "`npm run validate` voltou a passar com 61 testes"
+    "`npm run validate` voltou a passar com 61 testes",
+    "A aba do chat recebeu uma rodada paralela e segura de refinamento de usabilidade: monograma institucional, textarea com auto-resize, envio por Enter, quebra de linha por Shift+Enter e resize com suporte por teclado"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
     "Decidir se os refinamentos úteis de chat/layout serão integrados seletivamente em uma rodada separada",
-    "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto"
+    "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto",
+    "Decidir se a rodada paralela de refinamento do ChatSheet sera promovida junto com o BLOCO 4C ou em uma integracao separada"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
@@ -61,6 +63,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-progress-report-deep-analysis-and-4c.md",
-  "last_session_head_sha": "1fe4bc0d5cd1702f31b7cab000dbe7885ef55a63"
+  "last_report": "docs/operational-reports/2026-04-03-chat-layout-refinements.md",
+  "last_session_head_sha": "34023a8bd38617c3c8c8c2f0726ef24d8f4ae56b"
 }
