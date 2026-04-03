@@ -7,7 +7,7 @@
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Head da sessão: `34023a8bd38617c3c8c8c2f0726ef24d8f4ae56b`
+- Head da sessão: `c903814c000428dff775f003793579304ad0c9ff`
 - Último relatório: `docs/operational-reports/2026-04-03-header-navigation-tests.md`
 
 ## Estado atual resumido
