@@ -94,10 +94,42 @@ Isso é suficiente para provar **resiliência mínima da experiência pública**
 - `embedded_at` preenchido
 - `chunk_metadata_json` com `task_type`, `title_used` e `normalization`
 
+## República das functions Gemini
+
+Depois da inspeção remota, as Edge Functions canônicas do projeto foram republicadas manualmente no Supabase oficial para garantir que o runtime já refletisse o contrato novo integrado em `main`.
+
+Estado remoto após a publicação:
+
+- `embed-chunks`
+  - versão: `11`
+  - atualização observada: `2026-04-03 05:22:40 UTC`
+- `chat`
+  - versão: `13`
+  - atualização observada: `2026-04-03 05:22:48 UTC`
+
+Com isso, o ambiente remoto já está apto a:
+
+- receber chunks estruturados sem prefixo artificial
+- gerar embeddings com `gemini-embedding-2-preview`
+- aplicar `taskType` e `title`
+- persistir `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
+
+## Observação operacional sobre a conta do painel
+
+O formulário do admin exibe uma conta provisionada que autentica sessão e permite entrar na página, mas ela **não** corresponde ao admin bootstrap ativo em `public.admin_users`.
+
+Evidência observada:
+
+- a conta visível na tela entrou no painel
+- `get-usage-stats` respondeu `401`
+- a listagem do painel não exibiu o documento legado já presente no banco
+- o `admin_users` remoto segue apontando apenas para a conta administrativa real de Wilson
+
+Portanto, o teste de upload do BLOCO 4B deve ser feito com a conta administrativa real já validada no seu navegador, e não com a conta visível por padrão no formulário.
+
 ## Próxima ação objetiva
 
-1. reprocessar o PDF legado `MODELO_DE_OFICIO_PDDE.pdf` no contrato novo
-   - ou subir um novo PDF real pequeno via admin
+1. subir um novo PDF real pequeno via admin usando a conta administrativa real
 2. confirmar no banco remoto a persistência dos metadados novos de embedding
 3. repetir 1 a 3 perguntas grounded já com embeddings reais persistidos
 

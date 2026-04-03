@@ -39,16 +39,16 @@
 ## Edge Functions verificadas
 - `chat`
   - status: `ACTIVE`
-  - versão observada: `9`
-  - última atualização observada: `2026-04-01 06:51:26 UTC`
+  - versão observada: `13`
+  - última atualização observada: `2026-04-03 05:22:48 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
-  - versão observada: `7`
-  - última atualização observada: `2026-04-02 20:48:47 UTC`
+  - versão observada: `11`
+  - última atualização observada: `2026-04-03 05:22:40 UTC`
 - `get-usage-stats`
   - status: `ACTIVE`
-  - versão observada: `7`
-  - última atualização observada: `2026-04-02 20:49:53 UTC`
+  - versão observada: `10`
+  - última atualização observada: `2026-04-02 22:49:33 UTC`
 
 ## Estado operacional externo conhecido
 - Hardening Supabase / RLS:
@@ -91,6 +91,7 @@
     - não há embeddings persistidos nesses chunks
     - os chunks ainda usam o formato legado com prefixo textual `[Fonte: ... | Página: ...]`
     - o chat público ainda responde com grounding lexical/fallback sobre esse documento, mas o contrato novo de embedding ainda não foi validado no banco remoto
+    - a conta provisionada visível no formulário do admin autentica sessão, mas não coincide com o admin bootstrap ativo em `public.admin_users`; para o teste operacional desta fase deve ser usada a conta administrativa real
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google

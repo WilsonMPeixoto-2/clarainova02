@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "fdd85e5c32d6617c6cefc5ed8a611106311d4f5e",
-  "current_phase": "Pré-lançamento com BLOCO 4B em execução: corpus remoto inspecionado, smoke test público concluído e reprocessamento do legado pendente",
+  "current_phase": "Pré-lançamento com BLOCO 4B em execução: corpus remoto inspecionado, functions Gemini republicadas e upload real pendente para validar embeddings persistidos",
   "active_block": "BLOCO 4B — Verificação remota do corpus e smoke test grounded",
   "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4B-REMOTE-SMOKE",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T05:14:30.000Z",
+  "last_update_utc": "2026-04-03T05:24:30.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -25,10 +25,11 @@
     "O frontend de ingestão passou a enviar chunks estruturados, sem prefixos artificiais no texto semântico",
     "O deploy canônico READY da produção agora aponta para o commit `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`",
     "A inspeção remota do corpus mostrou 1 documento legado com 2 chunks e 0 embeddings persistidos",
-    "O chat público em produção respondeu de forma grounded ao documento legado, com referência explícita ao PDF de base"
+    "O chat público em produção respondeu de forma grounded ao documento legado, com referência explícita ao PDF de base",
+    "As Edge Functions remotas `embed-chunks` e `chat` foram republicadas no projeto oficial após o BLOCO 4A e agora expõem o contrato novo do Gemini (`embed-chunks` v11, `chat` v13)"
   ],
   "pending_items": [
-    "Reprocessar o PDF legado ou subir um novo PDF real pequeno sob o contrato novo de embeddings",
+    "Subir um novo PDF real pequeno sob o contrato novo de embeddings usando a conta administrativa real",
     "Confirmar no banco remoto a persistência de embedding_model, embedding_dim, embedded_at e chunk_metadata_json",
     "Executar o BLOCO 4C com deduplicação, paralelismo controlado e preparação da carga curada do corpus",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto"
@@ -37,7 +38,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Concluir o BLOCO 4B reprocessando o PDF legado ou ingerindo um novo PDF real pequeno no contrato novo, depois validar os metadados de embedding no banco e repetir 1–3 perguntas grounded.",
+  "next_action": "Aguardar o upload, no painel de produção, de um novo PDF real pequeno com a conta administrativa real; depois validar no banco remoto os metadados de embedding persistidos e repetir 1–3 perguntas grounded.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -45,7 +46,8 @@
     "Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.",
     "As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção.",
     "Esta branch substitui a pilha Gemini antiga declarada em main e passa a explicitar 3.1 preview + gemini-embedding-2-preview com taskType, title, normalização L2 e metadados persistidos.",
-    "As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas como backlog explícito do projeto."
+    "As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas como backlog explícito do projeto.",
+    "A conta provisionada visível na tela de login do admin autentica sessão, mas não corresponde ao admin bootstrap ativo em `public.admin_users`; para o teste real do BLOCO 4B deve ser usada a conta administrativa de Wilson."
   ],
   "session_status": "partial",
   "last_report": "docs/operational-reports/2026-04-03-block-4b-remote-corpus-verification.md",
