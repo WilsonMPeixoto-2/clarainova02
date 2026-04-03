@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "fdd85e5c32d6617c6cefc5ed8a611106311d4f5e",
-  "current_phase": "Pré-lançamento com BLOCO 4B em execução: corpus remoto inspecionado, functions administrativas reequilibradas e reteste do upload real pendente",
-  "active_block": "BLOCO 4B — Verificação remota do corpus e smoke test grounded",
-  "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4B-REMOTE-SMOKE",
+  "current_phase": "Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em abertura: contrato novo do Gemini provado em produção e pipeline pronto para deduplicação, paralelismo e testes",
+  "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
+  "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T07:34:00.000Z",
+  "last_update_utc": "2026-04-03T07:56:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -28,19 +28,21 @@
     "O chat público em produção respondeu de forma grounded ao documento legado, com referência explícita ao PDF de base",
     "As Edge Functions remotas `embed-chunks` e `chat` foram republicadas no projeto oficial após o BLOCO 4A e agora expõem o contrato novo do Gemini (`embed-chunks` v11, `chat` v13)",
     "As functions administrativas `embed-chunks` e `get-usage-stats` deixaram de depender do JWT do gateway e agora validam sessão via `auth.getUser()` mais vínculo ativo em `public.admin_users`",
-    "O erro de borda `401 Invalid JWT` foi substituído por `403` de aplicação para contas autenticadas que não são admin"
+    "O erro de borda `401 Invalid JWT` foi substituído por `403` de aplicação para contas autenticadas que não são admin",
+    "O novo PDF real `SEI-Guia-do-usuario-Versao-final.pdf` foi processado com `88/88` chunks, `88/88` embeddings e metadados do contrato novo persistidos no remoto",
+    "O chat público respondeu de forma grounded ao novo manual em perguntas sobre documento externo, bloco de assinatura e envio simultâneo"
   ],
   "pending_items": [
-    "Repetir o upload do novo PDF real pequeno sob o contrato novo de embeddings usando a conta administrativa real",
-    "Confirmar no banco remoto a persistência de embedding_model, embedding_dim, embedded_at e chunk_metadata_json",
-    "Executar o BLOCO 4C com deduplicação, paralelismo controlado e preparação da carga curada do corpus",
+    "Executar o BLOCO 4C com deduplicação real por document_hash",
+    "Paralelizar embeddings com concorrência controlada no embed-chunks",
+    "Adicionar testes mínimos do pipeline de ingestão",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Aguardar a repetição do upload, no painel de produção, do PDF real pequeno com a conta administrativa real; depois validar no banco remoto os metadados de embedding persistidos e repetir 1–3 perguntas grounded.",
+  "next_action": "Implementar o BLOCO 4C: document_hash para deduplicação, paralelismo controlado no embed-chunks e testes mínimos do pipeline antes de iniciar a carga curada do corpus.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -52,7 +54,7 @@
     "A conta provisionada visível na tela de login do admin autentica sessão, mas não corresponde ao admin bootstrap ativo em `public.admin_users`; para o teste real do BLOCO 4B deve ser usada a conta administrativa de Wilson.",
     "A primeira tentativa de upload do PDF real criou o documento `SEI-Guia-do-usuario-Versao-final.pdf`, mas falhou antes de salvar chunks por `401 Invalid JWT` na borda da function antiga."
   ],
-  "session_status": "partial",
-  "last_report": "docs/operational-reports/2026-04-03-block-4b-remote-corpus-verification.md",
+  "session_status": "in_progress",
+  "last_report": "docs/operational-reports/2026-04-03-block-4c-ingestion-hardening-kickoff.md",
   "last_session_head_sha": "fdd85e5c32d6617c6cefc5ed8a611106311d4f5e"
 }

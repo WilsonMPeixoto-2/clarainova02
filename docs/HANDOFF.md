@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T07:34:00.000Z
+- Data/hora: 2026-04-03T07:56:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4B-REMOTE-SMOKE`
+- Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - Head da sessão: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Último relatório: `docs/operational-reports/2026-04-03-block-4b-remote-corpus-verification.md`
+- Último relatório: `docs/operational-reports/2026-04-03-block-4c-ingestion-hardening-kickoff.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4B em execução: corpus remoto inspecionado, smoke test público concluído e autenticação das functions administrativas reequilibrada
-- Bloco ativo: BLOCO 4B — Verificação remota do corpus e smoke test grounded
-- Status da sessão: `partial`
-- Próxima ação recomendada: Repetir o upload do PDF real pequeno com a conta administrativa real, validar no banco os metadados de embedding persistidos e repetir 1–3 perguntas grounded.
+- Fase atual: Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em abertura: contrato novo do Gemini já provado em produção
+- Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
+- Status da sessão: `in_progress`
+- Próxima ação recomendada: Implementar `document_hash` para deduplicação, concorrência controlada no `embed-chunks` e testes mínimos do pipeline antes da carga curada do corpus.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -36,11 +36,13 @@
 - O chat público em produção respondeu de forma grounded ao documento legado, com referência explícita ao PDF de base
 - `embed-chunks` e `get-usage-stats` agora validam sessão via `auth.getUser()` e vínculo ativo em `public.admin_users`, sem depender do JWT do gateway
 - O erro `401 Invalid JWT` na borda das functions administrativas foi convertido em `403` de aplicação para contas autenticadas que não são admin
+- O novo PDF real `SEI-Guia-do-usuario-Versao-final.pdf` foi processado em produção com `88/88` chunks, `88/88` embeddings e metadados do contrato novo persistidos
+- O chat público respondeu de forma grounded ao novo manual em perguntas sobre documento externo, bloco de assinatura e envio simultâneo
 
 ## Itens pendentes
-- Repetir o upload do novo PDF real pequeno sob o contrato novo de embeddings usando a conta administrativa real
-- Confirmar no banco remoto a persistência de `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
-- Executar o BLOCO 4C com deduplicação, paralelismo controlado e preparação da carga curada do corpus
+- Executar o BLOCO 4C com deduplicação real por `document_hash`
+- Paralelizar embeddings com concorrência controlada no `embed-chunks`
+- Adicionar testes mínimos do pipeline de ingestão
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
 
 ## Bloqueios externos
@@ -53,7 +55,7 @@
 - O preparo do BLOCO 4 foi registrado sem tocar em `ROADMAP_FUTURO.md` nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.
 - Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.
 - As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção.
-- O BLOCO 4A já foi integrado em `main` e publicado em produção; o BLOCO 4B agora depende de repetir o upload real com a conta administrativa correta e confirmar o contrato novo no banco remoto.
+- O BLOCO 4A já foi integrado em `main` e publicado em produção; o BLOCO 4B foi concluído com evidência de ingestão nova e grounding real.
 - O formulário do admin continua exibindo uma conta provisionada que autentica sessão, mas não equivale ao admin bootstrap ativo em `public.admin_users`; ela deve falhar com `403` nas functions administrativas.
 - As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas no backlog, sem competir com a prioridade atual.
 

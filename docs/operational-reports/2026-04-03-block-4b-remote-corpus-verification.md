@@ -170,11 +170,58 @@ Isso prova que:
 - o controle voltou para o código da function
 - o próximo reteste deve ser feito com a conta administrativa real de Wilson
 
+## Fechamento do smoke test real
+
+Após a correção da autenticação das functions administrativas, o upload do novo PDF real pequeno foi repetido com a conta administrativa real e concluído com sucesso.
+
+Documento confirmado no remoto:
+
+- `a38235c9-06f2-412f-9920-cea8c55ddf38`
+- `SEI-Guia-do-usuario-Versao-final.pdf`
+- `status = processed`
+- `expected_chunks = 88`
+- `saved_chunks = 88`
+- `embedded_chunks = 88`
+
+Conferência objetiva em `document_chunks`:
+
+- `embedding_model = gemini-embedding-2-preview`
+- `embedding_dim = 768`
+- `embedded_at` preenchido em todos os 88 chunks
+- `chunk_metadata_json` preenchido em todos os 88 chunks
+- `task_type = RETRIEVAL_DOCUMENT`
+- `title_used = SEI-Guia-do-usuario-Versao-final.pdf`
+- `normalization = l2`
+
+Conferência do conteúdo dos chunks:
+
+- o campo `content` já não carrega o prefixo legado `[Fonte: ... | Página: ...]`
+- `page_start`, `page_end` e `source_tag` ficaram preservados como metadata estruturada
+
+Perguntas grounded adicionais verificadas em produção:
+
+1. `Como incluir um documento externo no SEI-Rio?`
+   - resposta estruturada com 3 etapas e 6 referências
+   - referências para `SEI-Guia-do-usuario-Versao-final.pdf`, incluindo p. 20, 49, 47, 60, 13 e 3
+2. `Como organizar um bloco de assinatura para outra unidade?`
+   - resposta estruturada com 3 etapas e 6 referências
+   - referências para `SEI-Guia-do-usuario-Versao-final.pdf`, incluindo p. 47, 54, 53, 48, 49 e 50
+3. `O que devo conferir antes de encaminhar um processo para mais de uma unidade?`
+   - resposta estruturada com 2 etapas e 6 referências
+   - referências para `SEI-Guia-do-usuario-Versao-final.pdf`, incluindo p. 18, 35, 17, 47 e 53
+
+Leitura final:
+
+- a ingestão administrativa concluiu do zero sob o contrato novo
+- o documento ficou elegível para grounding
+- o chat público já usa o novo PDF como base documental real
+- o BLOCO 4B deixa de ser hipótese arquitetural e passa a ser evidência operacional em produção
+
 ## Próxima ação objetiva
 
-1. repetir o upload do PDF real pequeno via admin usando a conta administrativa real
-2. confirmar no banco remoto a persistência dos metadados novos de embedding
-3. repetir 1 a 3 perguntas grounded já com embeddings reais persistidos
+1. iniciar o BLOCO 4C com deduplicação real por `document_hash`
+2. paralelizar embeddings com concorrência controlada no `embed-chunks`
+3. adicionar testes mínimos do pipeline de ingestão antes da carga curada do corpus
 
 ## Backlog Gemini preservado
 
@@ -194,5 +241,6 @@ As oportunidades abaixo foram registradas como trilhas futuras válidas, sem com
 - inspeção remota do corpus: `concluída`
 - smoke test público mínimo: `concluído`
 - correção da autenticação das functions administrativas: `concluída`
-- verificação de embeddings novos persistidos: `pendente`
-- fechamento do BLOCO 4B: `ainda não concluído`
+- verificação de embeddings novos persistidos: `concluída`
+- perguntas grounded adicionais em produção: `concluídas`
+- fechamento do BLOCO 4B: `concluído`

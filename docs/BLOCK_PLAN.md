@@ -11,12 +11,11 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 
 ## Linha mestra atual
 - Fonte oficial integrada: `origin/main @ fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Frente imediata mais importante: concluir o BLOCO 4B reprocessando o legado sem embeddings e validando os metadados do contrato novo no banco remoto
+- Frente imediata mais importante: executar o BLOCO 4C para tornar a ingestão mais eficiente e segura antes da carga curada do corpus
 - Ordem de execução atualmente aceita:
-  1. verificar corpus remoto e executar smoke test com 1 PDF + perguntas grounded
-  2. depois executar deduplicação, paralelismo controlado e testes do pipeline
-  3. depois formar corpus curado e medir o RAG real
-  4. por fim atacar acessibilidade, hotspots e testes de sustentação
+  1. consolidar deduplicação, paralelismo controlado e testes mínimos do pipeline
+  2. depois formar corpus curado e medir o RAG real
+  3. por fim atacar acessibilidade, hotspots e testes de sustentação
 
 ## Blocos oficiais
 
@@ -26,7 +25,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 | 1 | Certificação operacional do ambiente real | `integrated` | Bloco 0 integrado | baseline estável e Supabase/Vercel apontando para o projeto oficial | login provisionado real, upload real, grounding real e produção publicada |
 | 2 | Polimento institucional, presença pública e observabilidade enxuta | `integrated` | Bloco 1 integrado | produto já operacional nas frentes centrais | camada institucional, OG/PWA, PDF e métricas agregadas fortalecidos em `main` |
 | 3 | Hardening Supabase, RLS e JWT administrativo | `ready_to_integrate` | Bloco 2 integrado | produto operando com conta provisionada e functions administrativas ainda permissivas | policies públicas fechadas, JWT de borda endurecido e estado remoto/documental alinhado |
-| 4 | Consolidação operacional externa | `in_progress` | Bloco 3 estabilizado | camada interna segura e previsível | Google OAuth funcional, Gemini saneado, contrato Gemini alinhado no código e embeddings reais reprocessados |
+| 4 | Consolidação operacional externa | `in_progress` | Bloco 3 estabilizado | camada interna segura e previsível | Google OAuth funcional, Gemini saneado, contrato Gemini alinhado no código, smoke test real concluído e pipeline pronto para endurecimento |
 | 5 | Corpus inicial real e prova empírica do RAG | `planned` | Bloco 4 integrado | operação externa previsível e sem bloqueio crítico | lote curado carregado, perguntas reais classificadas e cobertura medida |
 | 6 | Acessibilidade, hotspots e testes de sustentação | `planned` | Bloco 5 em trilha segura | segurança, OAuth/Gemini e corpus já suficientemente estáveis | menu móvel, modais, hotspots de manutenção e cobertura de testes mais robustos |
 
@@ -56,8 +55,9 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 4 — Consolidação operacional externa
 - Estado: `in_progress`
 - Objetivo: eliminar bloqueios externos que impedem operação previsível e alinhar o código ao contrato Gemini realmente adotado
-- Subetapa atual: `4B — Verificação remota do corpus e smoke test grounded`
-- Próxima ação: reprocessar o documento legado sem embeddings ou ingerir um novo PDF real pequeno no contrato novo, depois validar os metadados persistidos conforme `docs/operational-reports/2026-04-03-block-4b-remote-corpus-verification.md`
+- Subetapa concluída: `4B — Verificação remota do corpus e smoke test grounded`
+- Subetapa atual: `4C — Deduplicação, paralelismo e testes do pipeline de ingestão`
+- Próxima ação: implementar `document_hash`, concorrência controlada no `embed-chunks` e testes mínimos do pipeline conforme `docs/operational-reports/2026-04-03-block-4c-ingestion-hardening-kickoff.md`
 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `planned`

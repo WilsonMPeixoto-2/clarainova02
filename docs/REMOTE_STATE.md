@@ -10,10 +10,10 @@
 - Branch oficial integrada: `origin/main`
 - `origin/main` atualmente alinhada ao commit: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - Trabalho local em andamento fora de `main`:
-  - nenhuma branch de sessão permanece aberta como fonte principal; o BLOCO 4A já foi integrado
+  - branch ativa de sessão: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
-  - o BLOCO 4A já alterou a produção, e a próxima frente oficial passa a ser o BLOCO 4B: validação remota do corpus e smoke test grounded
+  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção e a próxima frente oficial passa a ser o BLOCO 4C: deduplicação, paralelismo e testes do pipeline
 
 ## Vercel
 - Projeto canônico: `clarainova02`
@@ -43,12 +43,12 @@
   - última atualização observada: `2026-04-03 05:22:48 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
-  - versão observada: `11`
-  - última atualização observada: `2026-04-03 05:22:40 UTC`
+  - versão observada: `13`
+  - última atualização observada: `2026-04-03 07:32:52 UTC`
 - `get-usage-stats`
   - status: `ACTIVE`
-  - versão observada: `10`
-  - última atualização observada: `2026-04-02 22:49:33 UTC`
+  - versão observada: `11`
+  - última atualização observada: `2026-04-03 07:33:32 UTC`
 
 ## Estado operacional externo conhecido
 - Hardening Supabase / RLS:
@@ -84,18 +84,19 @@
     - dimensionalidade esperada: `768`
     - secret requerido nas functions: `GEMINI_API_KEY`
 - Corpus inicial:
-  - status: `não concluído`
+  - status: `iniciado com prova real`
   - situação conhecida:
     - existe 1 documento legado no remoto: `MODELO_DE_OFICIO_PDDE.pdf`
-    - o remoto possui 2 chunks persistidos para esse documento
-    - não há embeddings persistidos nesses chunks
-    - os chunks ainda usam o formato legado com prefixo textual `[Fonte: ... | Página: ...]`
-    - o chat público ainda responde com grounding lexical/fallback sobre esse documento, mas o contrato novo de embedding ainda não foi validado no banco remoto
+    - existe 1 documento novo processado no contrato novo: `SEI-Guia-do-usuario-Versao-final.pdf`
+    - o documento novo possui `88` chunks persistidos e `88` embeddings persistidos
+    - os chunks do documento novo usam texto limpo, sem o prefixo legado `[Fonte: ... | Página: ...]`
+    - o documento novo já grava `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
+    - o chat público já respondeu com grounding real ao novo manual em múltiplas perguntas
     - a conta provisionada visível no formulário do admin autentica sessão, mas não coincide com o admin bootstrap ativo em `public.admin_users`; para o teste operacional desta fase deve ser usada a conta administrativa real
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
-- o corpus remoto atual não mostra mistura entre gerações de embedding, mas ainda depende de reprocessamento porque o único documento legado está sem embeddings e sem metadados novos
+- o corpus remoto atual não mostra mistura entre gerações de embedding, mas ainda há um documento legado sem embeddings e sem metadados novos
 
 ## Regras de atualização deste arquivo
 - Atualize este arquivo sempre que mudar algo em:
