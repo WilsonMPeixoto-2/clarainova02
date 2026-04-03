@@ -202,6 +202,28 @@ function normalizeMetadataRecord(metadata: Document["metadata_json"]): Record<st
     : {};
 }
 
+function isDuplicateDocumentHashError(error: { code?: string; message?: string; details?: string } | null | undefined) {
+  if (!error) return false;
+  if (error.code !== "23505") return false;
+
+  const haystack = `${error.message ?? ""} ${error.details ?? ""}`.toLowerCase();
+  return haystack.includes("document_hash");
+}
+
+function describeDuplicateDocument(
+  fileName: string,
+  duplicateDocument: { name?: string | null; status?: string | null } | null,
+) {
+  const duplicateName = duplicateDocument?.name?.trim() || fileName;
+  const duplicateStatus = duplicateDocument?.status?.trim();
+
+  if (!duplicateStatus) {
+    return `"${duplicateName}" já está cadastrado na base documental da CLARA.`;
+  }
+
+  return `"${duplicateName}" já está cadastrado na base documental da CLARA com status ${duplicateStatus}.`;
+}
+
 function isExcludedFromGrounding(input: {
   corpusCategory: string;
   topicScope: string;
@@ -556,6 +578,35 @@ export default function Admin() {
         progress: 32,
       });
 
+      const { data: duplicateDocument, error: duplicateLookupError } = await supabase
+        .from("documents")
+        .select("id, name, status")
+        .eq("document_hash", prepared.documentHash)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (duplicateLookupError) {
+        throw new Error(`Falha ao verificar duplicidade: ${duplicateLookupError.message}`);
+      }
+
+      if (duplicateDocument) {
+        const duplicateMessage = describeDuplicateDocument(file.name, duplicateDocument);
+        updateIngestion(file.name, {
+          status: "failed",
+          phaseLabel: "Documento já cadastrado",
+          progress: 100,
+          lastError: {
+            code: "DUPLICATE_DOCUMENT",
+            message: duplicateMessage,
+          },
+        });
+        toast.warning("Documento já ingerido", {
+          description: duplicateMessage,
+        });
+        return;
+      }
+
       if (abortController.signal.aborted) return;
 
       const { sanitizeFileName } = await loadAdminIngestionModule();
@@ -642,6 +693,7 @@ export default function Admin() {
           version_label: resolvedGovernance.versionLabel,
           published_at: resolvedGovernance.publishedAt,
           last_reviewed_at: resolvedGovernance.lastReviewedAt,
+          document_hash: prepared.documentHash,
           page_count: prepared.pages.length,
           text_char_count: prepared.fullText.length,
           metadata_json: initialMetadata,
@@ -649,7 +701,36 @@ export default function Admin() {
         .select()
         .single();
 
-      if (docErr || !doc) throw new Error("Falha ao registrar documento");
+      if (docErr || !doc) {
+        if (isDuplicateDocumentHashError(docErr)) {
+          await supabase.storage.from("documents").remove([filePath]);
+
+          const { data: duplicateAfterUpload } = await supabase
+            .from("documents")
+            .select("id, name, status")
+            .eq("document_hash", prepared.documentHash)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const duplicateMessage = describeDuplicateDocument(file.name, duplicateAfterUpload);
+          updateIngestion(file.name, {
+            status: "failed",
+            phaseLabel: "Documento já cadastrado",
+            progress: 100,
+            lastError: {
+              code: "DUPLICATE_DOCUMENT",
+              message: duplicateMessage,
+            },
+          });
+          toast.warning("Documento já ingerido", {
+            description: duplicateMessage,
+          });
+          return;
+        }
+
+        throw new Error("Falha ao registrar documento");
+      }
       const documentId = (doc as { id: string }).id;
 
       if (abortController.signal.aborted) {
@@ -870,6 +951,12 @@ export default function Admin() {
       setIngestions((prev) => [...prev.filter((item) => item.fileName !== doc.name), ingestion]);
 
       const prepared = await preparePdfPayload(file, doc.name);
+      if (doc.document_hash !== prepared.documentHash) {
+        await supabase
+          .from("documents")
+          .update({ document_hash: prepared.documentHash })
+          .eq("id", doc.id);
+      }
       const metadata = normalizeMetadataRecord(doc.metadata_json);
       const searchWeight = typeof metadata.search_weight === "number" ? metadata.search_weight : 1;
       const corpusCategory = typeof metadata.corpus_category === "string" ? metadata.corpus_category : "apoio_complementar";

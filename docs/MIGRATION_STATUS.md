@@ -37,6 +37,14 @@ Achados adicionais do BLOCO 4B:
 - o novo documento `SEI-Guia-do-usuario-Versao-final.pdf` já foi processado com `88/88` chunks e `88/88` embeddings usando `gemini-embedding-2-preview`
 - o próximo passo deixa de ser provar o contrato novo e passa a ser endurecer o pipeline com deduplicação, paralelismo controlado e testes mínimos
 
+Na branch de sessão `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`, esse endurecimento já avançou localmente:
+
+- `document_hash` calculado e tratado como deduplicação real antes do upload
+- concorrência pequena e controlada no `embed-chunks`
+- testes novos cobrindo hash, chunks estruturados e contrato de embedding
+
+Essas mudanças ainda aguardam publicação e prova remota específica da deduplicação antes de serem integradas em `main`.
+
 ## Memoria operacional e continuidade
 
 Desde 2026-04-01, o repositorio passa a carregar uma trilha minima obrigatoria de continuidade no proprio Git:

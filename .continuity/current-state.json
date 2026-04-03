@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "fdd85e5c32d6617c6cefc5ed8a611106311d4f5e",
-  "current_phase": "Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em abertura: contrato novo do Gemini provado em produção e pipeline pronto para deduplicação, paralelismo e testes",
+  "current_phase": "Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em implementação local: contrato novo do Gemini provado em produção e pipeline de ingestão em endurecimento",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
   "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T07:56:00.000Z",
+  "last_update_utc": "2026-04-03T08:30:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -30,12 +30,16 @@
     "As functions administrativas `embed-chunks` e `get-usage-stats` deixaram de depender do JWT do gateway e agora validam sessão via `auth.getUser()` mais vínculo ativo em `public.admin_users`",
     "O erro de borda `401 Invalid JWT` foi substituído por `403` de aplicação para contas autenticadas que não são admin",
     "O novo PDF real `SEI-Guia-do-usuario-Versao-final.pdf` foi processado com `88/88` chunks, `88/88` embeddings e metadados do contrato novo persistidos no remoto",
-    "O chat público respondeu de forma grounded ao novo manual em perguntas sobre documento externo, bloco de assinatura e envio simultâneo"
+    "O chat público respondeu de forma grounded ao novo manual em perguntas sobre documento externo, bloco de assinatura e envio simultâneo",
+    "A análise profunda do repositório e das branches paralelas foi concluída, com decisão explícita de não mergear integralmente a branch de layout/chat nem a branch remota do Copilot",
+    "O BLOCO 4C já ganhou `document_hash` no fluxo de ingestão, preflight de duplicidade e tratamento gracioso de corrida no insert do documento",
+    "O `embed-chunks` passou a gerar embeddings com concorrência controlada em lotes pequenos (`3` simultâneos)",
+    "Novos testes cobrem hash do arquivo, chunks estruturados sem prefixo artificial, normalização L2 e metadados do contrato de embedding",
+    "`npm run validate` voltou a passar com 61 testes"
   ],
   "pending_items": [
-    "Executar o BLOCO 4C com deduplicação real por document_hash",
-    "Paralelizar embeddings com concorrência controlada no embed-chunks",
-    "Adicionar testes mínimos do pipeline de ingestão",
+    "Publicar a rodada do BLOCO 4C com deduplicação, paralelismo e testes na branch de sessão",
+    "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto"
   ],
   "external_blockers": [
@@ -52,9 +56,11 @@
     "Esta branch substitui a pilha Gemini antiga declarada em main e passa a explicitar 3.1 preview + gemini-embedding-2-preview com taskType, title, normalização L2 e metadados persistidos.",
     "As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas como backlog explícito do projeto.",
     "A conta provisionada visível na tela de login do admin autentica sessão, mas não corresponde ao admin bootstrap ativo em `public.admin_users`; para o teste real do BLOCO 4B deve ser usada a conta administrativa de Wilson.",
-    "A primeira tentativa de upload do PDF real criou o documento `SEI-Guia-do-usuario-Versao-final.pdf`, mas falhou antes de salvar chunks por `401 Invalid JWT` na borda da function antiga."
+    "A primeira tentativa de upload do PDF real criou o documento `SEI-Guia-do-usuario-Versao-final.pdf`, mas falhou antes de salvar chunks por `401 Invalid JWT` na borda da function antiga.",
+    "A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não é segura para merge integral por misturar deltas antigos de backend e mudanças fortes de comportamento do painel.",
+    "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-block-4c-ingestion-hardening-kickoff.md",
+  "last_report": "docs/operational-reports/2026-04-03-progress-report-deep-analysis-and-4c.md",
   "last_session_head_sha": "fdd85e5c32d6617c6cefc5ed8a611106311d4f5e"
 }

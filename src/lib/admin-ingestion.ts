@@ -24,6 +24,7 @@ export interface PreparedPdfIngestion {
   pages: PageText[];
   fullText: string;
   chunks: PreparedChunk[];
+  documentHash: string;
 }
 
 export function sanitizeFileName(name: string) {
@@ -39,6 +40,40 @@ async function splitWithLangChain(rawText: string): Promise<string[]> {
   const normalized = rawText.replace(/\u0000/g, "").trim();
   const chunks = await langChainSplitter.splitText(normalized);
   return chunks.filter((chunk) => chunk.trim().length >= 3);
+}
+
+async function sha256HexFromArrayBuffer(arrayBuffer: ArrayBuffer): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", arrayBuffer);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+export async function computeFileHash(file: File): Promise<string> {
+  return sha256HexFromArrayBuffer(await file.arrayBuffer());
+}
+
+export async function buildPreparedChunksFromPages(
+  pages: PageText[],
+  sourceTag: string,
+): Promise<PreparedChunk[]> {
+  const chunks: PreparedChunk[] = [];
+
+  for (const page of pages) {
+    if (!page.text.trim()) continue;
+    const pageChunks = await splitWithLangChain(page.text);
+    for (const chunk of pageChunks) {
+      chunks.push({
+        content: chunk,
+        pageStart: page.pageNumber,
+        pageEnd: page.pageNumber,
+        sectionTitle: null,
+        sourceTag,
+      });
+    }
+  }
+
+  return chunks;
 }
 
 export async function extractTextFromPDF(
@@ -66,27 +101,17 @@ export async function preparePdfIngestion(
   file: File,
   onProgress?: (pagesRead: number, totalPages: number) => void,
 ): Promise<PreparedPdfIngestion> {
-  const pages = await extractTextFromPDF(file, onProgress);
+  const [pages, documentHash] = await Promise.all([
+    extractTextFromPDF(file, onProgress),
+    computeFileHash(file),
+  ]);
   const fullText = pages.map((page) => page.text).join("\n\n");
 
   if (fullText.length < 50) {
     throw new Error("PDF parece estar vazio ou conter apenas imagens (sem texto extraível).");
   }
 
-  const chunks: PreparedChunk[] = [];
-  for (const page of pages) {
-    if (!page.text.trim()) continue;
-    const pageChunks = await splitWithLangChain(page.text);
-    for (const chunk of pageChunks) {
-      chunks.push({
-        content: chunk,
-        pageStart: page.pageNumber,
-        pageEnd: page.pageNumber,
-        sectionTitle: null,
-        sourceTag: file.name,
-      });
-    }
-  }
+  const chunks = await buildPreparedChunksFromPages(pages, file.name);
 
   if (chunks.length === 0) {
     throw new Error("Não encontrei fragmentos utilizáveis no PDF.");
@@ -96,5 +121,6 @@ export async function preparePdfIngestion(
     pages,
     fullText,
     chunks,
+    documentHash,
   };
 }

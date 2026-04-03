@@ -11,6 +11,9 @@
 - `origin/main` atualmente alinhada ao commit: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - Trabalho local em andamento fora de `main`:
   - branch ativa de sessão: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
+- Observação de análise remota:
+  - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral
+  - a branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não de integração
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
   - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção e a próxima frente oficial passa a ser o BLOCO 4C: deduplicação, paralelismo e testes do pipeline
@@ -93,6 +96,7 @@
     - o documento novo já grava `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
     - o chat público já respondeu com grounding real ao novo manual em múltiplas perguntas
     - a conta provisionada visível no formulário do admin autentica sessão, mas não coincide com o admin bootstrap ativo em `public.admin_users`; para o teste operacional desta fase deve ser usada a conta administrativa real
+    - a rodada local do BLOCO 4C já implementa `document_hash`, deduplicação prévia e concorrência controlada, mas essas mudanças ainda aguardam publicação e validação remota
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google

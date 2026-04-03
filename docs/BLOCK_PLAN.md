@@ -11,7 +11,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 
 ## Linha mestra atual
 - Fonte oficial integrada: `origin/main @ fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Frente imediata mais importante: executar o BLOCO 4C para tornar a ingestão mais eficiente e segura antes da carga curada do corpus
+- Frente imediata mais importante: concluir e validar o BLOCO 4C para tornar a ingestão mais eficiente e segura antes da carga curada do corpus
 - Ordem de execução atualmente aceita:
   1. consolidar deduplicação, paralelismo controlado e testes mínimos do pipeline
   2. depois formar corpus curado e medir o RAG real
@@ -57,7 +57,8 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Objetivo: eliminar bloqueios externos que impedem operação previsível e alinhar o código ao contrato Gemini realmente adotado
 - Subetapa concluída: `4B — Verificação remota do corpus e smoke test grounded`
 - Subetapa atual: `4C — Deduplicação, paralelismo e testes do pipeline de ingestão`
-- Próxima ação: implementar `document_hash`, concorrência controlada no `embed-chunks` e testes mínimos do pipeline conforme `docs/operational-reports/2026-04-03-block-4c-ingestion-hardening-kickoff.md`
+- Estado do 4C: implementação local concluída e validada; falta publicar a rodada e repetir um upload controlado para provar deduplicação no ambiente real
+- Próxima ação: validar a deduplicação em ambiente real e só então liberar a carga curada do corpus
 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `planned`

@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T07:56:00.000Z
+- Data/hora: 2026-04-03T08:30:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - Head da sessão: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Último relatório: `docs/operational-reports/2026-04-03-block-4c-ingestion-hardening-kickoff.md`
+- Último relatório: `docs/operational-reports/2026-04-03-progress-report-deep-analysis-and-4c.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em abertura: contrato novo do Gemini já provado em produção
+- Fase atual: Pré-lançamento com BLOCO 4B concluído e BLOCO 4C em implementação local: contrato novo do Gemini já provado em produção
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: Implementar `document_hash` para deduplicação, concorrência controlada no `embed-chunks` e testes mínimos do pipeline antes da carga curada do corpus.
+- Próxima ação recomendada: Publicar a rodada local do BLOCO 4C e validar a deduplicação em ambiente real com novo upload controlado antes da carga curada do corpus.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -38,11 +38,14 @@
 - O erro `401 Invalid JWT` na borda das functions administrativas foi convertido em `403` de aplicação para contas autenticadas que não são admin
 - O novo PDF real `SEI-Guia-do-usuario-Versao-final.pdf` foi processado em produção com `88/88` chunks, `88/88` embeddings e metadados do contrato novo persistidos
 - O chat público respondeu de forma grounded ao novo manual em perguntas sobre documento externo, bloco de assinatura e envio simultâneo
+- A análise profunda do repositório e das branches paralelas foi concluída
+- O BLOCO 4C já ganhou `document_hash` no fluxo de ingestão, preflight de duplicidade, concorrência controlada em `embed-chunks` e testes mínimos do pipeline
+- `npm run validate` voltou a passar com `61` testes
 
 ## Itens pendentes
-- Executar o BLOCO 4C com deduplicação real por `document_hash`
-- Paralelizar embeddings com concorrência controlada no `embed-chunks`
-- Adicionar testes mínimos do pipeline de ingestão
+- Publicar a rodada do BLOCO 4C na branch de sessão
+- Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
+- Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
 
 ## Bloqueios externos
@@ -58,6 +61,8 @@
 - O BLOCO 4A já foi integrado em `main` e publicado em produção; o BLOCO 4B foi concluído com evidência de ingestão nova e grounding real.
 - O formulário do admin continua exibindo uma conta provisionada que autentica sessão, mas não equivale ao admin bootstrap ativo em `public.admin_users`; ela deve falhar com `403` nas functions administrativas.
 - As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas no backlog, sem competir com a prioridade atual.
+- A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
+- A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade

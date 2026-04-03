@@ -1,5 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { GoogleGenAI } from "npm:@google/genai";
+import {
+  buildDocumentChunkMetadata,
+  estimateTokenCount,
+  normalizeL2,
+  EMBEDDING_NORMALIZATION,
+} from "../_shared/embedding-contract.ts";
 
 const ALLOWED_ORIGINS = [
   "https://clarainova02.vercel.app",
@@ -25,9 +31,9 @@ function buildCorsHeaders(req: Request) {
 const EMBEDDING_MODEL = "gemini-embedding-2-preview";
 const EMBEDDING_DIM = 768;
 const DOCUMENT_EMBEDDING_TASK_TYPE = "RETRIEVAL_DOCUMENT";
-const EMBEDDING_NORMALIZATION = "l2";
 const EMBED_TIMEOUT_MS = 15_000;
 const EMBED_RETRY_DELAYS_MS = [1500, 3000, 6000];
+const EMBED_CONCURRENCY = 3;
 
 function getErrorMessage(error: unknown, fallback = "Erro interno"): string {
   if (error instanceof Error && error.message.trim()) return error.message;
@@ -113,19 +119,6 @@ function normalizeIncomingChunk(chunk: unknown): StructuredChunkPayload | null {
     sectionTitle: typeof candidate.sectionTitle === "string" ? candidate.sectionTitle.trim() || null : null,
     sourceTag: typeof candidate.sourceTag === "string" ? candidate.sourceTag.trim() || null : null,
   };
-}
-
-function normalizeL2(values: number[]): number[] {
-  const norm = Math.sqrt(values.reduce((sum, value) => sum + value * value, 0));
-  if (!Number.isFinite(norm) || norm === 0) {
-    return values;
-  }
-
-  return values.map((value) => value / norm);
-}
-
-function estimateTokenCount(value: string): number {
-  return Math.max(1, Math.ceil(value.length / 4));
 }
 
 async function sha256Hex(value: string): Promise<string> {
@@ -266,6 +259,27 @@ async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string, title?:
   return null;
 }
 
+async function generateEmbeddingsWithConcurrency(
+  ai: GoogleGenAI,
+  chunks: StructuredChunkPayload[],
+  title?: string | null,
+) {
+  const embeddings: Array<number[] | null> = new Array(chunks.length).fill(null);
+
+  for (let index = 0; index < chunks.length; index += EMBED_CONCURRENCY) {
+    const slice = chunks.slice(index, index + EMBED_CONCURRENCY);
+    const results = await Promise.all(
+      slice.map((chunk) => generateEmbeddingWithRetry(ai, chunk.content, title)),
+    );
+
+    for (let offset = 0; offset < results.length; offset++) {
+      embeddings[index + offset] = results[offset];
+    }
+  }
+
+  return embeddings;
+}
+
 /**
  * Edge function: receives pre-extracted text chunks,
  * generates embeddings via @google/genai SDK, and upserts to DB.
@@ -357,15 +371,13 @@ Deno.serve(async (req) => {
         embedding_model: EMBEDDING_MODEL,
         embedding_dim: EMBEDDING_DIM,
         task_type: DOCUMENT_EMBEDDING_TASK_TYPE,
+        concurrency: EMBED_CONCURRENCY,
         title_used: normalizedTitle,
       },
     });
 
     const embeddingStart = Date.now();
-    const embeddings: Array<number[] | null> = [];
-    for (const chunk of validChunks) {
-      embeddings.push(await generateEmbeddingWithRetry(ai, chunk.content, normalizedTitle));
-    }
+    const embeddings = await generateEmbeddingsWithConcurrency(ai, validChunks, normalizedTitle);
     const embedding_ms = Date.now() - embeddingStart;
 
     // Build rows using ONLY columns that exist in document_chunks
@@ -385,15 +397,14 @@ Deno.serve(async (req) => {
         embedding_model: EMBEDDING_MODEL,
         embedding_dim: EMBEDDING_DIM,
         embedded_at: embeddedAt,
-        chunk_metadata_json: {
-          source_tag: chunk.sourceTag,
-          page_start: chunk.pageStart,
-          page_end: chunk.pageEnd,
-          section_title: chunk.sectionTitle,
-          task_type: DOCUMENT_EMBEDDING_TASK_TYPE,
-          title_used: normalizedTitle,
-          normalization: EMBEDDING_NORMALIZATION,
-        },
+        chunk_metadata_json: buildDocumentChunkMetadata({
+          sourceTag: chunk.sourceTag,
+          pageStart: chunk.pageStart,
+          pageEnd: chunk.pageEnd,
+          sectionTitle: chunk.sectionTitle,
+          taskType: DOCUMENT_EMBEDDING_TASK_TYPE,
+          titleUsed: normalizedTitle,
+        }),
       };
     }));
 
@@ -431,6 +442,7 @@ Deno.serve(async (req) => {
         request_id,
         embedding_ms,
         db_ms,
+        concurrency: EMBED_CONCURRENCY,
       },
     });
 
@@ -442,6 +454,7 @@ Deno.serve(async (req) => {
         request_id,
         embedding_ms,
         db_ms,
+        concurrency: EMBED_CONCURRENCY,
       }),
       { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
