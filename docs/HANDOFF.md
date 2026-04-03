@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T08:30:00.000Z
+- Data/hora: 2026-04-03T08:36:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
-- Head da sessão: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+- Head da sessão: `1fe4bc0d5cd1702f31b7cab000dbe7885ef55a63`
 - Último relatório: `docs/operational-reports/2026-04-03-progress-report-deep-analysis-and-4c.md`
 
 ## Estado atual resumido

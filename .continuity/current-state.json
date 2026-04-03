@@ -8,7 +8,7 @@
   "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T08:30:00.000Z",
+  "last_update_utc": "2026-04-03T08:36:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -38,15 +38,15 @@
     "`npm run validate` voltou a passar com 61 testes"
   ],
   "pending_items": [
-    "Publicar a rodada do BLOCO 4C com deduplicação, paralelismo e testes na branch de sessão",
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
+    "Decidir se os refinamentos úteis de chat/layout serão integrados seletivamente em uma rodada separada",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Implementar o BLOCO 4C: document_hash para deduplicação, paralelismo controlado no embed-chunks e testes mínimos do pipeline antes de iniciar a carga curada do corpus.",
+  "next_action": "Validar a deduplicação em ambiente real com novo upload controlado e, se o resultado for estável, preparar a integração do BLOCO 4C antes da carga curada do corpus.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -62,5 +62,5 @@
   ],
   "session_status": "in_progress",
   "last_report": "docs/operational-reports/2026-04-03-progress-report-deep-analysis-and-4c.md",
-  "last_session_head_sha": "fdd85e5c32d6617c6cefc5ed8a611106311d4f5e"
+  "last_session_head_sha": "1fe4bc0d5cd1702f31b7cab000dbe7885ef55a63"
 }
