@@ -3,7 +3,7 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T05:14:30.000Z
+- Data/hora: 2026-04-03T07:34:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4B-REMOTE-SMOKE`
 - Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
@@ -11,10 +11,10 @@
 - Último relatório: `docs/operational-reports/2026-04-03-block-4b-remote-corpus-verification.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4B em execução: corpus remoto inspecionado, smoke test público concluído e reprocessamento do legado pendente
+- Fase atual: Pré-lançamento com BLOCO 4B em execução: corpus remoto inspecionado, smoke test público concluído e autenticação das functions administrativas reequilibrada
 - Bloco ativo: BLOCO 4B — Verificação remota do corpus e smoke test grounded
 - Status da sessão: `partial`
-- Próxima ação recomendada: Concluir o BLOCO 4B reprocessando o PDF legado ou ingerindo um novo PDF real pequeno no contrato novo, depois validar os metadados de embedding no banco e repetir 1–3 perguntas grounded.
+- Próxima ação recomendada: Repetir o upload do PDF real pequeno com a conta administrativa real, validar no banco os metadados de embedding persistidos e repetir 1–3 perguntas grounded.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -34,9 +34,11 @@
 - A produção publicada já aponta para o commit `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - A inspeção remota do corpus mostrou 1 documento legado com 2 chunks e 0 embeddings persistidos
 - O chat público em produção respondeu de forma grounded ao documento legado, com referência explícita ao PDF de base
+- `embed-chunks` e `get-usage-stats` agora validam sessão via `auth.getUser()` e vínculo ativo em `public.admin_users`, sem depender do JWT do gateway
+- O erro `401 Invalid JWT` na borda das functions administrativas foi convertido em `403` de aplicação para contas autenticadas que não são admin
 
 ## Itens pendentes
-- Reprocessar o PDF legado ou subir um novo PDF real pequeno sob o contrato novo de embeddings
+- Repetir o upload do novo PDF real pequeno sob o contrato novo de embeddings usando a conta administrativa real
 - Confirmar no banco remoto a persistência de `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
 - Executar o BLOCO 4C com deduplicação, paralelismo controlado e preparação da carga curada do corpus
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
@@ -51,7 +53,8 @@
 - O preparo do BLOCO 4 foi registrado sem tocar em `ROADMAP_FUTURO.md` nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.
 - Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.
 - As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção.
-- O BLOCO 4A já foi integrado em `main` e publicado em produção; o BLOCO 4B agora depende de reprocessar o legado sem embeddings e confirmar o contrato novo no banco remoto.
+- O BLOCO 4A já foi integrado em `main` e publicado em produção; o BLOCO 4B agora depende de repetir o upload real com a conta administrativa correta e confirmar o contrato novo no banco remoto.
+- O formulário do admin continua exibindo uma conta provisionada que autentica sessão, mas não equivale ao admin bootstrap ativo em `public.admin_users`; ela deve falhar com `403` nas functions administrativas.
 - As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas no backlog, sem competir com a prioridade atual.
 
 ## Preambulo obrigatório para qualquer IA

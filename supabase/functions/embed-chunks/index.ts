@@ -196,6 +196,25 @@ async function requireAuthenticatedUser(
   return data.user;
 }
 
+async function requireAdminUser(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("embed-chunks admin lookup failed:", error.message);
+    return false;
+  }
+
+  return Boolean(data?.user_id);
+}
+
 async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string, title?: string | null) {
   for (let attempt = 0; attempt <= EMBED_RETRY_DELAYS_MS.length; attempt++) {
     try {
@@ -278,6 +297,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const isAdminUser = await requireAdminUser(supabase, authenticatedUser.id);
+    if (!isAdminUser) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "AUTH:ADMIN_REQUIRED", request_id }),
+        { status: 403, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     const { document_id, chunks, start_index = 0, ingestion_job_id = null, title = null } = await req.json();
     const normalizedTitle = typeof title === "string" && title.trim().length > 0 ? title.trim() : null;
 
@@ -315,7 +343,6 @@ Deno.serve(async (req) => {
     }
 
     const ai = new GoogleGenAI({ apiKey: geminiKey });
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     await safeLogEvent(supabase, {
       document_id,

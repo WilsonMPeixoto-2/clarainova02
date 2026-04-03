@@ -101,11 +101,13 @@ Depois da inspeção remota, as Edge Functions canônicas do projeto foram repub
 Estado remoto após a publicação:
 
 - `embed-chunks`
-  - versão: `11`
-  - atualização observada: `2026-04-03 05:22:40 UTC`
+  - versão inicial após o BLOCO 4A: `11`
+  - versão após correção de auth do BLOCO 4B: `13`
 - `chat`
   - versão: `13`
   - atualização observada: `2026-04-03 05:22:48 UTC`
+- `get-usage-stats`
+  - versão após correção de auth do BLOCO 4B: `11`
 
 Com isso, o ambiente remoto já está apto a:
 
@@ -127,9 +129,50 @@ Evidência observada:
 
 Portanto, o teste de upload do BLOCO 4B deve ser feito com a conta administrativa real já validada no seu navegador, e não com a conta visível por padrão no formulário.
 
+## Correção do bloqueio nas functions administrativas
+
+Na primeira tentativa de upload do PDF real pequeno, o documento foi criado em `documents`, mas o processamento falhou antes de salvar qualquer chunk:
+
+- documento: `SEI-Guia-do-usuario-Versao-final.pdf`
+- `failure_reason = no_chunks_persisted`
+- `Chunks 0/88`
+- `Embeddings 0/88`
+
+O erro bruto reproduzido na chamada HTTP da function foi:
+
+```json
+{"code":401,"message":"Invalid JWT"}
+```
+
+Conclusão confirmada:
+
+- o problema não estava no schema remoto
+- o problema não estava no payload estruturado novo
+- o problema não estava, neste incidente, na API do Gemini
+- o bloqueio estava na **borda das functions administrativas**, que ainda dependiam da validação do gateway
+
+Correção aplicada nesta rodada:
+
+1. `embed-chunks` e `get-usage-stats` deixaram de depender do gateway JWT e passaram a ser publicadas com `--no-verify-jwt`
+2. ambas as functions agora:
+   - exigem sessão válida via `auth.getUser()`
+   - exigem vínculo ativo em `public.admin_users`
+
+Verificação objetiva após a correção:
+
+- com a conta autenticada visível no formulário, que **não** é admin real:
+  - `embed-chunks` passou a responder `403 AUTH:ADMIN_REQUIRED`
+  - `get-usage-stats` passou a responder `403 Acesso administrativo requerido`
+
+Isso prova que:
+
+- o `401 Invalid JWT` de borda foi removido
+- o controle voltou para o código da function
+- o próximo reteste deve ser feito com a conta administrativa real de Wilson
+
 ## Próxima ação objetiva
 
-1. subir um novo PDF real pequeno via admin usando a conta administrativa real
+1. repetir o upload do PDF real pequeno via admin usando a conta administrativa real
 2. confirmar no banco remoto a persistência dos metadados novos de embedding
 3. repetir 1 a 3 perguntas grounded já com embeddings reais persistidos
 
@@ -150,5 +193,6 @@ As oportunidades abaixo foram registradas como trilhas futuras válidas, sem com
 
 - inspeção remota do corpus: `concluída`
 - smoke test público mínimo: `concluído`
+- correção da autenticação das functions administrativas: `concluída`
 - verificação de embeddings novos persistidos: `pendente`
 - fechamento do BLOCO 4B: `ainda não concluído`

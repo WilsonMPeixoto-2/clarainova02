@@ -5,8 +5,6 @@ const ALLOWED_ORIGINS = [
   "https://clara.sme.rio",
 ];
 
-// Esta function deve permanecer protegida por JWT no gateway do Supabase.
-
 function getCorsOrigin(req: Request): string {
   const origin = req.headers.get("origin") ?? "";
   if (ALLOWED_ORIGINS.includes(origin)) return origin;
@@ -53,6 +51,25 @@ async function requireAuthenticatedUser(
   }
 
   return data.user;
+}
+
+async function requireAdminUser(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("get-usage-stats admin lookup failed:", error.message);
+    return false;
+  }
+
+  return Boolean(data?.user_id);
 }
 
 type CountQueryLike = {
@@ -139,6 +156,13 @@ Deno.serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
+    const isAdminUser = await requireAdminUser(supabase, authenticatedUser.id);
+    if (!isAdminUser) {
+      return new Response(
+        JSON.stringify({ error: "Acesso administrativo requerido" }),
+        { status: 403, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
 
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
