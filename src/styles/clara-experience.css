@@ -809,12 +809,12 @@ body::before {
   align-items: center;
   padding: 0.18rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.6rem;
+  font-size: 0.56rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   border: 1px solid hsl(var(--border-subtle) / 0.82);
   background: hsl(var(--surface-2) / 0.72);
-  color: hsl(var(--text-secondary));
+  color: hsl(var(--text-secondary) / 0.9);
 }
 
 .chat-response-mode-pill[data-mode='direto'] {
@@ -834,12 +834,12 @@ body::before {
   align-items: center;
   padding: 0.18rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.6rem;
+  font-size: 0.56rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   border: 1px solid hsl(var(--border-subtle) / 0.82);
   background: hsl(var(--surface-2) / 0.72);
-  color: hsl(var(--text-secondary));
+  color: hsl(var(--text-secondary) / 0.86);
 }
 
 .chat-panel-mode-pill[data-mode='default'] {

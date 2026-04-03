@@ -1,10 +1,11 @@
-import { forwardRef, useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { DownloadSimple, CircleNotch, ArrowsOut, ChatCircle, ArrowsIn, Sidebar, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
+import { DownloadSimple, CircleNotch, ArrowsOut, ArrowsIn, Sidebar, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 
+import { ClaraMonogram } from '@/components/ClaraMonogram';
 import { ChatStructuredMessage } from '@/components/chat/ChatStructuredMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -26,6 +27,10 @@ const STARTER_PROMPTS = [
 ];
 
 type ChatPanelMode = 'default' | 'expanded' | 'fullscreen';
+
+const MIN_PANEL_WIDTH = 420;
+const PANEL_VIEWPORT_MARGIN = 20;
+const PANEL_RESIZE_STEP = 72;
 
 const LOADING_PHASES = [
   {
@@ -53,6 +58,14 @@ function formatSessionTitle(question: string) {
   }
 
   return `${trimmed.slice(0, 73).trimEnd()}...`;
+}
+
+function clampPanelWidth(width: number) {
+  if (typeof window === 'undefined') {
+    return width;
+  }
+
+  return Math.max(MIN_PANEL_WIDTH, Math.min(width, window.innerWidth - PANEL_VIEWPORT_MARGIN));
 }
 
 const ChatHeaderActionButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -112,12 +125,31 @@ const ChatSheet = () => {
   const isDraggingRef = useRef(false);
   const sheetRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const resolvedPanelWidth = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return MIN_PANEL_WIDTH;
+    }
+
+    if (isMobile || panelMode === 'fullscreen') {
+      return window.innerWidth;
+    }
+
+    if (customWidth) {
+      return clampPanelWidth(customWidth);
+    }
+
+    const ratio = panelMode === 'default' ? 0.46 : 0.82;
+    return clampPanelWidth(Math.round(window.innerWidth * ratio));
+  }, [customWidth, isMobile, panelMode]);
 
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDraggingRef.current) return;
       const newWidth = window.innerWidth - e.clientX;
-      setCustomWidth(Math.max(420, Math.min(newWidth, window.innerWidth - 20)));
+      setCustomWidth(clampPanelWidth(newWidth));
     };
     const handlePointerUp = () => {
       isDraggingRef.current = false;
@@ -135,8 +167,6 @@ const ChatSheet = () => {
   }, [isOpen]);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [loadingPhaseIndex, setLoadingPhaseIndex] = useState(0);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const exportableMessages = useMemo(
     () => messages.filter((message) => message.content.trim().length > 0 || message.structuredResponse),
@@ -176,6 +206,15 @@ const ChatSheet = () => {
   }, [isOpen]);
 
   useEffect(() => {
+    const textarea = inputRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = '0px';
+    const nextHeight = Math.min(textarea.scrollHeight, 192);
+    textarea.style.height = `${Math.max(52, nextHeight)}px`;
+  }, [input, isOpen]);
+
+  useEffect(() => {
     if (!isLoading || isStreaming) {
       setLoadingPhaseIndex(0);
       return;
@@ -205,6 +244,51 @@ const ChatSheet = () => {
 
   const handlePanelMode = (nextMode: ChatPanelMode) => {
     setPanelMode(nextMode);
+  };
+
+  const handleResizeKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (isMobile || panelMode === 'fullscreen') {
+      return;
+    }
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      setCustomWidth(clampPanelWidth(resolvedPanelWidth + PANEL_RESIZE_STEP));
+      return;
+    }
+
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      setCustomWidth(clampPanelWidth(resolvedPanelWidth - PANEL_RESIZE_STEP));
+      return;
+    }
+
+    if (event.key === 'Home') {
+      event.preventDefault();
+      setCustomWidth(MIN_PANEL_WIDTH);
+      return;
+    }
+
+    if (event.key === 'End') {
+      event.preventDefault();
+      setCustomWidth(window.innerWidth - PANEL_VIEWPORT_MARGIN);
+    }
+  };
+
+  const handleInputKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (!input.trim() || isLoading || !isOnline) {
+        return;
+      }
+
+      sendMessage(input);
+      setInput('');
+    }
   };
 
   const handleExportPdf = async () => {
@@ -312,22 +396,34 @@ const ChatSheet = () => {
             {/* Drag Handle para resize nativo pelo usuário */}
             {!isMobile && panelMode !== 'fullscreen' && (
               <div
-                className="absolute top-0 bottom-0 left-0 w-3 -ml-[1.5px] cursor-col-resize z-50 hover:bg-primary/20 active:bg-primary/30 active:backdrop-blur-sm transition-colors group flex items-center justify-center"
+                className="chat-resize-handle absolute top-0 bottom-0 left-0 z-50 flex items-center justify-center"
                 onPointerDown={(e) => {
                   isDraggingRef.current = true;
                   document.body.style.cursor = 'col-resize';
                   e.preventDefault();
                 }}
+                onKeyDown={handleResizeKeyDown}
                 title="Arraste para redimensionar"
+                role="separator"
+                aria-label="Redimensionar painel da CLARA"
+                aria-orientation="vertical"
+                aria-valuemin={MIN_PANEL_WIDTH}
+                aria-valuemax={Math.max(MIN_PANEL_WIDTH, typeof window === 'undefined' ? MIN_PANEL_WIDTH : window.innerWidth - PANEL_VIEWPORT_MARGIN)}
+                aria-valuenow={resolvedPanelWidth}
+                aria-describedby="clara-chat-resize-hint"
+                tabIndex={0}
               >
-                <div className="w-[3px] h-12 bg-border/40 rounded-full group-hover:bg-primary/50 group-active:bg-primary/80 transition-colors" />
+                <div className="chat-resize-grip" />
+                <span id="clara-chat-resize-hint" className="sr-only">
+                  Arraste para redimensionar ou use as setas esquerda e direita para ajustar a largura do painel.
+                </span>
               </div>
             )}
 
             <div className="chat-header-surface flex items-center justify-between gap-3 px-4 py-4 border-b border-[hsl(var(--border-subtle))] md:px-5">
               <div className="flex items-center gap-3 min-w-0">
-                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-primary/35 bg-primary/10 text-primary shrink-0">
-                  <ChatCircle size={18} />
+                <span className="chat-brand-mark inline-flex items-center justify-center w-10 h-10 rounded-full shrink-0">
+                  <ClaraMonogram className="h-6 w-6" title="" />
                 </span>
                 <div className="min-w-0">
                   <p id="clara-chat-title" className="text-sm font-semibold text-foreground">CLARA</p>
@@ -337,7 +433,6 @@ const ChatSheet = () => {
                     <span className="chat-response-mode-pill" data-mode={responseMode}>{responseModePresentation.label}</span>
                     <span className="chat-panel-mode-pill" data-mode={panelMode}>{panelModePresentation.label}</span>
                   </div>
-                  <p className="chat-header-support-copy">{panelModePresentation.hint}</p>
                 </div>
               </div>
 
@@ -417,7 +512,7 @@ const ChatSheet = () => {
                 {messages.length === 0 && !isLoading && (
                   <div className="chat-empty-state">
                     <div className="chat-empty-avatar">
-                      <ChatCircle className="w-6 h-6 text-primary/60" />
+                      <ClaraMonogram className="w-8 h-8" title="" />
                     </div>
                     <p className="chat-empty-kicker">{runtimeLabel}</p>
                     <p className="chat-empty-title">CLARA pronta para te orientar.</p>
@@ -542,22 +637,23 @@ const ChatSheet = () => {
                   })}
                 </div>
               </div>
-              <div className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.6)] px-3 py-1.5 focus-within:border-primary/40 transition-colors">
-                <input
+              <div className="flex items-end gap-2 rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.6)] px-3 py-1.5 focus-within:border-primary/40 transition-colors">
+                <textarea
                   ref={inputRef}
-                  type="text"
                   value={input}
                   onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={handleInputKeyDown}
                   placeholder={inputPlaceholder}
                   maxLength={2000}
                   aria-label="Sua pergunta para a CLARA"
-                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none py-2"
+                  rows={1}
+                  className="chat-composer-textarea flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
                   disabled={isLoading || !isOnline}
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading || !isOnline}
-                  className="p-2 rounded-lg text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="mb-1 p-2 rounded-lg text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   aria-label="Enviar mensagem"
                 >
                   <PaperPlaneRight size={18} />
@@ -569,11 +665,9 @@ const ChatSheet = () => {
                     ? `Ambiente demonstrativo: você pode experimentar o modo ${responseModePresentation.label.toLowerCase()} enquanto a base oficial da CLARA é finalizada.`
                     : `Modo atual: ${responseModePresentation.label}. Quando houver material aplicável, as referências ficam ao final da resposta.`}
                 </p>
-                {!isMobile && (
-                  <span className="text-[10px] text-muted-foreground/50">
-                    {panelModePresentation.hint}
-                  </span>
-                )}
+                <span className="text-[10px] text-muted-foreground/50">
+                  Enter envia. Shift + Enter cria nova linha.
+                </span>
               </div>
             </form>
           </motion.aside>
