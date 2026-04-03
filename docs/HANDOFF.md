@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T04:48:16.325Z
+- Data/hora: 2026-04-03T05:02:04.789Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMINI-EMBEDDING-CONTRACT`
-- Commit de base oficial: `b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5`
-- Head da sessão: `b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5`
-- Último relatório: `docs/operational-reports/2026-04-03-block-4a-gemini-embedding-contract.md`
+- Branch de referência: `main`
+- Commit de base oficial: `df682dd1d178a326fb4f1115026f4a388daac503`
+- Head da sessão: `df682dd1d178a326fb4f1115026f4a388daac503`
+- Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-block-4a.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4A em execução para alinhar o código ao contrato Gemini e ao novo embedding antes da ingestão real
-- Bloco ativo: BLOCO 4A — Alinhamento Gemini e contrato de embedding
-- Status da sessão: `partial`
-- Próxima ação recomendada: Verificar o estado real do corpus remoto, decidir re-embed/limpeza de legado e executar o smoke test remoto com 1 PDF e perguntas grounded antes de liberar a carga curada.
+- Fase atual: Pré-lançamento com BLOCO 4A integrado em main e produção refletindo o contrato Gemini novo
+- Bloco ativo: BLOCO 4B — Verificação remota do corpus e smoke test grounded
+- Status da sessão: `integrated`
+- Próxima ação recomendada: Executar o BLOCO 4B: verificar o estado real do corpus remoto, decidir re-embed/limpeza de legado e concluir o smoke test remoto com 1 PDF e perguntas grounded.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -26,17 +26,18 @@
 - Checklist operacional do BLOCO 4 documentado com exigências concretas para Google OAuth, Gemini e reprocessamento de embeddings
 - A trilha de hardening do BLOCO 3 foi integrada em `main` por fast-forward
 - A integração em `main` gerou deploy canônico `READY` via GitHub/Vercel no projeto `clarainova02`
-- Esta branch alinhou o código à pilha Gemini 3.1 preview e `gemini-embedding-2-preview`
+- O BLOCO 4A foi integrado em `main` com Gemini 3.1 preview e `gemini-embedding-2-preview`
 - Query embedding agora usa `taskType: RETRIEVAL_QUERY` com normalização L2 em `768`
 - Document embedding agora usa `taskType: RETRIEVAL_DOCUMENT`, `title`, normalização L2 e persistência de metadados de embedding
 - O frontend de ingestão passou a enviar chunks estruturados, sem prefixos artificiais no texto semântico
-- `npm run validate` passou na branch de sessão
+- `npm run validate` passou antes da integração
+- A produção publicada já aponta para o commit `df682dd1d178a326fb4f1115026f4a388daac503`
 
 ## Itens pendentes
 - Verificar contaminação entre gerações de embeddings no corpus remoto antes da ingestão séria
 - Executar smoke test remoto com 1 PDF real e 1–3 perguntas grounded
-- Integrar a branch 4A em `main` sem perder o rastreio da pilha Gemini declarada no código
-- Executar o BLOCO 4B com deduplicação, paralelismo controlado e preparação da carga curada do corpus
+- Executar o BLOCO 4C com deduplicação, paralelismo controlado e preparação da carga curada do corpus
+- Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
@@ -48,7 +49,7 @@
 - O preparo do BLOCO 4 foi registrado sem tocar em `ROADMAP_FUTURO.md` nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.
 - Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.
 - As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção.
-- Esta branch ainda não alterou a produção. Ela só alinhou o código e a documentação mínima ao contrato novo do Gemini antes do smoke test remoto.
+- O BLOCO 4A já foi integrado em `main` e publicado em produção; a próxima frente deixa de ser alinhamento de código e passa a ser validação remota do corpus.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade

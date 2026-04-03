@@ -10,11 +10,11 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5`
-- Frente imediata mais importante: concluir a subetapa 4A para alinhar o código ao contrato Gemini novo e só então partir para o smoke test remoto
+- Fonte oficial integrada: `origin/main @ df682dd1d178a326fb4f1115026f4a388daac503`
+- Frente imediata mais importante: executar o BLOCO 4B para validar o corpus remoto e concluir o smoke test grounded com a pilha Gemini nova já integrada
 - Ordem de execução atualmente aceita:
-  1. alinhar o código ao contrato Gemini/embedding real e validar localmente
-  2. verificar corpus remoto e executar smoke test com 1 PDF + perguntas grounded
+  1. verificar corpus remoto e executar smoke test com 1 PDF + perguntas grounded
+  2. depois executar deduplicação, paralelismo controlado e testes do pipeline
   3. depois formar corpus curado e medir o RAG real
   4. por fim atacar acessibilidade, hotspots e testes de sustentação
 
@@ -56,8 +56,8 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 4 — Consolidação operacional externa
 - Estado: `in_progress`
 - Objetivo: eliminar bloqueios externos que impedem operação previsível e alinhar o código ao contrato Gemini realmente adotado
-- Subetapa atual: `4A — Alinhamento Gemini e contrato de embedding`
-- Próxima ação: verificar o estado real do corpus remoto, decidir re-embed/limpeza de legado e executar o smoke test remoto registrado em `docs/operational-reports/2026-04-03-block-4a-gemini-embedding-contract.md`
+- Subetapa atual: `4B — Verificação remota do corpus e smoke test grounded`
+- Próxima ação: inspecionar o corpus remoto, verificar mistura entre gerações de embeddings, decidir re-embed/limpeza de legado e executar o smoke test remoto registrado em `docs/operational-reports/2026-04-03-block-4a-gemini-embedding-contract.md`
 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `planned`

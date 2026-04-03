@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5",
-  "current_phase": "Pré-lançamento com BLOCO 4A em execução para alinhar o código ao contrato Gemini e ao novo embedding antes da ingestão real",
-  "active_block": "BLOCO 4A — Alinhamento Gemini e contrato de embedding",
-  "active_branch": "session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMINI-EMBEDDING-CONTRACT",
+  "last_integrated_main_sha": "df682dd1d178a326fb4f1115026f4a388daac503",
+  "current_phase": "Pré-lançamento com BLOCO 4A integrado em main e produção refletindo o contrato Gemini novo",
+  "active_block": "BLOCO 4B — Verificação remota do corpus e smoke test grounded",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T04:48:16.325Z",
+  "last_update_utc": "2026-04-03T05:02:04.789Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -18,19 +18,24 @@
     "BLOCK_PLAN, REMOTE_STATE e MIGRATION_STATUS alinhados à trilha atual de segurança",
     "Checklist operacional do BLOCO 4 foi documentado com exigências concretas de Google OAuth, Gemini e reprocessamento de embeddings",
     "A trilha de hardening do BLOCO 3 foi integrada em main por fast-forward",
-    "A integração de main gerou deploy canônico READY via GitHub/Vercel no projeto clarainova02"
+    "A integração de main gerou deploy canônico READY via GitHub/Vercel no projeto clarainova02",
+    "O BLOCO 4A foi integrado em main com Gemini 3.1 preview e `gemini-embedding-2-preview` declarados no código",
+    "Query embedding agora usa `taskType: RETRIEVAL_QUERY` com normalização L2 em `768`",
+    "Document embedding agora usa `taskType: RETRIEVAL_DOCUMENT`, `title`, normalização L2 e persistência de metadados de embedding",
+    "O frontend de ingestão passou a enviar chunks estruturados, sem prefixos artificiais no texto semântico",
+    "O deploy canônico READY da produção agora aponta para o commit `df682dd1d178a326fb4f1115026f4a388daac503`"
   ],
   "pending_items": [
     "Verificar contaminação entre gerações de embeddings no corpus remoto antes da ingestão séria",
     "Executar smoke test remoto com 1 PDF real e 1–3 perguntas grounded após o pacote técnico do embedding",
-    "Integrar a branch 4A em main sem perder o rastreio da pilha Gemini declarada no código",
-    "Executar o BLOCO 4B com deduplicação, paralelismo controlado e preparação da carga curada do corpus"
+    "Executar o BLOCO 4C com deduplicação, paralelismo controlado e preparação da carga curada do corpus",
+    "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Verificar o estado real do corpus remoto, decidir re-embed/limpeza de legado e executar o smoke test remoto com 1 PDF e perguntas grounded antes de liberar a carga curada.",
+  "next_action": "Executar o BLOCO 4B: verificar o estado real do corpus remoto, decidir re-embed/limpeza de legado e concluir o smoke test remoto com 1 PDF e perguntas grounded.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -39,7 +44,7 @@
     "As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção.",
     "Esta branch substitui a pilha Gemini antiga declarada em main e passa a explicitar 3.1 preview + gemini-embedding-2-preview com taskType, title, normalização L2 e metadados persistidos."
   ],
-  "session_status": "partial",
-  "last_report": "docs/operational-reports/2026-04-03-block-4a-gemini-embedding-contract.md",
-  "last_session_head_sha": "b74ea1167bf24d3cb8d66aac68813ad4cd51ceb5"
+  "session_status": "integrated",
+  "last_report": "docs/operational-reports/2026-04-03-main-integration-and-production-deploy-block-4a.md",
+  "last_session_head_sha": "df682dd1d178a326fb4f1115026f4a388daac503"
 }

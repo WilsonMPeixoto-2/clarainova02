@@ -19,7 +19,7 @@ Ultima atualizacao: 2026-03-31
 
 ## Nota operacional recente
 
-Em 2026-04-03, a branch de sessão `session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMINI-EMBEDDING-CONTRACT` passou a alinhar o código ao contrato Gemini efetivamente adotado no ambiente:
+Em 2026-04-03, o `main` passou a refletir explicitamente o contrato Gemini efetivamente adotado no ambiente:
 
 - geração com `gemini-3.1-flash-lite-preview` e fallback `gemini-3.1-pro-preview`
 - embeddings com `gemini-embedding-2-preview`
@@ -27,7 +27,7 @@ Em 2026-04-03, a branch de sessão `session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMIN
 - normalização L2 em `768`
 - chunks estruturados e metadados de embedding persistidos
 
-Essa atualização ainda depende de smoke test remoto antes de ser tratada como estado integrado em `main`.
+Essa atualização já está integrada em `main` e publicada em produção. O que continua pendente é a validação remota do corpus e o smoke test grounded do BLOCO 4B.
 
 ## Memoria operacional e continuidade
 

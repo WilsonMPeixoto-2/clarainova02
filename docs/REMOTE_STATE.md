@@ -1,31 +1,31 @@
 # Estado Remoto Canônico — CLARAINOVA02
 
 ## Última verificação consolidada
-- Data: 2026-04-02
-- Base local usada na verificação: `origin/main @ 86d3c18c8d95b0ad8f518863ac75da66a7826b55`
+- Data: 2026-04-03
+- Base local usada na verificação: `origin/main @ df682dd1d178a326fb4f1115026f4a388daac503`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `86d3c18c8d95b0ad8f518863ac75da66a7826b55`
+- `origin/main` atualmente alinhada ao commit: `df682dd1d178a326fb4f1115026f4a388daac503`
 - Trabalho local em andamento fora de `main`:
-  - branch de sessão `session/2026-04-03/HOME/CODEX/BLOCO-4A-GEMINI-EMBEDDING-CONTRACT`
+  - nenhuma branch de sessão permanece aberta como fonte principal; o BLOCO 4A já foi integrado
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
-  - a branch `BLOCO-4A-GEMINI-EMBEDDING-CONTRACT` ainda não alterou a produção; ela alinha o código ao contrato Gemini novo antes do smoke test remoto
+  - o BLOCO 4A já alterou a produção, e a próxima frente oficial passa a ser o BLOCO 4B: validação remota do corpus e smoke test grounded
 
 ## Vercel
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção deve refletir o baseline publicado a partir de `main`
+  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `git`
   - status: `READY`
-  - deployment id: `dpl_2Y5BWMUEK5aGK8cf15Rj28arVnWY`
-  - commit publicado: `0174205ba2ead464c9c8dad7b61e6e63b59ea206`
+  - deployment id: `dpl_4XhtFxiDd3NCq49kMgLYyF3o14mH`
+  - commit publicado: `df682dd1d178a326fb4f1115026f4a388daac503`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`
@@ -76,8 +76,8 @@
     - conferir `Client ID` e `Client Secret`
     - alinhar redirect URLs no Supabase e no Google Console
 - Gemini / embeddings:
-  - status: `instável`
-  - situação conhecida: embeddings reais continuam sujeitos a indisponibilidade/quota do provedor
+  - status: `parcialmente alinhado`
+  - situação conhecida: o código integrado em `main` já declara a pilha Gemini nova, mas o corpus remoto ainda precisa de verificação de contaminação e smoke test grounded
   - implementação declarada no código:
     - geração: `gemini-3.1-flash-lite-preview` com fallback para `gemini-3.1-pro-preview`
     - embeddings: `gemini-embedding-2-preview`
@@ -89,7 +89,7 @@
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
-- embeddings reais continuam sujeitos à estabilidade externa do Gemini
+- o corpus remoto ainda pode conter mistura entre gerações antigas e novas de embedding até a conclusão do BLOCO 4B
 
 ## Regras de atualização deste arquivo
 - Atualize este arquivo sempre que mudar algo em:
