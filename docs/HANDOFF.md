@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T21:20:00.000Z
+- Data/hora: 2026-04-03T21:36:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/CHAT-LAYOUT-POLISH-2`
 - Commit de base oficial: `6b6e28c7dfddfdf517dfea6e7c151314c086c2f9`
-- Head da sessão: `b97a18d4fc1188b2093e9c79d3f228f4da334f58`
+- Head da sessão: `db2886b5903d64b0dde0ff6ecb122c9c7ec33758`
 - Último relatório: `docs/operational-reports/2026-04-03-chat-layout-window-polish.md`
 
 ## Estado atual resumido
