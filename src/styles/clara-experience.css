@@ -956,6 +956,15 @@ body::before {
   color: hsl(var(--muted-foreground) / 0.88);
 }
 
+.chat-empty-copy--spaced {
+  margin-top: 1.2rem;
+}
+
+.chat-input-textarea {
+  min-height: 4.5rem;
+  max-height: 10rem;
+}
+
 .chat-mode-summary {
   width: min(100%, 38rem);
   margin-top: 1rem;

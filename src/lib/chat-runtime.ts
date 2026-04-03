@@ -55,7 +55,7 @@ export function getChatConfigurationErrorMessage() {
 }
 
 export function getChatRuntimeLabel(mode: ChatRuntimeMode) {
-  if (mode === 'online') return 'Atendimento conectado';
+  if (mode === 'online') return 'Conectada';
   if (mode === 'mock') return 'Ambiente de demonstração';
   return 'Demonstração guiada';
 }

@@ -233,9 +233,8 @@ REGRAS DE SEGURANÇA
 // ============================================================
 
 const GEMINI_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-pro',
+  'gemini-3.1-flash-lite-preview',
+  'gemini-3.1-pro-preview',
 ];
 
 type HybridSearchChunk = {
@@ -891,7 +890,7 @@ Deno.serve(async (req) => {
     let matchedChunks: HybridSearchChunk[] = [];
     let searchMetricId: string | null = null;
     let groundedReferences: ClaraStructuredResponse["referenciasFinais"] = [];
-    let queryEmbeddingModel = 'keyword_fallback_zero_vector';
+    let queryEmbeddingModel: string = 'keyword_fallback_zero_vector';
 
     if (lastUserMessage) {
       try {
@@ -901,7 +900,7 @@ Deno.serve(async (req) => {
         try {
           const embeddingResult = await withTimeout(
             ai.models.embedContent({
-              model: 'gemini-embedding-001',
+              model: 'gemini-embedding-2-preview',
               contents: lastUserMessage.content,
               config: { outputDimensionality: 768 },
             }),
@@ -912,7 +911,7 @@ Deno.serve(async (req) => {
           const queryEmbedding = embeddingResult.embeddings?.[0]?.values;
           if (queryEmbedding && queryEmbedding.length === EMBEDDING_DIM) {
             queryEmbeddingPayload = JSON.stringify(queryEmbedding);
-            queryEmbeddingModel = 'gemini-embedding-001';
+            queryEmbeddingModel = 'gemini-embedding-2-preview';
           }
         } catch (embeddingError) {
           console.warn('Query embedding fallback to keyword-only retrieval:', embeddingError);

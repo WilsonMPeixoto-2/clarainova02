@@ -27,7 +27,7 @@ describe("chat runtime configuration", () => {
   });
 
   it("exposes user-facing runtime labels and descriptions", () => {
-    expect(getChatRuntimeLabel("online")).toBe("Atendimento conectado");
+    expect(getChatRuntimeLabel("online")).toBe("Conectada");
     expect(getChatRuntimeLabel("mock")).toBe("Ambiente de demonstração");
     expect(getChatRuntimeLabel("preview")).toBe("Demonstração guiada");
 
