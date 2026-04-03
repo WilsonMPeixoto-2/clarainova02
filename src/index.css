@@ -1819,12 +1819,29 @@
     background: linear-gradient(180deg, hsl(var(--surface-2) / 0.9), hsl(var(--surface-1) / 0.76));
   }
 
+  .chat-header-surface.is-compact {
+    padding-block: 0.9rem;
+  }
+
+  .chat-header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .chat-header-context-label {
+    margin-top: 0.18rem;
+    font-size: 0.73rem;
+    line-height: 1.35;
+    color: hsl(var(--muted-foreground) / 0.82);
+  }
+
   .chat-header-meta-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.4rem;
-    margin-top: 0.15rem;
+    margin-top: 0.28rem;
   }
 
   .chat-header-support-copy {
@@ -2074,9 +2091,9 @@
   }
 
   .chat-composer-textarea {
-    min-height: 4.1rem;
+    min-height: 4.45rem;
     max-height: 12rem;
-    padding-block: 0.9rem;
+    padding-block: 1rem;
     line-height: 1.55;
     resize: none;
     overflow-y: auto;
@@ -2102,6 +2119,36 @@
   .chat-message-user {
     background: linear-gradient(145deg, hsl(var(--gold-1)) 0%, hsl(var(--gold-2)) 100%);
     box-shadow: 0 14px 28px hsl(var(--shadow) / 0.24), 0 0 16px hsl(var(--glow) / 0.14);
+  }
+
+  .chat-composer-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: hsl(var(--text-primary));
+    border: 1px solid hsl(var(--gold-1) / 0.28);
+    background:
+      radial-gradient(circle at top right, hsl(var(--gold-2) / 0.14), transparent 36%),
+      linear-gradient(180deg, hsl(var(--surface-3) / 0.94), hsl(var(--surface-2) / 0.78));
+    box-shadow: 0 12px 24px hsl(var(--shadow) / 0.16);
+    transition: transform var(--duration-fast) ease, border-color var(--duration-fast) ease, background var(--duration-fast) ease;
+  }
+
+  .chat-composer-submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: hsl(var(--gold-1) / 0.42);
+    background:
+      radial-gradient(circle at top right, hsl(var(--gold-2) / 0.2), transparent 40%),
+      linear-gradient(180deg, hsl(var(--surface-4) / 0.95), hsl(var(--surface-3) / 0.82));
+  }
+
+  .chat-composer-submit:disabled {
+    box-shadow: none;
+  }
+
+  .chat-composer-footnote {
+    max-width: 34rem;
+    line-height: 1.45;
   }
 
   .chat-structured-response {

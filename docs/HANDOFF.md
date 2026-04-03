@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T22:05:00.000Z
+- Data/hora: 2026-04-03T22:50:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `main`
+- Branch de referência: `session/2026-04-03/HOME/CODEX/CHAT-LAYOUT-POLISH-3`
 - Commit de base oficial: `f6e01ed3716024016501c75adb9730c1ecc161f8`
-- Head da sessão: `f6e01ed3716024016501c75adb9730c1ecc161f8`
-- Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-chat-polish.md`
+- Head da sessão: `44d14b410689f65c3565588562e1aa452799877d`
+- Último relatório: `docs/operational-reports/2026-04-03-chat-layout-window-polish-3.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C integrado em `main` e polimento estrutural da janela do chat também promovido
-- Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
+- Fase atual: Pré-lançamento com BLOCO 4C integrado em `main`; a branch atual fecha lacunas restantes da aba do chat sem mexer em backend nem corpus
+- Bloco ativo: Polimento paralelo da aba do chat (sidecar ao BLOCO 4C)
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: Confirmar o novo deploy canônico de produção e depois retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload do mesmo PDF.
+- Próxima ação recomendada: decidir se a rodada `CHAT-LAYOUT-POLISH-3` sobe para `main`; depois retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload do mesmo PDF.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -55,11 +55,13 @@
 - A rodada do BLOCO 4C foi integrada em `main` com endurecimento da ingestão, melhorias de usabilidade do chat e cobertura adicional de testes
 - A rodada paralela `CHAT-LAYOUT-POLISH-2` tornou o painel do chat mais largo por padrão, recolocou `Imprimir`, adicionou presets de tamanho e reduziu redundâncias do estado vazio e do controle de modo
 - O polimento estrutural da janela do chat já foi promovido para `main`
+- A rodada paralela `CHAT-LAYOUT-POLISH-3` adiciona persistência do tamanho da janela, reduz ainda mais a densidade do topo e diferencia melhor o estado vazio do estado com conversa
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
 - Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
+- Decidir se a rodada `CHAT-LAYOUT-POLISH-3` deve ser promovida para `main`
 - Confirmar o novo deploy canônico de produção após a integração do polimento do chat
 
 ## Bloqueios externos
