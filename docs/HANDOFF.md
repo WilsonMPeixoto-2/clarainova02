@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T21:36:00.000Z
+- Data/hora: 2026-04-03T22:05:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-03/HOME/CODEX/CHAT-LAYOUT-POLISH-2`
-- Commit de base oficial: `6b6e28c7dfddfdf517dfea6e7c151314c086c2f9`
-- Head da sessão: `db2886b5903d64b0dde0ff6ecb122c9c7ec33758`
-- Último relatório: `docs/operational-reports/2026-04-03-chat-layout-window-polish.md`
+- Branch de referência: `main`
+- Commit de base oficial: `f6e01ed3716024016501c75adb9730c1ecc161f8`
+- Head da sessão: `f6e01ed3716024016501c75adb9730c1ecc161f8`
+- Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-chat-polish.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C integrado em `main`, enquanto uma rodada paralela de polimento da janela do chat segue em branch de sessão
+- Fase atual: Pré-lançamento com BLOCO 4C integrado em `main` e polimento estrutural da janela do chat também promovido
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: Validar visualmente a nova janela do chat nesta branch e, em paralelo, manter como próximo bloqueio funcional o teste remoto de deduplicação com novo upload controlado do mesmo PDF.
+- Próxima ação recomendada: Confirmar o novo deploy canônico de produção e depois retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload do mesmo PDF.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -54,12 +54,13 @@
 - `npm run validate` voltou a passar com `71` testes
 - A rodada do BLOCO 4C foi integrada em `main` com endurecimento da ingestão, melhorias de usabilidade do chat e cobertura adicional de testes
 - A rodada paralela `CHAT-LAYOUT-POLISH-2` tornou o painel do chat mais largo por padrão, recolocou `Imprimir`, adicionou presets de tamanho e reduziu redundâncias do estado vazio e do controle de modo
+- O polimento estrutural da janela do chat já foi promovido para `main`
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
 - Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
-- Decidir se a rodada paralela de polimento da janela do chat deve ser promovida a `main` depois de validação visual final
+- Confirmar o novo deploy canônico de produção após a integração do polimento do chat
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google

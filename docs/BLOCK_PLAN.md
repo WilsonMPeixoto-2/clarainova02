@@ -10,7 +10,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+- Fonte oficial integrada: `origin/main @ f6e01ed3716024016501c75adb9730c1ecc161f8`
 - Frente imediata mais importante: concluir e validar o BLOCO 4C para tornar a ingestão mais eficiente e segura antes da carga curada do corpus
 - Ordem de execução atualmente aceita:
   1. consolidar deduplicação, paralelismo controlado e testes mínimos do pipeline
@@ -57,8 +57,8 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Objetivo: eliminar bloqueios externos que impedem operação previsível e alinhar o código ao contrato Gemini realmente adotado
 - Subetapa concluída: `4B — Verificação remota do corpus e smoke test grounded`
 - Subetapa atual: `4C — Deduplicação, paralelismo e testes do pipeline de ingestão`
-- Estado do 4C: implementação local concluída e validada; falta publicar a rodada e repetir um upload controlado para provar deduplicação no ambiente real
-- Próxima ação: validar a deduplicação em ambiente real e só então liberar a carga curada do corpus
+- Estado do 4C: implementação publicada em `main`, com refinamentos paralelos do painel do chat já incorporados; falta repetir um upload controlado para provar deduplicação no ambiente real
+- Próxima ação: confirmar o deploy canônico desta integração e, em seguida, validar a deduplicação em ambiente real antes de liberar a carga curada do corpus
 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `planned`

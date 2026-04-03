@@ -2,27 +2,27 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-03
-- Base local usada na verificação: `origin/main @ fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+- Base local usada na verificação: `origin/main @ f6e01ed3716024016501c75adb9730c1ecc161f8`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+- `origin/main` atualmente alinhada ao commit: `f6e01ed3716024016501c75adb9730c1ecc161f8`
 - Trabalho local em andamento fora de `main`:
-  - branch ativa de sessão: `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`
+  - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
   - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral
   - a branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não de integração
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
-  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção e a próxima frente oficial passa a ser o BLOCO 4C: deduplicação, paralelismo e testes do pipeline
+  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção e o BLOCO 4C agora incorpora também o polimento estrutural da janela do chat
 
 ## Vercel
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código
+  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código e o novo polimento estrutural do painel do chat
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `git`
@@ -96,7 +96,8 @@
     - o documento novo já grava `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
     - o chat público já respondeu com grounding real ao novo manual em múltiplas perguntas
     - a conta provisionada visível no formulário do admin autentica sessão, mas não coincide com o admin bootstrap ativo em `public.admin_users`; para o teste operacional desta fase deve ser usada a conta administrativa real
-    - a rodada local do BLOCO 4C já implementa `document_hash`, deduplicação prévia e concorrência controlada, mas essas mudanças ainda aguardam publicação e validação remota
+    - a rodada local do BLOCO 4C com `document_hash`, deduplicação prévia e concorrência controlada já foi publicada em `main`
+    - o próximo teste remoto objetivo continua sendo repetir o upload do mesmo PDF para validar a deduplicação em ambiente real
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google

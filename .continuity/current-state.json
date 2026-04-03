@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "6b6e28c7dfddfdf517dfea6e7c151314c086c2f9",
-  "current_phase": "Pré-lançamento com BLOCO 4C integrado em main: ingestão endurecida, refinamentos de chat publicados no repositório e validação remota de deduplicação ainda pendente",
+  "last_integrated_main_sha": "f6e01ed3716024016501c75adb9730c1ecc161f8",
+  "current_phase": "Pré-lançamento com BLOCO 4C integrado em main e polimento estrutural da janela do chat também promovido; a validação remota de deduplicação segue como próximo bloqueio funcional",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
-  "active_branch": "session/2026-04-03/HOME/CODEX/CHAT-LAYOUT-POLISH-2",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T21:36:00.000Z",
+  "last_update_utc": "2026-04-03T22:05:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -48,19 +48,20 @@
     "`Header` e `Footer` agora cobrem explicitamente a descoberta pública do acesso administrativo",
     "`npm run validate` passou novamente com 71 testes apos o ajuste de navegabilidade do admin",
     "A rodada do BLOCO 4C foi integrada em `main` com endurecimento da ingestão, melhorias de usabilidade do chat e cobertura adicional de testes",
-    "Uma rodada paralela de polimento da janela do chat passou a abrir em 75% por padrão, recolocou impressão em destaque e reduziu redundâncias do estado vazio e do topo"
+    "Uma rodada paralela de polimento da janela do chat passou a abrir em 75% por padrão, recolocou impressão em destaque e reduziu redundâncias do estado vazio e do topo",
+    "A rodada `CHAT-LAYOUT-POLISH-2` foi promovida para `main` por fast-forward"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto",
     "Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido",
-    "Decidir se a rodada paralela de polimento da janela do chat deve ser promovida a `main` depois de validação visual final"
+    "Confirmar o novo deploy canônico de produção após a integração do polimento do chat em `main`"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Validar visualmente a nova janela do chat nesta branch e, em paralelo, manter como próximo bloqueio funcional o teste remoto de deduplicação com reupload controlado do mesmo PDF quando houver sessão admin disponível.",
+  "next_action": "Acompanhar o novo deploy canônico em produção e, em seguida, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload controlado do mesmo PDF.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -75,6 +76,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-chat-layout-window-polish.md",
-  "last_session_head_sha": "db2886b5903d64b0dde0ff6ecb122c9c7ec33758"
+  "last_report": "docs/operational-reports/2026-04-03-main-integration-and-production-deploy-chat-polish.md",
+  "last_session_head_sha": "f6e01ed3716024016501c75adb9730c1ecc161f8"
 }
