@@ -2,13 +2,13 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-03
-- Base local usada na verificação: `origin/main @ f6e01ed3716024016501c75adb9730c1ecc161f8`
+- Base local usada na verificação: `origin/main @ a341cd1f3a295299129c0734839b9753c563b34b`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `f6e01ed3716024016501c75adb9730c1ecc161f8`
+- `origin/main` atualmente alinhada ao commit: `a341cd1f3a295299129c0734839b9753c563b34b`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
@@ -16,13 +16,13 @@
   - a branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não de integração
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
-  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção e o BLOCO 4C agora incorpora também o polimento estrutural da janela do chat
+  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção, o BLOCO 4C já está em `main` e a terceira rodada de polimento da janela do chat também foi promovida
 
 ## Vercel
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código e o novo polimento estrutural do painel do chat
+  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código e a terceira rodada de polimento da janela do chat
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `git`

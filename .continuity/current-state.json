@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "f6e01ed3716024016501c75adb9730c1ecc161f8",
-  "current_phase": "Pré-lançamento com BLOCO 4C integrado em main; a branch de sessão atual fecha a persistência de tamanho e a compactação final da aba do chat enquanto a validação remota de deduplicação segue como próximo bloqueio funcional",
-  "active_block": "Polimento paralelo da aba do chat (sidecar ao BLOCO 4C)",
-  "active_branch": "session/2026-04-03/HOME/CODEX/CHAT-LAYOUT-POLISH-3",
+  "last_integrated_main_sha": "a341cd1f3a295299129c0734839b9753c563b34b",
+  "current_phase": "Pré-lançamento com BLOCO 4C integrado em main e terceira rodada de polimento da aba do chat também promovida; a validação remota de deduplicação segue como próximo bloqueio funcional",
+  "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T23:05:00.000Z",
+  "last_update_utc": "2026-04-03T23:25:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -50,20 +50,19 @@
     "A rodada do BLOCO 4C foi integrada em `main` com endurecimento da ingestão, melhorias de usabilidade do chat e cobertura adicional de testes",
     "Uma rodada paralela de polimento da janela do chat passou a abrir em 75% por padrão, recolocou impressão em destaque e reduziu redundâncias do estado vazio e do topo",
     "A rodada `CHAT-LAYOUT-POLISH-2` foi promovida para `main` por fast-forward",
-    "A branch paralela `CHAT-LAYOUT-POLISH-3` adiciona persistência do tamanho da janela, compactação do topo em conversa ativa e distinção mais forte entre estado vazio e estado com conversa"
+    "A rodada `CHAT-LAYOUT-POLISH-3` foi promovida para `main`, adicionando persistência do tamanho da janela, compactação do topo em conversa ativa e distinção mais forte entre estado vazio e estado com conversa"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto",
     "Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido",
-    "Confirmar se a rodada `CHAT-LAYOUT-POLISH-3` deve ser promovida para `main`",
     "Confirmar o novo deploy canônico de produção após a integração do polimento do chat em `main`"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Decidir se a rodada `CHAT-LAYOUT-POLISH-3` sobe para `main`; em seguida, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload controlado do mesmo PDF.",
+  "next_action": "Confirmar o novo deploy canônico de produção e, em seguida, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload controlado do mesmo PDF.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -78,6 +77,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-chat-layout-window-polish-3.md",
-  "last_session_head_sha": "61dc12f878790ca0969dfcf25e3e0671d9f8f76b"
+  "last_report": "docs/operational-reports/2026-04-03-main-integration-and-production-deploy-chat-polish-3.md",
+  "last_session_head_sha": "a341cd1f3a295299129c0734839b9753c563b34b"
 }
