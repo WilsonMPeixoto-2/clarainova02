@@ -59,6 +59,7 @@ const Footer = () => {
               <p className="text-xs font-semibold tracking-widest text-[hsl(var(--gold-1))] uppercase mb-1">Transparência</p>
               <Link to="/termos" className="text-sm text-foreground/80 hover:text-foreground transition-colors">Termos de Uso</Link>
               <Link to="/privacidade" className="text-sm text-foreground/80 hover:text-foreground transition-colors">Política de Privacidade</Link>
+              <Link to="/admin" className="text-sm text-foreground/80 hover:text-foreground transition-colors">Acesso administrativo</Link>
             </nav>
             <nav className="flex flex-col gap-4" aria-label="Contato">
               <p className="text-xs font-semibold tracking-widest text-[hsl(var(--gold-1))] uppercase mb-1">Contato</p>

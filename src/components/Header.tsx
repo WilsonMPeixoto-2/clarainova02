@@ -205,6 +205,13 @@ const Header = () => {
                   <ChatCircle weight="duotone" size={18} aria-hidden="true" />
                   Chat com CLARA
                 </button>
+                <Link
+                  to="/admin"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.45)] px-4 py-3 text-sm font-medium text-foreground/82 transition-colors hover:border-primary/30 hover:bg-[hsl(var(--surface-2)/0.72)] hover:text-foreground"
+                >
+                  Acesso administrativo
+                </Link>
                 <p className="text-hint text-center mt-3 leading-relaxed">
                   Abra o chat para fazer uma pergunta.
                 </p>

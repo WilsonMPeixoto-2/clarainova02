@@ -42,6 +42,7 @@ describe('Header', () => {
     const dialog = screen.getByRole('dialog', { name: /menu clara/i });
     expect(dialog).toBeInTheDocument();
     expect(within(dialog).getByRole('link', { name: /política de privacidade/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole('link', { name: /acesso administrativo/i })).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole('button', { name: /fechar menu/i }));
 
