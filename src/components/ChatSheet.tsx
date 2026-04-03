@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { DownloadSimple, CircleNotch, ArrowsOut, ArrowsIn, Sidebar, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
+import { DownloadSimple, CircleNotch, Printer, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
@@ -26,7 +26,19 @@ const STARTER_PROMPTS = [
   'Quais etapas devo conferir antes de encaminhar um processo?',
 ];
 
-type ChatPanelMode = 'default' | 'expanded' | 'fullscreen';
+type ChatPanelMode = 'compact' | 'medium' | 'wide' | 'fullscreen';
+
+const CHAT_PANEL_PRESETS: Array<{
+  mode: Exclude<ChatPanelMode, 'fullscreen'>;
+  label: string;
+  shortLabel: string;
+  ratio: number;
+  width: string;
+}> = [
+  { mode: 'compact', label: '25%', shortLabel: '25', ratio: 0.25, width: 'clamp(420px, 25vw, 520px)' },
+  { mode: 'medium', label: '50%', shortLabel: '50', ratio: 0.5, width: 'clamp(620px, 50vw, 980px)' },
+  { mode: 'wide', label: '75%', shortLabel: '75', ratio: 0.75, width: 'clamp(860px, 75vw, 1480px)' },
+];
 
 const MIN_PANEL_WIDTH = 420;
 const PANEL_VIEWPORT_MARGIN = 20;
@@ -120,7 +132,7 @@ const ChatSheet = () => {
   const isMobile = useIsMobile();
   const isOnline = useOnlineStatus();
   const [input, setInput] = useState('');
-  const [panelMode, setPanelMode] = useState<ChatPanelMode>('default');
+  const [panelMode, setPanelMode] = useState<ChatPanelMode>('wide');
   const [customWidth, setCustomWidth] = useState<number | null>(null);
   const isDraggingRef = useRef(false);
   const sheetRef = useRef<HTMLElement>(null);
@@ -141,7 +153,7 @@ const ChatSheet = () => {
       return clampPanelWidth(customWidth);
     }
 
-    const ratio = panelMode === 'default' ? 0.46 : 0.82;
+    const ratio = CHAT_PANEL_PRESETS.find((preset) => preset.mode === panelMode)?.ratio ?? 0.75;
     return clampPanelWidth(Math.round(window.innerWidth * ratio));
   }, [customWidth, isMobile, panelMode]);
 
@@ -166,6 +178,7 @@ const ChatSheet = () => {
     };
   }, [isOpen]);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isPrintingPdf, setIsPrintingPdf] = useState(false);
   const [loadingPhaseIndex, setLoadingPhaseIndex] = useState(0);
 
   const exportableMessages = useMemo(
@@ -183,7 +196,7 @@ const ChatSheet = () => {
       setPanelMode('fullscreen');
     }
     if (!isMobile && panelMode === 'fullscreen') {
-      setPanelMode('default');
+      setPanelMode('wide');
     }
   }, [isMobile, panelMode]);
 
@@ -240,10 +253,6 @@ const ChatSheet = () => {
 
     sendMessage(input);
     setInput('');
-  };
-
-  const handlePanelMode = (nextMode: ChatPanelMode) => {
-    setPanelMode(nextMode);
   };
 
   const handleResizeKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -319,35 +328,43 @@ const ChatSheet = () => {
     }
   };
 
+  const handlePrintPdf = async () => {
+    if (exportableMessages.length === 0 || isPrintingPdf) {
+      return;
+    }
+
+    setIsPrintingPdf(true);
+    try {
+      const { printChatSessionPdf } = await import('@/components/chat/chat-session-pdf-export');
+
+      await printChatSessionPdf({
+        messages: exportableMessages,
+        sessionTitle,
+        logoSrc: typeof window !== 'undefined' ? `${window.location.origin}/icon-192.png` : null,
+      });
+    } catch (error) {
+      console.error('PDF print error:', error);
+      toast.error('Nao foi possivel abrir a impressao', {
+        description: 'Verifique se o navegador bloqueou a janela de impressao e tente novamente.',
+      });
+    } finally {
+      setIsPrintingPdf(false);
+    }
+  };
+
   const sheetWidth = isMobile
     ? '100vw'
     : panelMode === 'fullscreen'
       ? '100vw'
       : customWidth
         ? `${customWidth}px`
-        : panelMode === 'default'
-          ? 'clamp(580px, 46vw, 860px)'
-          : 'clamp(840px, 82vw, 1480px)';
+        : CHAT_PANEL_PRESETS.find((preset) => preset.mode === panelMode)?.width ?? 'clamp(860px, 75vw, 1480px)';
 
   const assistantMessageMaxWidth = isMobile ? 'max-w-[96%]' : 'max-w-[94%]';
   const activeLoadingPhase = LOADING_PHASES[loadingPhaseIndex];
   const isPreviewMode = runtimeMode === 'preview';
   const isMockMode = runtimeMode === 'mock';
   const responseModePresentation = getChatResponseModePresentation(responseMode);
-  const panelModePresentation = panelMode === 'default'
-    ? {
-        label: 'Consulta rápida',
-        hint: 'Painel padrão com foco em leitura ágil.',
-      }
-    : panelMode === 'expanded'
-      ? {
-          label: 'Leitura ampliada',
-          hint: 'Mais largura para respostas longas e referências.',
-        }
-      : {
-          label: 'Tela inteira',
-          hint: 'Espaço máximo para leitura prolongada.',
-        };
   const inputPlaceholder = isPreviewMode
     ? responseMode === 'direto'
       ? 'Pergunte para experimentar uma resposta mais objetiva nesta demonstração da CLARA...'
@@ -367,7 +384,7 @@ const ChatSheet = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[90] bg-black/72 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -428,52 +445,72 @@ const ChatSheet = () => {
                 <div className="min-w-0">
                   <p id="clara-chat-title" className="text-sm font-semibold text-foreground">CLARA</p>
                   <div className="chat-header-meta-row">
-                    <p className="text-[11px] text-muted-foreground">Apoio ao SEI-Rio</p>
+                    <p className="text-[11px] text-muted-foreground">Janela institucional de apoio ao SEI-Rio</p>
                     <span className="chat-status-pill" data-mode={runtimeMode}>{runtimeLabel}</span>
                     <span className="chat-response-mode-pill" data-mode={responseMode}>{responseModePresentation.label}</span>
-                    <span className="chat-panel-mode-pill" data-mode={panelMode}>{panelModePresentation.label}</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                {exportableMessages.length > 0 && (
-                  <ChatHeaderActionButton
-                    onClick={handleExportPdf}
-                    disabled={isExportingPdf}
-                    className="is-prominent"
-                    label="Exportar conversa em PDF"
-                    visibleLabel="PDF"
-                    showLabel={!isMobile}
-                  >
-                    {isExportingPdf ? <CircleNotch size={16} className="animate-spin" /> : <DownloadSimple size={16} />}
-                  </ChatHeaderActionButton>
+                {!isMobile && (
+                  <div className="chat-size-control" aria-label="Tamanho da janela">
+                    <span className="chat-size-control-label">Tamanho</span>
+                    <div className="chat-size-control-options" role="group" aria-label="Selecionar tamanho da janela">
+                      {CHAT_PANEL_PRESETS.map((preset) => {
+                        const isActive = panelMode === preset.mode && customWidth === null;
+
+                        return (
+                          <button
+                            key={preset.mode}
+                            type="button"
+                            className={`chat-size-control-option ${isActive ? 'is-active' : ''}`}
+                            onClick={() => {
+                              setCustomWidth(null);
+                              setPanelMode(preset.mode);
+                            }}
+                            aria-pressed={isActive}
+                          >
+                            {preset.shortLabel}
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        className={`chat-size-control-option ${panelMode === 'fullscreen' ? 'is-active' : ''}`}
+                        onClick={() => {
+                          setCustomWidth(null);
+                          setPanelMode('fullscreen');
+                        }}
+                        aria-pressed={panelMode === 'fullscreen'}
+                      >
+                        100
+                      </button>
+                    </div>
+                  </div>
                 )}
 
-                {!isMobile && (
+                {exportableMessages.length > 0 && (
                   <>
                     <ChatHeaderActionButton
-                      onClick={() => {
-                        setCustomWidth(null);
-                        handlePanelMode(panelMode === 'default' ? 'expanded' : 'default');
-                      }}
-                      label={panelMode === 'default' ? 'Ampliar leitura do painel' : 'Voltar ao painel padrão'}
-                      visibleLabel="Leitura"
-                      showLabel
+                      onClick={handleExportPdf}
+                      disabled={isExportingPdf}
+                      className="is-prominent"
+                      label="Exportar conversa em PDF"
+                      visibleLabel="PDF"
+                      showLabel={!isMobile}
                     >
-                      {panelMode === 'default' ? <Sidebar size={16} /> : <ArrowsIn size={16} />}
+                      {isExportingPdf ? <CircleNotch size={16} className="animate-spin" /> : <DownloadSimple size={16} />}
                     </ChatHeaderActionButton>
 
                     <ChatHeaderActionButton
-                      onClick={() => {
-                        setCustomWidth(null);
-                        handlePanelMode(panelMode === 'fullscreen' ? 'expanded' : 'fullscreen');
-                      }}
-                      label={panelMode === 'fullscreen' ? 'Sair da tela inteira' : 'Abrir em tela inteira'}
-                      visibleLabel="Tela cheia"
-                      showLabel
+                      onClick={handlePrintPdf}
+                      disabled={isPrintingPdf}
+                      label="Imprimir conversa"
+                      visibleLabel="Imprimir"
+                      showLabel={!isMobile}
                     >
-                      {panelMode === 'fullscreen' ? <ArrowsIn size={16} /> : <ArrowsOut size={16} />}
+                      {isPrintingPdf ? <CircleNotch size={16} className="animate-spin" /> : <Printer size={16} />}
                     </ChatHeaderActionButton>
                   </>
                 )}
@@ -514,20 +551,12 @@ const ChatSheet = () => {
                     <div className="chat-empty-avatar">
                       <ClaraMonogram className="w-8 h-8" title="" />
                     </div>
-                    <p className="chat-empty-kicker">{runtimeLabel}</p>
-                    <p className="chat-empty-title">CLARA pronta para te orientar.</p>
+                    <p className="chat-empty-title">Pergunte e eu organizo a orientação.</p>
                     <p className="chat-empty-copy">
                       {isPreviewMode
-                        ? 'Você já pode testar perguntas e sentir como a CLARA organiza a orientação. Nesta fase, as respostas funcionam como demonstração da experiência.'
-                        : 'Faça uma pergunta sobre etapas, documentos, assinatura ou tramitação no SEI-Rio.'}
+                        ? 'Você já pode testar perguntas e sentir como a CLARA organiza a orientação nesta demonstração.'
+                        : 'Faça uma pergunta sobre etapas, documentos, assinatura ou tramitação no SEI-Rio. O foco aqui é começar rápido, sem ruído.'}
                     </p>
-                    <div className="chat-mode-summary">
-                      <p className="chat-mode-summary-kicker">Modo selecionado</p>
-                      <p className="chat-mode-summary-copy">
-                        <strong>{responseModePresentation.label}</strong>: {responseModePresentation.description}
-                      </p>
-                      <p className="chat-mode-summary-copy">{responseModePresentation.selectionHint}</p>
-                    </div>
 
                     <div className="chat-starter-grid mt-5">
                       {STARTER_PROMPTS.map((prompt) => (
@@ -611,10 +640,11 @@ const ChatSheet = () => {
               className="px-4 py-3 border-t border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1))]"
             >
               <div className="chat-response-mode-shell" aria-label="Modo de resposta">
-                <div className="chat-response-mode-copy-block">
+                <div className="chat-response-mode-head">
                   <p className="chat-response-mode-kicker">Modo de resposta</p>
-                  <p className="chat-response-mode-copy">{responseModePresentation.description}</p>
-                  <p className="chat-response-mode-support-copy">{responseModePresentation.selectionHint}</p>
+                  <p className="chat-response-mode-copy">
+                    Direto responde com objetividade. Didático explica com mais contexto e passo a passo.
+                  </p>
                 </div>
                 <div className="chat-response-mode-toggle" role="group" aria-label="Selecionar modo de resposta">
                   {CHAT_RESPONSE_MODES.map((modeOption) => {
@@ -629,9 +659,10 @@ const ChatSheet = () => {
                         disabled={isLoading || isStreaming}
                         className={`chat-response-mode-option ${isActive ? 'is-active' : ''}`}
                         aria-pressed={isActive}
+                        data-mode={modeOption}
                       >
                         <span className="chat-response-mode-option-title">{optionPresentation.label}</span>
-                        <span className="chat-response-mode-option-copy">{optionPresentation.selectionHint}</span>
+                        <span className="chat-response-mode-option-copy">{optionPresentation.description}</span>
                       </button>
                     );
                   })}
@@ -662,8 +693,8 @@ const ChatSheet = () => {
               <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                 <p className="text-[10px] text-muted-foreground/60">
                   {isPreviewMode
-                    ? `Ambiente demonstrativo: você pode experimentar o modo ${responseModePresentation.label.toLowerCase()} enquanto a base oficial da CLARA é finalizada.`
-                    : `Modo atual: ${responseModePresentation.label}. Quando houver material aplicável, as referências ficam ao final da resposta.`}
+                    ? `Ambiente demonstrativo: respostas e referências servem para validar a experiência da CLARA.`
+                    : `Modo atual: ${responseModePresentation.label}. Quando houver base aplicável, as referências aparecem ao final da resposta.`}
                 </p>
                 <span className="text-[10px] text-muted-foreground/50">
                   Enter envia. Shift + Enter cria nova linha.

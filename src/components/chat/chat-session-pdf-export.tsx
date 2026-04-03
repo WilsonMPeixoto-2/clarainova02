@@ -54,3 +54,38 @@ export async function exportChatSessionPdf(options: {
   anchor.remove();
   URL.revokeObjectURL(downloadUrl);
 }
+
+export async function printChatSessionPdf(options: {
+  messages: ChatMessage[];
+  generatedAt?: Date;
+  sessionTitle: string;
+  logoSrc?: string | null;
+}) {
+  const generatedAt = options.generatedAt ?? new Date();
+  const pdfDocument = (
+    <ChatSessionPdfDocument
+      messages={options.messages}
+      generatedAt={generatedAt}
+      sessionTitle={options.sessionTitle}
+      logoSrc={options.logoSrc ?? null}
+    />
+  );
+
+  const blob = await pdf(pdfDocument).toBlob();
+  const fileUrl = URL.createObjectURL(blob);
+  const printWindow = window.open(fileUrl, '_blank', 'noopener,noreferrer');
+
+  if (!printWindow) {
+    URL.revokeObjectURL(fileUrl);
+    throw new Error('PRINT_WINDOW_BLOCKED');
+  }
+
+  window.setTimeout(() => {
+    try {
+      printWindow.focus();
+      printWindow.print();
+    } finally {
+      window.setTimeout(() => URL.revokeObjectURL(fileUrl), 60_000);
+    }
+  }, 700);
+}

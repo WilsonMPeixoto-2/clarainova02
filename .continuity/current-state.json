@@ -5,10 +5,10 @@
   "last_integrated_main_sha": "6b6e28c7dfddfdf517dfea6e7c151314c086c2f9",
   "current_phase": "Pré-lançamento com BLOCO 4C integrado em main: ingestão endurecida, refinamentos de chat publicados no repositório e validação remota de deduplicação ainda pendente",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
-  "active_branch": "main",
+  "active_branch": "session/2026-04-03/HOME/CODEX/CHAT-LAYOUT-POLISH-2",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T20:00:00.000Z",
+  "last_update_utc": "2026-04-03T21:20:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -47,19 +47,20 @@
     "A home passou a expor um caminho discreto para `/admin` no drawer móvel e no footer público",
     "`Header` e `Footer` agora cobrem explicitamente a descoberta pública do acesso administrativo",
     "`npm run validate` passou novamente com 71 testes apos o ajuste de navegabilidade do admin",
-    "A rodada do BLOCO 4C foi integrada em `main` com endurecimento da ingestão, melhorias de usabilidade do chat e cobertura adicional de testes"
+    "A rodada do BLOCO 4C foi integrada em `main` com endurecimento da ingestão, melhorias de usabilidade do chat e cobertura adicional de testes",
+    "Uma rodada paralela de polimento da janela do chat passou a abrir em 75% por padrão, recolocou impressão em destaque e reduziu redundâncias do estado vazio e do topo"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
-    "Confirmar em produção o deploy canônico da integração do BLOCO 4C",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto",
-    "Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido"
+    "Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido",
+    "Decidir se a rodada paralela de polimento da janela do chat deve ser promovida a `main` depois de validação visual final"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Confirmar o deploy canônico de produção desta integração em main e depois executar o teste remoto de deduplicação com upload controlado do mesmo PDF.",
+  "next_action": "Validar visualmente a nova janela do chat nesta branch e, em paralelo, manter como próximo bloqueio funcional o teste remoto de deduplicação com reupload controlado do mesmo PDF quando houver sessão admin disponível.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -74,6 +75,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-main-integration-and-production-deploy-block-4c.md",
-  "last_session_head_sha": "6b6e28c7dfddfdf517dfea6e7c151314c086c2f9"
+  "last_report": "docs/operational-reports/2026-04-03-chat-layout-window-polish.md",
+  "last_session_head_sha": "b97a18d4fc1188b2093e9c79d3f228f4da334f58"
 }
