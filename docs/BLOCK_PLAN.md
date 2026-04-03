@@ -10,8 +10,8 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ df682dd1d178a326fb4f1115026f4a388daac503`
-- Frente imediata mais importante: executar o BLOCO 4B para validar o corpus remoto e concluir o smoke test grounded com a pilha Gemini nova já integrada
+- Fonte oficial integrada: `origin/main @ fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+- Frente imediata mais importante: concluir o BLOCO 4B reprocessando o legado sem embeddings e validando os metadados do contrato novo no banco remoto
 - Ordem de execução atualmente aceita:
   1. verificar corpus remoto e executar smoke test com 1 PDF + perguntas grounded
   2. depois executar deduplicação, paralelismo controlado e testes do pipeline
@@ -57,7 +57,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Estado: `in_progress`
 - Objetivo: eliminar bloqueios externos que impedem operação previsível e alinhar o código ao contrato Gemini realmente adotado
 - Subetapa atual: `4B — Verificação remota do corpus e smoke test grounded`
-- Próxima ação: inspecionar o corpus remoto, verificar mistura entre gerações de embeddings, decidir re-embed/limpeza de legado e executar o smoke test remoto registrado em `docs/operational-reports/2026-04-03-block-4a-gemini-embedding-contract.md`
+- Próxima ação: reprocessar o documento legado sem embeddings ou ingerir um novo PDF real pequeno no contrato novo, depois validar os metadados persistidos conforme `docs/operational-reports/2026-04-03-block-4b-remote-corpus-verification.md`
 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `planned`

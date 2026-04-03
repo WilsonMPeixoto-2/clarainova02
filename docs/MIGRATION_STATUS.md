@@ -29,6 +29,13 @@ Em 2026-04-03, o `main` passou a refletir explicitamente o contrato Gemini efeti
 
 Essa atualização já está integrada em `main` e publicada em produção. O que continua pendente é a validação remota do corpus e o smoke test grounded do BLOCO 4B.
 
+Achado adicional do BLOCO 4B:
+
+- o corpus remoto atual não mistura silenciosamente gerações de embeddings
+- existe apenas um documento legado com 2 chunks persistidos
+- esses chunks continuam sem `embedding_model`, `embedding_dim`, `embedded_at` e sem embeddings persistidos
+- o próximo passo não é limpar mistura de modelos, e sim reprocessar o legado no contrato novo
+
 ## Memoria operacional e continuidade
 
 Desde 2026-04-01, o repositorio passa a carregar uma trilha minima obrigatoria de continuidade no proprio Git:

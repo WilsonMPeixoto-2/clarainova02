@@ -2,13 +2,13 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-03
-- Base local usada na verificação: `origin/main @ df682dd1d178a326fb4f1115026f4a388daac503`
+- Base local usada na verificação: `origin/main @ fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `df682dd1d178a326fb4f1115026f4a388daac503`
+- `origin/main` atualmente alinhada ao commit: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão permanece aberta como fonte principal; o BLOCO 4A já foi integrado
 - Observação de continuidade:
@@ -24,8 +24,8 @@
 - Deploy canônico mais recente observado:
   - source: `git`
   - status: `READY`
-  - deployment id: `dpl_4XhtFxiDd3NCq49kMgLYyF3o14mH`
-  - commit publicado: `df682dd1d178a326fb4f1115026f4a388daac503`
+  - deployment id: `dpl_6kyS1eZ3YnMPij1LMtu4DvV1qieZ`
+  - commit publicado: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`
@@ -85,11 +85,16 @@
     - secret requerido nas functions: `GEMINI_API_KEY`
 - Corpus inicial:
   - status: `não concluído`
-  - situação conhecida: existe prova operacional com 1 PDF, mas não há lote curado inicial fechado
+  - situação conhecida:
+    - existe 1 documento legado no remoto: `MODELO_DE_OFICIO_PDDE.pdf`
+    - o remoto possui 2 chunks persistidos para esse documento
+    - não há embeddings persistidos nesses chunks
+    - os chunks ainda usam o formato legado com prefixo textual `[Fonte: ... | Página: ...]`
+    - o chat público ainda responde com grounding lexical/fallback sobre esse documento, mas o contrato novo de embedding ainda não foi validado no banco remoto
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
-- o corpus remoto ainda pode conter mistura entre gerações antigas e novas de embedding até a conclusão do BLOCO 4B
+- o corpus remoto atual não mostra mistura entre gerações de embedding, mas ainda depende de reprocessamento porque o único documento legado está sem embeddings e sem metadados novos
 
 ## Regras de atualização deste arquivo
 - Atualize este arquivo sempre que mudar algo em:

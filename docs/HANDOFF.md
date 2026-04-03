@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T05:02:04.789Z
+- Data/hora: 2026-04-03T05:14:30.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `main`
-- Commit de base oficial: `df682dd1d178a326fb4f1115026f4a388daac503`
-- Head da sessão: `df682dd1d178a326fb4f1115026f4a388daac503`
-- Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-block-4a.md`
+- Branch de referência: `session/2026-04-03/HOME/CODEX/BLOCO-4B-REMOTE-SMOKE`
+- Commit de base oficial: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+- Head da sessão: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+- Último relatório: `docs/operational-reports/2026-04-03-block-4b-remote-corpus-verification.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4A integrado em main e produção refletindo o contrato Gemini novo
+- Fase atual: Pré-lançamento com BLOCO 4B em execução: corpus remoto inspecionado, smoke test público concluído e reprocessamento do legado pendente
 - Bloco ativo: BLOCO 4B — Verificação remota do corpus e smoke test grounded
-- Status da sessão: `integrated`
-- Próxima ação recomendada: Executar o BLOCO 4B: verificar o estado real do corpus remoto, decidir re-embed/limpeza de legado e concluir o smoke test remoto com 1 PDF e perguntas grounded.
+- Status da sessão: `partial`
+- Próxima ação recomendada: Concluir o BLOCO 4B reprocessando o PDF legado ou ingerindo um novo PDF real pequeno no contrato novo, depois validar os metadados de embedding no banco e repetir 1–3 perguntas grounded.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -31,11 +31,13 @@
 - Document embedding agora usa `taskType: RETRIEVAL_DOCUMENT`, `title`, normalização L2 e persistência de metadados de embedding
 - O frontend de ingestão passou a enviar chunks estruturados, sem prefixos artificiais no texto semântico
 - `npm run validate` passou antes da integração
-- A produção publicada já aponta para o commit `df682dd1d178a326fb4f1115026f4a388daac503`
+- A produção publicada já aponta para o commit `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+- A inspeção remota do corpus mostrou 1 documento legado com 2 chunks e 0 embeddings persistidos
+- O chat público em produção respondeu de forma grounded ao documento legado, com referência explícita ao PDF de base
 
 ## Itens pendentes
-- Verificar contaminação entre gerações de embeddings no corpus remoto antes da ingestão séria
-- Executar smoke test remoto com 1 PDF real e 1–3 perguntas grounded
+- Reprocessar o PDF legado ou subir um novo PDF real pequeno sob o contrato novo de embeddings
+- Confirmar no banco remoto a persistência de `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
 - Executar o BLOCO 4C com deduplicação, paralelismo controlado e preparação da carga curada do corpus
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
 
@@ -49,7 +51,8 @@
 - O preparo do BLOCO 4 foi registrado sem tocar em `ROADMAP_FUTURO.md` nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.
 - Main agora incorpora a reconciliação canônica de migrations e o endurecimento administrativo da rodada de BLOCO 3.
 - As tentativas manuais de deploy por CLI no projeto canônico falharam com erro interno da Vercel, mas a integração Git publicou a versão válida de produção.
-- O BLOCO 4A já foi integrado em `main` e publicado em produção; a próxima frente deixa de ser alinhamento de código e passa a ser validação remota do corpus.
+- O BLOCO 4A já foi integrado em `main` e publicado em produção; o BLOCO 4B agora depende de reprocessar o legado sem embeddings e confirmar o contrato novo no banco remoto.
+- As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas no backlog, sem competir com a prioridade atual.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade
