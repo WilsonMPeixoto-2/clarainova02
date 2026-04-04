@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "de83905cf943b5968f8bab6dfa7b78ea9c961758",
-  "current_phase": "Pré-lançamento com BLOCO 4C em correção final de deduplicação; a produção já usa o novo workspace do chat e o corpus remoto foi reconciliado após detectar duplicação causada por documento legado sem hash",
+  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção após correção de deduplicação legada; o corpus remoto foi reconciliado e o próximo passo útil é um novo reupload controlado na UI admin",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
-  "active_branch": "session/2026-04-04/HOME/CODEX/BLOCO-4C-DEDUP-LEGACY-FIX",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T03:49:00.000Z",
+  "last_update_utc": "2026-04-04T03:56:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -63,7 +63,8 @@
     "O teste remoto de reupload do mesmo PDF revelou uma lacuna de deduplicação para documentos legados sem `document_hash`",
     "A UI admin agora baixa candidatos legados com o mesmo `file_name`, calcula o SHA-256 do arquivo armazenado e faz backfill do `document_hash` antes de bloquear o reupload duplicado",
     "O duplicado remoto do `SEI-Guia-do-usuario-Versao-final.pdf` foi reconciliado e o corpus voltou a ter apenas um documento canônico do guia",
-    "`npm run validate` voltou a passar com 72 testes após a correção da deduplicação legada"
+    "`npm run validate` voltou a passar com 72 testes após a correção da deduplicação legada",
+    "A correção da deduplicação legada já foi integrada em `main` e publicada em produção no deploy canônico `dpl_2J9yUxb5DoWMZuYz4LC5FnCPBDv4`"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado na UI após publicar a correção desta branch",
@@ -75,7 +76,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Publicar a correção da deduplicação legada, então repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso sem novo custo.",
+  "next_action": "Repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso de duplicidade já com a correção publicada em produção.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -91,6 +92,6 @@
     "O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-04-block-4c-dedup-legacy-reconciliation.md",
-  "last_session_head_sha": "26e787b6aacb40ff162cc5fc90f6480244269418"
+  "last_report": "docs/operational-reports/2026-04-04-main-integration-and-production-deploy-block-4c-dedup-legacy-fix.md",
+  "last_session_head_sha": "1af2d84baf0b126146f128e2045c0307227863ca"
 }

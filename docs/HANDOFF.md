@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T03:49:00.000Z
+- Data/hora: 2026-04-04T03:56:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-04/HOME/CODEX/BLOCO-4C-DEDUP-LEGACY-FIX`
-- Commit de base oficial: `de83905cf943b5968f8bab6dfa7b78ea9c961758`
-- Head da sessão: `26e787b6aacb40ff162cc5fc90f6480244269418`
-- Último relatório: `docs/operational-reports/2026-04-04-block-4c-dedup-legacy-reconciliation.md`
+- Branch de referência: `main`
+- Commit de base oficial: `1af2d84baf0b126146f128e2045c0307227863ca`
+- Head da sessão: `1af2d84baf0b126146f128e2045c0307227863ca`
+- Último relatório: `docs/operational-reports/2026-04-04-main-integration-and-production-deploy-block-4c-dedup-legacy-fix.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C em correção final de deduplicação, produção já alinhada ao novo workspace do chat e corpus remoto reconciliado após detectar duplicação causada por documento legado sem hash
+- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção após correção de deduplicação legada; o corpus remoto foi reconciliado e o próximo passo útil é um novo reupload controlado na UI admin
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: publicar a correção da deduplicação legada, então repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso sem novo custo.
+- Próxima ação recomendada: repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso de duplicidade já com a correção publicada em produção.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -68,6 +68,7 @@
 - A UI admin agora baixa candidatos legados com o mesmo `file_name`, compara o SHA-256 do arquivo armazenado e faz backfill do `document_hash` antes de bloquear o upload duplicado
 - O duplicado remoto do `SEI-Guia-do-usuario-Versao-final.pdf` foi removido após prova de identidade por hash, mantendo apenas o documento canônico com `88/88` chunks e `88/88` embeddings
 - `npm run validate` voltou a passar com `72` testes após a correção da deduplicação legada
+- A correção da deduplicação legada já foi integrada em `main` e publicada em produção no deploy canônico `dpl_2J9yUxb5DoWMZuYz4LC5FnCPBDv4`
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado na UI após publicar a correção desta branch
