@@ -445,13 +445,13 @@ const ChatSheet = () => {
   const showRuntimePill = runtimeMode !== 'online' || !hasMessages;
   const showRuntimeBanner = runtimeMode !== 'online' && !hasMessages;
   const showRuntimeInlineNote = runtimeMode !== 'online' && hasMessages;
-  const headerContextLabel = hasMessages ? 'Conversa em andamento' : 'Consulta institucional ao SEI-Rio';
+  const headerContextLabel = hasMessages ? 'Sessao ativa' : 'Consulta institucional ao SEI-Rio';
   const responseModeHelperCopy = hasMessages
-    ? 'Direto vai ao ponto. Didático amplia a explicação quando o fluxo pede mais contexto.'
-    : 'Defina o tom da resposta antes de começar. Você pode alternar isso a qualquer momento.';
+    ? 'Alterne o tom quando quiser mais objetividade ou mais contexto.'
+    : 'Escolha o tom da resposta antes de comecar. Voce pode mudar isso a qualquer momento.';
   const composerSupportCopy = hasMessages
-    ? 'Referências e cautelas aparecem ao final sempre que houver base aplicável.'
-    : 'Você pode começar com uma pergunta curta ou colar um contexto maior para eu organizar a orientação.';
+    ? 'Referencias e cautelas aparecem ao final sempre que houver base aplicavel.'
+    : 'Voce pode comecar com uma pergunta curta ou colar um contexto maior para eu organizar a orientacao.';
   const inputPlaceholder = isPreviewMode
     ? responseMode === 'direto'
       ? 'Pergunte para experimentar uma resposta mais objetiva nesta demonstração da CLARA...'
@@ -596,6 +596,7 @@ const ChatSheet = () => {
                     <ChatHeaderActionButton
                       onClick={handlePrintPdf}
                       disabled={isPrintingPdf}
+                      className="is-secondary"
                       label="Imprimir conversa"
                       visibleLabel="Imprimir"
                       showLabel={!isMobile}
@@ -608,7 +609,10 @@ const ChatSheet = () => {
                 {messages.length > 0 && (
                   <ChatHeaderActionButton
                     onClick={clearMessages}
+                    className="is-quiet"
                     label="Limpar conversa"
+                    visibleLabel="Limpar"
+                    showLabel={!isMobile}
                   >
                     <Trash size={16} />
                   </ChatHeaderActionButton>
@@ -617,6 +621,7 @@ const ChatSheet = () => {
                 <ChatHeaderActionButton
                   ref={closeButtonRef}
                   onClick={closeChat}
+                  className="is-quiet"
                   label="Fechar chat"
                 >
                   <X size={18} />
@@ -630,7 +635,7 @@ const ChatSheet = () => {
                   <section className="chat-runtime-banner" data-mode={runtimeMode} aria-label={runtimeLabel}>
                     <div className="chat-runtime-banner-head">
                       <span className="chat-runtime-banner-badge">{runtimeLabel}</span>
-                      <span className="chat-runtime-banner-kicker">CLARA / estado atual</span>
+                      <span className="chat-runtime-banner-kicker">Estado atual</span>
                     </div>
                     <p className="chat-runtime-banner-copy">{runtimeDescription}</p>
                   </section>
@@ -648,11 +653,13 @@ const ChatSheet = () => {
                     <div className="chat-empty-avatar">
                       <ClaraMonogram className="w-8 h-8" title="" />
                     </div>
-                    <p className="chat-empty-title">Qual etapa você precisa destravar?</p>
+                    <p className="chat-empty-title">
+                      {isPreviewMode ? 'O que voce quer testar agora?' : 'Destrave a proxima etapa.'}
+                    </p>
                     <p className="chat-empty-copy">
                       {isPreviewMode
-                        ? 'Você já pode testar perguntas e sentir como a CLARA organiza a orientação nesta demonstração.'
-                        : 'Faça uma pergunta sobre assinatura, tramitação, documentos ou revisão de etapas no SEI-Rio. O foco aqui é começar rápido e com clareza.'}
+                        ? 'Experimente uma pergunta e veja como a CLARA organiza a orientacao com referencias e cautelas.'
+                        : 'Pergunte sobre assinatura, tramitacao, documentos ou revisao de fluxo. Eu organizo o caminho com clareza e o nivel de detalhe que voce escolher.'}
                     </p>
 
                     <div className="chat-starter-grid mt-5">
@@ -679,11 +686,12 @@ const ChatSheet = () => {
                     transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <div
-                      className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      className={`rounded-2xl text-sm leading-relaxed ${
                         message.role === 'user'
-                          ? 'chat-message-user text-primary-foreground rounded-br-md max-w-[85%]'
-                          : `chat-message-assistant text-foreground rounded-bl-md ${message.structuredResponse ? assistantMessageMaxWidth : 'max-w-[90%]'}`
+                          ? 'chat-message-user text-primary-foreground rounded-br-md max-w-[85%] px-4 py-3'
+                          : `chat-message-assistant text-foreground rounded-bl-md px-4 pt-5 pb-3 ${message.structuredResponse ? assistantMessageMaxWidth : 'max-w-[90%]'}`
                       }`}
+                      data-response-kind={message.role === 'assistant' ? (message.structuredResponse ? 'structured' : 'plain') : undefined}
                     >
                       {message.role === 'assistant' ? (
                         message.structuredResponse ? (
@@ -734,15 +742,17 @@ const ChatSheet = () => {
             )}
             <form
               onSubmit={handleSubmit}
-              className="px-4 py-3 border-t border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1))]"
+              className="chat-composer-form px-4 py-3 border-t border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1))]"
             >
-              <div className="chat-response-mode-shell" aria-label="Modo de resposta">
-              <div className="chat-response-mode-head">
-                <p className="chat-response-mode-kicker">Modo de resposta</p>
-                <p className="chat-response-mode-copy">
-                  {responseModeHelperCopy}
-                </p>
-              </div>
+              <div className={`chat-response-mode-shell ${hasMessages ? 'is-compact' : ''}`} aria-label="Modo de resposta">
+                <div className="chat-response-mode-head">
+                  <p className="chat-response-mode-kicker">Modo de resposta</p>
+                  {!hasMessages && (
+                    <p className="chat-response-mode-copy">
+                      {responseModeHelperCopy}
+                    </p>
+                  )}
+                </div>
                 <div className="chat-response-mode-toggle" role="group" aria-label="Selecionar modo de resposta">
                   {CHAT_RESPONSE_MODES.map((modeOption) => {
                     const optionPresentation = getChatResponseModePresentation(modeOption);
@@ -765,7 +775,7 @@ const ChatSheet = () => {
                   })}
                 </div>
               </div>
-              <div className="flex items-end gap-2 rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.6)] px-3 py-1.5 focus-within:border-primary/40 transition-colors">
+              <div className="chat-composer-box flex items-end gap-2 rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.6)] px-3 py-1.5 focus-within:border-primary/40 transition-colors">
                 <textarea
                   ref={inputRef}
                   value={input}
@@ -787,13 +797,15 @@ const ChatSheet = () => {
                   <PaperPlaneRight size={18} />
                 </button>
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
-                <p className="chat-composer-footnote text-[10px] text-muted-foreground/60">
-                  {isPreviewMode
-                    ? 'Ambiente demonstrativo: respostas e referências servem para validar a experiência da CLARA.'
-                    : composerSupportCopy}
-                </p>
-                <span className="text-[10px] text-muted-foreground/50">
+              <div className="chat-composer-meta flex flex-wrap items-center justify-between gap-2 mt-2">
+                {(!hasMessages || isPreviewMode) && (
+                  <p className="chat-composer-footnote text-[10px] text-muted-foreground/60">
+                    {isPreviewMode
+                      ? 'Ambiente demonstrativo: respostas e referencias servem para validar a experiencia da CLARA.'
+                      : composerSupportCopy}
+                  </p>
+                )}
+                <span className="chat-composer-shortcut text-[10px] text-muted-foreground/50">
                   Enter envia. Shift + Enter cria nova linha.
                 </span>
               </div>

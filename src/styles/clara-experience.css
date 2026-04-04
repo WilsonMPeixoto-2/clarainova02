@@ -926,7 +926,7 @@ body::before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.7rem 0.75rem 0.9rem;
+  padding: 1.25rem 0.75rem 0.7rem;
   text-align: center;
 }
 
@@ -947,16 +947,16 @@ body::before {
 .chat-empty-title {
   margin-top: 0.78rem;
   font-family: var(--font-display);
-  font-size: clamp(1.34rem, 1.8vw, 1.76rem);
+  font-size: clamp(1.28rem, 1.72vw, 1.68rem);
   line-height: 1.02;
-  max-width: 18ch;
+  max-width: 15ch;
 }
 
 .chat-empty-copy {
-  margin-top: 0.55rem;
-  max-width: 31rem;
-  font-size: 0.82rem;
-  line-height: 1.54;
+  margin-top: 0.45rem;
+  max-width: 29rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
   color: hsl(var(--muted-foreground) / 0.88);
 }
 
@@ -966,9 +966,18 @@ body::before {
   margin-bottom: 0.62rem;
 }
 
+.chat-response-mode-shell.is-compact {
+  gap: 0.42rem;
+  margin-bottom: 0.48rem;
+}
+
 .chat-response-mode-head {
   display: grid;
   gap: 0.18rem;
+}
+
+.chat-response-mode-shell.is-compact .chat-response-mode-head {
+  gap: 0;
 }
 
 .chat-response-mode-kicker {
@@ -990,6 +999,10 @@ body::before {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.chat-response-mode-shell.is-compact .chat-response-mode-toggle {
+  gap: 0.45rem;
+}
+
 .chat-response-mode-option {
   display: grid;
   gap: 0.24rem;
@@ -1002,6 +1015,10 @@ body::before {
   color: hsl(var(--text-secondary));
   text-align: left;
   transition: border-color var(--duration-fast) ease, color var(--duration-fast) ease, transform var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+
+.chat-response-mode-shell.is-compact .chat-response-mode-option {
+  padding: 0.68rem 0.8rem;
 }
 
 .chat-response-mode-option-title {
