@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T03:45:00.000Z
+- Data/hora: 2026-04-04T03:49:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/BLOCO-4C-DEDUP-LEGACY-FIX`
 - Commit de base oficial: `de83905cf943b5968f8bab6dfa7b78ea9c961758`
-- Head da sessão: `de83905cf943b5968f8bab6dfa7b78ea9c961758`
+- Head da sessão: `26e787b6aacb40ff162cc5fc90f6480244269418`
 - Último relatório: `docs/operational-reports/2026-04-04-block-4c-dedup-legacy-reconciliation.md`
 
 ## Estado atual resumido

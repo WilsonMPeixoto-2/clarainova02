@@ -8,7 +8,7 @@
   "active_branch": "session/2026-04-04/HOME/CODEX/BLOCO-4C-DEDUP-LEGACY-FIX",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T03:45:00.000Z",
+  "last_update_utc": "2026-04-04T03:49:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -92,5 +92,5 @@
   ],
   "session_status": "in_progress",
   "last_report": "docs/operational-reports/2026-04-04-block-4c-dedup-legacy-reconciliation.md",
-  "last_session_head_sha": "de83905cf943b5968f8bab6dfa7b78ea9c961758"
+  "last_session_head_sha": "26e787b6aacb40ff162cc5fc90f6480244269418"
 }
