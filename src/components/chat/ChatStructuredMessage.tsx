@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Warning, CheckCircle, CircleDashed, CaretDown, CaretUp, FileText, Globe, Info, Question, ShieldWarning } from "@phosphor-icons/react";
+import { useCallback, useMemo, useState } from 'react';
+import { Warning, CheckCircle, CircleDashed, CaretDown, CaretUp, CopySimple, FileText, Globe, Info, Question, ShieldWarning } from "@phosphor-icons/react";
 
 import {
   type ClaraHighlight,
@@ -7,6 +7,7 @@ import {
   type ClaraReference,
   type ClaraStructuredResponse,
   formatReferenceAbnt,
+  renderStructuredResponseToPlainText,
 } from '@/lib/clara-response';
 
 function highlightLabel(highlight: ClaraHighlight) {
@@ -60,6 +61,66 @@ function getProcessStateMeta(state: ClaraProcessState) {
 }
 
 
+function ConfidenceBadge({ scopeMatch, confidence }: { scopeMatch: string; confidence: number | null }) {
+  const tier = scopeMatch === 'exact'
+    ? { label: 'Resposta fundamentada', className: 'chat-confidence-high' }
+    : scopeMatch === 'probable'
+    ? { label: 'Resposta provável', className: 'chat-confidence-good' }
+    : scopeMatch === 'weak'
+    ? { label: 'Cobertura parcial', className: 'chat-confidence-moderate' }
+    : { label: 'Base limitada', className: 'chat-confidence-low' };
+
+  return (
+    <span className={`chat-confidence-badge ${tier.className}`} aria-label={`Nível de confiança: ${tier.label}`}>
+      <span className="chat-confidence-dot" aria-hidden="true" />
+      <span>{tier.label}</span>
+      {confidence != null && confidence > 0 && (
+        <span className="chat-confidence-value">{Math.round(confidence * 100)}%</span>
+      )}
+    </span>
+  );
+}
+
+const COLLAPSED_ITEM_LIMIT = 3;
+
+function ExpandableItemList({ items, stepNumber }: { items: string[]; stepNumber: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const shouldCollapse = items.length > COLLAPSED_ITEM_LIMIT;
+  const visibleItems = shouldCollapse && !expanded ? items.slice(0, COLLAPSED_ITEM_LIMIT) : items;
+
+  return (
+    <>
+      <ul className="chat-step-list">
+        {visibleItems.map((item) => (
+          <li key={`${stepNumber}-${item}`}>{item}</li>
+        ))}
+      </ul>
+      {shouldCollapse && (
+        <button
+          type="button"
+          className="chat-expand-toggle"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+        >
+          {expanded
+            ? 'Recolher'
+            : `Mais ${items.length - COLLAPSED_ITEM_LIMIT} iten${items.length - COLLAPSED_ITEM_LIMIT > 1 ? 's' : ''}`}
+          {expanded ? <CaretUp size={12} /> : <CaretDown size={12} />}
+        </button>
+      )}
+    </>
+  );
+}
+
+function scrollToReference(citationId: number) {
+  const el = document.getElementById(`clara-ref-${citationId}`);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    el.classList.add('chat-reference-highlight');
+    setTimeout(() => el.classList.remove('chat-reference-highlight'), 1500);
+  }
+}
+
 function CitationList({ citations }: { citations: number[] }) {
   if (citations.length === 0) {
     return null;
@@ -68,7 +129,14 @@ function CitationList({ citations }: { citations: number[] }) {
   return (
     <span className="chat-citation-inline" aria-label={`Referencias ${citations.join(', ')}`}>
       {citations.map((citation) => (
-        <sup key={citation} className="chat-citation-badge">
+        <sup
+          key={citation}
+          className="chat-citation-badge chat-citation-clickable"
+          role="button"
+          tabIndex={0}
+          onClick={() => scrollToReference(citation)}
+          onKeyDown={(e) => e.key === 'Enter' && scrollToReference(citation)}
+        >
           {citation}
         </sup>
       ))}
@@ -78,7 +146,7 @@ function CitationList({ citations }: { citations: number[] }) {
 
 function ReferenceItem({ reference }: { reference: ClaraReference }) {
   return (
-    <li className="chat-reference-item">
+    <li id={`clara-ref-${reference.id}`} className="chat-reference-item">
       <span className="chat-reference-index">{reference.id}</span>
       <span>{formatReferenceAbnt(reference)}</span>
     </li>
@@ -107,7 +175,16 @@ function SectionHeading({
 
 export function ChatStructuredMessage({ response }: { response: ClaraStructuredResponse }) {
   const [showReferences, setShowReferences] = useState(true);
+  const [copied, setCopied] = useState(false);
   const analysis = response.analiseDaResposta;
+
+  const handleCopy = useCallback(() => {
+    const plainText = renderStructuredResponseToPlainText(response);
+    navigator.clipboard.writeText(plainText).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [response]);
   const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
   const processStates = useMemo(() => analysis.processStates.slice(0, 4), [analysis.processStates]);
   const responseMeta = [
@@ -124,6 +201,15 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         <div className="chat-response-kicker">
           <FileText size={14} />
           Orientação estruturada
+          <button
+            type="button"
+            className="chat-copy-button"
+            onClick={handleCopy}
+            aria-label={copied ? 'Copiado' : 'Copiar resposta'}
+          >
+            <CopySimple size={13} />
+            <span>{copied ? 'Copiado' : 'Copiar'}</span>
+          </button>
         </div>
         <h3 className="chat-response-title">{response.tituloCurto}</h3>
         {responseMeta.length > 0 && (
@@ -133,6 +219,10 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
                 {item}
               </span>
             ))}
+            <ConfidenceBadge
+              scopeMatch={analysis.answerScopeMatch}
+              confidence={analysis.finalConfidence}
+            />
           </div>
         )}
         <div className="chat-response-summary-block">
@@ -254,11 +344,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
                 )}
 
                 {step.itens.length > 0 && (
-                  <ul className="chat-step-list">
-                    {step.itens.map((item) => (
-                      <li key={`${step.numero}-${item}`}>{item}</li>
-                    ))}
-                  </ul>
+                  <ExpandableItemList items={step.itens} stepNumber={step.numero} />
                 )}
 
                 {step.alerta && (

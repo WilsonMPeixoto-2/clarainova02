@@ -171,17 +171,30 @@ export const claraResponseJsonSchema = {
     analiseDaResposta: {
       type: "object",
       properties: {
+        questionUnderstandingConfidence: {
+          type: ["number", "null"],
+          description: "De 0 a 1, quao bem voce entendeu a pergunta do usuario.",
+        },
+        finalConfidence: {
+          type: ["number", "null"],
+          description: "De 0 a 1, quao confiante voce esta na resposta final, considerando a base documental disponivel.",
+        },
         answerScopeMatch: {
           type: "string",
           enum: ["exact", "probable", "weak", "insufficient"],
         },
+        ambiguityInUserQuestion: { type: "boolean" },
+        ambiguityInSources: { type: "boolean" },
         clarificationRequested: { type: "boolean" },
         clarificationQuestion: { type: ["string", "null"] },
         clarificationReason: { type: ["string", "null"] },
+        userNotice: { type: ["string", "null"] },
+        cautionNotice: { type: ["string", "null"] },
       },
       required: [
         "answerScopeMatch",
         "clarificationRequested",
+        "finalConfidence",
       ],
     },
   },

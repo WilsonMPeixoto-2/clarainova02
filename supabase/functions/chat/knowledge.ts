@@ -28,6 +28,7 @@ export interface KnowledgeDecision {
   topScore: number;
   sources: string[];
   references: KnowledgeReference[];
+  retrievalQuality: RetrievalQualityInfo;
 }
 
 interface ParsedChunk {
@@ -273,7 +274,10 @@ INSTRUCOES PARA USO DESTES TRECHOS:
 - Use estes trechos como fonte primaria e prioritaria para formular a resposta.
 - Responda a pergunta do usuario sobre o uso do SEI-Rio, nao sobre o funcionamento interno da CLARA.
 - Ignore completamente qualquer trecho tecnico sobre backend, RAG, APIs, embeddings, telemetria ou infraestrutura.
-- Consolide informacoes de multiplos trechos quando eles se complementam.
+- Quando multiplos trechos abordam o mesmo procedimento, consolide em um unico passo a passo coerente e completo.
+- Priorize o trecho mais especifico e atual quando houver sobreposicao entre fontes.
+- Se dois trechos se contradizem, sinalize a divergencia ao usuario com transparencia e priorize a fonte de maior autoridade.
+- Quando um trecho complementa outro (ex: um da visao geral e outro o detalhe), integre ambos em uma resposta fluida.
 - Cite apenas os numeros das referencias autorizadas quando houver base suficiente.
 - Se os trechos nao sustentarem a resposta, admita a limitacao com transparencia.
 
@@ -281,20 +285,121 @@ ${blocks.join("\n\n---\n\n")}
 --- FIM DA BASE DE CONHECIMENTO INTERNA ---`;
 }
 
+export interface RetrievalQualityInfo {
+  confidenceTier: 'alta' | 'boa' | 'moderada' | 'fraca';
+  topScore: number;
+  sourceCount: number;
+  uniqueDocuments: number;
+  avgOverlap: number;
+  chunkCount: number;
+}
+
+export function buildRetrievalQualityPrompt(
+  quality: RetrievalQualityInfo,
+  retrievalMode: string,
+): string {
+  if (retrievalMode !== 'model_grounded' || quality.chunkCount === 0) {
+    return `
+
+QUALIDADE DA RECUPERACAO:
+- Modo: sem base documental
+- Responda com cautela e sinalize que nao ha base documental suficiente.`;
+  }
+
+  return `
+
+QUALIDADE DA RECUPERACAO:
+- Modo: base documental ativa | Confianca: ${quality.confidenceTier} (score maximo: ${quality.topScore.toFixed(4)})
+- Fontes: ${quality.chunkCount} trecho${quality.chunkCount > 1 ? 's' : ''} de ${quality.uniqueDocuments} documento${quality.uniqueDocuments > 1 ? 's' : ''}
+- Cobertura lexica media: ${quality.avgOverlap.toFixed(1)} tokens
+- ${quality.confidenceTier === 'alta' || quality.confidenceTier === 'boa'
+    ? 'A base documental sustenta bem a resposta. Seja assertivo nas orientacoes.'
+    : quality.confidenceTier === 'moderada'
+    ? 'A base tem cobertura parcial. Responda o que puder e sinalize limitacoes.'
+    : 'A base e fraca. Seja cauteloso e sinalize que validacao oficial pode ser necessaria.'}`;
+}
+
+export interface AdjacentChunkRequest {
+  documentId: string;
+  chunkIndex: number;
+}
+
+export function identifyAdjacentChunkRequests(
+  chunks: RetrievedChunk[],
+  selectedChunks: Array<{ similarity: number; document_id?: string; chunk_index?: number }>,
+): AdjacentChunkRequest[] {
+  const highScoreThreshold = STRONG_RRF_SCORE * 1.5;
+  const requests: AdjacentChunkRequest[] = [];
+  const existingKeys = new Set(
+    selectedChunks.map((c) => `${c.document_id}:${c.chunk_index}`)
+  );
+
+  for (const chunk of selectedChunks) {
+    if (
+      chunk.similarity >= highScoreThreshold &&
+      chunk.document_id &&
+      typeof chunk.chunk_index === 'number'
+    ) {
+      for (const offset of [-1, 1]) {
+        const adjIndex = chunk.chunk_index + offset;
+        const key = `${chunk.document_id}:${adjIndex}`;
+        if (adjIndex >= 0 && !existingKeys.has(key)) {
+          requests.push({ documentId: chunk.document_id, chunkIndex: adjIndex });
+          existingKeys.add(key);
+        }
+      }
+    }
+
+    if (requests.length >= 2) break;
+  }
+
+  return requests;
+}
+
+export function enrichKnowledgeContextWithAdjacent(
+  existingContext: string,
+  adjacentChunks: Array<{ content: string; document_name?: string; section_title?: string; page_start?: number }>,
+): string {
+  if (adjacentChunks.length === 0 || !existingContext) return existingContext;
+
+  const supplementary = adjacentChunks
+    .map((chunk) => {
+      const label = chunk.document_name || 'Documento';
+      const page = chunk.page_start ? ` - Página ${chunk.page_start}` : '';
+      return `[Contexto complementar: ${label}${page}]\n${chunk.content}`;
+    })
+    .join('\n\n---\n\n');
+
+  return existingContext.replace(
+    '--- FIM DA BASE DE CONHECIMENTO INTERNA ---',
+    `\n---\n\nCONTEXTO COMPLEMENTAR (trechos adjacentes dos mesmos documentos para completude):\n${supplementary}\n--- FIM DA BASE DE CONHECIMENTO INTERNA ---`,
+  );
+}
+
 export function prepareKnowledgeDecision(
   question: string,
   chunks: RetrievedChunk[]
 ): KnowledgeDecision {
   const questionTokens = tokenizeQuestion(question);
-  const parsedChunks = chunks
+  const scoredChunks = chunks
     .filter((chunk) => Number.isFinite(chunk.similarity))
     .sort((left, right) => right.similarity - left.similarity)
     .map(parseChunk)
     .map((chunk, index) => ({ chunk, index, score: scoreChunk(question, questionTokens, chunk, index) }))
     .filter(({ score }) => score.accept)
     .sort((left, right) => right.score.finalScore - left.score.finalScore)
-    .slice(0, MAX_SELECTED_CHUNKS)
-    .map(({ chunk }) => chunk);
+    .slice(0, MAX_SELECTED_CHUNKS);
+
+  const parsedChunks = scoredChunks.map(({ chunk }) => chunk);
+
+  const emptyQuality: RetrievalQualityInfo = {
+    confidenceTier: 'fraca',
+    topScore: 0,
+    sourceCount: 0,
+    uniqueDocuments: 0,
+    avgOverlap: 0,
+    chunkCount: 0,
+  };
 
   if (parsedChunks.length === 0) {
     return {
@@ -303,6 +408,7 @@ export function prepareKnowledgeDecision(
       topScore: 0,
       sources: [],
       references: [],
+      retrievalQuality: emptyQuality,
     };
   }
 
@@ -338,11 +444,28 @@ export function prepareKnowledgeDecision(
     sectionTitle: chunk.sectionTitle,
   }));
 
+  const avgOverlap = scoredChunks.length > 0
+    ? scoredChunks.reduce((sum, { score }) => sum + score.overlap, 0) / scoredChunks.length
+    : 0;
+  const uniqueDocuments = new Set(chunksWithReferences.map((c) => c.documentName)).size;
+  const confidenceTier: RetrievalQualityInfo['confidenceTier'] =
+    topScore >= 0.016 ? 'alta' :
+    topScore >= 0.012 ? 'boa' :
+    topScore >= 0.008 ? 'moderada' : 'fraca';
+
   return {
     relevantChunks,
     knowledgeContext: buildKnowledgeContext(chunksWithReferences),
     topScore,
     sources,
     references,
+    retrievalQuality: {
+      confidenceTier,
+      topScore,
+      sourceCount: sources.length,
+      uniqueDocuments,
+      avgOverlap,
+      chunkCount: parsedChunks.length,
+    },
   };
 }

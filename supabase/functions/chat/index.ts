@@ -1,7 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { GoogleGenAI } from "npm:@google/genai";
 
-import { prepareKnowledgeDecision, type RetrievedChunk } from "./knowledge.ts";
+import {
+  prepareKnowledgeDecision,
+  buildRetrievalQualityPrompt,
+  enrichKnowledgeContextWithAdjacent,
+  type RetrievedChunk,
+  type RetrievalQualityInfo,
+} from "./knowledge.ts";
 import {
   buildGroundedReferences,
   claraResponseJsonSchema,
@@ -45,6 +51,55 @@ const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
 type ChatResponseMode = (typeof CHAT_RESPONSE_MODES)[number];
 const DEFAULT_CHAT_RESPONSE_MODE: ChatResponseMode = 'didatico';
 const KEYWORD_FALLBACK_QUERY_EMBEDDING = JSON.stringify(Array.from({ length: EMBEDDING_DIM }, () => 0));
+const QUERY_EXPANSION_TIMEOUT_MS = 3_000;
+const QUERY_EXPANSION_MODEL = 'gemini-3.1-flash-lite-preview';
+
+const QUERY_EXPANSION_PROMPT = `Você é um especialista em reformulação de buscas documentais sobre o sistema SEI-Rio (Sistema Eletrônico de Informações da Prefeitura do Rio de Janeiro).
+
+Receba a pergunta do usuário e gere UMA reformulação otimizada para busca em base documental.
+
+Regras:
+- A reformulação deve usar termos técnicos e formais presentes em manuais e guias do SEI-Rio.
+- Mantenha o significado original, mas use vocabulário documental (ex: "juntar documentos" → "inclusão de documentos externos em processo SEI-Rio").
+- Inclua termos-chave específicos do domínio SEI quando relevantes (tramitação, unidade, bloco de assinatura, despacho, ciência, etc.).
+- Responda APENAS com a reformulação, sem explicações ou prefixos.
+- Se a pergunta já for técnica e precisa, repita-a com mínimas variações.
+- Máximo 40 palavras.`;
+
+async function expandQuery(ai: GoogleGenAI, userMessage: string): Promise<string | null> {
+  try {
+    const result = await withTimeout(
+      ai.models.generateContent({
+        model: QUERY_EXPANSION_MODEL,
+        contents: userMessage,
+        config: {
+          systemInstruction: QUERY_EXPANSION_PROMPT,
+          maxOutputTokens: 80,
+          temperature: 0.2,
+          topP: 0.7,
+        },
+      }),
+      QUERY_EXPANSION_TIMEOUT_MS,
+      'query_expansion',
+    );
+
+    const expanded = result.text?.trim();
+    if (expanded && expanded.length >= 10 && expanded.length <= 300) {
+      return expanded;
+    }
+    return null;
+  } catch (err) {
+    console.warn('Query expansion failed (non-fatal):', err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+function averageEmbeddings(a: number[], b: number[]): number[] {
+  const avg = a.map((val, i) => (val + b[i]) / 2);
+  const norm = Math.sqrt(avg.reduce((sum, v) => sum + v * v, 0));
+  if (!Number.isFinite(norm) || norm === 0) return avg;
+  return avg.map((v) => v / norm);
+}
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -468,6 +523,38 @@ function estimateTokenCount(value: string): number {
   return Math.max(1, Math.ceil(value.length / 4));
 }
 
+function computeRagQualityScore(
+  quality: RetrievalQualityInfo | null,
+  structuredResponse: ClaraStructuredResponse | null,
+  citationsCount: number,
+): number | null {
+  if (!quality || quality.chunkCount === 0) return null;
+
+  const tierScore = quality.confidenceTier === 'alta' ? 1.0
+    : quality.confidenceTier === 'boa' ? 0.75
+    : quality.confidenceTier === 'moderada' ? 0.5
+    : 0.25;
+
+  const diversityScore = Math.min(quality.uniqueDocuments / 3, 1.0);
+  const overlapScore = Math.min(quality.avgOverlap / 4, 1.0);
+  const citationScore = citationsCount > 0 ? Math.min(citationsCount / quality.chunkCount, 1.0) : 0;
+  const modelConfidence = structuredResponse?.analiseDaResposta?.finalConfidence ?? null;
+
+  const weights = { tier: 0.3, diversity: 0.15, overlap: 0.2, citation: 0.15, model: 0.2 };
+  let score = tierScore * weights.tier
+    + diversityScore * weights.diversity
+    + overlapScore * weights.overlap
+    + citationScore * weights.citation;
+
+  if (modelConfidence != null) {
+    score += modelConfidence * weights.model;
+  } else {
+    score += tierScore * weights.model;
+  }
+
+  return Math.round(score * 1000) / 1000;
+}
+
 interface TelemetryContext {
   supabase: ReturnType<typeof createClient>;
   requestId: string;
@@ -488,6 +575,8 @@ interface TelemetryContext {
   searchMetricId: string | null;
   knowledgeContext: string;
   responseMode: ChatResponseMode;
+  ragQualityScore: number | null;
+  expandedQuery: string | null;
 }
 
 async function recordTelemetry(
@@ -533,6 +622,8 @@ async function recordTelemetry(
           selected_chunk_ids: ctx.selectedChunkIds,
           output_mode: outputMode,
           response_mode: ctx.responseMode,
+          rag_quality_score: ctx.ragQualityScore,
+          expanded_query: ctx.expandedQuery,
         },
     })
     .select('id')
@@ -902,6 +993,8 @@ Deno.serve(async (req) => {
     let searchMetricId: string | null = null;
     let groundedReferences: ClaraStructuredResponse["referenciasFinais"] = [];
     let queryEmbeddingModel = 'keyword_fallback_zero_vector';
+    let expandedQueryText: string | null = null;
+    let retrievalQuality: RetrievalQualityInfo | null = null;
 
     if (lastUserMessage) {
       try {
@@ -909,22 +1002,53 @@ Deno.serve(async (req) => {
         let queryEmbeddingPayload = KEYWORD_FALLBACK_QUERY_EMBEDDING;
 
         try {
-          const embeddingResult = await withTimeout(
-            ai.models.embedContent({
-              model: QUERY_EMBEDDING_MODEL,
-              contents: lastUserMessage.content,
-              config: {
-                outputDimensionality: EMBEDDING_DIM,
-                taskType: QUERY_EMBEDDING_TASK_TYPE,
-              },
-            }),
-            EMBEDDING_TIMEOUT_MS,
-            'embedding',
-          );
+          const [embeddingResult, expanded] = await Promise.all([
+            withTimeout(
+              ai.models.embedContent({
+                model: QUERY_EMBEDDING_MODEL,
+                contents: lastUserMessage.content,
+                config: {
+                  outputDimensionality: EMBEDDING_DIM,
+                  taskType: QUERY_EMBEDDING_TASK_TYPE,
+                },
+              }),
+              EMBEDDING_TIMEOUT_MS,
+              'embedding',
+            ),
+            expandQuery(ai, lastUserMessage.content),
+          ]);
 
-          const queryEmbedding = embeddingResult.embeddings?.[0]?.values;
-          if (queryEmbedding && queryEmbedding.length === EMBEDDING_DIM) {
-            queryEmbeddingPayload = JSON.stringify(normalizeL2(queryEmbedding));
+          expandedQueryText = expanded;
+
+          const originalEmbedding = embeddingResult.embeddings?.[0]?.values;
+          if (originalEmbedding && originalEmbedding.length === EMBEDDING_DIM) {
+            let finalEmbedding = normalizeL2(originalEmbedding);
+
+            if (expandedQueryText) {
+              try {
+                const expandedEmbeddingResult = await withTimeout(
+                  ai.models.embedContent({
+                    model: QUERY_EMBEDDING_MODEL,
+                    contents: expandedQueryText,
+                    config: {
+                      outputDimensionality: EMBEDDING_DIM,
+                      taskType: QUERY_EMBEDDING_TASK_TYPE,
+                    },
+                  }),
+                  EMBEDDING_TIMEOUT_MS,
+                  'expanded_embedding',
+                );
+
+                const expandedEmbedding = expandedEmbeddingResult.embeddings?.[0]?.values;
+                if (expandedEmbedding && expandedEmbedding.length === EMBEDDING_DIM) {
+                  finalEmbedding = averageEmbeddings(finalEmbedding, normalizeL2(expandedEmbedding));
+                }
+              } catch {
+                console.warn('Expanded query embedding failed, using original only');
+              }
+            }
+
+            queryEmbeddingPayload = JSON.stringify(finalEmbedding);
             queryEmbeddingModel = QUERY_EMBEDDING_MODEL;
           }
         } catch (embeddingError) {
@@ -935,7 +1059,7 @@ Deno.serve(async (req) => {
           supabase.rpc('hybrid_search_chunks', {
             query_embedding: queryEmbeddingPayload,
             query_text: lastUserMessage.content,
-            match_count: 8,
+            match_count: 12,
           }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
           SEARCH_TIMEOUT_MS,
           'hybrid_search',
@@ -957,11 +1081,51 @@ Deno.serve(async (req) => {
 
           retrievalSources = decision.sources;
           retrievalTopScore = decision.topScore;
+          retrievalQuality = decision.retrievalQuality;
           groundedReferences = buildGroundedReferences(decision.references);
 
           if (decision.knowledgeContext) {
             retrievalMode = "model_grounded";
             knowledgeContext = decision.knowledgeContext;
+
+            if (decision.retrievalQuality.confidenceTier !== 'fraca' && selectedChunkIds.length > 0) {
+              try {
+                const { data: chunkMeta } = await supabase
+                  .from('document_chunks')
+                  .select('id, document_id, chunk_index')
+                  .in('id', selectedChunkIds.slice(0, 3));
+
+                if (chunkMeta && chunkMeta.length > 0) {
+                  const topChunk = chunkMeta.sort((a: { chunk_index: number }, b: { chunk_index: number }) => a.chunk_index - b.chunk_index)[0];
+                  const adjacentIndexes = [topChunk.chunk_index - 1, topChunk.chunk_index + 1].filter((i: number) => i >= 0);
+                  const existingIndexes = new Set(chunkMeta.map((c: { chunk_index: number }) => c.chunk_index));
+                  const needed = adjacentIndexes.filter((i: number) => !existingIndexes.has(i));
+
+                  if (needed.length > 0) {
+                    const { data: adjacentChunks } = await supabase
+                      .from('document_chunks')
+                      .select('content, page_start, section_title, document_id')
+                      .eq('document_id', topChunk.document_id)
+                      .in('chunk_index', needed)
+                      .eq('is_active', true)
+                      .limit(2);
+
+                    if (adjacentChunks && adjacentChunks.length > 0) {
+                      const docName = chunks?.find((c: HybridSearchChunk) => c.document_id === topChunk.document_id)?.document_name;
+                      const enrichedAdjacent = adjacentChunks.map((ac: { content: string; page_start?: number; section_title?: string }) => ({
+                        content: ac.content,
+                        document_name: docName || undefined,
+                        section_title: ac.section_title || undefined,
+                        page_start: ac.page_start || undefined,
+                      }));
+                      knowledgeContext = enrichKnowledgeContextWithAdjacent(knowledgeContext, enrichedAdjacent);
+                    }
+                  }
+                }
+              } catch (adjError) {
+                console.warn('Adjacent chunk enrichment failed (non-fatal):', adjError);
+              }
+            }
           }
         }
       } catch (ragError) {
@@ -997,7 +1161,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    const systemPromptWithContext = `${SYSTEM_PROMPT}${buildResponseModePrompt(responseMode)}${knowledgeContext}`;
+    const retrievalQualityPrompt = retrievalQuality
+      ? buildRetrievalQualityPrompt(retrievalQuality, retrievalMode)
+      : '';
+    const systemPromptWithContext = `${SYSTEM_PROMPT}${buildResponseModePrompt(responseMode)}${retrievalQualityPrompt}${knowledgeContext}`;
 
     const chatMessages = messages.map((m: { role: string; content: string }) => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -1047,6 +1214,12 @@ REESCRITA OBRIGATORIA:
 
       const structuredPlainText = renderStructuredResponseToPlainText(structuredResponse);
 
+      const ragQualityScore = computeRagQualityScore(
+        retrievalQuality,
+        structuredResponse,
+        structuredResponse.referenciasFinais.length,
+      );
+
       const telemetryCtx: TelemetryContext = {
         supabase, requestId, requestStartedAt,
         queryText: lastUserMessage.content,
@@ -1055,6 +1228,7 @@ REESCRITA OBRIGATORIA:
         retrievalMode, retrievalTopScore, retrievalSources,
         searchResultCount, selectedChunkIds, selectedDocumentIds,
         searchMetricId, knowledgeContext, responseMode,
+        ragQualityScore, expandedQuery: expandedQueryText,
       };
 
       await recordTelemetry(
@@ -1096,6 +1270,8 @@ REESCRITA OBRIGATORIA:
           retrievalMode, retrievalTopScore, retrievalSources,
           searchResultCount, selectedChunkIds, selectedDocumentIds,
           searchMetricId, knowledgeContext, responseMode,
+          ragQualityScore: computeRagQualityScore(retrievalQuality, fallbackResponse, fallbackResponse.referenciasFinais.length),
+          expandedQuery: expandedQueryText,
         };
 
         await recordTelemetry(
@@ -1184,6 +1360,8 @@ REESCRITA OBRIGATORIA:
         retrievalMode, retrievalTopScore, retrievalSources,
         searchResultCount, selectedChunkIds, selectedDocumentIds,
         searchMetricId, knowledgeContext, responseMode,
+        ragQualityScore: computeRagQualityScore(retrievalQuality, null, retrievalSources.length),
+        expandedQuery: expandedQueryText,
       };
 
       void readSseText(telemetryStream)
