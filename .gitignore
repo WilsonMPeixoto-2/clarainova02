@@ -30,3 +30,5 @@ supabase/.temp/
 *.sln
 *.sw?
 .env*.local
+corpus_staging/
+__pycache__/

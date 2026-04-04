@@ -164,6 +164,35 @@ function getBearerToken(req: Request): string | null {
   return token || null;
 }
 
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const normalized = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+    return JSON.parse(atob(normalized)) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function isServiceRoleAutomationToken(
+  token: string | null,
+  serviceRoleKey: string,
+  secretKey?: string | null,
+) {
+  if (!token) return false;
+  if (token === serviceRoleKey) return true;
+  if (secretKey && token === secretKey) return true;
+  if (token.startsWith("sb_secret_")) return true;
+
+  const payload = decodeJwtPayload(token);
+  if (!payload) return false;
+
+  return payload.role === "service_role";
+}
+
 async function requireAuthenticatedUser(
   req: Request,
   supabaseUrl: string,
@@ -296,6 +325,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabaseSecretKey = Deno.env.get("SUPABASE_SECRET_KEY");
     if (!supabaseUrl || !supabaseAnonKey || !supabaseKey) {
       return new Response(
         JSON.stringify({ ok: false, error: "CONFIG:SUPABASE_CREDENTIALS_MISSING", request_id }),
@@ -303,21 +333,28 @@ Deno.serve(async (req) => {
       );
     }
 
-    const authenticatedUser = await requireAuthenticatedUser(req, supabaseUrl, supabaseAnonKey);
-    if (!authenticatedUser) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "AUTH:UNAUTHORIZED", request_id }),
-        { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
-      );
-    }
-
+    const accessToken = getBearerToken(req);
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const isAdminUser = await requireAdminUser(supabase, authenticatedUser.id);
-    if (!isAdminUser) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "AUTH:ADMIN_REQUIRED", request_id }),
-        { status: 403, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
-      );
+    let requestActor = "service_role";
+
+    if (!isServiceRoleAutomationToken(accessToken, supabaseKey, supabaseSecretKey)) {
+      const authenticatedUser = await requireAuthenticatedUser(req, supabaseUrl, supabaseAnonKey);
+      if (!authenticatedUser) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "AUTH:UNAUTHORIZED", request_id }),
+          { status: 401, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      const isAdminUser = await requireAdminUser(supabase, authenticatedUser.id);
+      if (!isAdminUser) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "AUTH:ADMIN_REQUIRED", request_id }),
+          { status: 403, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      requestActor = authenticatedUser.id;
     }
 
     const { document_id, chunks, start_index = 0, ingestion_job_id = null, title = null } = await req.json();
@@ -367,7 +404,7 @@ Deno.serve(async (req) => {
         start_index,
         requested_chunks: chunks.length,
         valid_chunks: validChunks.length,
-        requested_by: authenticatedUser.id,
+        requested_by: requestActor,
         embedding_model: EMBEDDING_MODEL,
         embedding_dim: EMBEDDING_DIM,
         task_type: DOCUMENT_EMBEDDING_TASK_TYPE,

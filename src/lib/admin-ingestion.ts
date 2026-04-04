@@ -59,17 +59,14 @@ function getLastSentence(text: string): string {
 function mergeSegmentsIntoChunks(paragraphs: string[]): string[] {
   const chunks: string[] = [];
   let current = '';
-  let prevOverlap = '';
 
   for (const paragraph of paragraphs) {
     if (paragraph.length > MAX_CHUNK_SIZE) {
       if (current.trim()) {
         chunks.push(current.trim());
-        prevOverlap = CHUNK_OVERLAP_SENTENCES > 0 ? getLastSentence(current) : '';
         current = '';
       }
       chunks.push(paragraph.trim());
-      prevOverlap = CHUNK_OVERLAP_SENTENCES > 0 ? getLastSentence(paragraph) : '';
       continue;
     }
 
@@ -77,7 +74,7 @@ function mergeSegmentsIntoChunks(paragraphs: string[]): string[] {
 
     if (proposed.length > TARGET_CHUNK_SIZE && current.trim()) {
       chunks.push(current.trim());
-      prevOverlap = CHUNK_OVERLAP_SENTENCES > 0 ? getLastSentence(current) : '';
+      const prevOverlap = CHUNK_OVERLAP_SENTENCES > 0 ? getLastSentence(current) : '';
       current = prevOverlap ? `${prevOverlap}\n\n${paragraph}` : paragraph;
     } else {
       current = proposed;

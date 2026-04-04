@@ -1,0 +1,306 @@
+[
+  {
+    "id": "Q1",
+    "question": "O que o Decreto Rio nº 57.250/2025 institui no âmbito do Município do Rio de Janeiro?",
+    "status": 200,
+    "title": "Instituição do SEI.Rio",
+    "summary": "O Decreto Rio nº 57.250, de 19 de novembro de 2025, institui o Sistema Eletrônico de Informações (SEI.Rio) como o sistema oficial para a gestão de processos e documentos administrativos no Poder Executivo do Município do Rio de Janeiro.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 2,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO I",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Secretaria Municipal de Trabalho e",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 4,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "O que é o SEI.Rio"
+      }
+    ]
+  },
+  {
+    "id": "Q2",
+    "question": "Como é composto o número do processo no SEI.Rio segundo a Resolução CVL nº 237/2025?",
+    "status": 200,
+    "title": "Composição do número do processo no SEI.Rio",
+    "summary": "A Resolução CVL nº 237/2025 estabelece os critérios para a identificação dos órgãos do Poder Executivo na formação do número dos processos dentro do sistema SEI.Rio.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Secretaria Municipal de Trabalho e",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 2,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Exposições e Congressos do Rio de Janeiro",
+        "paginas": "3",
+        "tipo": "norma"
+      },
+      {
+        "id": 4,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Empresa Municipal de Informática S.A. /",
+        "paginas": "2",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Entendimento da Estrutura"
+      },
+      {
+        "numero": 2,
+        "titulo": "Exemplos de Identificadores"
+      }
+    ]
+  },
+  {
+    "id": "Q3",
+    "question": "Como fazer login no SEI.Rio usando a matrícula?",
+    "status": 200,
+    "title": "Acesso ao SEI.Rio com Matrícula",
+    "summary": "Para acessar o SEI.Rio como usuário interno, você deve utilizar sua matrícula funcional e senha pessoal. O sistema possui regras específicas para a formatação da matrícula, garantindo a segurança e a correta identificação no ambiente municipal.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Tipo de processo",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Como utilizar Favoritos como Documento Modelo",
+        "paginas": "5",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "5",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Preparação da Matrícula"
+      },
+      {
+        "numero": 2,
+        "titulo": "Realizando o Login"
+      }
+    ]
+  },
+  {
+    "id": "Q4",
+    "question": "Como enviar um processo para uma ou mais unidades no SEI.Rio?",
+    "status": 200,
+    "title": "Envio de Processos no SEI-Rio",
+    "summary": "No SEI-Rio, a tramitação de processos ocorre exclusivamente entre unidades. Você pode enviar um processo para uma única unidade ou realizar o envio simultâneo para várias, otimizando o fluxo de trabalho.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "11",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "34",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Selecione expedientes e processos para a migração em lote",
+        "paginas": "2",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Assinatura com senha do SEI",
+        "paginas": "4",
+        "tipo": "guia"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Acessar a tela de envio"
+      },
+      {
+        "numero": 2,
+        "titulo": "Selecionar as unidades"
+      },
+      {
+        "numero": 3,
+        "titulo": "Configurar opções adicionais"
+      },
+      {
+        "numero": 4,
+        "titulo": "Finalizar o envio"
+      }
+    ]
+  },
+  {
+    "id": "Q5",
+    "question": "Quando a migração manual do Processo.rio para o SEI.Rio deve ser usada?",
+    "status": 200,
+    "title": "Quando utilizar a Migração Manual",
+    "summary": "A migração manual é uma alternativa para transferir processos do Processo.rio para o SEI.Rio, sendo indicada principalmente quando a migração automática não é concluída com sucesso ou quando há necessidade de selecionar documentos específicos para a instrução.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Incluindo o processo digitalizado no SEI",
+        "paginas": "4",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Hipóteses Legais",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Selecione expedientes e processos para a migração em lote",
+        "paginas": "2",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Processo criado no SEI",
+        "paginas": "3",
+        "tipo": "guia"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Situações de uso"
+      },
+      {
+        "numero": 2,
+        "titulo": "Procedimento de execução"
+      }
+    ]
+  },
+  {
+    "id": "Q6",
+    "question": "Qual nível da conta gov.br permite liberação automática do cadastro no SEI.Rio para usuário externo?",
+    "status": 200,
+    "title": "Nível da conta gov.br para cadastro no SEI.Rio",
+    "summary": "Para que o seu cadastro como usuário externo no SEI.Rio seja liberado automaticamente, é necessário possuir uma conta gov.br de nível prata ou ouro.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "5",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "Do Órgão Gestor",
+        "paginas": "2",
+        "tipo": "norma"
+      },
+      {
+        "id": 4,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "7",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Verificação do nível da conta"
+      },
+      {
+        "numero": 2,
+        "titulo": "Realização do cadastro"
+      }
+    ]
+  }
+]
