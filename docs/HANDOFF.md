@@ -3,12 +3,12 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T17:20:00Z
+- Data/hora: 2026-04-04T18:10:00Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `main`
-- Commit de base oficial: `a758a2bedd51c9342bd996a66db5b1465c0206fb`
-- Head da sessão: `a758a2bedd51c9342bd996a66db5b1465c0206fb`
-- Último relatório: `docs/operational-reports/2026-04-04-source-routing-and-corpus-audit.md`
+- Commit de base oficial: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
+- Head da sessão: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
+- Último relatório: `docs/operational-reports/2026-04-04-project-alignment-audit.md`
 
 ## Estado atual resumido
 - Fase atual: Pré-lançamento com source-target routing implementado, corpus auditado e limpo, avaliação `16/16` perfeita em todas as métricas e próxima rodada focada em ampliar bateria manual e substituir a captura parcial do Decreto `55.615`

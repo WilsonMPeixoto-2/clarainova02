@@ -10,13 +10,13 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ 5c59b2169afff642871747b166286a43fc1348ea`
-- Frente imediata mais importante: consolidar o núcleo local do corpus SEI.Rio já ativo em produção, substituir o Decreto 55.615 parcial e ampliar a avaliação empírica do RAG antes de abrir a camada PEN
+- Fonte oficial integrada: `origin/main @ 7f20da1b03e6f8314e9ae118489dd53923fad6bd`
+- Frente imediata mais importante: consolidar o corpus governado já ativo com a substituição do Decreto `55.615` parcial, ampliar a bateria manual e monitorar o source-target routing antes de abrir novas frentes documentais maiores
 - Ordem de execução atualmente aceita:
-  1. manter o núcleo local ativo e corrigir lacunas documentais críticas
-  2. ampliar a bateria de perguntas reais e rubricar a qualidade do RAG
-  3. só então decidir a ingestão da cobertura PEN com precedência inferior
-  4. por fim atacar acessibilidade, hotspots e testes de sustentação
+  1. manter o corpus governado ativo e corrigir lacunas documentais críticas do núcleo local
+  2. ampliar a bateria de perguntas reais e rubricar a qualidade do RAG já com source-target routing
+  3. tratar a prova residual de deduplicação via UI como validação paralela, sem recolocar o BLOCO 4 como gargalo principal
+  4. só então decidir expansões adicionais de corpus e, por fim, retomar acessibilidade/hotspots/testes de sustentação
 
 ## Blocos oficiais
 
@@ -64,8 +64,8 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `in_progress`
 - Objetivo: transformar a CLARA de tecnicamente pronta em documentalmente confiável
-- Estado atual: política canônica de curadoria, manifesto do corpus, staging por camadas e batch 1 do SEI.Rio já integrados em `main` e publicados em produção
-- Próxima ação: substituir o Decreto Rio nº 55.615/2025 por captura íntegra oficial, ampliar a bateria de perguntas reais para `15–20` itens e só então decidir a entrada da camada `COBERTURA_P2`
+- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3` e source-target routing já integrados em `main` e publicados em produção
+- Próxima ação: substituir o Decreto Rio nº 55.615/2025 por captura íntegra oficial, ampliar a bateria manual de `15–20` perguntas e monitorar overboost do source-target routing antes de novas expansões documentais
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
 - Estado: `planned`

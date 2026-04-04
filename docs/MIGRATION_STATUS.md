@@ -1,23 +1,42 @@
-# Status da Migracao — BLOCO 1 Certificado
+# Status da Migracao e Operacao — Linha Principal Reconciliada
 
-Ultima atualizacao: 2026-03-31
+Ultima atualizacao: 2026-04-04
 
 ## Resumo executivo
 
 | Frente | Status |
 |---|---|
-| Baseline local do repositorio | Verificada |
+| Baseline local/github | Sincronizado em `main` |
 | Vinculo real entre frontend e Supabase | Comprovado |
 | Login administrativo real | Comprovado com conta provisionada |
 | Login administrativo com Google | Pendente no ambiente real |
 | Upload e processamento de PDF real | Comprovado |
-| Persistencia de documento e chunks | Comprovada |
-| Chat grounded com base documental real | Comprovado |
+| Deduplicacao legada por `document_hash` | Publicada |
+| Corpus governado (`núcleo`, `cobertura`, `apoio`) | Ativo |
+| Source-target routing | Publicado |
 | Producao refletindo o baseline atual | Publicada |
 
-**O BLOCO 1 saiu do estado "apenas pronto no codigo" e passou para "operacionalmente provado" nas frentes centrais de ambiente, autenticacao administrativa por conta provisionada, ingestao real e resposta grounded em producao.**
+**A linha principal saiu do estágio de certificação básica e passou para uma operação governada de corpus/RAG: corpus auditado, retrieval em dois estágios, avaliação `16/16` e baseline remoto reconciliado com `main`.**
 
 ## Nota operacional recente
+
+Em 2026-04-04, `origin/main` recebeu o commit `17de564` com source-target routing e auditoria do corpus remoto:
+
+- recuperação em dois estágios (`hybrid_search_chunks` + `fetch_targeted_chunks`)
+- detecção explícita de fonte nomeada em perguntas como `segundo a nota oficial`, `segundo a wiki`, `segundo a UFSCar` e `conforme o manual do PEN`
+- boost e reserva de slots para a fonte-alvo detectada
+- guia legado de `88` chunks promovido a `NUCLEO_P1`
+- versão governada menor desativada
+- `MODELO_DE_OFICIO_PDDE.pdf` desativado
+- `topic_scope` do Termo de Uso corrigido para `sei_rio_termo`
+
+Em seguida, a avaliação batch 3 registrou:
+
+- `16/16` respostas `HTTP 200`
+- `16/16` sem web fallback
+- `16/16` com `answerScopeMatch = exact`
+- `16/16` com `expectedAllMet = true`
+- `16/16` com `finalConfidence = 1`
 
 Em 2026-04-04, a migration `20260404084500_refine_hybrid_search_for_governed_corpus.sql` foi aplicada remotamente via `supabase db query --linked` e registrada no histórico de `supabase_migrations.schema_migrations`.
 
@@ -42,7 +61,7 @@ Na mesma rodada, o corpus ativo passou a incluir `COBERTURA_P2` do PEN e `APOIO_
 - `15/16` com `answerScopeMatch = exact`
 - `13/16` com a referência esperada explicitamente presente
 
-O gap remanescente deixou de ser infraestrutura e passou a ser roteamento por `fonte-alvo nomeada` para casos como wiki, UFSCar e nota oficial de versão específica.
+O gap remanescente deixou de ser infraestrutura e passou a ser substituição do Decreto `55.615` por captura oficial íntegra, bateria manual ampliada e monitoramento fino do overboost do source-target routing.
 
 Em 2026-04-04, `origin/main` recebeu um uplift paralelo do RAG já publicado em produção:
 
@@ -74,13 +93,7 @@ Achados adicionais do BLOCO 4B:
 - o novo documento `SEI-Guia-do-usuario-Versao-final.pdf` já foi processado com `88/88` chunks e `88/88` embeddings usando `gemini-embedding-2-preview`
 - o próximo passo deixa de ser provar o contrato novo e passa a ser endurecer o pipeline com deduplicação, paralelismo controlado e testes mínimos
 
-Na branch de sessão `session/2026-04-03/HOME/CODEX/BLOCO-4C-INGESTION-HARDENING`, esse endurecimento já avançou localmente:
-
-- `document_hash` calculado e tratado como deduplicação real antes do upload
-- concorrência pequena e controlada no `embed-chunks`
-- testes novos cobrindo hash, chunks estruturados e contrato de embedding
-
-Essas mudanças ainda aguardam publicação e prova remota específica da deduplicação antes de serem integradas em `main`.
+O endurecimento do BLOCO 4C já não está mais em branch isolada: a deduplicação legada foi integrada em `main`, publicada em produção e resta apenas a prova residual por reupload controlado na UI admin.
 
 ## Memoria operacional e continuidade
 

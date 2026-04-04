@@ -2,13 +2,13 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-04
-- Base local usada na verificação: `main @ e2d29b0225ad050939f4cbc073d3883d93199a9f`
+- Base local usada na verificação: `main @ 7f20da1b03e6f8314e9ae118489dd53923fad6bd`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit local preparado para publicação: `e2d29b0225ad050939f4cbc073d3883d93199a9f`
+- `origin/main` atualmente alinhada ao commit local preparado para publicação: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
@@ -22,13 +22,13 @@
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código, a terceira rodada de polimento da janela do chat, o novo sistema visual da CLARA, o batch 1 do corpus local e a expansão governada de `cobertura`/`apoio`
+  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código, o sistema visual atual da CLARA, a deduplicação legada corrigida, o corpus governado completo (`núcleo`, `cobertura`, `apoio`) e o source-target routing publicado
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `git`
   - status: `READY`
-  - deployment id: `dpl_ycURU2FVB1ABYuFRzdSckTo9K984`
-  - commit publicado: `5c59b2169afff642871747b166286a43fc1348ea`
+  - deployment id: `dpl_78bwqKNaeDqDrqs8XymizPYSHrtR`
+  - commit publicado: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`
@@ -81,8 +81,8 @@
 - Gemini / embeddings:
   - status: `RAG ampliado no código, frontend em produção e chat remoto republicado`
   - situação conhecida:
-    - o `main` agora inclui um uplift paralelo do RAG com expansão de query, recuperação com janela maior, enriquecimento por chunks adjacentes, prompt sensível à qualidade da recuperação e UI grounded mais rica
-    - a Edge Function remota `chat` já foi republicada com esse novo comportamento
+    - o `main` agora inclui um uplift paralelo do RAG com expansão de query, recuperação com janela maior, enriquecimento por chunks adjacentes, prompt sensível à qualidade da recuperação, UI grounded mais rica e source-target routing para fontes nomeadas
+    - a Edge Function remota `chat` já foi republicada com esse novo comportamento, incluindo busca targeted por fonte-alvo
     - `embed-chunks` não precisou de nova publicação nesta rodada específica
     - a migration remota `20260404084500_refine_hybrid_search_for_governed_corpus.sql` já foi aplicada e alinhou `hybrid_search_chunks` ao corpus governado por `título`, `origem`, `versão` e `section_title`
   - implementação declarada no código:
@@ -93,6 +93,7 @@
     - expansão de query: `gemini-3.1-flash-lite-preview` com timeout de `3s`
     - recuperação híbrida: `match_count = 12`
     - telemetria nova: `rag_quality_score` e `expanded_query`
+    - source-target routing: perguntas que nomeiam explicitamente nota oficial, wiki, UFSCar ou manual PEN agora passam por recuperação em dois estágios (`hybrid_search_chunks` + `fetch_targeted_chunks`)
 - Corpus inicial:
   - status: `núcleo local, cobertura PEN e apoio versionado ativos`
   - situação conhecida:
@@ -114,12 +115,16 @@
     - uploads futuros, sob o `main` atual, passam a usar chunking semântico com `sectionTitle` e prefixo automático `[Fonte: ... | Página: ...]` em `chunk.content`
     - a avaliação inicial do RAG sobre o núcleo local registrou `9/9` respostas `HTTP 200`, sem web fallback e com escopo exato
     - a avaliação ampliada do lote 3 registrou `16/16` respostas `HTTP 200`, `16/16` sem web fallback, `15/16` com `answerScopeMatch = exact` e `13/16` com a referência esperada explicitamente presente
-    - a próxima frente de corpus é substituir o Decreto 55.615 por texto íntegro e melhorar o roteamento por fonte nomeada para wiki/UFSCar/notas oficiais específicas
+    - o corpus remoto foi auditado e limpo: o guia legado de `88` chunks virou `NUCLEO_P1`, a versão governada inferior foi desativada e o `MODELO_DE_OFICIO_PDDE.pdf` saiu do corpus ativo
+    - o `topic_scope` do Termo de Uso foi corrigido para `sei_rio_termo`
+    - a avaliação batch 3 pós source-routing registrou `16/16` perfeito em todas as métricas principais
+    - a próxima frente de corpus é substituir o Decreto `55.615` por texto íntegro oficial e ampliar a bateria manual
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
 - o corpus remoto atual não mostra mistura entre gerações de embedding, mas ainda há um documento legado sem embeddings e sem metadados novos
 - o uplift paralelo do RAG alterou a política de construção de chunks para uploads futuros; leituras antigas que assumiam `content` sempre limpo deixaram de valer
+- o source-target routing precisa ser monitorado para evitar overboost quando a fonte nomeada estiver semanticamente fraca ou tangencial
 
 ## Regras de atualização deste arquivo
 - Atualize este arquivo sempre que mudar algo em:
