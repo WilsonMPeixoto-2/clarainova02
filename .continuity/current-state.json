@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "17de564",
+  "last_integrated_main_sha": "a758a2b",
   "current_phase": "Pré-lançamento com source-target routing implementado, corpus auditado e limpo, avaliação 16/16 perfeita em todas as métricas; próxima rodada útil é substituir o Decreto 55.615 por captura oficial do Executivo e ampliar bateria manual",
   "active_block": "BLOCO 5 — Corpus inicial real e prova empírica do RAG",
   "active_branch": "main",
   "last_tool": "CLAUDE",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T14:10:00Z",
+  "last_update_utc": "2026-04-04T17:20:00Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -125,5 +125,5 @@
   ],
   "session_status": "in_progress",
   "last_report": "docs/operational-reports/2026-04-04-source-routing-and-corpus-audit.md",
-  "last_session_head_sha": "17de564"
+  "last_session_head_sha": "a758a2b"
 }

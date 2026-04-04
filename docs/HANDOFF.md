@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T09:10:00Z
+- Data/hora: 2026-04-04T17:20:00Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `main`
-- Commit de base oficial: `e2d29b0225ad050939f4cbc073d3883d93199a9f`
-- Head da sessão: `e2d29b0225ad050939f4cbc073d3883d93199a9f`
-- Último relatório: `docs/operational-reports/2026-04-04-rag-batch-2-coverage-and-version-eval.md`
+- Commit de base oficial: `a758a2bedd51c9342bd996a66db5b1465c0206fb`
+- Head da sessão: `a758a2bedd51c9342bd996a66db5b1465c0206fb`
+- Último relatório: `docs/operational-reports/2026-04-04-source-routing-and-corpus-audit.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com núcleo local, cobertura PEN compatível e apoio versionado já ingeridos, `hybrid_search_chunks` refinada no remoto e avaliação ampliada do RAG concluída
+- Fase atual: Pré-lançamento com source-target routing implementado, corpus auditado e limpo, avaliação `16/16` perfeita em todas as métricas e próxima rodada focada em ampliar bateria manual e substituir a captura parcial do Decreto `55.615`
 - Bloco ativo: BLOCO 5 — Corpus inicial real e prova empírica do RAG
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: melhorar o roteamento por fonte nomeada para perguntas de versão/interface, substituir o Decreto Rio nº 55.615/2025 por texto oficial íntegro e ampliar a bateria manual sobre núcleo, cobertura e apoio.
+- Próxima ação recomendada: substituir o Decreto Rio nº 55.615/2025 por texto oficial íntegro, ampliar a bateria manual sobre núcleo/cobertura/apoio e repetir um reupload controlado na UI admin para fechar a evidência residual do BLOCO 4C.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -89,13 +89,18 @@
 - A Edge Function remota `chat` foi republicada até a versão `18`, com bônus de intenção para perguntas sobre nota oficial, wiki, UFSCar, interface e versão
 - O avaliador em lote `scripts/corpus/evaluate_rag_batch.py` foi criado para medir groundedness, fallback, confiança final, acerto de escopo e aderência às referências esperadas
 - A avaliação ampliada do lote 3 registrou `16/16` respostas com `HTTP 200`, `16/16` sem web fallback, `15/16` com `answerScopeMatch = exact` e `13/16` com `expectedAllMet = true`
+- O roteamento por fonte nomeada foi implementado em dois estágios (`hybrid_search_chunks` + `fetch_targeted_chunks`) para perguntas como `segundo a nota oficial`, `segundo a wiki`, `segundo a UFSCar` e `conforme o manual do PEN`
+- A função SQL `fetch_targeted_chunks` foi criada para recuperar chunks de documentos-alvo por distância vetorial pura, sem o multiplicador de `search_weight`
+- O scoring final passou a reservar slots e aplicar boost para a fonte nomeada explicitamente pelo usuário
+- O corpus remoto foi auditado e limpo: o guia legado de `88` chunks foi promovido com metadados `NUCLEO_P1`, a versão governada menor foi desativada, o `MODELO_DE_OFICIO_PDDE.pdf` saiu do corpus ativo e registros falhados antigos foram desativados
+- O `topic_scope` do Termo de Uso foi corrigido de `material_apoio` para `sei_rio_termo`
+- A avaliação batch 3 pós source-routing registrou `16/16` em todas as métricas: `HTTP 200`, sem web fallback, `answerScopeMatch = exact`, `expectedAllMet = true` e `finalConfidence = 1`
 
 ## Itens pendentes
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
-- Introduzir um roteamento leve por fonte nomeada para perguntas como `segundo a nota oficial`, `segundo a wiki` e `segundo o material da UFSCar`
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C
-- Decidir o destino final do documento legado `MODELO_DE_OFICIO_PDDE.pdf` no remoto
+- Monitorar o source-target routing para evitar overboost quando a fonte nomeada tiver evidência semanticamente fraca
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
@@ -115,7 +120,7 @@
 - O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.
 - O uplift paralelo do RAG reverteu parcialmente a premissa de `texto limpo sem prefixo` para uploads futuros: o código atual volta a prefixar `chunk.content` com fonte/página para reaproveitar o parser e a atribuição de referências já existentes.
 - A migration da busca híbrida não depende mais de `SUPABASE_DB_PASSWORD`: a CLI atual permitiu execução remota segura com `supabase db query --linked`.
-- Mesmo após a ingestão de cobertura e apoio, a CLARA ainda não ancora perfeitamente perguntas que nomeiam explicitamente uma fonte externa; o gap atual é de roteamento por fonte-alvo, não de falta de corpus.
+- O gap de roteamento por fonte-alvo foi resolvido com source-target routing em dois estágios; o foco agora é monitorar precisão residual e ampliar a bateria manual.
 - A validacao estetica final do chat agora prioriza acabamento fino e densidade institucional; o proximo passo operacional volta a ser a trilha funcional do `4C`.
 
 ## Preambulo obrigatório para qualquer IA
