@@ -14,7 +14,7 @@ describe("admin ingestion helpers", () => {
     expect(sanitizeFileName("Manual:::SEI###2026.pdf")).toBe("Manual_SEI_2026.pdf");
   });
 
-  it("builds structured chunks without artificial prefixes in content", async () => {
+  it("builds structured chunks with source tag prefix in content", async () => {
     const pages: PageText[] = [
       {
         pageNumber: 7,
@@ -32,7 +32,7 @@ describe("admin ingestion helpers", () => {
       sectionTitle: null,
     });
     expect(chunks[0].content).toContain("Assinatura de documentos no SEI-Rio");
-    expect(chunks[0].content.startsWith("[Fonte:")).toBe(false);
+    expect(chunks[0].content.startsWith("[Fonte: manual-sei.pdf | Página: 7]")).toBe(true);
   });
 
   it("computes a stable SHA-256 hash per file content", async () => {
