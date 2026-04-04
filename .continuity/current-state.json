@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "7951c8df91839e1276fd7606b1082a6662a8bd00",
-  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção e uma frente paralela de sistema visual do símbolo da CLARA aberta em branch de sessão; a validação remota de deduplicação segue como próximo bloqueio funcional",
+  "last_integrated_main_sha": "dd649786348151fa0db4d0859f9ec7ac74ca8b5c",
+  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção e sistema visual novo da CLARA integrado em `main`; a validação remota de deduplicação segue como próximo bloqueio funcional",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
-  "active_branch": "session/2026-04-03/HOME/CODEX/SYMBOL-SYSTEM",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T22:52:00.000Z",
+  "last_update_utc": "2026-04-03T23:16:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -54,19 +54,21 @@
     "O novo deploy canônico de produção foi concluído a partir de `main` no commit `7951c8df91839e1276fd7606b1082a6662a8bd00`",
     "Uma frente paralela de sistema visual da CLARA foi aberta em branch de sessão, substituindo o monograma anterior por um selo baseado nas imagens de referência aprovadas pelo usuário",
     "Os ícones públicos de favicon, PWA e share card foram regenerados a partir do novo selo neural/perfil em `public/` e `public/brand/`",
-    "`ClaraMonogram` agora usa o novo selo visual em vez do monograma SVG antigo"
+    "`ClaraMonogram` agora usa o novo selo visual em vez do monograma SVG antigo",
+    "A rodada do sistema visual da CLARA foi promovida para `main` por fast-forward",
+    "O novo selo neural/perfil agora está pronto para favicon, PWA, share card, header e chat no branch principal"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto",
     "Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido",
-    "Decidir se a rodada do sistema visual da CLARA será promovida imediatamente para `main` e produção"
+    "Confirmar o novo deploy canônico de produção após a integração do sistema visual da CLARA em `main`"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Decidir a promoção da nova rodada do sistema visual da CLARA e, em paralelo, manter a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload controlado do mesmo PDF.",
+  "next_action": "Confirmar o novo deploy canônico de produção e, em seguida, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload controlado do mesmo PDF.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -81,6 +83,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-clara-symbol-system.md",
-  "last_session_head_sha": "8a1ea47b2c2e2556d893f88b80d345e1e99d419f"
+  "last_report": "docs/operational-reports/2026-04-03-main-integration-and-production-deploy-symbol-system.md",
+  "last_session_head_sha": "dd649786348151fa0db4d0859f9ec7ac74ca8b5c"
 }

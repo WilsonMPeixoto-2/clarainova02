@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T22:52:00.000Z
+- Data/hora: 2026-04-03T23:16:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-03/HOME/CODEX/SYMBOL-SYSTEM`
-- Commit de base oficial: `7951c8df91839e1276fd7606b1082a6662a8bd00`
-- Head da sessão: `8a1ea47b2c2e2556d893f88b80d345e1e99d419f`
-- Último relatório: `docs/operational-reports/2026-04-03-clara-symbol-system.md`
+- Branch de referência: `main`
+- Commit de base oficial: `dd649786348151fa0db4d0859f9ec7ac74ca8b5c`
+- Head da sessão: `dd649786348151fa0db4d0859f9ec7ac74ca8b5c`
+- Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-symbol-system.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção e uma frente paralela de sistema visual do símbolo da CLARA aberta em branch de sessão
+- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção e sistema visual novo da CLARA integrado em `main`
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: decidir a promoção da nova rodada do sistema visual da CLARA e, em paralelo, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload do mesmo PDF.
+- Próxima ação recomendada: confirmar o novo deploy canônico de produção e, em seguida, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload do mesmo PDF.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -59,12 +59,13 @@
 - O novo deploy canônico de produção foi concluído a partir de `main` no commit `7951c8df91839e1276fd7606b1082a6662a8bd00`
 - Uma nova rodada paralela criou o sistema visual do símbolo da CLARA a partir das imagens de referência aprovadas pelo usuário
 - Favicon, ícones de PWA, share card e `ClaraMonogram` agora estão prontos para adotar o novo selo neural/perfil
+- A rodada do sistema visual da CLARA foi promovida para `main` por fast-forward
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
 - Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
-- Decidir se a rodada do sistema visual da CLARA será promovida imediatamente para `main` e produção
+- Confirmar o novo deploy canônico de produção após a integração do sistema visual da CLARA em `main`
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
@@ -81,7 +82,7 @@
 - As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas no backlog, sem competir com a prioridade atual.
 - A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
-- A rodada do símbolo foi propositalmente mantida fora de `main` até validação estética final, apesar de já estar tecnicamente pronta e com `npm run validate` aprovado.
+- A validação estética final aprovou a nova direção visual; o próximo passo operacional é apenas confirmar o deploy canônico antes de retomar a trilha funcional do `4C`.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade
