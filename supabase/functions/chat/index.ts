@@ -4,9 +4,12 @@ import { GoogleGenAI } from "npm:@google/genai";
 import {
   prepareKnowledgeDecision,
   buildRetrievalQualityPrompt,
+  buildSourceTargetPrompt,
+  detectSourceTarget,
   enrichKnowledgeContextWithAdjacent,
   type RetrievedChunk,
   type RetrievalQualityInfo,
+  type SourceTargetRoute,
 } from "./knowledge.ts";
 import {
   buildGroundedReferences,
@@ -577,6 +580,7 @@ interface TelemetryContext {
   responseMode: ChatResponseMode;
   ragQualityScore: number | null;
   expandedQuery: string | null;
+  sourceTargetLabel: string | null;
 }
 
 async function recordTelemetry(
@@ -624,6 +628,7 @@ async function recordTelemetry(
           response_mode: ctx.responseMode,
           rag_quality_score: ctx.ragQualityScore,
           expanded_query: ctx.expandedQuery,
+          source_target: ctx.sourceTargetLabel,
         },
     })
     .select('id')
@@ -932,6 +937,7 @@ Deno.serve(async (req) => {
     const normalizedQuery = lastUserMessage ? normalizeQueryText(lastUserMessage.content) : '';
     const intentLabel = inferIntentLabel(normalizedQuery);
     const { topicLabel, subtopicLabel } = inferTopicLabels(normalizedQuery);
+    const sourceTarget: SourceTargetRoute | null = lastUserMessage ? detectSourceTarget(lastUserMessage.content) : null;
 
     if (lastUserMessage) {
       const guardrailCheck = checkGuardrails(lastUserMessage.content);
@@ -1070,6 +1076,40 @@ Deno.serve(async (req) => {
         if (matchErr) {
           console.error("Hybrid search error:", matchErr);
         } else if (chunks && chunks.length > 0) {
+          // Supplementary targeted retrieval for source-routed queries
+          if (sourceTarget && sourceTarget.topicScopes.length > 0 && queryEmbeddingPayload !== KEYWORD_FALLBACK_QUERY_EMBEDDING) {
+            try {
+              const scopeFilter = sourceTarget.topicScopes.map((s) => `topic_scope.eq.${s}`).join(',');
+              const nameFilter = sourceTarget.sourceNamePatterns.map((p) => `source_name.ilike.${p}`).join(',');
+              const orFilter = [scopeFilter, nameFilter].filter(Boolean).join(',');
+              const { data: targetDocs } = await supabase
+                .from('documents')
+                .select('id')
+                .eq('is_active', true)
+                .or(orFilter);
+
+              if (targetDocs && targetDocs.length > 0) {
+                const existingIds = new Set(chunks.map((c) => c.id));
+                const { data: targetChunks } = await supabase.rpc('fetch_targeted_chunks', {
+                  query_embedding: queryEmbeddingPayload,
+                  target_document_ids: targetDocs.map((d) => d.id),
+                  match_count: 3,
+                }) as { data: HybridSearchChunk[] | null };
+
+                if (targetChunks) {
+                  for (const tc of targetChunks) {
+                    if (!existingIds.has(tc.id)) {
+                      chunks.push(tc);
+                      existingIds.add(tc.id);
+                    }
+                  }
+                }
+              }
+            } catch (err) {
+              console.warn('Targeted retrieval failed (non-fatal):', err instanceof Error ? err.message : err);
+            }
+          }
+
           matchedChunks = chunks;
           searchResultCount = chunks.length;
           selectedChunkIds = chunks.map((chunk) => chunk.id);
@@ -1077,6 +1117,7 @@ Deno.serve(async (req) => {
           const decision = prepareKnowledgeDecision(
             lastUserMessage.content,
             chunks as RetrievedChunk[],
+            sourceTarget,
           );
 
           retrievalSources = decision.sources;
@@ -1164,7 +1205,8 @@ Deno.serve(async (req) => {
     const retrievalQualityPrompt = retrievalQuality
       ? buildRetrievalQualityPrompt(retrievalQuality, retrievalMode)
       : '';
-    const systemPromptWithContext = `${SYSTEM_PROMPT}${buildResponseModePrompt(responseMode)}${retrievalQualityPrompt}${knowledgeContext}`;
+    const sourceTargetPrompt = sourceTarget ? buildSourceTargetPrompt(sourceTarget) : '';
+    const systemPromptWithContext = `${SYSTEM_PROMPT}${buildResponseModePrompt(responseMode)}${retrievalQualityPrompt}${sourceTargetPrompt}${knowledgeContext}`;
 
     const chatMessages = messages.map((m: { role: string; content: string }) => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -1229,6 +1271,7 @@ REESCRITA OBRIGATORIA:
         searchResultCount, selectedChunkIds, selectedDocumentIds,
         searchMetricId, knowledgeContext, responseMode,
         ragQualityScore, expandedQuery: expandedQueryText,
+        sourceTargetLabel: sourceTarget?.label ?? null,
       };
 
       await recordTelemetry(
@@ -1272,6 +1315,7 @@ REESCRITA OBRIGATORIA:
           searchMetricId, knowledgeContext, responseMode,
           ragQualityScore: computeRagQualityScore(retrievalQuality, fallbackResponse, fallbackResponse.referenciasFinais.length),
           expandedQuery: expandedQueryText,
+          sourceTargetLabel: sourceTarget?.label ?? null,
         };
 
         await recordTelemetry(
@@ -1362,6 +1406,7 @@ REESCRITA OBRIGATORIA:
         searchMetricId, knowledgeContext, responseMode,
         ragQualityScore: computeRagQualityScore(retrievalQuality, null, retrievalSources.length),
         expandedQuery: expandedQueryText,
+        sourceTargetLabel: sourceTarget?.label ?? null,
       };
 
       void readSseText(telemetryStream)

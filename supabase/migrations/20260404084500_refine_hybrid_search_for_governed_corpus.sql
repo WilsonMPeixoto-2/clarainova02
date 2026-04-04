@@ -140,6 +140,7 @@ BEGIN
           WHEN 'sei_rio_manual' THEN 'manual'
           WHEN 'sei_rio_guia' THEN 'guia'
           WHEN 'sei_rio_faq' THEN 'faq'
+          WHEN 'sei_rio_termo' THEN 'termo'
           WHEN 'pen_manual_compativel' THEN 'manual'
           WHEN 'pen_compatibilidade' THEN 'apoio'
           WHEN 'pen_release_note' THEN 'apoio'
@@ -156,6 +157,7 @@ BEGIN
           WHEN 'sei_rio_manual' THEN 'official'
           WHEN 'sei_rio_guia' THEN 'institutional'
           WHEN 'sei_rio_faq' THEN 'institutional'
+          WHEN 'sei_rio_termo' THEN 'official'
           WHEN 'pen_manual_compativel' THEN 'institutional'
           WHEN 'pen_compatibilidade' THEN 'institutional'
           WHEN 'pen_release_note' THEN 'institutional'
@@ -172,6 +174,7 @@ BEGIN
           WHEN 'sei_rio_manual' THEN 1.25
           WHEN 'sei_rio_guia' THEN 1.1
           WHEN 'sei_rio_faq' THEN 0.92
+          WHEN 'sei_rio_termo' THEN 1.0
           WHEN 'pen_manual_compativel' THEN 0.84
           WHEN 'pen_compatibilidade' THEN 0.76
           WHEN 'pen_release_note' THEN 0.7

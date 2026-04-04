@@ -29,6 +29,7 @@ export interface KnowledgeDecision {
   sources: string[];
   references: KnowledgeReference[];
   retrievalQuality: RetrievalQualityInfo;
+  sourceTargetLabel: string | null;
 }
 
 interface ParsedChunk {
@@ -124,6 +125,7 @@ const TOPIC_SCOPE_SCORE: Record<string, number> = {
   sei_rio_norma: 1.5,
   sei_rio_manual: 1.35,
   sei_rio_guia: 1.15,
+  sei_rio_termo: 0.95,
   sei_rio_faq: 0.85,
   pen_manual_compativel: 0.35,
   pen_compatibilidade: 0.18,
@@ -250,6 +252,101 @@ function computeIntentAdjustment(question: string, chunk: ParsedChunk) {
 
   return { bonus, penalty };
 }
+
+// ============================================================
+// SOURCE-TARGET ROUTING
+// ============================================================
+
+export interface SourceTargetRoute {
+  label: string;
+  matches: (chunk: ParsedChunk) => boolean;
+  versionConstraint: string | null;
+  topicScopes: string[];
+  sourceNamePatterns: string[];
+}
+
+const SOURCE_TARGET_PATTERNS: Array<{
+  pattern: RegExp;
+  build: (match: RegExpMatchArray) => SourceTargetRoute;
+}> = [
+  {
+    pattern: /(?:segundo|conforme|de acordo com)\s+(?:a\s+)?nota\s+oficial\s+(?:do\s+)?(?:sei|MGI)\s*(\d+(?:\.\d+)*)?/i,
+    build: (m) => {
+      const version = m[1] ?? null;
+      return {
+        label: version ? `nota_oficial_sei_${version}` : "nota_oficial",
+        versionConstraint: version,
+        topicScopes: ["pen_release_note", "pen_compatibilidade"],
+        sourceNamePatterns: ["%Ministério da Gestão%", "%MGI%"],
+        matches: (chunk) => {
+          const scope = chunk.documentTopicScope ?? "";
+          const identity = normalizeText(`${chunk.documentName}\n${chunk.documentSourceName ?? ""}`);
+          const isReleaseNote = scope === "pen_release_note" || scope === "pen_compatibilidade";
+          const isMgi = identity.includes("ministerio da gestao") || identity.includes("mgi");
+          if (!isReleaseNote && !isMgi) return false;
+          if (version) {
+            return containsExactVersionLabel(
+              `${chunk.documentName}\n${chunk.content.slice(0, 400)}`.toLowerCase(),
+              version,
+            );
+          }
+          return true;
+        },
+      };
+    },
+  },
+  {
+    pattern: /(?:segundo|conforme|de acordo com)\s+(?:a\s+)?wiki\s*(?:do\s+)?(?:sei[- ]?r[jJ]|sei[- ]?rio)?/i,
+    build: () => ({
+      label: "wiki_sei_rj",
+      versionConstraint: null,
+      topicScopes: ["interface_update"],
+      sourceNamePatterns: ["%wiki%"],
+      matches: (chunk) => {
+        const scope = chunk.documentTopicScope ?? "";
+        const identity = normalizeText(`${chunk.documentName}\n${chunk.documentSourceName ?? ""}`);
+        return scope === "interface_update" || identity.includes("wiki");
+      },
+    }),
+  },
+  {
+    pattern: /(?:segundo|conforme|de acordo com)\s+(?:o\s+)?(?:material|documento|guia)\s+(?:da\s+)?ufscar/i,
+    build: () => ({
+      label: "material_ufscar",
+      versionConstraint: null,
+      topicScopes: ["interface_update"],
+      sourceNamePatterns: ["%UFSCar%", "%São Carlos%"],
+      matches: (chunk) => {
+        const identity = normalizeText(`${chunk.documentName}\n${chunk.documentSourceName ?? ""}`);
+        return identity.includes("ufscar") || identity.includes("universidade federal de sao carlos");
+      },
+    }),
+  },
+  {
+    pattern: /(?:segundo|conforme|de acordo com)\s+(?:o\s+)?manual\s+(?:do\s+)?(?:PEN|usuario\s+(?:do\s+)?(?:PEN|SEI\s*4))/i,
+    build: () => ({
+      label: "manual_pen",
+      versionConstraint: null,
+      topicScopes: ["pen_manual_compativel"],
+      sourceNamePatterns: [],
+      matches: (chunk) => {
+        const scope = chunk.documentTopicScope ?? "";
+        return scope === "pen_manual_compativel";
+      },
+    }),
+  },
+];
+
+export function detectSourceTarget(question: string): SourceTargetRoute | null {
+  for (const { pattern, build } of SOURCE_TARGET_PATTERNS) {
+    const match = question.match(pattern);
+    if (match) return build(match);
+  }
+  return null;
+}
+
+const MIN_ROUTED_CHUNKS = 2;
+const ROUTE_SCORE_BOOST = 15;
 
 function parseChunk(chunk: RetrievedChunk): ParsedChunk {
   const match = chunk.content.match(/^\[Fonte:\s*([^\]|]+?)(?:\s*\|\s*P[aá]gina:\s*([^\]]+))?\]\s*/i);
@@ -443,6 +540,15 @@ export interface AdjacentChunkRequest {
   chunkIndex: number;
 }
 
+export function buildSourceTargetPrompt(route: SourceTargetRoute): string {
+  return `
+FONTE-ALVO NOMEADA PELO USUARIO:
+- O usuario pediu explicitamente informacoes "${route.label.replace(/_/g, ' ')}".${route.versionConstraint ? `\n- Versao especifica solicitada: ${route.versionConstraint}.` : ''}
+- PRIORIZE as referencias que correspondam a essa fonte na resposta.
+- Cite explicitamente essa fonte nas referencias finais.
+- Se a base documental nao contiver essa fonte especifica, sinalize ao usuario com transparencia.`;
+}
+
 export function identifyAdjacentChunkRequests(
   chunks: RetrievedChunk[],
   selectedChunks: Array<{ similarity: number; document_id?: string; chunk_index?: number }>,
@@ -497,17 +603,45 @@ export function enrichKnowledgeContextWithAdjacent(
 
 export function prepareKnowledgeDecision(
   question: string,
-  chunks: RetrievedChunk[]
+  chunks: RetrievedChunk[],
+  sourceTarget?: SourceTargetRoute | null,
 ): KnowledgeDecision {
   const questionTokens = tokenizeQuestion(question);
-  const scoredChunks = chunks
+  const allScored = chunks
     .filter((chunk) => Number.isFinite(chunk.similarity))
     .sort((left, right) => right.similarity - left.similarity)
     .map(parseChunk)
-    .map((chunk, index) => ({ chunk, index, score: scoreChunk(question, questionTokens, chunk, index) }))
-    .filter(({ score }) => score.accept)
-    .sort((left, right) => right.score.finalScore - left.score.finalScore)
-    .slice(0, MAX_SELECTED_CHUNKS);
+    .map((chunk, index) => ({
+      chunk,
+      index,
+      score: scoreChunk(question, questionTokens, chunk, index),
+      routeMatch: sourceTarget ? sourceTarget.matches(chunk) : false,
+    }))
+    .filter(({ score }) => score.accept);
+
+  if (sourceTarget) {
+    for (const entry of allScored) {
+      if (entry.routeMatch) {
+        entry.score = { ...entry.score, finalScore: entry.score.finalScore + ROUTE_SCORE_BOOST };
+      }
+    }
+  }
+
+  allScored.sort((left, right) => right.score.finalScore - left.score.finalScore);
+
+  let scoredChunks: typeof allScored;
+  if (sourceTarget) {
+    const routed = allScored.filter((e) => e.routeMatch);
+    const nonRouted = allScored.filter((e) => !e.routeMatch);
+    const guaranteedRouted = routed.slice(0, MIN_ROUTED_CHUNKS);
+    const remaining = [...routed.slice(MIN_ROUTED_CHUNKS), ...nonRouted]
+      .sort((a, b) => b.score.finalScore - a.score.finalScore);
+    const merged = [...guaranteedRouted, ...remaining].slice(0, MAX_SELECTED_CHUNKS);
+    merged.sort((a, b) => b.score.finalScore - a.score.finalScore);
+    scoredChunks = merged;
+  } else {
+    scoredChunks = allScored.slice(0, MAX_SELECTED_CHUNKS);
+  }
 
   const parsedChunks = scoredChunks.map(({ chunk }) => chunk);
 
@@ -528,6 +662,7 @@ export function prepareKnowledgeDecision(
       sources: [],
       references: [],
       retrievalQuality: emptyQuality,
+      sourceTargetLabel: sourceTarget?.label ?? null,
     };
   }
 
@@ -586,5 +721,6 @@ export function prepareKnowledgeDecision(
       avgOverlap,
       chunkCount: parsedChunks.length,
     },
+    sourceTargetLabel: sourceTarget?.label ?? null,
   };
 }
