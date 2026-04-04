@@ -108,11 +108,27 @@ const OFFICIAL_DOCUMENT_HINTS = [
   /\btramit/i,
 ];
 
+const INTERFACE_PATTERNS = [
+  /\binterface\b/i,
+  /\bicone/i,
+  /\bmenu lateral\b/i,
+  /\blayout\b/i,
+  /\batalho/i,
+  /\bcart[oõ]es?\b/i,
+  /\beditor\b/i,
+];
+
+const VERSION_LABEL_PATTERN = /\b\d+(?:\.\d+)+\b/g;
+
 const TOPIC_SCOPE_SCORE: Record<string, number> = {
   sei_rio_norma: 1.5,
   sei_rio_manual: 1.35,
   sei_rio_guia: 1.15,
   sei_rio_faq: 0.85,
+  pen_manual_compativel: 0.35,
+  pen_compatibilidade: 0.18,
+  pen_release_note: 0.08,
+  interface_update: 0.05,
   rotina_administrativa: 0.7,
   material_apoio: 0.45,
   clara_internal: -10,
@@ -163,6 +179,78 @@ function isTechnicalQuestion(question: string) {
   return countPatternMatches(TECHNICAL_PATTERNS, question) >= 2;
 }
 
+function computeIntentAdjustment(question: string, chunk: ParsedChunk) {
+  const normalizedQuestion = normalizeText(question);
+  const normalizedChunkIdentity = normalizeText(
+    `${chunk.documentName}\n${chunk.documentSourceName ?? ""}\n${chunk.sectionTitle ?? ""}`,
+  );
+
+  const asksOfficialNote = normalizedQuestion.includes("nota oficial");
+  const asksWiki = normalizedQuestion.includes("wiki");
+  const asksUfscar = normalizedQuestion.includes("ufscar");
+  const asksVersion = normalizedQuestion.includes("versao") || extractVersionLabels(question).length > 0;
+  const asksInterface = countPatternMatches(INTERFACE_PATTERNS, question) > 0;
+
+  let bonus = 0;
+  let penalty = 0;
+
+  if (asksOfficialNote) {
+    if (chunk.documentTopicScope === "pen_release_note" || chunk.documentTopicScope === "pen_compatibilidade") {
+      bonus += 5.2;
+    }
+    if (normalizedChunkIdentity.includes("ministerio da gestao") || normalizedChunkIdentity.includes("mgi")) {
+      bonus += 2.1;
+    }
+    if (chunk.documentTopicScope?.startsWith("sei_rio_")) {
+      penalty += 2.4;
+    }
+  }
+
+  if (asksWiki) {
+    if (chunk.documentTopicScope === "interface_update" || normalizedChunkIdentity.includes("wiki")) {
+      bonus += 5.4;
+    }
+    if (chunk.documentTopicScope?.startsWith("sei_rio_")) {
+      penalty += 1.4;
+    }
+  }
+
+  if (asksUfscar) {
+    if (
+      normalizedChunkIdentity.includes("ufscar") ||
+      normalizedChunkIdentity.includes("universidade federal de sao carlos") ||
+      normalizedChunkIdentity.includes("correspondencia de icones")
+    ) {
+      bonus += 7.5;
+    }
+    if (chunk.documentTopicScope?.startsWith("sei_rio_")) {
+      penalty += 2;
+    }
+  }
+
+  if (asksInterface) {
+    if (chunk.documentTopicScope === "interface_update") {
+      bonus += 3.4;
+    }
+    if (chunk.documentTopicScope === "pen_manual_compativel" || chunk.documentTopicScope === "pen_release_note") {
+      bonus += 1.2;
+    }
+  }
+
+  if (asksVersion) {
+    if (
+      chunk.documentTopicScope === "pen_manual_compativel" ||
+      chunk.documentTopicScope === "pen_compatibilidade" ||
+      chunk.documentTopicScope === "pen_release_note" ||
+      chunk.documentTopicScope === "interface_update"
+    ) {
+      bonus += 1.8;
+    }
+  }
+
+  return { bonus, penalty };
+}
+
 function parseChunk(chunk: RetrievedChunk): ParsedChunk {
   const match = chunk.content.match(/^\[Fonte:\s*([^\]|]+?)(?:\s*\|\s*P[aá]gina:\s*([^\]]+))?\]\s*/i);
   const parsedSource = match?.[1]?.trim();
@@ -200,26 +288,57 @@ function lexicalOverlap(tokens: string[], text: string): number {
   return tokens.reduce((score, token) => (normalized.includes(token) ? score + 1 : score), 0);
 }
 
+function extractVersionLabels(text: string): string[] {
+  const labels = text.toLowerCase().match(VERSION_LABEL_PATTERN) ?? [];
+  return Array.from(new Set(labels));
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function containsExactVersionLabel(text: string, label: string) {
+  const pattern = new RegExp(`(^|[^0-9.])${escapeRegExp(label)}(?=$|[^0-9.])`, "i");
+  return pattern.test(text);
+}
+
 function scoreChunk(question: string, tokens: string[], chunk: ParsedChunk, index: number) {
-  const overlap = lexicalOverlap(tokens, chunk.content);
-  const searchCorpus = `${chunk.documentName}\n${chunk.sectionTitle ?? ""}\n${chunk.content.slice(0, 1200)}`;
+  const searchCorpus = `${chunk.documentName}\n${chunk.documentSourceName ?? ""}\n${chunk.sectionTitle ?? ""}\n${chunk.content.slice(0, 1200)}`;
+  const overlap = lexicalOverlap(tokens, searchCorpus);
+  const questionVersionLabels = extractVersionLabels(question);
+  const chunkVersionLabels = extractVersionLabels(searchCorpus);
+  const versionOverlap = questionVersionLabels.reduce(
+    (score, label) => (containsExactVersionLabel(searchCorpus.toLowerCase(), label) ? score + 1 : score),
+    0,
+  );
+  const versionMismatchPenalty =
+    questionVersionLabels.length > 0 &&
+    chunkVersionLabels.length > 0 &&
+    versionOverlap === 0
+      ? 3.5
+      : 0;
   const technicalMatches = countPatternMatches(TECHNICAL_PATTERNS, searchCorpus);
   const proceduralMatches = countPatternMatches(PROCEDURAL_PATTERNS, searchCorpus);
-  const officialMatches = countPatternMatches(OFFICIAL_DOCUMENT_HINTS, `${chunk.documentName}\n${chunk.sectionTitle ?? ""}`);
+  const officialMatches = countPatternMatches(OFFICIAL_DOCUMENT_HINTS, `${chunk.documentName}\n${chunk.documentSourceName ?? ""}\n${chunk.sectionTitle ?? ""}`);
   const technicalQuestion = isTechnicalQuestion(question);
   const topicScopeBonus = chunk.documentTopicScope ? (TOPIC_SCOPE_SCORE[chunk.documentTopicScope] ?? 0) : 0;
   const authorityBonus = chunk.documentAuthorityLevel ? (AUTHORITY_LEVEL_SCORE[chunk.documentAuthorityLevel] ?? 0) : 0;
   const documentKindBonus = chunk.documentKind ? (DOCUMENT_KIND_SCORE[chunk.documentKind] ?? 0) : 0;
   const searchWeightBonus = chunk.documentSearchWeight ? (chunk.documentSearchWeight - 1) * 4 : 0;
+  const intentAdjustment = computeIntentAdjustment(question, chunk);
 
   let finalScore = chunk.similarity * 1000;
   finalScore += overlap * 2.4;
+  finalScore += versionOverlap * 4.2;
+  finalScore -= versionMismatchPenalty;
   finalScore += proceduralMatches * 0.8;
   finalScore += officialMatches * 0.9;
   finalScore += topicScopeBonus;
   finalScore += authorityBonus;
   finalScore += documentKindBonus;
   finalScore += searchWeightBonus;
+  finalScore += intentAdjustment.bonus;
+  finalScore -= intentAdjustment.penalty;
 
   if (index < 3 && chunk.similarity >= STRONG_RRF_SCORE) {
     finalScore += 0.5;

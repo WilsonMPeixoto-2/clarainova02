@@ -211,21 +211,9 @@ def derive_governance(row: dict[str, str], chunk_count: int) -> tuple[dict, dict
     prioridade = row["prioridade"].strip().upper()
     tipo = row["tipo_documental"].strip().lower()
     escopo = row["escopo_usuario"].strip().lower()
+    title_normalized = row["titulo_oficial"].strip().lower()
+    module_tags = row.get("module_tags", "").strip().lower()
 
-    topic_scope = {
-        "decreto": "sei_rio_norma",
-        "resolucao": "sei_rio_norma",
-        "guia": "sei_rio_guia",
-        "manual": "sei_rio_manual",
-        "faq": "sei_rio_faq",
-    }.get(tipo, "material_apoio")
-    document_kind = {
-        "decreto": "norma",
-        "resolucao": "norma",
-        "guia": "guia",
-        "manual": "manual",
-        "faq": "faq",
-    }.get(tipo, "apoio")
     authority_level = {
         "nucleo": "official",
         "cobertura": "institutional",
@@ -244,12 +232,47 @@ def derive_governance(row: dict[str, str], chunk_count: int) -> tuple[dict, dict
         ("cobertura", "P2"): "media",
         ("apoio", "P3"): "baixa",
     }.get((camada, prioridade), "media")
-    search_weight = {
-        ("nucleo", "P1"): 1.32,
-        ("nucleo", "P2"): 1.12,
-        ("cobertura", "P2"): 1.02,
-        ("apoio", "P3"): 0.88,
-    }.get((camada, prioridade), 1.0)
+
+    if camada == "nucleo":
+        topic_scope = {
+            "decreto": "sei_rio_norma",
+            "resolucao": "sei_rio_norma",
+            "guia": "sei_rio_guia",
+            "manual": "sei_rio_manual",
+            "faq": "sei_rio_faq",
+        }.get(tipo, "material_apoio")
+        search_weight = {
+            ("nucleo", "P1"): 1.32,
+            ("nucleo", "P2"): 1.12,
+        }.get((camada, prioridade), 1.08)
+    elif camada == "cobertura":
+        if tipo in {"guia", "manual"}:
+            topic_scope = "pen_manual_compativel"
+            search_weight = 0.84
+        elif "compat" in title_normalized or "tramita" in module_tags or "modulos_pen" in module_tags:
+            topic_scope = "pen_compatibilidade"
+            search_weight = 0.76
+        else:
+            topic_scope = "pen_release_note"
+            search_weight = 0.7
+    elif camada == "apoio":
+        if "interface" in module_tags or tipo == "wiki":
+            topic_scope = "interface_update"
+            search_weight = 0.6
+        else:
+            topic_scope = "material_apoio"
+            search_weight = 0.56
+    else:
+        topic_scope = "clara_internal"
+        search_weight = 0.0
+
+    document_kind = {
+        "decreto": "norma",
+        "resolucao": "norma",
+        "guia": "guia",
+        "manual": "manual",
+        "faq": "faq",
+    }.get(tipo, "apoio")
     source_type = {
         "decreto": "normativa",
         "resolucao": "normativa",
@@ -274,6 +297,7 @@ def derive_governance(row: dict[str, str], chunk_count: int) -> tuple[dict, dict
         "search_weight": search_weight,
         "corpus_category": corpus_category,
         "ingestion_priority": ingestion_priority,
+        "grounding_profile": topic_scope,
         "governance_notes": row["observacao_de_conflito"].strip() or None,
         "governance_reason": "corpus_manifest_batch",
         "manifest_record": {
@@ -521,7 +545,7 @@ def main() -> int:
     with manifest_path.open("r", encoding="utf-8-sig", newline="") as handle:
       reader = csv.DictReader(handle)
       for row in reader:
-        if row["status_ingestao"].strip() not in {"nao_iniciado", "erro"}:
+        if row["status_ingestao"].strip() not in {"nao_iniciado", "erro", "baixado_nao_ingerido"}:
             continue
         if row["status_download"].strip() == "pendente":
             continue

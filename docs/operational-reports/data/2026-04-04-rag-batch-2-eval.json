@@ -1,0 +1,1294 @@
+[
+  {
+    "id": "Q1",
+    "question": "O que o Decreto Rio nº 55.615, de 1º de janeiro de 2025, determina sobre a substituição do Processo.rio pelo SEI-Rio?",
+    "status": 200,
+    "expectedReferences": [
+      "Decreto Rio nº 55.615"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Substituição do Processo.rio pelo SEI-Rio",
+    "summary": "O Decreto Rio nº 55.615/2025 estabelece a adoção do SEI-Rio como o sistema corporativo oficial de gestão de processos eletrônicos no Poder Executivo municipal, substituindo o antigo sistema Processo.rio.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 2,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
+        "tipo": "norma"
+      },
+      {
+        "id": 4,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": "EDUARDO PAES",
+        "paginas": "2",
+        "tipo": "norma"
+      },
+      {
+        "id": 5,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "Do Órgão Gestor",
+        "paginas": "2",
+        "tipo": "norma"
+      },
+      {
+        "id": 6,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Instituição do SEI-Rio"
+      },
+      {
+        "numero": 2,
+        "titulo": "Governança e Implantação"
+      },
+      {
+        "numero": 3,
+        "titulo": "Regras de Transição"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Decreto Rio nº 55.615",
+        "matched": true
+      }
+    ],
+    "plainText": "Substituição do Processo.rio pelo SEI-Rio\n\nO Decreto Rio nº 55.615/2025 estabelece a adoção do SEI-Rio como o sistema corporativo oficial de gestão de processos eletrônicos no Poder Executivo municipal, substituindo o antigo sistema Processo.rio.\n\nPasso a passo\n1. Instituição do SEI-Rio\nO decreto formaliza a transição para o SEI-Rio, alinhando a Prefeitura do Rio de Janeiro ao Processo Eletrônico Nacional (PEN) e utilizando a tecnologia cedida pelo TRF4.\n- Substituição integral do sistema Processo.rio.\n- Adoção do SEI como padrão corporativo para demandas administrativas.\n\n2. Governança e Implantação\nPara gerir essa mudança, foi criado um Grupo de Trabalho específico, coordenado pela Secretaria Municipal da Casa Civil (CVL/SUBAD) em conjunto com a IPLANRIO.\n- Elaboração de cronograma de implantação.\n- Definição de estratégias para processos em andamento e capacitação de usuários.\n- Estabelecimento de prazos para sistemas legados.\n\n3. Regras de Transição\nO decreto estabeleceu diretrizes claras para o período de migração, visando a segurança e a continuidade dos serviços administrativos.\n- Vedação de manutenção evolutiva no Processo.rio.\n- Manutenção do Processo.rio apenas para consulta de documentos e processos antigos.\n- Proibição de criação ou tramitação de novos documentos no sistema antigo após a implantação do SEI-Rio.\nObservacao: Após a implantação, o Processo.rio ficou restrito apenas à consulta de dados históricos.\n\nObservacoes finais\n- A implantação do sistema seguiu um cronograma definido pelo Grupo de Trabalho instituído pelo decreto.\n- O Decreto Rio nº 57.250, de 19 de novembro de 2025, complementa as normas de gestão e operacionalização do SEI-Rio, consolidando o sistema como a ferramenta oficial de trabalho.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11.\n[4] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025: EDUARDO PAES. p. 2.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3."
+  },
+  {
+    "id": "Q2",
+    "question": "Como é composto o número do processo no SEI.Rio segundo a Resolução CVL nº 237/2025?",
+    "status": 200,
+    "expectedReferences": [
+      "Resolução CVL nº 237"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Composição do número do processo no SEI.Rio",
+    "summary": "A Resolução CVL nº 237/2025 estabelece os critérios para a identificação dos órgãos do Poder Executivo na formação do número dos processos no sistema SEI.Rio.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Secretaria Municipal de Trabalho e",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 2,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Exposições e Congressos do Rio de Janeiro",
+        "paginas": "3",
+        "tipo": "norma"
+      },
+      {
+        "id": 4,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Empresa Municipal de Informática S.A. /",
+        "paginas": "2",
+        "tipo": "norma"
+      },
+      {
+        "id": 5,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Distribuidora de Filmes S.A. -",
+        "paginas": "2",
+        "tipo": "norma"
+      },
+      {
+        "id": 6,
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Secretaria Municipal de Cultura/SMC",
+        "paginas": "1",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Entendimento da Estrutura"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Resolução CVL nº 237",
+        "matched": true
+      }
+    ],
+    "plainText": "Composição do número do processo no SEI.Rio\n\nA Resolução CVL nº 237/2025 estabelece os critérios para a identificação dos órgãos do Poder Executivo na formação do número dos processos no sistema SEI.Rio.\n\nPasso a passo\n1. Entendimento da Estrutura\nO número do processo no SEI.Rio é composto por elementos que identificam a origem e a natureza da demanda. A Resolução CVL nº 237/2025 define especificamente os números identificadores que devem ser utilizados para cada órgão do Poder Executivo.\n- Cada órgão possui um código numérico único.\n- Este código é parte integrante da numeração oficial do processo.\n- A norma visa padronizar a identificação institucional em todo o sistema.\n\nObservacoes finais\n- A consulta aos códigos específicos deve ser feita diretamente na tabela anexa à Resolução CVL nº 237/2025.\n- Exemplos de órgãos citados na norma incluem a Controladoria Geral do Município (0013) e a Agência de Fomento do Município (0075).\n\nReferencias\n[1] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: Secretaria Municipal de Trabalho e. p. 1.\n[2] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025. p. 1.\n[3] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: Exposições e Congressos do Rio de Janeiro. p. 3.\n[4] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: Empresa Municipal de Informática S.A. /. p. 2.\n[5] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: Distribuidora de Filmes S.A. -. p. 2.\n[6] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: Secretaria Municipal de Cultura/SMC. p. 1."
+  },
+  {
+    "id": "Q3",
+    "question": "Como fazer login no SEI.Rio usando a matrícula?",
+    "status": 200,
+    "expectedReferences": [
+      "Guia do usuário interno"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Como realizar o login no SEI.Rio",
+    "summary": "Para acessar o SEI.Rio como servidor, é necessário utilizar sua matrícula institucional e senha pessoal. O sistema possui regras específicas de formatação para garantir a segurança do acesso.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Tipo de processo",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Como utilizar Favoritos como Documento Modelo",
+        "paginas": "5",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "5",
+        "tipo": "norma"
+      },
+      {
+        "id": 5,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "guia"
+      },
+      {
+        "id": 6,
+        "titulo": "Perguntas frequentes do cidadao – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "outro"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Acesse a página de login"
+      },
+      {
+        "numero": 2,
+        "titulo": "Preencha os dados de acesso"
+      },
+      {
+        "numero": 3,
+        "titulo": "Selecione o órgão e confirme"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Guia do usuário interno",
+        "matched": true
+      }
+    ],
+    "plainText": "Como realizar o login no SEI.Rio\n\nPara acessar o SEI.Rio como servidor, é necessário utilizar sua matrícula institucional e senha pessoal. O sistema possui regras específicas de formatação para garantir a segurança do acesso.\n\nPasso a passo\n1. Acesse a página de login\nAbra o navegador e acesse o endereço oficial do sistema. Na tela inicial, localize os campos de identificação.\n- Acesse o portal sei.rio\n- Localize a área de login para usuários internos\n\n2. Preencha os dados de acesso\nInsira suas credenciais seguindo o padrão exigido pelo sistema para evitar erros de autenticação.\n- No campo Usuário, digite sua matrícula sem o prefixo, sem pontos, sem barras e sem traços.\n- Atenção: a matrícula deve ter exatamente 8 posições. Se necessário, acrescente um dígito zero à esquerda.\n- No campo Senha, informe sua senha pessoal.\nObservacao: Por medida de segurança, o SEI.Rio não permite salvar a senha no navegador. Você precisará digitá-la a cada acesso.\n\n3. Selecione o órgão e confirme\nApós preencher os campos, selecione o órgão em que você atua e finalize o acesso.\n- Escolha o órgão correspondente na lista\n- Clique no botão de entrar ou confirmar\n\nObservacoes finais\n- Se você é servidor municipal, utilize a matrícula registrada no Ergon ou RHUPAG.\n- Para colaboradores da MOBIRIO, INVESTRIO, CCPAR ou prestadores de serviços, utilize a matrícula do STAFF.RIO.\n- Lembre-se de que a matrícula deve totalizar 8 dígitos após o ajuste (ex: matrícula 11/156443-4 torna-se 01564434).\n\nReferencias\n[1] Base documental CLARA. Guia do usuario interno – SEI.Rio: Tipo de processo. p. 1.\n[2] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha. p. 1.\n[3] Base documental CLARA. Guia do usuario interno – SEI.Rio: Como utilizar Favoritos como Documento Modelo. p. 5.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[5] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 3.\n[6] Base documental CLARA. Perguntas frequentes do cidadao – SEI.Rio. p. 1."
+  },
+  {
+    "id": "Q4",
+    "question": "Como incluir um documento externo em um processo no SEI.Rio?",
+    "status": 200,
+    "expectedReferences": [
+      "Guia do usuário interno"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Como incluir documento externo no SEI-Rio",
+    "summary": "Para incluir documentos produzidos fora do SEI-Rio, como arquivos em PDF ou documentos digitalizados, utilize a funcionalidade de documento externo. Este procedimento garante que arquivos externos sejam integrados corretamente ao seu processo.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "5",
+        "tipo": "norma"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Assinatura com senha do SEI",
+        "paginas": "4",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Incluindo o processo digitalizado no SEI",
+        "paginas": "4",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "20",
+        "tipo": "guia"
+      },
+      {
+        "id": 5,
+        "titulo": "Perguntas frequentes do servidor – SEI.Rio",
+        "subtitulo": "Mover documento",
+        "paginas": "1",
+        "tipo": "outro"
+      },
+      {
+        "id": 6,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Protocolos adicionais disponibilizados para consulta",
+        "paginas": "23",
+        "tipo": "guia"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Acessar o processo"
+      },
+      {
+        "numero": 2,
+        "titulo": "Iniciar a inclusão"
+      },
+      {
+        "numero": 3,
+        "titulo": "Selecionar o tipo de documento"
+      },
+      {
+        "numero": 4,
+        "titulo": "Definir o formato e anexar"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Guia do usuário interno",
+        "matched": true
+      }
+    ],
+    "plainText": "Como incluir documento externo no SEI-Rio\n\nPara incluir documentos produzidos fora do SEI-Rio, como arquivos em PDF ou documentos digitalizados, utilize a funcionalidade de documento externo. Este procedimento garante que arquivos externos sejam integrados corretamente ao seu processo.\n\nPasso a passo\n1. Acessar o processo\nAbra o processo desejado no SEI-Rio onde o documento será incluído.\n- Localize o processo na sua lista de processos ou através da busca.\n\n2. Iniciar a inclusão\nNa barra de botões do processo, clique no ícone Incluir Documento.\n- O ícone é representado por uma folha com um sinal de mais.\n\n3. Selecionar o tipo de documento\nNa tela que será apresentada, selecione a opção Externo.\n- Preencha os campos obrigatórios: Tipo de Documento, Data do Documento e Formato.\n\n4. Definir o formato e anexar\nEscolha entre Nato-digital ou Digitalizado nesta unidade e anexe o arquivo.\n- Nato-digital: para arquivos criados eletronicamente.\n- Digitalizado nesta unidade: para documentos físicos digitalizados.\n- O formato recomendado é PDF, preferencialmente com OCR.\nObservacao: Se o documento for digitalizado na unidade, você deverá informar o tipo de conferência (ex: cópia simples, original) e realizar a autenticação no sistema.\n\nObservacoes finais\n- Lembre-se de definir o nível de acesso do documento (público, restrito ou sigiloso) antes de concluir.\n- Após a inclusão, não esqueça de assinar o documento, se necessário, utilizando o ícone de assinatura.\n- Documentos digitalizados na unidade devem ser autenticados clicando no botão de autenticação para que recebam o ícone correspondente na árvore do processo.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[2] Base documental CLARA. Guia do usuario interno – SEI.Rio: Assinatura com senha do SEI. p. 4.\n[3] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI. p. 4.\n[4] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 20.\n[5] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio: Mover documento. p. 1.\n[6] Base documental CLARA. Guia do usuario interno – SEI.Rio: Protocolos adicionais disponibilizados para consulta. p. 23."
+  },
+  {
+    "id": "Q5",
+    "question": "Como disponibilizar um processo em bloco de assinatura no SEI.Rio?",
+    "status": 200,
+    "expectedReferences": [
+      "Guia do usuário interno"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Disponibilizar Documentos em Bloco de Assinatura",
+    "summary": "O Bloco de Assinatura é uma ferramenta essencial para organizar documentos que precisam ser assinados por usuários da sua unidade ou de outras unidades. Lembre-se que, no SEI-Rio, você disponibiliza documentos específicos, e não o processo inteiro, embora o processo sirva como base para essa ação.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "13",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "14",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "47",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "49",
+        "tipo": "guia"
+      },
+      {
+        "id": 5,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "53",
+        "tipo": "guia"
+      },
+      {
+        "id": 6,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Como utilizar Favoritos como Documento Modelo",
+        "paginas": "5",
+        "tipo": "guia"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Criar o Bloco de Assinatura"
+      },
+      {
+        "numero": 2,
+        "titulo": "Incluir o Documento no Bloco"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Guia do usuário interno",
+        "matched": true
+      }
+    ],
+    "plainText": "Disponibilizar Documentos em Bloco de Assinatura\n\nO Bloco de Assinatura é uma ferramenta essencial para organizar documentos que precisam ser assinados por usuários da sua unidade ou de outras unidades. Lembre-se que, no SEI-Rio, você disponibiliza documentos específicos, e não o processo inteiro, embora o processo sirva como base para essa ação.\n\nPasso a passo\n1. Criar o Bloco de Assinatura\nAntes de incluir o documento, você precisa garantir que o bloco exista na sua unidade.\n- Acesse o menu principal e clique em Blocos.\n- Selecione a opção Assinatura.\n- Na tela de Blocos de Assinatura, clique no botão Novo.\n- Preencha uma descrição clara, indique a unidade destinatária (se for para outra unidade) e clique em Salvar.\n\n2. Incluir o Documento no Bloco\nCom o bloco criado, você deve selecionar o documento dentro do processo desejado.\n- Abra o processo que contém o documento a ser assinado.\n- Na árvore do processo, selecione o documento desejado.\n- Clique no ícone Incluir em Bloco de Assinatura.\n- Escolha o bloco criado anteriormente na lista exibida.\n- Clique no botão Incluir e Disponibilizar.\n\nObservacoes finais\n- Se o documento for assinado apenas por pessoas da sua própria unidade, não é necessário indicar uma unidade externa no campo de disponibilização.\n- Você pode utilizar sinalizações como 'Prioritários', 'Revisados' ou 'Comentados' para organizar melhor o fluxo de trabalho dentro da sua unidade.\n- As sinalizações de bloco são visíveis apenas para os usuários da unidade onde o bloco se encontra no momento.\n\nReferencias\n[1] Base documental CLARA. Guia do usuario interno – SEI.Rio. p. 13.\n[2] Base documental CLARA. Guia do usuario interno – SEI.Rio. p. 14.\n[3] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 47.\n[4] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 49.\n[5] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 53.\n[6] Base documental CLARA. Guia do usuario interno – SEI.Rio: Como utilizar Favoritos como Documento Modelo. p. 5."
+  },
+  {
+    "id": "Q6",
+    "question": "Como enviar um processo para uma ou mais unidades no SEI.Rio?",
+    "status": 200,
+    "expectedReferences": [
+      "Guia do usuário interno"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Como enviar processos no SEI-Rio",
+    "summary": "No SEI-Rio, a tramitação de processos ocorre exclusivamente entre unidades. Você pode enviar um processo para uma única unidade ou para várias simultaneamente, otimizando o fluxo de trabalho.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "11",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "34",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Selecione expedientes e processos para a migração em lote",
+        "paginas": "2",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Assinatura com senha do SEI",
+        "paginas": "4",
+        "tipo": "guia"
+      },
+      {
+        "id": 5,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "10",
+        "tipo": "guia"
+      },
+      {
+        "id": 6,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "35",
+        "tipo": "guia"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Acessar a tela de envio"
+      },
+      {
+        "numero": 2,
+        "titulo": "Selecionar as unidades de destino"
+      },
+      {
+        "numero": 3,
+        "titulo": "Configurar opções adicionais (opcional)"
+      },
+      {
+        "numero": 4,
+        "titulo": "Finalizar o envio"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Guia do usuário interno",
+        "matched": true
+      }
+    ],
+    "plainText": "Como enviar processos no SEI-Rio\n\nNo SEI-Rio, a tramitação de processos ocorre exclusivamente entre unidades. Você pode enviar um processo para uma única unidade ou para várias simultaneamente, otimizando o fluxo de trabalho.\n\nPasso a passo\n1. Acessar a tela de envio\nCom o processo aberto, localize e clique no ícone Enviar Processo na barra de ferramentas superior.\n\n2. Selecionar as unidades de destino\nNo campo Unidades, digite o nome ou sigla da unidade desejada. Para enviar a mais de uma unidade, adicione-as uma de cada vez no mesmo campo.\n- O sistema permite o envio simultâneo para diversas unidades.\n- Cada unidade adicionada poderá trabalhar no processo de forma independente.\n\n3. Configurar opções adicionais (opcional)\nSe necessário, você pode definir um Retorno Programado para acompanhar o prazo de devolução do processo.\n- Marque a opção 'Manter processo aberto na unidade atual' se desejar continuar acompanhando a instrução enquanto o processo tramita para outras unidades.\nObservacao: Lembre-se que, ao enviar o processo, ele deixará de aparecer na sua tela de Controle de Processos, a menos que você marque a opção de mantê-lo aberto.\n\n4. Finalizar o envio\nApós incluir todas as unidades e configurar as opções desejadas, clique no botão Enviar para concluir a operação.\n\nObservacoes finais\n- O SEI-Rio não permite o envio direto de processos para logins individuais de usuários, apenas para unidades.\n- Processos enviados podem ser sempre localizados através da Pesquisa ou do Acompanhamento Especial.\n- Caso tenha optado pelo Retorno Programado, você poderá visualizar ícones de status (como 'Aguardando Retorno' ou 'Retorno Atrasado') na sua tela de Controle de Processos.\n\nReferencias\n[1] Base documental CLARA. Guia do usuario interno – SEI.Rio. p. 11.\n[2] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 34.\n[3] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote. p. 2.\n[4] Base documental CLARA. Guia do usuario interno – SEI.Rio: Assinatura com senha do SEI. p. 4.\n[5] Base documental CLARA. Guia do usuario interno – SEI.Rio. p. 10.\n[6] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 35."
+  },
+  {
+    "id": "Q7",
+    "question": "Quando a migração manual do Processo.rio para o SEI.Rio deve ser usada?",
+    "status": 200,
+    "expectedReferences": [
+      "Guia de migração"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Quando utilizar a migração manual",
+    "summary": "A migração manual é uma das formas de transferir processos do Processo.rio para o SEI.Rio. Ela é indicada principalmente quando a migração automática não é bem-sucedida ou quando há necessidade de selecionar documentos específicos para a instrução do processo.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Incluindo o processo digitalizado no SEI",
+        "paginas": "4",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Hipóteses Legais",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Selecione expedientes e processos para a migração em lote",
+        "paginas": "2",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Processo criado no SEI",
+        "paginas": "3",
+        "tipo": "guia"
+      },
+      {
+        "id": 5,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
+        "tipo": "norma"
+      },
+      {
+        "id": 6,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": "EDUARDO PAES",
+        "paginas": "2",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Situações de uso"
+      },
+      {
+        "numero": 2,
+        "titulo": "O que acontece na migração manual"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Guia de migração",
+        "matched": true
+      }
+    ],
+    "plainText": "Quando utilizar a migração manual\n\nA migração manual é uma das formas de transferir processos do Processo.rio para o SEI.Rio. Ela é indicada principalmente quando a migração automática não é bem-sucedida ou quando há necessidade de selecionar documentos específicos para a instrução do processo.\n\nPasso a passo\n1. Situações de uso\nVocê deve optar pela migração manual nas seguintes situações:\n- Após tentativas de migração automática que não foram concluídas com sucesso devido a erros sistêmicos ou tráfego na rede.\n- Quando o gestor do negócio define que a transferência deve ser parcial, contendo apenas as peças e documentos imprescindíveis para a correta instrução do processo.\n\n2. O que acontece na migração manual\nAo realizar este procedimento, o sistema aplica as seguintes regras:\n- O NUP é criado no SEI.Rio mantendo o número original do Processo.rio.\n- O processo recebe o marcador 'Migração manual' no SEI.Rio.\n- O status no Processo.rio é alterado para 'Número do Processo criado no SEI'.\n- É gerada automaticamente a 'Certidão de migração manual' em ambos os sistemas.\n\nObservacoes finais\n- A relação de documentos necessários para a migração manual parcial deve ser definida pelo gestor de negócio de cada órgão.\n- Após a migração, o processo fica liberado para tratamento exclusivo no SEI.Rio.\n- Lembre-se de que a transferência irregular de conteúdo pode implicar em responsabilização do servidor.\n\nReferencias\n[1] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI. p. 4.\n[2] Base documental CLARA. Guia de migracao – SEI.Rio: Hipóteses Legais. p. 1.\n[3] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote. p. 2.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Processo criado no SEI. p. 3.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11.\n[6] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025: EDUARDO PAES. p. 2."
+  },
+  {
+    "id": "Q8",
+    "question": "Durante a transição, o servidor pode continuar usando o Processo.rio ao mesmo tempo que o SEI.Rio?",
+    "status": 200,
+    "expectedReferences": [
+      "Decreto Rio nº 55.615",
+      "Guia de migração"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Uso do Processo.rio e SEI-Rio durante a transição",
+    "summary": "A transição para o SEI-Rio estabeleceu prazos claros para a descontinuidade do Processo.rio. É fundamental compreender que o sistema antigo possui restrições severas de uso e que a prioridade é a migração dos processos em andamento.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Hipóteses Legais",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Incluindo o processo digitalizado no SEI",
+        "paginas": "4",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 5,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "guia"
+      },
+      {
+        "id": 6,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "paginas": "1",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Entenda a obrigatoriedade do SEI-Rio"
+      },
+      {
+        "numero": 2,
+        "titulo": "Regras para processos em andamento"
+      },
+      {
+        "numero": 3,
+        "titulo": "Prazo final de operação"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Decreto Rio nº 55.615",
+        "matched": true
+      },
+      {
+        "expected": "Guia de migração",
+        "matched": true
+      }
+    ],
+    "plainText": "Uso do Processo.rio e SEI-Rio durante a transição\n\nA transição para o SEI-Rio estabeleceu prazos claros para a descontinuidade do Processo.rio. É fundamental compreender que o sistema antigo possui restrições severas de uso e que a prioridade é a migração dos processos em andamento.\n\nPasso a passo\n1. Entenda a obrigatoriedade do SEI-Rio\nA partir de 5 de dezembro de 2025, a abertura de novos processos deve ser feita exclusivamente no SEI-Rio. O Processo.rio não deve mais ser utilizado para criar novos documentos ou processos.\n- Novos processos: Apenas no SEI-Rio.\n- Processos em andamento: Devem ser migrados para o SEI-Rio.\n- Vedação: Não é permitida a criação de novos documentos no Processo.rio.\n\n2. Regras para processos em andamento\nOs processos que já estavam em curso no Processo.rio devem ser transferidos para o SEI-Rio. Após a migração, o processo original no Processo.rio fica bloqueado para novas ações de instrução.\n- Migração: Necessária para processos que precisam continuar tramitando.\n- Bloqueio: Após a migração, o Processo.rio permite apenas consultas.\n- Responsabilidade: A transferência irregular pode implicar em responsabilização do servidor.\n\n3. Prazo final de operação\nO Processo.rio permaneceu operacional apenas até 8 de janeiro de 2026, exclusivamente para fins de liquidação de despesas e instrução de processos que ainda não haviam sido migrados.\n- Data limite: 8 de janeiro de 2026.\n- Uso restrito: Apenas para finalização de pendências específicas.\n- Pós-prazo: A instrução de qualquer processo deve ser feita exclusivamente no SEI-Rio.\n\nObservacoes finais\n- Após a migração, o documento original para fins de gestão documental e controle de temporalidade permanece sendo aquele que consta no ambiente do Processo.rio.\n- Não tente realizar manutenções ou criar novos documentos no sistema antigo, pois isso é vedado pelas normas vigentes.\n- Em caso de dúvidas sobre processos específicos da sua unidade, consulte o gestor de negócio do seu órgão.\n\nReferencias\n[1] Base documental CLARA. Guia de migracao – SEI.Rio: Hipóteses Legais. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11.\n[3] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI. p. 4.\n[4] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025. p. 1.\n[5] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 3.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1."
+  },
+  {
+    "id": "Q9",
+    "question": "Qual nível da conta gov.br permite liberação automática do cadastro no SEI.Rio para usuário externo?",
+    "status": 200,
+    "expectedReferences": [
+      "Guia do usuário externo",
+      "Perguntas frequentes do cidadão"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Nível da conta gov.br para cadastro no SEI.Rio",
+    "summary": "Para que seu cadastro como usuário externo no SEI.Rio seja liberado automaticamente, é necessário possuir uma conta gov.br de nível Prata ou Ouro.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "5",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Perguntas frequentes do cidadao – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "outro"
+      },
+      {
+        "id": 4,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "Do Órgão Gestor",
+        "paginas": "2",
+        "tipo": "norma"
+      },
+      {
+        "id": 5,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "7",
+        "tipo": "norma"
+      },
+      {
+        "id": 6,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Protocolos adicionais disponibilizados para consulta",
+        "paginas": "23",
+        "tipo": "guia"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Verifique o nível da sua conta"
+      },
+      {
+        "numero": 2,
+        "titulo": "Realize o cadastro no SEI.Rio"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Guia do usuário externo",
+        "matched": true
+      },
+      {
+        "expected": "Perguntas frequentes do cidadão",
+        "matched": true
+      }
+    ],
+    "plainText": "Nível da conta gov.br para cadastro no SEI.Rio\n\nPara que seu cadastro como usuário externo no SEI.Rio seja liberado automaticamente, é necessário possuir uma conta gov.br de nível Prata ou Ouro.\n\nPasso a passo\n1. Verifique o nível da sua conta\nO sistema SEI.Rio exige autenticação obrigatória via plataforma gov.br. Contas de nível Bronze não permitem o cadastro como usuário externo.\n- Acesse o portal gov.br para conferir o nível atual da sua conta.\n- Caso sua conta seja Bronze, siga as orientações do próprio portal para elevar o nível para Prata ou Ouro (via reconhecimento facial, bancos credenciados ou certificado digital).\n\n2. Realize o cadastro no SEI.Rio\nCom o nível adequado, você pode prosseguir com o credenciamento no sistema.\n- Acesse o site do SEI.Rio e clique em 'Entrar'.\n- Autorize o uso dos seus dados pessoais pelo sistema.\n- Leia e aceite o Termo de Uso e Política de Privacidade.\n- Preencha os dados complementares e crie sua senha de acesso ao SEI.Rio.\n\nObservacoes finais\n- O credenciamento é um ato pessoal e intransferível.\n- Após a finalização do cadastro, você poderá acessar o sistema utilizando o login gov.br ou o e-mail cadastrado com a senha criada no SEI.\n\nReferencias\n[1] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[3] Base documental CLARA. Perguntas frequentes do cidadao – SEI.Rio. p. 1.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 7.\n[6] Base documental CLARA. Guia do usuario interno – SEI.Rio: Protocolos adicionais disponibilizados para consulta. p. 23."
+  },
+  {
+    "id": "Q10",
+    "question": "O credenciamento de usuário externo no SEI.Rio é pessoal e intransferível?",
+    "status": 200,
+    "expectedReferences": [
+      "Termo de Uso",
+      "Decreto Rio nº 57.250"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Credenciamento de Usuário Externo",
+    "summary": "Sim, o credenciamento de usuário externo no SEI.Rio é um ato pessoal e intransferível, conforme estabelecido pelas normas vigentes.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "5",
+        "tipo": "norma"
+      },
+      {
+        "id": 2,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "Do Órgão Gestor",
+        "paginas": "2",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO III",
+        "paginas": "4",
+        "tipo": "norma"
+      },
+      {
+        "id": 4,
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 5,
+        "titulo": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+        "subtitulo": null,
+        "paginas": "2",
+        "tipo": "outro"
+      },
+      {
+        "id": 6,
+        "titulo": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+        "subtitulo": null,
+        "paginas": "4",
+        "tipo": "outro"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Natureza do Credenciamento"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Termo de Uso",
+        "matched": true
+      },
+      {
+        "expected": "Decreto Rio nº 57.250",
+        "matched": true
+      }
+    ],
+    "plainText": "Credenciamento de Usuário Externo\n\nSim, o credenciamento de usuário externo no SEI.Rio é um ato pessoal e intransferível, conforme estabelecido pelas normas vigentes.\n\nPasso a passo\n1. Natureza do Credenciamento\nO cadastro no sistema é vinculado exclusivamente à pessoa que realizou o procedimento. Por ser um ato pessoal e intransferível, o usuário assume total responsabilidade pelo uso de suas credenciais.\n- O acesso é condicionado à aceitação das regras de uso.\n- O usuário é responsável por qualquer uso indevido do sistema realizado com sua senha.\n- A alegação de uso por terceiros não é aceita como justificativa para irregularidades.\n\nObservacoes finais\n- Mantenha sempre o sigilo de sua senha e credenciais de acesso.\n- Lembre-se de que o credenciamento exige autenticação via conta gov.br (nível prata ou ouro).\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III. p. 4.\n[4] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha. p. 1.\n[5] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio. p. 2.\n[6] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio. p. 4."
+  },
+  {
+    "id": "Q11",
+    "question": "Como redefinir a senha do usuário externo no SEI.Rio?",
+    "status": 200,
+    "expectedReferences": [
+      "Guia do usuário externo",
+      "Perguntas frequentes do cidadão"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Redefinição de senha do usuário externo",
+    "summary": "Se você esqueceu sua senha ou precisa alterá-la, o procedimento é simples e pode ser realizado diretamente na tela de login do sistema ou através do menu interno, caso já esteja logado.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Perguntas frequentes do servidor – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "2",
+        "tipo": "outro"
+      },
+      {
+        "id": 2,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": null,
+        "paginas": "5",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "2",
+        "tipo": "guia"
+      },
+      {
+        "id": 5,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Protocolos adicionais disponibilizados para consulta",
+        "paginas": "23",
+        "tipo": "guia"
+      },
+      {
+        "id": 6,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO III",
+        "paginas": "4",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Alteração com acesso ao sistema"
+      },
+      {
+        "numero": 2,
+        "titulo": "Redefinição em caso de esquecimento"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Guia do usuário externo",
+        "matched": true
+      },
+      {
+        "expected": "Perguntas frequentes do cidadão",
+        "matched": false
+      }
+    ],
+    "plainText": "Redefinição de senha do usuário externo\n\nSe você esqueceu sua senha ou precisa alterá-la, o procedimento é simples e pode ser realizado diretamente na tela de login do sistema ou através do menu interno, caso já esteja logado.\n\nPasso a passo\n1. Alteração com acesso ao sistema\nSe você já consegue acessar o SEI.Rio e deseja apenas trocar sua senha atual por segurança, siga este caminho:\n- No menu principal, clique em **Menu**.\n- Selecione a opção **Alterar Senha**.\n- Informe sua senha atual.\n- Defina a nova senha (mínimo de 8 caracteres, contendo letras e números).\n- Confirme a nova senha e clique em **Salvar**.\n\n2. Redefinição em caso de esquecimento\nCaso não consiga acessar o sistema por ter esquecido a senha, utilize a funcionalidade de recuperação na tela inicial:\n- Acesse a página de login do SEI.Rio.\n- Localize e utilize a funcionalidade **Obter Senha**.\n- Siga as instruções apresentadas na tela para redefinir suas credenciais.\n\nObservacoes finais\n- Lembre-se que o credenciamento e o uso do sistema são atos pessoais e intransferíveis.\n- Mantenha sempre seus dados cadastrais atualizados para evitar problemas de acesso.\n- O acesso ao SEI.Rio também pode ser realizado via login gov.br, caso tenha optado por essa modalidade no seu cadastro.\n\nReferencias\n[1] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio. p. 2.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha. p. 1.\n[4] Base documental CLARA. Guia do usuario externo – SEI.Rio. p. 2.\n[5] Base documental CLARA. Guia do usuario interno – SEI.Rio: Protocolos adicionais disponibilizados para consulta. p. 23.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III. p. 4."
+  },
+  {
+    "id": "Q12",
+    "question": "O que a nota oficial do SEI 5.0.3 informa sobre a compatibilidade do Tramita GOV.BR e dos módulos do PEN?",
+    "status": 200,
+    "expectedReferences": [
+      "Nota oficial MGI sobre o SEI 5.0.3"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Compatibilidade do SEI 5.0.3 com módulos do PEN",
+    "summary": "A versão 5.0.3 do SEI traz melhorias significativas e garante total compatibilidade com os módulos do Processo Eletrônico Nacional (PEN), conforme nota oficial do MGI.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Nota oficial MGI sobre o SEI 5.0.3",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "outro"
+      },
+      {
+        "id": 2,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 3,
+        "titulo": "Nota oficial MGI sobre o SEI 5.0.3",
+        "subtitulo": "Notícias",
+        "paginas": "1",
+        "tipo": "outro"
+      },
+      {
+        "id": 4,
+        "titulo": "Painel de compatibilidade de versões do SEI com módulos do PEN",
+        "subtitulo": "Notícias",
+        "paginas": "1",
+        "tipo": "outro"
+      },
+      {
+        "id": 5,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
+        "tipo": "norma"
+      },
+      {
+        "id": 6,
+        "titulo": "Painel de compatibilidade de versões do SEI com módulos do PEN",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "outro"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Compatibilidade com o Tramita GOV.BR"
+      },
+      {
+        "numero": 2,
+        "titulo": "Outros módulos do PEN"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Nota oficial MGI sobre o SEI 5.0.3",
+        "matched": true
+      }
+    ],
+    "plainText": "Compatibilidade do SEI 5.0.3 com módulos do PEN\n\nA versão 5.0.3 do SEI traz melhorias significativas e garante total compatibilidade com os módulos do Processo Eletrônico Nacional (PEN), conforme nota oficial do MGI.\n\nPasso a passo\n1. Compatibilidade com o Tramita GOV.BR\nA versão 5.0.3 do SEI é totalmente compatível com a versão 4.0.2 do módulo Tramita GOV.BR.\n- A atualização foi testada e aprovada pelo MGI.\n- O Tramita GOV.BR 4.0.2 é a versão recomendada para operar com o SEI 5.0.3.\n\n2. Outros módulos do PEN\nTodos os módulos geridos pelo PEN foram validados quanto à sua compatibilidade com a nova versão do sistema.\n- Protocolo Integrado\n- Gestão Documental\n- WSSEI\n- Módulo Estatístico\n- Módulo Resposta (Protocolo.GOV.BR)\n- Assinatura Eletrônica\n\nObservacoes finais\n- É recomendada a consulta constante ao Painel de Compatibilidade do PEN antes de realizar qualquer atualização, para garantir que as versões dos módulos estejam alinhadas com a versão do SEI instalada.\n- O MGI não oferece suporte técnico para versões desatualizadas do sistema, visando garantir a segurança e o desempenho do ambiente.\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025. p. 1.\n[3] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: Notícias. p. 1.\n[4] Base documental CLARA. Painel de compatibilidade de versões do SEI com módulos do PEN: Notícias. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11.\n[6] Base documental CLARA. Painel de compatibilidade de versões do SEI com módulos do PEN. p. 1."
+  },
+  {
+    "id": "Q13",
+    "question": "Segundo a nota oficial do SEI 5.0, quais mudanças estruturais foram destacadas na nova versão?",
+    "status": 200,
+    "expectedReferences": [
+      "Nota oficial MGI sobre o SEI 5.0"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Informações sobre a versão do SEI.Rio",
+    "summary": "Olá! Como assistente institucional, meu foco é apoiar o uso prático e as rotinas administrativas do SEI.Rio na Prefeitura do Rio de Janeiro. Com base na documentação oficial disponível, não possuo registros sobre uma nota técnica específica referente a uma 'versão 5.0' do sistema.",
+    "finalConfidence": 0.9,
+    "answerScopeMatch": "insufficient",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 2,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "Do Órgão Gestor",
+        "paginas": "2",
+        "tipo": "norma"
+      },
+      {
+        "id": 4,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO I",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 5,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
+        "tipo": "norma"
+      },
+      {
+        "id": 6,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "norma"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Contexto do SEI.Rio"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Nota oficial MGI sobre o SEI 5.0",
+        "matched": false
+      }
+    ],
+    "plainText": "Informações sobre a versão do SEI.Rio\n\nOlá! Como assistente institucional, meu foco é apoiar o uso prático e as rotinas administrativas do SEI.Rio na Prefeitura do Rio de Janeiro. Com base na documentação oficial disponível, não possuo registros sobre uma nota técnica específica referente a uma 'versão 5.0' do sistema.\n\nAntes de seguir\nA base documental oficial não menciona uma versão 5.0, sendo necessário entender o contexto do usuário para oferecer a orientação correta sobre o uso do sistema.\nVocê poderia me fornecer mais detalhes sobre onde encontrou essa referência à 'versão 5.0' ou qual funcionalidade específica você gostaria de entender melhor?\n\nPasso a passo\n1. Contexto do SEI.Rio\nO SEI.Rio foi instituído como o sistema corporativo oficial para a gestão de processos administrativos no âmbito da Administração Direta e Indireta do Município do Rio de Janeiro, conforme o Decreto Rio nº 57.250/2025.\n- O sistema substitui o antigo Processo.rio.\n- A transição visa modernizar o gerenciamento de processos e garantir maior eficiência e transparência.\n\nObservacoes finais\n- Caso você tenha se referido a alguma funcionalidade específica ou a uma mudança de interface que observou no sistema, por favor, descreva o que está acontecendo.\n- Estou à disposição para ajudar com dúvidas sobre como realizar tarefas, tramitar processos ou utilizar as ferramentas disponíveis no SEI.Rio atual.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[2] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 3.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11.\n[6] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025. p. 1."
+  },
+  {
+    "id": "Q14",
+    "question": "O que mudou na interface do SEI 4.1 segundo a wiki SEI-RJ?",
+    "status": 200,
+    "expectedReferences": [
+      "Novidades da versão 4.1"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Interface e Funcionalidades do SEI-Rio",
+    "summary": "Olá! É um prazer ajudar você a entender melhor o ambiente do SEI-Rio. Com base na documentação oficial disponível, o sistema foi estruturado para facilitar a gestão de processos administrativos na Prefeitura, trazendo funcionalidades intuitivas para o dia a dia.",
+    "finalConfidence": 0.7,
+    "answerScopeMatch": "probable",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "21",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": "Tipo de processo",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
+      },
+      {
+        "id": 5,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 6,
+        "titulo": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "outro"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Organização e Controle"
+      },
+      {
+        "numero": 2,
+        "titulo": "Facilidades de Navegação"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Novidades da versão 4.1",
+        "matched": false
+      }
+    ],
+    "plainText": "Interface e Funcionalidades do SEI-Rio\n\nOlá! É um prazer ajudar você a entender melhor o ambiente do SEI-Rio. Com base na documentação oficial disponível, o sistema foi estruturado para facilitar a gestão de processos administrativos na Prefeitura, trazendo funcionalidades intuitivas para o dia a dia.\n\nPasso a passo\n1. Organização e Controle\nO SEI-Rio oferece ferramentas para que você tenha uma visão clara e personalizada dos seus processos, permitindo uma gestão mais eficiente.\n- Painel de Controle: Uma visão resumida e personalizada dos processos da sua unidade.\n- Controle de Processos: Organiza os processos em 'Recebidos' e 'Gerados', permitindo ações em lote.\n- Filtros de visualização: É possível filtrar por prioridade, tipo, marcadores ou processos atribuídos a você.\n\n2. Facilidades de Navegação\nO sistema conta com recursos que auxiliam na usabilidade e na rapidez das tarefas diárias.\n- Menu superior: Permite ocultar ou exibir seções para otimizar o espaço de trabalho.\n- Acessibilidade: Disponibiliza teclas de atalho para agilizar a navegação.\n- Configurações: Possibilidade de alterar o esquema de cores do sistema conforme sua preferência.\n\nObservacoes finais\n- Lembre-se de desativar o bloqueador de pop-ups do seu navegador para garantir que os comunicados e novas funcionalidades sejam exibidos corretamente.\n- A base documental disponível foca nas funcionalidades gerais do SEI-Rio e não detalha especificamente mudanças de versão (como a 4.1) em relação a versões anteriores do SEI, mas sim a transição do sistema legado 'processo.rio' para o 'SEI-Rio'.\n\nReferencias\n[1] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 3.\n[2] Base documental CLARA. Guia do usuario interno – SEI.Rio. p. 21.\n[3] Base documental CLARA. Guia do usuario interno – SEI.Rio: Tipo de processo. p. 1.\n[4] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025. p. 1.\n[6] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio. p. 3."
+  },
+  {
+    "id": "Q15",
+    "question": "Na transição para o SEI 4.0, o que aconteceu com os ícones e o menu lateral segundo o material da UFSCar?",
+    "status": 200,
+    "expectedReferences": [
+      "Correspondência de Ícones SEI => SEI 4.0"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Menu e Interface no SEI-Rio",
+    "summary": "Olá! Como sou uma assistente especializada no sistema SEI-Rio, minha base de conhecimento é composta por documentos oficiais da Prefeitura da Cidade do Rio de Janeiro. Não possuo informações sobre manuais da UFSCar ou sobre a versão 4.0 do SEI em outros contextos institucionais.",
+    "finalConfidence": 1,
+    "answerScopeMatch": "insufficient",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "10",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia do usuario interno – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "21",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "8",
+        "tipo": "guia"
+      },
+      {
+        "id": 5,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "15",
+        "tipo": "guia"
+      },
+      {
+        "id": 6,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "19",
+        "tipo": "guia"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Estrutura do Menu no SEI-Rio"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Correspondência de Ícones SEI => SEI 4.0",
+        "matched": false
+      }
+    ],
+    "plainText": "Menu e Interface no SEI-Rio\n\nOlá! Como sou uma assistente especializada no sistema SEI-Rio, minha base de conhecimento é composta por documentos oficiais da Prefeitura da Cidade do Rio de Janeiro. Não possuo informações sobre manuais da UFSCar ou sobre a versão 4.0 do SEI em outros contextos institucionais.\n\nPasso a passo\n1. Estrutura do Menu no SEI-Rio\nNo SEI-Rio, a interface é organizada para facilitar o acesso às funcionalidades. O Menu Principal está localizado na lateral esquerda da tela e pode ser ocultado ou exibido conforme sua necessidade.\n- O botão para ocultar ou mostrar o menu lateral está disponível na barra superior.\n- A barra superior, chamada de Menu de Controle, oferece acesso rápido a funcionalidades como a Pesquisa e o Painel de Controle.\n- O sistema permite que você personalize a visualização do seu acervo através do Painel de Controle.\n\nObservacoes finais\n- Caso você tenha dúvidas sobre como utilizar o menu ou localizar alguma funcionalidade específica no SEI-Rio, estou à disposição para ajudar com o passo a passo.\n- Lembre-se de que as orientações oficiais para o nosso sistema estão contidas no Guia do Usuário interno do SEI-Rio.\n\nReferencias\n[1] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 10.\n[2] Base documental CLARA. Guia do usuario interno – SEI.Rio. p. 21.\n[3] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 3.\n[4] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 8.\n[5] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 15.\n[6] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 19."
+  },
+  {
+    "id": "Q16",
+    "question": "No SEI 5.0.3, quais módulos do PEN foram informados como compatíveis?",
+    "status": 200,
+    "expectedReferences": [
+      "Nota oficial MGI sobre o SEI 5.0.3"
+    ],
+    "expectedMode": null,
+    "note": null,
+    "title": "Módulos compatíveis com o SEI 5.0.3",
+    "summary": "A versão 5.0.3 do SEI, desenvolvida pelo TRF4 e disponibilizada pelo Ministério da Gestão e da Inovação em Serviços Públicos (MGI), possui total compatibilidade com os módulos do Processo Eletrônico Nacional (PEN).",
+    "finalConfidence": 1,
+    "answerScopeMatch": "exact",
+    "webFallbackUsed": false,
+    "ambiguityInUserQuestion": false,
+    "ambiguityInSources": false,
+    "processStates": [],
+    "references": [
+      {
+        "id": 1,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 2,
+        "titulo": "Nota oficial MGI sobre o SEI 5.0.3",
+        "subtitulo": "Notícias",
+        "paginas": "1",
+        "tipo": "outro"
+      },
+      {
+        "id": 3,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "paginas": "1",
+        "tipo": "norma"
+      },
+      {
+        "id": 4,
+        "titulo": "Perguntas frequentes do servidor – SEI.Rio",
+        "subtitulo": "Mover documento",
+        "paginas": "1",
+        "tipo": "outro"
+      },
+      {
+        "id": 5,
+        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
+        "tipo": "norma"
+      },
+      {
+        "id": 6,
+        "titulo": "SEI-Guia-do-usuario-Versao-final.pdf",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "guia"
+      }
+    ],
+    "steps": [
+      {
+        "numero": 1,
+        "titulo": "Módulos compatíveis"
+      }
+    ],
+    "expectedReferenceHits": [
+      {
+        "expected": "Nota oficial MGI sobre o SEI 5.0.3",
+        "matched": true
+      }
+    ],
+    "plainText": "Módulos compatíveis com o SEI 5.0.3\n\nA versão 5.0.3 do SEI, desenvolvida pelo TRF4 e disponibilizada pelo Ministério da Gestão e da Inovação em Serviços Públicos (MGI), possui total compatibilidade com os módulos do Processo Eletrônico Nacional (PEN).\n\nPasso a passo\n1. Módulos compatíveis\nA atualização para a versão 5.0.3 garante a integração e o funcionamento dos seguintes módulos geridos pelo PEN:\n- Tramita GOV.BR (versão 4.0.2)\n- Protocolo Integrado\n- Gestão Documental\n- WSSEI\n- Estatístico\n- Módulo Resposta (Protocolo.GOV.BR)\n- Assinatura Eletrônica\n\nObservacoes finais\n- A versão 5.0.3 do SEI traz melhorias significativas na infraestrutura, segurança e desempenho, além de um editor de texto atualizado.\n- Todos os módulos listados foram devidamente testados e aprovados quanto à sua compatibilidade com esta versão do sistema.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025. p. 1.\n[2] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: Notícias. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[4] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio: Mover documento. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11.\n[6] Base documental CLARA. SEI-Guia-do-usuario-Versao-final.pdf. p. 3."
+  }
+]
