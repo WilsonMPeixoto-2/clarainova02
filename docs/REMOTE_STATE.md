@@ -2,13 +2,13 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-04
-- Base local usada na verificação: `main @ 7f20da1b03e6f8314e9ae118489dd53923fad6bd`
+- Base local usada na verificação: `main @ 52415a9e51da0f40c6b11d794011b7472b193364`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit local preparado para publicação: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
+- `origin/main` atualmente alinhada ao commit local preparado para publicação: `52415a9e51da0f40c6b11d794011b7472b193364`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
@@ -22,13 +22,13 @@
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código, o sistema visual atual da CLARA, a deduplicação legada corrigida, o corpus governado completo (`núcleo`, `cobertura`, `apoio`) e o source-target routing publicado
+  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código, o sistema visual atual da CLARA, a deduplicação legada corrigida, o corpus governado completo (`núcleo`, `cobertura`, `apoio`), o source-target routing publicado e a rodada de UX do chat com scroll contido e distinção mais forte entre `Direto` e `Didático`
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `git`
   - status: `READY`
-  - deployment id: `dpl_78bwqKNaeDqDrqs8XymizPYSHrtR`
-  - commit publicado: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
+  - deployment id: `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi`
+  - commit publicado: `52415a9e51da0f40c6b11d794011b7472b193364`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`
@@ -42,8 +42,8 @@
 ## Edge Functions verificadas
 - `chat`
   - status: `ACTIVE`
-  - versão observada: `18`
-  - última atualização observada: `2026-04-04 08:58:28 UTC`
+  - versão observada: `22`
+  - última atualização observada: `2026-04-04 18:21:03 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
   - versão observada: `16`
@@ -81,8 +81,8 @@
 - Gemini / embeddings:
   - status: `RAG ampliado no código, frontend em produção e chat remoto republicado`
   - situação conhecida:
-    - o `main` agora inclui um uplift paralelo do RAG com expansão de query, recuperação com janela maior, enriquecimento por chunks adjacentes, prompt sensível à qualidade da recuperação, UI grounded mais rica e source-target routing para fontes nomeadas
-    - a Edge Function remota `chat` já foi republicada com esse novo comportamento, incluindo busca targeted por fonte-alvo
+    - o `main` agora inclui um uplift paralelo do RAG com expansão de query, recuperação com janela maior, enriquecimento por chunks adjacentes, prompt sensível à qualidade da recuperação, UI grounded mais rica, source-target routing para fontes nomeadas e a rodada de UX do chat com scroll contido e loading/avatar refinado
+    - a Edge Function remota `chat` já foi republicada com esse novo comportamento, incluindo busca targeted por fonte-alvo e o reforço de diferenciação entre `Direto` e `Didático`
     - `embed-chunks` não precisou de nova publicação nesta rodada específica
     - a migration remota `20260404084500_refine_hybrid_search_for_governed_corpus.sql` já foi aplicada e alinhou `hybrid_search_chunks` ao corpus governado por `título`, `origem`, `versão` e `section_title`
   - implementação declarada no código:

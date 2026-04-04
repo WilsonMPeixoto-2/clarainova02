@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T18:25:00Z
+- Data/hora: 2026-04-04T18:23:30Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-04/HOME/CODEX/CHAT-SCROLL-FIX`
-- Commit de base oficial: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
-- Head da sessão: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
-- Último relatório: `docs/operational-reports/2026-04-04-chat-scroll-and-didactic-polish.md`
+- Branch de referência: `main`
+- Commit de base oficial: `52415a9e51da0f40c6b11d794011b7472b193364`
+- Head da sessão: `52415a9e51da0f40c6b11d794011b7472b193364`
+- Último relatório: `docs/operational-reports/2026-04-04-main-integration-and-production-deploy-chat-scroll-and-didactic-polish.md`
 
 ## Estado atual resumido
-- Fase atual: Parêntese de UX no BLOCO 5 para corrigir a rolagem da aba do chat e aumentar a diferença estrutural entre os modos `Direto` e `Didático`, usando como referência os prints do chat em uso real e o PDF `SDP_PRESTACAO_DE_CONTAS`
+- Fase atual: BLOCO 5 em consolidação governada, com o parêntese de UX do chat já integrado em `main` e publicado em produção
 - Bloco ativo: BLOCO 5 — Corpus inicial real e prova empírica do RAG (parêntese de UX do chat)
-- Status da sessão: `in_progress`
-- Próxima ação recomendada: validar visualmente essa rodada de UX do chat, promover a correção de scroll e a nova distinção entre `Direto` e `Didático` se aprovadas, e então retomar a trilha funcional do BLOCO 5.
+- Status da sessão: `main_aligned`
+- Próxima ação recomendada: retomar a trilha funcional do BLOCO 5 com substituição do Decreto `55.615`, bateria manual ampliada e prova residual de deduplicação na UI admin, mantendo o novo UX do chat como baseline publicado.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -101,9 +101,9 @@
 - O modo `Didático` passou a deduplicar conteúdo repetido com leveza, para reforçar sem redundar
 - O estado de loading do chat deixou de usar um ícone disforme e agora usa um avatar derivado da imagem premium da CLARA
 - O seletor `Direto` / `Didático` agora tem contraste mais explícito entre ativo e inativo, com leitura visual imediata do modo selecionado
+- A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main` e publicada em produção no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi`
 
 ## Itens pendentes
-- Validar visualmente a nova rodada de UX do chat em uso real (scroll, loading, toggle e diferença entre respostas `Direto` e `Didático`)
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C

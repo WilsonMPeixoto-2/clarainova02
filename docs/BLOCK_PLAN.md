@@ -10,7 +10,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ 7f20da1b03e6f8314e9ae118489dd53923fad6bd`
+- Fonte oficial integrada: `origin/main @ 52415a9e51da0f40c6b11d794011b7472b193364`
 - Frente imediata mais importante: consolidar o corpus governado já ativo com a substituição do Decreto `55.615` parcial, ampliar a bateria manual e monitorar o source-target routing antes de abrir novas frentes documentais maiores
 - Ordem de execução atualmente aceita:
   1. manter o corpus governado ativo e corrigir lacunas documentais críticas do núcleo local
@@ -58,13 +58,13 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Objetivo: eliminar bloqueios externos que impedem operação previsível e alinhar o código ao contrato Gemini realmente adotado
 - Subetapa concluída: `4B — Verificação remota do corpus e smoke test grounded`
 - Subetapa atual: `4C — Deduplicação, paralelismo e testes do pipeline de ingestão`
-- Estado do 4C: implementação publicada em `main`, com deduplicação legada corrigida, refinamentos paralelos do painel do chat e uplift paralelo do RAG já incorporados; falta apenas a prova residual de reupload controlado na UI
+- Estado do 4C: implementação publicada em `main`, com deduplicação legada corrigida, refinamentos paralelos do painel do chat, uplift paralelo do RAG e correção de scroll/diferença entre modos do chat já incorporados; falta apenas a prova residual de reupload controlado na UI
 - Próxima ação: manter a prova residual de deduplicação na fila operacional, sem bloquear a consolidação do corpus local já ativo
 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
 - Estado: `in_progress`
 - Objetivo: transformar a CLARA de tecnicamente pronta em documentalmente confiável
-- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3` e source-target routing já integrados em `main` e publicados em produção
+- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção
 - Próxima ação: substituir o Decreto Rio nº 55.615/2025 por captura íntegra oficial, ampliar a bateria manual de `15–20` perguntas e monitorar overboost do source-target routing antes de novas expansões documentais
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação

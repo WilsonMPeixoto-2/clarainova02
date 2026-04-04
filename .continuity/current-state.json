@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "7f20da1",
-  "current_phase": "Parenteses de UX no BLOCO 5: correção urgente do scroll da aba do chat e diferenciação estrutural entre modos Direto e Didatico",
+  "last_integrated_main_sha": "52415a9",
+  "current_phase": "BLOCO 5 em consolidacao governada, com o parêntese de UX do chat já integrado em main e publicado em produção",
   "active_block": "BLOCO 5 — Corpus inicial real e prova empírica do RAG (parêntese de UX do chat)",
-  "active_branch": "session/2026-04-04/HOME/CODEX/CHAT-SCROLL-FIX",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T18:25:00Z",
+  "last_update_utc": "2026-04-04T18:23:30Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -100,15 +100,16 @@
     "O modo Didático ganhou camadas mais conscientes de leitura (veredito inicial, explicação principal, detalhamento complementar e observações finais) e deduplicação leve de conteúdo repetido."
   ],
   "pending_items": [
-    "Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 do Executivo e substituir a versão da Câmara no corpus",
-    "Executar uma bateria manual ampliada de 15 a 20 perguntas reais adicionais",
-    "Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C"
+    "Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 do Executivo e substituir a versão parcial no corpus governado",
+    "Executar uma bateria manual ampliada de 15 a 20 perguntas reais adicionais com foco em ambiguidade de versão, interface e fonte-alvo",
+    "Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C",
+    "Monitorar o source-target routing para evitar overboost quando a fonte nomeada tiver evidência semanticamente fraca"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Validar visualmente a aba do chat em uso real, promover a correção de scroll e a nova distinção entre Direto/Didático se aprovadas, e então retomar a trilha funcional do BLOCO 5.",
+  "next_action": "Retomar a trilha funcional do BLOCO 5 com substituição do Decreto 55.615, bateria manual ampliada e prova residual de deduplicação na UI admin, mantendo o novo UX do chat como baseline publicado.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -126,9 +127,10 @@
     "A migration da busca híbrida não depende mais de `SUPABASE_DB_PASSWORD`: a CLI atual permitiu execução remota segura com `supabase db query --linked`.",
     "O gap de roteamento por fonte-alvo foi resolvido com source-target routing em dois estágios (hybrid_search_chunks + fetch_targeted_chunks); a avaliação batch 3 confirma 16/16 perfeito.",
     "Os prints antigos na pasta IMAGENS do desktop foram usados como referência de cadência didática: resumo, aviso importante, lista operacional e checklist bem segmentados.",
-    "O PDF `SDP_PRESTACAO_DE_CONTAS_GAD_4_CRE.pdf` está sendo usado apenas como benchmark de forma didática para instrução processual no SEI-Rio, não como fonte normativa do corpus governado."
+    "O PDF `SDP_PRESTACAO_DE_CONTAS_GAD_4_CRE.pdf` está sendo usado apenas como benchmark de forma didática para instrução processual no SEI-Rio, não como fonte normativa do corpus governado.",
+    "A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre Direto e Didático já foi integrada em `main` e publicada no deploy de produção `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi`."
   ],
-  "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-04-chat-scroll-and-didactic-polish.md",
-  "last_session_head_sha": "7f20da1"
+  "session_status": "main_aligned",
+  "last_report": "docs/operational-reports/2026-04-04-main-integration-and-production-deploy-chat-scroll-and-didactic-polish.md",
+  "last_session_head_sha": "52415a9"
 }

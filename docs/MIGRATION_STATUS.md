@@ -38,6 +38,16 @@ Em seguida, a avaliação batch 3 registrou:
 - `16/16` com `expectedAllMet = true`
 - `16/16` com `finalConfidence = 1`
 
+Na mesma data, `origin/main` também recebeu a rodada de UX do chat publicada no commit `52415a9`, já refletida em produção:
+
+- o wheel scroll ficou contido no próprio painel do chat, evitando que o pano de fundo capture a rolagem
+- o `responseMode` passou a ser preservado por mensagem
+- o modo `Didático` ganhou camadas mais conscientes de leitura e deduplicação leve para reduzir repetição
+- o estado de loading deixou de usar um ícone disforme e passou a usar um avatar derivado da imagem premium da CLARA
+- o seletor `Direto` / `Didático` agora deixa o modo ativo mais legível de imediato
+- a Edge Function remota `chat` já está na versão `22` com esse comportamento publicado
+- o deploy de produção correspondente está `READY` em `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi`
+
 Em 2026-04-04, a migration `20260404084500_refine_hybrid_search_for_governed_corpus.sql` foi aplicada remotamente via `supabase db query --linked` e registrada no histórico de `supabase_migrations.schema_migrations`.
 
 Ela refinou `public.hybrid_search_chunks` para considerar:
