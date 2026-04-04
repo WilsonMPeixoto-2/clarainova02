@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "dd649786348151fa0db4d0859f9ec7ac74ca8b5c",
-  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção e sistema visual novo da CLARA integrado em `main`; a validação remota de deduplicação segue como próximo bloqueio funcional",
+  "last_integrated_main_sha": "fc2f200d145ca4fa9f7021f062f1ef92508fbf98",
+  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção e sistema visual novo da CLARA reconciliado em `main`; a validação remota de deduplicação segue como próximo bloqueio funcional",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
   "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-03T23:16:00.000Z",
+  "last_update_utc": "2026-04-03T23:31:00.000Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -56,7 +56,8 @@
     "Os ícones públicos de favicon, PWA e share card foram regenerados a partir do novo selo neural/perfil em `public/` e `public/brand/`",
     "`ClaraMonogram` agora usa o novo selo visual em vez do monograma SVG antigo",
     "A rodada do sistema visual da CLARA foi promovida para `main` por fast-forward",
-    "O novo selo neural/perfil agora está pronto para favicon, PWA, share card, header e chat no branch principal"
+    "O novo selo neural/perfil agora está pronto para favicon, PWA, share card, header e chat no branch principal",
+    "O `main` remoto recebeu commits paralelos de assets de identidade e foi reconciliado por merge sem perder o sistema visual aprovado da CLARA"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
@@ -84,5 +85,5 @@
   ],
   "session_status": "in_progress",
   "last_report": "docs/operational-reports/2026-04-03-main-integration-and-production-deploy-symbol-system.md",
-  "last_session_head_sha": "dd649786348151fa0db4d0859f9ec7ac74ca8b5c"
+  "last_session_head_sha": "fc2f200d145ca4fa9f7021f062f1ef92508fbf98"
 }

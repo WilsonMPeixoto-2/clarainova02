@@ -2,13 +2,13 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-03
-- Base local usada na verificação: `origin/main @ dd649786348151fa0db4d0859f9ec7ac74ca8b5c`
+- Base local usada na verificação: `origin/main @ fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `dd649786348151fa0db4d0859f9ec7ac74ca8b5c`
+- `origin/main` atualmente alinhada ao commit: `fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
@@ -16,7 +16,7 @@
   - a branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não de integração
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
-  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção, o BLOCO 4C já está em `main`, a terceira rodada de polimento da janela do chat foi promovida e o sistema visual novo da CLARA agora também está integrado no branch principal
+  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção, o BLOCO 4C já está em `main`, a terceira rodada de polimento da janela do chat foi promovida e o sistema visual novo da CLARA agora também está integrado e reconciliado no branch principal
 
 ## Vercel
 - Projeto canônico: `clarainova02`

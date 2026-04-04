@@ -3,15 +3,15 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T23:16:00.000Z
+- Data/hora: 2026-04-03T23:31:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `main`
-- Commit de base oficial: `dd649786348151fa0db4d0859f9ec7ac74ca8b5c`
-- Head da sessão: `dd649786348151fa0db4d0859f9ec7ac74ca8b5c`
+- Commit de base oficial: `fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
+- Head da sessão: `fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
 - Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-symbol-system.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção e sistema visual novo da CLARA integrado em `main`
+- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção e sistema visual novo da CLARA reconciliado em `main`
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
 - Próxima ação recomendada: confirmar o novo deploy canônico de produção e, em seguida, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload do mesmo PDF.
@@ -60,6 +60,7 @@
 - Uma nova rodada paralela criou o sistema visual do símbolo da CLARA a partir das imagens de referência aprovadas pelo usuário
 - Favicon, ícones de PWA, share card e `ClaraMonogram` agora estão prontos para adotar o novo selo neural/perfil
 - A rodada do sistema visual da CLARA foi promovida para `main` por fast-forward
+- O `main` remoto recebeu commits paralelos de outra ferramenta para ícones e assets de identidade; esse histórico foi absorvido por merge sem perder a versão aprovada do símbolo
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível

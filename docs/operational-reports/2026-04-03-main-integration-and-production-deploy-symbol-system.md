@@ -28,6 +28,14 @@ Promover a nova rodada do sistema visual do símbolo da CLARA para `main` e publ
 - Commit promovido em `main`:
   - `dd649786348151fa0db4d0859f9ec7ac74ca8b5c`
 
+## Reconciliação adicional
+
+- `origin/main` recebeu, em paralelo, commits remotos de outra ferramenta com alterações de ícones e assets públicos
+- O histórico remoto foi absorvido por merge em:
+  - `fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
+- O resultado final preserva como estado de produção a direção visual aprovada pelo usuário para o novo selo da CLARA
+- Alterações remotas colaterais que reduziriam demais `src/integrations/supabase/types.ts` e introduziriam arquivos não usados foram explicitamente mantidas fora do estado final
+
 ## Próximo passo
 
 - Confirmar o novo deploy canônico de produção no Vercel
