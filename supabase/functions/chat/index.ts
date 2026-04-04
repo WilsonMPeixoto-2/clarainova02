@@ -120,20 +120,28 @@ function buildResponseModePrompt(responseMode: ChatResponseMode) {
     return `
 
 PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIRETO
-- Priorize resposta curta, objetiva e operacional.
+- Priorize resposta objetiva, mas nao telegráfica. O usuario ainda precisa entender o suficiente para agir com segurança.
 - Comece pelo caminho principal, sem introducoes longas.
-- Quando houver procedimento, use no maximo 3 etapas curtas e bem acionaveis.
+- Quando houver procedimento, entregue de 2 a 3 etapas acionaveis e claramente distintas.
+- Cada etapa deve explicar a acao principal em 1 frase clara e, se necessario, no maximo 2 itens de conferencia.
+- Prefira modoResposta="checklist" quando houver sequencia operacional e modoResposta="explicacao" quando a pergunta pedir esclarecimento conceitual.
 - Reduza contexto lateral, repeticoes e observacoes que nao mudem a acao pratica.
+- userNotice so deve aparecer quando realmente alterar a decisao do usuario.
 - Mantenha cautelas, ambiguidade e pedidos de esclarecimento quando forem necessarios.`;
   }
 
   return `
 
 PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIDATICO
-- Organize a resposta como explicacao guiada e acolhedora.
-- Quando houver procedimento, entregue passo a passo com contexto do que revisar antes, durante e depois.
-- Pode usar mais etapas e observacoes praticas quando isso ajudar o usuario a executar com seguranca.
+- Organize a resposta como orientacao guiada, acolhedora e claramente sequenciada.
+- Estruture a resposta em camadas perceptiveis: veredito inicial, explicacao principal, detalhamento complementar e observacoes finais.
+- Quando houver procedimento, entregue de 3 a 5 etapas bem distintas, em ordem de execucao.
+- Cada etapa deve dizer o que fazer, por que isso importa e o que conferir antes de seguir.
+- Prefira modoResposta="passo_a_passo" ou modoResposta="combinado".
+- Use itens e destaques para transformar a resposta em um guia executavel, no estilo de um manual operacional.
+- Evite repetir a mesma ideia em varios blocos: reforce com novos detalhes, nao com reformulacoes redundantes.
 - Explique rapidamente termos tecnicos ou pontos que costumam gerar erro.
+- Use userNotice e cautionNotice quando ajudarem a orientar a leitura, nao apenas como comentario lateral.
 - Mantenha cautelas, ambiguidade e pedidos de esclarecimento quando forem necessarios.`;
 }
 
@@ -464,11 +472,15 @@ function buildGroundedFallbackResponse(
   const fallbackStep = checklistItems.length > 0
     ? {
         numero: 1,
-        titulo: "Itens para conferir",
-        conteudo: `No ${primaryDocument}, estes itens aparecem como base de conferência para o encaminhamento da prestação de contas do PDDE.`,
-        itens: checklistItems,
+        titulo: responseMode === 'direto' ? "Itens para conferir" : "Leitura orientada do trecho recuperado",
+        conteudo: responseMode === 'direto'
+          ? `No ${primaryDocument}, estes itens aparecem como base de conferência para o encaminhamento da prestação de contas do PDDE.`
+          : `No ${primaryDocument}, identifiquei um trecho que organiza a rotina em pontos verificáveis. Use os itens abaixo como guia de leitura antes de concluir a ação no processo.`,
+        itens: responseMode === 'direto' ? checklistItems : checklistItems.slice(0, 6),
         destaques: [],
-        alerta: null,
+        alerta: responseMode === 'didatico'
+          ? 'Se algum item nao aparecer na sua tela, confira se o procedimento pertence a outra etapa do fluxo ou a outra unidade responsável.'
+          : null,
         citacoes: citations,
       }
     : {
@@ -484,13 +496,19 @@ function buildGroundedFallbackResponse(
   return {
     tituloCurto: responseMode === 'direto'
       ? 'Checklist documental localizado'
-      : 'Orientação documental localizada',
-    resumoInicial: `Encontrei respaldo documental em ${primaryDocument} e mantive a resposta restrita ao conteúdo recuperado.`,
+      : 'Guia documental localizado',
+    resumoInicial: responseMode === 'direto'
+      ? `Encontrei respaldo documental em ${primaryDocument} e mantive a resposta focada na rota principal.`
+      : `Encontrei respaldo documental em ${primaryDocument} e organizei a leitura de forma guiada para reduzir erro operacional.`,
     resumoCitacoes: citations,
-    modoResposta: checklistItems.length > 0 ? 'checklist' : 'explicacao',
+    modoResposta: checklistItems.length > 0
+      ? (responseMode === 'direto' ? 'checklist' : 'passo_a_passo')
+      : 'explicacao',
     etapas: [fallbackStep],
     observacoesFinais: [
-      'Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.',
+      responseMode === 'direto'
+        ? 'Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.'
+        : 'Se houver exigência complementar da sua unidade, confirme também a normativa vigente aplicável ao exercício e a etapa do processo em que você está atuando.',
     ],
     termosDestacados: [
       { texto: 'prestação de contas do PDDE', tipo: 'conceito' },
@@ -508,7 +526,9 @@ function buildGroundedFallbackResponse(
       clarificationReason: null,
       internalExpansionPerformed: false,
       webFallbackUsed: false,
-      userNotice: 'Resposta operacional montada diretamente a partir das referências documentais recuperadas.',
+      userNotice: responseMode === 'direto'
+        ? 'Resposta operacional montada diretamente a partir das referências documentais recuperadas.'
+        : 'Organizei a orientação com base no trecho recuperado, priorizando uma leitura guiada do que conferir antes de avançar.',
       cautionNotice: checklistItems.length > 0 ? null : 'O trecho recuperado foi curto, então mantive a resposta estritamente documental.',
       ambiguityReason: null,
       comparedSources: [],
@@ -1227,6 +1247,7 @@ Deno.serve(async (req) => {
       let structuredResponse = sanitizeStructuredResponse(structuredResult.response, {
         groundedReferences,
         usedRag: retrievalMode === "model_grounded",
+        responseMode,
       });
 
       if (responseHasInternalProcessLeakage(structuredResponse)) {
@@ -1250,6 +1271,7 @@ REESCRITA OBRIGATORIA:
           structuredResponse = sanitizeStructuredResponse(repairedStructuredResult.response, {
             groundedReferences,
             usedRag: retrievalMode === "model_grounded",
+            responseMode,
           });
         }
       }

@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "7f20da1",
-  "current_phase": "Pré-lançamento com source-target routing implementado, corpus auditado e limpo, avaliação 16/16 perfeita em todas as métricas; próxima rodada útil é substituir o Decreto 55.615 por captura oficial do Executivo e ampliar bateria manual",
-  "active_block": "BLOCO 5 — Corpus inicial real e prova empírica do RAG",
-  "active_branch": "main",
+  "current_phase": "Parenteses de UX no BLOCO 5: correção urgente do scroll da aba do chat e diferenciação estrutural entre modos Direto e Didatico",
+  "active_block": "BLOCO 5 — Corpus inicial real e prova empírica do RAG (parêntese de UX do chat)",
+  "active_branch": "session/2026-04-04/HOME/CODEX/CHAT-SCROLL-FIX",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T18:10:00Z",
+  "last_update_utc": "2026-04-04T18:25:00Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -94,7 +94,10 @@
     "O documento legado `SEI-Guia-do-usuario-Versao-final.pdf` (88 chunks) foi promovido a NUCLEO_P1 governado com metadados corrigidos",
     "O `MODELO_DE_OFICIO_PDDE.pdf` e os registros falhados de ingestão foram desativados no corpus remoto",
     "O `topic_scope` do Termo de Uso foi corrigido de `material_apoio` para `sei_rio_termo` com scoring e SQL atualizados",
-    "A avaliação batch 3 pós source-routing registrou `16/16` perfeito em todas as métricas: HTTP 200, sem web fallback, answerScopeMatch = exact, expectedAllMet = true, finalConfidence = 1"
+    "A avaliação batch 3 pós source-routing registrou `16/16` perfeito em todas as métricas: HTTP 200, sem web fallback, answerScopeMatch = exact, expectedAllMet = true, finalConfidence = 1",
+    "A aba do chat agora contém o wheel scroll dentro do próprio painel, inclusive quando o cursor está sobre header e composer, evitando que o pano de fundo receba a rolagem.",
+    "A resposta estruturada passou a preservar o responseMode por mensagem e agora diferencia de forma mais forte Direto e Didático no backend e na renderização.",
+    "O modo Didático ganhou camadas mais conscientes de leitura (veredito inicial, explicação principal, detalhamento complementar e observações finais) e deduplicação leve de conteúdo repetido."
   ],
   "pending_items": [
     "Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 do Executivo e substituir a versão da Câmara no corpus",
@@ -105,7 +108,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Substituir o Decreto Rio nº 55.615/2025 por captura oficial do Executivo, ampliar a bateria manual de perguntas reais e considerar documentos adicionais para o corpus.",
+  "next_action": "Validar visualmente a aba do chat em uso real, promover a correção de scroll e a nova distinção entre Direto/Didático se aprovadas, e então retomar a trilha funcional do BLOCO 5.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -121,9 +124,10 @@
     "O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.",
     "O uplift paralelo do RAG reverteu parcialmente a premissa de `texto limpo sem prefixo` para uploads futuros: o código atual volta a prefixar `chunk.content` com fonte/página para reaproveitar o parser e a atribuição de referências já existentes.",
     "A migration da busca híbrida não depende mais de `SUPABASE_DB_PASSWORD`: a CLI atual permitiu execução remota segura com `supabase db query --linked`.",
-    "O gap de roteamento por fonte-alvo foi resolvido com source-target routing em dois estágios (hybrid_search_chunks + fetch_targeted_chunks); a avaliação batch 3 confirma 16/16 perfeito."
+    "O gap de roteamento por fonte-alvo foi resolvido com source-target routing em dois estágios (hybrid_search_chunks + fetch_targeted_chunks); a avaliação batch 3 confirma 16/16 perfeito.",
+    "Os prints antigos na pasta IMAGENS do desktop foram usados como referência de cadência didática: resumo, aviso importante, lista operacional e checklist bem segmentados."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-04-project-alignment-audit.md",
+  "last_report": "docs/operational-reports/2026-04-04-chat-scroll-and-didactic-polish.md",
   "last_session_head_sha": "7f20da1"
 }

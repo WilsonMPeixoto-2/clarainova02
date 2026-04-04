@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { DownloadSimple, CircleNotch, Printer, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
+import { DownloadSimple, Printer, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
@@ -13,6 +13,7 @@ import { useChat } from '@/hooks/useChatStore';
 import {
   CHAT_RESPONSE_MODES,
   getChatResponseModePresentation,
+  type ChatResponseMode,
 } from '@/lib/chat-response-mode';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useModalAccessibility } from '@/hooks/useModalAccessibility';
@@ -143,6 +144,18 @@ function persistPanelPreference(preference: PersistedChatPanelPreference) {
   }
 }
 
+function resolveStructuredMessageMode(messageResponseMode: ChatResponseMode | undefined, structuredMode?: string | null): ChatResponseMode {
+  if (messageResponseMode === 'direto' || messageResponseMode === 'didatico') {
+    return messageResponseMode;
+  }
+
+  if (structuredMode === 'checklist' || structuredMode === 'explicacao') {
+    return 'direto';
+  }
+
+  return 'didatico';
+}
+
 const ChatHeaderActionButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & {
   label: string;
   visibleLabel?: string;
@@ -203,6 +216,7 @@ const ChatSheet = () => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   const resolvedPanelWidth = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -376,6 +390,29 @@ const ChatSheet = () => {
     }
   };
 
+  const handlePanelWheelCapture = (event: React.WheelEvent<HTMLElement>) => {
+    event.stopPropagation();
+
+    const viewport = scrollViewportRef.current;
+    if (!viewport) {
+      return;
+    }
+
+    const target = event.target as Node | null;
+    const targetInsideViewport = !!target && viewport.contains(target);
+
+    if (targetInsideViewport) {
+      return;
+    }
+
+    if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+      return;
+    }
+
+    event.preventDefault();
+    viewport.scrollBy({ top: event.deltaY, behavior: 'auto' });
+  };
+
   const handleExportPdf = async () => {
     if (exportableMessages.length === 0 || isExportingPdf) {
       return;
@@ -489,6 +526,10 @@ const ChatSheet = () => {
             className={`chat-shell fixed top-0 right-0 z-[100] h-full flex flex-col border-l border-[hsl(var(--border-subtle))] ${panelMode === 'fullscreen' ? 'left-0 border-l-0' : ''}`}
             style={{ width: sheetWidth }}
             data-chat-stage={hasMessages ? 'active' : 'empty'}
+            data-lenis-prevent
+            data-lenis-prevent-wheel
+            data-lenis-prevent-touch
+            onWheelCapture={handlePanelWheelCapture}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -629,7 +670,15 @@ const ChatSheet = () => {
               </div>
             </div>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea
+              className="chat-scroll-region flex-1 min-h-0"
+              viewportClassName="chat-scroll-viewport"
+              viewportRef={scrollViewportRef}
+              data-lenis-prevent
+              data-lenis-prevent-wheel
+              data-lenis-prevent-touch
+              onWheelCapture={(event) => event.stopPropagation()}
+            >
               <div className={`px-4 py-4 md:px-5 ${hasMessages ? 'space-y-3' : 'space-y-5'}`}>
                 {showRuntimeBanner && (
                   <section className="chat-runtime-banner" data-mode={runtimeMode} aria-label={runtimeLabel}>
@@ -692,10 +741,16 @@ const ChatSheet = () => {
                           : `chat-message-assistant text-foreground rounded-bl-md px-4 pt-5 pb-3 ${message.structuredResponse ? assistantMessageMaxWidth : 'max-w-[90%]'}`
                       }`}
                       data-response-kind={message.role === 'assistant' ? (message.structuredResponse ? 'structured' : 'plain') : undefined}
+                      data-chat-mode={message.role === 'assistant'
+                        ? resolveStructuredMessageMode(message.responseMode, message.structuredResponse?.modoResposta)
+                        : undefined}
                     >
                       {message.role === 'assistant' ? (
                         message.structuredResponse ? (
-                          <ChatStructuredMessage response={message.structuredResponse} />
+                          <ChatStructuredMessage
+                            response={message.structuredResponse}
+                            responseMode={resolveStructuredMessageMode(message.responseMode, message.structuredResponse.modoResposta)}
+                          />
                         ) : (
                           <div className="clara-prose">
                             <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
@@ -720,7 +775,17 @@ const ChatSheet = () => {
                   >
                     <div className="chat-loading-card">
                       <div className="chat-loading-head">
-                        <CircleNotch className="w-4 h-4 text-primary animate-spin" />
+                        <span className="chat-loading-avatar" aria-hidden="true">
+                          <span className="chat-loading-avatar-halo" />
+                          <img
+                            src="/brand/clara-avatar-chat-64.png"
+                            alt=""
+                            className="chat-loading-avatar-mark"
+                            decoding="async"
+                            loading="eager"
+                            draggable={false}
+                          />
+                        </span>
                         <span>{activeLoadingPhase.title}</span>
                       </div>
                       <p className="chat-loading-copy">{activeLoadingPhase.description}</p>

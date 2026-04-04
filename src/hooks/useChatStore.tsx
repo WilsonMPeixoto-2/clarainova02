@@ -22,6 +22,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   structuredResponse?: ClaraStructuredResponse | null;
+  responseMode?: ChatResponseMode;
 }
 
 interface ChatState {
@@ -202,7 +203,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     let allMessages: ChatMessage[] = [];
     setMessages((prev) => {
       allMessages = [...prev, userMsg];
-      return [...allMessages, { role: 'assistant' as const, content: '', structuredResponse: null }];
+      return [...allMessages, {
+        role: 'assistant' as const,
+        content: '',
+        structuredResponse: null,
+        responseMode,
+      }];
     });
     setIsLoading(true);
     setIsStreaming(false);
@@ -214,6 +220,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               role: 'assistant',
               content: plainText,
               structuredResponse: response,
+              responseMode,
             }),
           );
         });
@@ -226,6 +233,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               role: 'assistant',
               content: textContent,
               structuredResponse: null,
+              responseMode,
             }),
           );
         });
@@ -251,6 +259,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               role: 'assistant',
               content: errorMsg,
               structuredResponse: null,
+              responseMode,
             }),
           );
         });
@@ -281,6 +290,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             role: 'assistant',
             content: errorMsg,
             structuredResponse: null,
+            responseMode,
           }),
         );
       });

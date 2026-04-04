@@ -13,9 +13,9 @@ export function getChatResponseModePresentation(mode: ChatResponseMode) {
     return {
       label: 'Direto',
       shortLabel: 'Modo direto',
-      description: 'Vai direto ao caminho principal, destacando a ação imediata e só o contexto indispensável.',
-      selectionHint: 'Rota principal, decisão rápida e menos leitura.',
-      loadingHint: 'Vou priorizar um caminho mais objetivo, com foco no que precisa ser feito agora.',
+      description: 'Entrega a rota principal com 2 ou 3 passos práticos, mantendo só o contexto que muda sua próxima ação.',
+      selectionHint: 'Síntese operacional, decisão rápida e conferências mínimas.',
+      loadingHint: 'Vou priorizar a rota principal, com foco no que precisa ser feito agora e nas conferências indispensáveis.',
       placeholder: 'Pergunte para receber uma orientação mais objetiva...',
     };
   }
@@ -23,9 +23,9 @@ export function getChatResponseModePresentation(mode: ChatResponseMode) {
   return {
     label: 'Didático',
     shortLabel: 'Modo didático',
-    description: 'Organiza a orientação em etapas, com contexto, conferências e alertas quando houver ambiguidade.',
-    selectionHint: 'Passo a passo com mais contexto e checkpoints.',
-    loadingHint: 'Vou organizar a orientação em etapas, com contexto e conferências para você avançar com segurança.',
+    description: 'Transforma a resposta em um guia operacional, com contexto, checkpoints e o que conferir em cada etapa.',
+    selectionHint: 'Guia passo a passo, leitura orientada e mais contexto.',
+    loadingHint: 'Vou organizar a orientação como um guia passo a passo, com contexto e conferências para você avançar com segurança.',
     placeholder: 'Pergunte para receber um passo a passo guiado...',
   };
 }

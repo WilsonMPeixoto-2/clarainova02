@@ -9,6 +9,7 @@ import {
   formatReferenceAbnt,
   renderStructuredResponseToPlainText,
 } from '@/lib/clara-response';
+import type { ChatResponseMode } from '@/lib/chat-response-mode';
 
 function highlightLabel(highlight: ClaraHighlight) {
   switch (highlight.tipo) {
@@ -58,6 +59,53 @@ function getProcessStateMeta(state: ClaraProcessState) {
         className: 'chat-process-state is-info',
       };
   }
+}
+
+function resolveStructuredResponseMode(
+  response: ClaraStructuredResponse,
+  responseMode?: ChatResponseMode,
+): ChatResponseMode {
+  if (responseMode === 'direto' || responseMode === 'didatico') {
+    return responseMode;
+  }
+
+  if (response.modoResposta === 'checklist' || response.modoResposta === 'explicacao') {
+    return 'direto';
+  }
+
+  return 'didatico';
+}
+
+function getResponseModeMeta(mode: ChatResponseMode) {
+  if (mode === 'direto') {
+    return {
+      kicker: 'Resposta direta',
+      modeBadge: 'Síntese operacional',
+      summaryLabel: 'Rota imediata',
+      lensTitle: 'Foco desta leitura',
+      lensCopy: 'Siga primeiro a rota principal. Use os alertas e referências apenas para confirmar o que muda sua próxima ação.',
+      stepTitle: 'Rota principal',
+      stepDetail: 'Etapas curtas para agir sem perder o fio',
+      highlightsTitle: 'Pontos-chave',
+      highlightsDetail: 'Sinais rápidos para não perder o foco',
+      observationsTitle: 'Observações finais',
+      observationsDetail: 'Fechamento rápido do que ainda merece atenção',
+    };
+  }
+
+  return {
+    kicker: 'Guia didático',
+    modeBadge: 'Passo a passo guiado',
+    summaryLabel: 'Veredito inicial',
+    lensTitle: 'Antes de avançar',
+    lensCopy: 'Use este guia em quatro camadas: entenda o veredito inicial, siga a explicação principal, consulte o detalhamento complementar e só então feche pelas observações finais.',
+    stepTitle: 'Explicação principal',
+    stepDetail: 'Sequência guiada com contexto, conferências e ordem de execução',
+    highlightsTitle: 'Detalhamento complementar',
+    highlightsDetail: 'Elementos de interface, termos e sinais que ajudam a evitar erro',
+    observationsTitle: 'Observações finais',
+    observationsDetail: 'Fechamento, cautelas e verificações depois da execução',
+  };
 }
 
 
@@ -173,10 +221,18 @@ function SectionHeading({
   );
 }
 
-export function ChatStructuredMessage({ response }: { response: ClaraStructuredResponse }) {
+export function ChatStructuredMessage({
+  response,
+  responseMode,
+}: {
+  response: ClaraStructuredResponse;
+  responseMode?: ChatResponseMode;
+}) {
   const [showReferences, setShowReferences] = useState(true);
   const [copied, setCopied] = useState(false);
   const analysis = response.analiseDaResposta;
+  const resolvedMode = resolveStructuredResponseMode(response, responseMode);
+  const modeMeta = getResponseModeMeta(resolvedMode);
 
   const handleCopy = useCallback(() => {
     const plainText = renderStructuredResponseToPlainText(response);
@@ -188,6 +244,7 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
   const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
   const processStates = useMemo(() => analysis.processStates.slice(0, 4), [analysis.processStates]);
   const responseMeta = [
+    modeMeta.modeBadge,
     response.etapas.length > 0 ? `${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''}` : null,
     response.referenciasFinais.length > 0
       ? `${response.referenciasFinais.length} referência${response.referenciasFinais.length > 1 ? 's' : ''}`
@@ -196,11 +253,24 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
   ].filter(Boolean) as string[];
 
   return (
-    <div className="chat-structured-response">
+    <div
+      className="chat-structured-response"
+      data-response-mode={resolvedMode}
+      data-response-layout={response.modoResposta}
+    >
       <div className="chat-response-intro">
         <div className="chat-response-kicker">
-          <FileText size={14} />
-          Orientação estruturada
+          <span className="chat-response-avatar" aria-hidden="true">
+            <img
+              src="/brand/clara-avatar-chat-64.png"
+              alt=""
+              className="chat-response-avatar-mark"
+              decoding="async"
+              loading="eager"
+              draggable={false}
+            />
+          </span>
+          {modeMeta.kicker}
           <button
             type="button"
             className="chat-copy-button"
@@ -226,12 +296,17 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
           </div>
         )}
         <div className="chat-response-summary-block">
-          <p className="chat-response-summary-label">Leitura inicial</p>
+          <p className="chat-response-summary-label">{modeMeta.summaryLabel}</p>
           <p className="chat-response-summary">
             {response.resumoInicial}
             <CitationList citations={response.resumoCitacoes} />
           </p>
         </div>
+
+        <section className="chat-response-lens" aria-label={modeMeta.lensTitle}>
+          <p className="chat-response-lens-label">{modeMeta.lensTitle}</p>
+          <p className="chat-response-lens-copy">{modeMeta.lensCopy}</p>
+        </section>
 
 
         {analysis.clarificationRequested && analysis.clarificationQuestion && (
@@ -297,8 +372,8 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
           <section className="chat-section-shell" aria-label="Destaques da resposta">
             <SectionHeading
               icon={Info}
-              title="Pontos-chave"
-              detail={`${groupedHighlights.length} destaque${groupedHighlights.length > 1 ? 's' : ''}`}
+              title={modeMeta.highlightsTitle}
+              detail={modeMeta.highlightsDetail}
             />
             <div className="chat-highlight-cloud">
               {groupedHighlights.map((highlight) => (
@@ -317,8 +392,8 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         <section className="chat-section-shell" aria-label="Etapas sugeridas">
           <SectionHeading
             icon={CheckCircle}
-            title="Passo a passo"
-            detail={`${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''} para executar`}
+            title={modeMeta.stepTitle}
+            detail={modeMeta.stepDetail}
           />
           <div className="chat-step-grid" role="list">
             {response.etapas.map((step) => (
@@ -363,8 +438,8 @@ export function ChatStructuredMessage({ response }: { response: ClaraStructuredR
         <section className="chat-observation-card" aria-label="Observacoes finais">
           <SectionHeading
             icon={ShieldWarning}
-            title="Observações finais"
-            detail={`${response.observacoesFinais.length} ponto${response.observacoesFinais.length > 1 ? 's' : ''}`}
+            title={modeMeta.observationsTitle}
+            detail={modeMeta.observationsDetail}
           />
           <ul className="chat-observation-list">
             {response.observacoesFinais.map((observation) => (

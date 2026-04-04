@@ -10,10 +10,13 @@ describe('clara response modes', () => {
     const direct = buildMockStructuredResponse('Como montar um bloco de assinatura?', 'direto');
     const didactic = buildMockStructuredResponse('Como montar um bloco de assinatura?', 'didatico');
 
-    expect(direct.etapas.length).toBeLessThanOrEqual(2);
+    expect(direct.modoResposta).toBe('checklist');
+    expect(didactic.modoResposta).toBe('passo_a_passo');
+    expect(direct.etapas.length).toBeLessThanOrEqual(3);
     expect(didactic.etapas.length).toBeGreaterThanOrEqual(direct.etapas.length);
     expect(direct.observacoesFinais.length).toBeLessThanOrEqual(didactic.observacoesFinais.length);
     expect(direct.analiseDaResposta.userNotice).toBeNull();
+    expect(didactic.analiseDaResposta.userNotice).not.toBeNull();
   });
 
   it('exposes different preview titles for direto and didatico', () => {

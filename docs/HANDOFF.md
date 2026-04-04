@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T18:10:00Z
+- Data/hora: 2026-04-04T18:25:00Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `main`
+- Branch de referência: `session/2026-04-04/HOME/CODEX/CHAT-SCROLL-FIX`
 - Commit de base oficial: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
 - Head da sessão: `7f20da1b03e6f8314e9ae118489dd53923fad6bd`
-- Último relatório: `docs/operational-reports/2026-04-04-project-alignment-audit.md`
+- Último relatório: `docs/operational-reports/2026-04-04-chat-scroll-and-didactic-polish.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com source-target routing implementado, corpus auditado e limpo, avaliação `16/16` perfeita em todas as métricas e próxima rodada focada em ampliar bateria manual e substituir a captura parcial do Decreto `55.615`
-- Bloco ativo: BLOCO 5 — Corpus inicial real e prova empírica do RAG
+- Fase atual: Parêntese de UX no BLOCO 5 para corrigir a rolagem da aba do chat e aumentar a diferença estrutural entre os modos `Direto` e `Didático`, usando como referência os prints do chat em uso real e o PDF `SDP_PRESTACAO_DE_CONTAS`
+- Bloco ativo: BLOCO 5 — Corpus inicial real e prova empírica do RAG (parêntese de UX do chat)
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: substituir o Decreto Rio nº 55.615/2025 por texto oficial íntegro, ampliar a bateria manual sobre núcleo/cobertura/apoio e repetir um reupload controlado na UI admin para fechar a evidência residual do BLOCO 4C.
+- Próxima ação recomendada: validar visualmente essa rodada de UX do chat, promover a correção de scroll e a nova distinção entre `Direto` e `Didático` se aprovadas, e então retomar a trilha funcional do BLOCO 5.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -95,8 +95,15 @@
 - O corpus remoto foi auditado e limpo: o guia legado de `88` chunks foi promovido com metadados `NUCLEO_P1`, a versão governada menor foi desativada, o `MODELO_DE_OFICIO_PDDE.pdf` saiu do corpus ativo e registros falhados antigos foram desativados
 - O `topic_scope` do Termo de Uso foi corrigido de `material_apoio` para `sei_rio_termo`
 - A avaliação batch 3 pós source-routing registrou `16/16` em todas as métricas: `HTTP 200`, sem web fallback, `answerScopeMatch = exact`, `expectedAllMet = true` e `finalConfidence = 1`
+- A aba do chat agora contém o `wheel scroll` dentro do próprio painel, inclusive quando o cursor está sobre header e composer, evitando que o pano de fundo receba a rolagem
+- O `responseMode` agora é preservado por mensagem, permitindo que a UI mantenha a distinção visual do modo que gerou cada resposta
+- O modo `Didático` ganhou camadas mais conscientes de leitura: veredito inicial, explicação principal, detalhamento complementar e observações finais
+- O modo `Didático` passou a deduplicar conteúdo repetido com leveza, para reforçar sem redundar
+- O estado de loading do chat deixou de usar um ícone disforme e agora usa um avatar derivado da imagem premium da CLARA
+- O seletor `Direto` / `Didático` agora tem contraste mais explícito entre ativo e inativo, com leitura visual imediata do modo selecionado
 
 ## Itens pendentes
+- Validar visualmente a nova rodada de UX do chat em uso real (scroll, loading, toggle e diferença entre respostas `Direto` e `Didático`)
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C

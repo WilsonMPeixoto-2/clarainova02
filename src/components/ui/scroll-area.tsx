@@ -5,15 +5,24 @@ import { cn } from "@/lib/utils";
 
 function ScrollArea({
   className,
+  viewportClassName,
   children,
   ref,
+  viewportRef,
   ...props
 }: React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & {
   ref?: React.Ref<React.ElementRef<typeof ScrollAreaPrimitive.Root>>;
+  viewportClassName?: string;
+  viewportRef?: React.Ref<React.ElementRef<typeof ScrollAreaPrimitive.Viewport>>;
 }) {
   return (
-    <ScrollAreaPrimitive.Root ref={ref} className={cn("relative overflow-hidden", className)} {...props}>
-      <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">{children}</ScrollAreaPrimitive.Viewport>
+    <ScrollAreaPrimitive.Root ref={ref} className={cn("relative min-h-0 overflow-hidden", className)} {...props}>
+      <ScrollAreaPrimitive.Viewport
+        ref={viewportRef}
+        className={cn("h-full w-full rounded-[inherit]", viewportClassName)}
+      >
+        {children}
+      </ScrollAreaPrimitive.Viewport>
       <ScrollBar />
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>

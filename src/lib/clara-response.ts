@@ -129,12 +129,55 @@ function renumberSteps(steps: ClaraStructuredResponse['etapas']) {
   }));
 }
 
+function normalizeComparableText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function dedupeStrings(values: string[], limit: number) {
+  const seen = new Set<string>();
+  const next: string[] = [];
+
+  for (const value of values) {
+    const normalized = normalizeComparableText(value);
+    if (!normalized || seen.has(normalized)) {
+      continue;
+    }
+    seen.add(normalized);
+    next.push(value);
+    if (next.length >= limit) {
+      break;
+    }
+  }
+
+  return next;
+}
+
 function adaptStructuredResponseForMode(
   response: ClaraStructuredResponse,
   responseMode: ChatResponseMode,
 ): ClaraStructuredResponse {
   if (responseMode === 'didatico') {
-    return response;
+    return {
+      ...response,
+      modoResposta: response.etapas.length > 0 ? 'passo_a_passo' : 'explicacao',
+      etapas: renumberSteps(
+        response.etapas.slice(0, 5).map((step) => ({
+          ...step,
+          itens: dedupeStrings(step.itens, 4),
+          destaques: dedupeStrings(step.destaques, 3),
+        })),
+      ),
+      observacoesFinais: dedupeStrings(response.observacoesFinais, 3),
+      analiseDaResposta: {
+        ...response.analiseDaResposta,
+        processStates: response.analiseDaResposta.processStates.slice(0, 4),
+      },
+    };
   }
 
   const conciseProcessStates = response.analiseDaResposta.processStates
@@ -146,16 +189,21 @@ function adaptStructuredResponseForMode(
     resumoInicial: takeFirstSentence(response.resumoInicial),
     modoResposta: response.etapas.length > 0 ? 'checklist' : 'explicacao',
     etapas: renumberSteps(
-      response.etapas.slice(0, 2).map((step) => ({
+      response.etapas.slice(0, 3).map((step) => ({
         ...step,
         conteudo: takeFirstSentence(step.conteudo),
-        itens: step.itens.slice(0, 2),
-        destaques: step.destaques.slice(0, 2),
+        itens: dedupeStrings(step.itens, 2),
+        destaques: dedupeStrings(step.destaques, 2),
         alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
       })),
     ),
-    observacoesFinais: response.observacoesFinais.slice(0, 1).map(takeFirstSentence),
-    termosDestacados: response.termosDestacados.slice(0, 4),
+    observacoesFinais: dedupeStrings(response.observacoesFinais.map(takeFirstSentence), 1),
+    termosDestacados: response.termosDestacados
+      .filter((highlight, index, all) => {
+        const normalized = normalizeComparableText(highlight.texto);
+        return all.findIndex((candidate) => normalizeComparableText(candidate.texto) === normalized) === index;
+      })
+      .slice(0, 4),
     analiseDaResposta: {
       ...response.analiseDaResposta,
       userNotice: null,
