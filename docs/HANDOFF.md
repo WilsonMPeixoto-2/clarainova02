@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T03:56:00.000Z
+- Data/hora: 2026-04-04T07:03:08.808Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `main`
-- Commit de base oficial: `1af2d84baf0b126146f128e2045c0307227863ca`
-- Head da sessão: `1af2d84baf0b126146f128e2045c0307227863ca`
-- Último relatório: `docs/operational-reports/2026-04-04-main-integration-and-production-deploy-block-4c-dedup-legacy-fix.md`
+- Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-CONTINUITY-SYNC`
+- Commit de base oficial: `10291b004d4bfbecf50fa09695101c210d59a9eb`
+- Head da sessão: `10291b004d4bfbecf50fa09695101c210d59a9eb`
+- Último relatório: `docs/operational-reports/2026-04-04-rag-pipeline-upgrade-sync.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção após correção de deduplicação legada; o corpus remoto foi reconciliado e o próximo passo útil é um novo reupload controlado na UI admin
+- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção, correção de deduplicação legada já no ar e uplift paralelo do RAG integrado em `main` e produção; o próximo passo útil continua sendo um novo reupload controlado na UI admin
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso de duplicidade já com a correção publicada em produção.
+- Próxima ação recomendada: repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso de duplicidade já com a correção publicada em produção, agora sob o RAG ampliado que já está em `main` e produção.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -69,6 +69,12 @@
 - O duplicado remoto do `SEI-Guia-do-usuario-Versao-final.pdf` foi removido após prova de identidade por hash, mantendo apenas o documento canônico com `88/88` chunks e `88/88` embeddings
 - `npm run validate` voltou a passar com `72` testes após a correção da deduplicação legada
 - A correção da deduplicação legada já foi integrada em `main` e publicada em produção no deploy canônico `dpl_2J9yUxb5DoWMZuYz4LC5FnCPBDv4`
+- O `main` recebeu em paralelo um uplift amplo do RAG no merge `10291b0`, já publicado em produção no deploy `dpl_4FSCwyQZrGGm3BkkeMQijDU4wMQE`
+- O chat agora usa expansão de consulta com LLM, média normalizada entre embeddings original e expandida, `match_count = 12` e enriquecimento por chunks adjacentes do mesmo documento
+- O prompt de geração passou a receber `QUALIDADE DA RECUPERACAO`, e o schema enviado ao Gemini agora expõe `finalConfidence`, ambiguidades e avisos ao usuário
+- A resposta grounded no frontend ganhou badge de confiança, cópia rápida, listas expansíveis e citações clicáveis com scroll para a referência correspondente
+- A ingestão passou a usar chunking semântico com detecção de `sectionTitle`; para uploads futuros, `chunk.content` volta a incluir prefixo automático `[Fonte: ... | Página: ...]` por compatibilidade com a atribuição de referências
+- A telemetria do chat agora registra `rag_quality_score` e `expanded_query`
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado na UI após publicar a correção desta branch
@@ -92,6 +98,7 @@
 - A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
 - O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.
+- O uplift paralelo do RAG reverteu parcialmente a premissa de `texto limpo sem prefixo` para uploads futuros: o código atual volta a prefixar `chunk.content` com fonte/página para reaproveitar o parser e a atribuição de referências já existentes.
 - A validacao estetica final do chat agora prioriza acabamento fino e densidade institucional; o proximo passo operacional volta a ser a trilha funcional do `4C`.
 
 ## Preambulo obrigatório para qualquer IA

@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "de83905cf943b5968f8bab6dfa7b78ea9c961758",
-  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção após correção de deduplicação legada; o corpus remoto foi reconciliado e o próximo passo útil é um novo reupload controlado na UI admin",
+  "last_integrated_main_sha": "10291b004d4bfbecf50fa09695101c210d59a9eb",
+  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção, correção de deduplicação legada já no ar e uplift paralelo do RAG integrado em `main` e produção; o próximo passo útil continua sendo o reupload controlado na UI admin",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
-  "active_branch": "main",
+  "active_branch": "session/2026-04-04/HOME/CODEX/RAG-CONTINUITY-SYNC",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T03:56:00.000Z",
+  "last_update_utc": "2026-04-04T07:03:08.808Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -64,7 +64,13 @@
     "A UI admin agora baixa candidatos legados com o mesmo `file_name`, calcula o SHA-256 do arquivo armazenado e faz backfill do `document_hash` antes de bloquear o reupload duplicado",
     "O duplicado remoto do `SEI-Guia-do-usuario-Versao-final.pdf` foi reconciliado e o corpus voltou a ter apenas um documento canônico do guia",
     "`npm run validate` voltou a passar com 72 testes após a correção da deduplicação legada",
-    "A correção da deduplicação legada já foi integrada em `main` e publicada em produção no deploy canônico `dpl_2J9yUxb5DoWMZuYz4LC5FnCPBDv4`"
+    "A correção da deduplicação legada já foi integrada em `main` e publicada em produção no deploy canônico `dpl_2J9yUxb5DoWMZuYz4LC5FnCPBDv4`",
+    "O `main` recebeu em paralelo um uplift amplo do RAG no merge `10291b0`, já publicado em produção no deploy `dpl_4FSCwyQZrGGm3BkkeMQijDU4wMQE`",
+    "O chat agora usa expansão de consulta com LLM, média normalizada entre embeddings original e expandida, janela de recuperação ampliada para `12` e enriquecimento por chunks adjacentes",
+    "O prompt de geração passou a receber `QUALIDADE DA RECUPERACAO`, e o schema enviado ao Gemini agora expõe `finalConfidence`, ambiguidades e avisos ao usuário",
+    "A resposta grounded no frontend ganhou badge de confiança, cópia rápida, listas expansíveis e citações clicáveis com scroll para a referência",
+    "A ingestão passou a usar chunking semântico com detecção de heading e `sectionTitle`; para uploads futuros, `chunk.content` volta a incluir prefixo automático `[Fonte: ... | Página: ...]` por decisão compatível com a atribuição de fontes já existente",
+    "A telemetria do chat agora registra `rag_quality_score` e `expanded_query` para análise posterior da qualidade do RAG"
   ],
   "pending_items": [
     "Validar a deduplicação em ambiente real repetindo um upload controlado na UI após publicar a correção desta branch",
@@ -76,7 +82,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso de duplicidade já com a correção publicada em produção.",
+  "next_action": "Repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso de duplicidade já com a correção publicada em produção, agora sob o RAG ampliado que já está em `main` e produção.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -89,9 +95,10 @@
     "A primeira tentativa de upload do PDF real criou o documento `SEI-Guia-do-usuario-Versao-final.pdf`, mas falhou antes de salvar chunks por `401 Invalid JWT` na borda da function antiga.",
     "A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não é segura para merge integral por misturar deltas antigos de backend e mudanças fortes de comportamento do painel.",
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas.",
-    "O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado."
+    "O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.",
+    "O uplift paralelo do RAG reverteu parcialmente a premissa de `texto limpo sem prefixo` para uploads futuros: o código atual volta a prefixar `chunk.content` com fonte/página para reaproveitar o parser e a atribuição de referências já existentes."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-04-main-integration-and-production-deploy-block-4c-dedup-legacy-fix.md",
-  "last_session_head_sha": "1af2d84baf0b126146f128e2045c0307227863ca"
+  "last_report": "docs/operational-reports/2026-04-04-rag-pipeline-upgrade-sync.md",
+  "last_session_head_sha": "10291b004d4bfbecf50fa09695101c210d59a9eb"
 }

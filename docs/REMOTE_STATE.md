@@ -1,14 +1,14 @@
 # Estado Remoto Canônico — CLARAINOVA02
 
 ## Última verificação consolidada
-- Data: 2026-04-03
-- Base local usada na verificação: `origin/main @ fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
+- Data: 2026-04-04
+- Base local usada na verificação: `origin/main @ 10291b004d4bfbecf50fa09695101c210d59a9eb`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
+- `origin/main` atualmente alinhada ao commit: `10291b004d4bfbecf50fa09695101c210d59a9eb`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
@@ -16,7 +16,7 @@
   - a branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não de integração
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
-  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção, o BLOCO 4C já está em `main`, a terceira rodada de polimento da janela do chat foi promovida e o sistema visual novo da CLARA agora também está integrado e reconciliado no branch principal
+  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção, o BLOCO 4C já está em `main`, a terceira rodada de polimento da janela do chat foi promovida, o sistema visual novo da CLARA foi integrado e um uplift paralelo do RAG também já entrou na linha principal
 
 ## Vercel
 - Projeto canônico: `clarainova02`
@@ -27,8 +27,8 @@
 - Deploy canônico mais recente observado:
   - source: `git`
   - status: `READY`
-  - deployment id: `dpl_6kyS1eZ3YnMPij1LMtu4DvV1qieZ`
-  - commit publicado: `fdd85e5c32d6617c6cefc5ed8a611106311d4f5e`
+  - deployment id: `dpl_4FSCwyQZrGGm3BkkeMQijDU4wMQE`
+  - commit publicado: `10291b004d4bfbecf50fa09695101c210d59a9eb`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`
@@ -42,8 +42,8 @@
 ## Edge Functions verificadas
 - `chat`
   - status: `ACTIVE`
-  - versão observada: `13`
-  - última atualização observada: `2026-04-03 05:22:48 UTC`
+  - versão observada: `15`
+  - última atualização observada: `2026-04-04 04:03:53 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
   - versão observada: `13`
@@ -79,29 +79,37 @@
     - conferir `Client ID` e `Client Secret`
     - alinhar redirect URLs no Supabase e no Google Console
 - Gemini / embeddings:
-  - status: `parcialmente alinhado`
-  - situação conhecida: o código integrado em `main` já declara a pilha Gemini nova, mas o corpus remoto ainda precisa de verificação de contaminação e smoke test grounded
+  - status: `RAG ampliado no código, frontend em produção e chat remoto republicado`
+  - situação conhecida:
+    - o `main` agora inclui um uplift paralelo do RAG com expansão de query, recuperação com janela maior, enriquecimento por chunks adjacentes, prompt sensível à qualidade da recuperação e UI grounded mais rica
+    - a Edge Function remota `chat` já foi republicada com esse novo comportamento
+    - `embed-chunks` não precisou de nova publicação nesta rodada específica
   - implementação declarada no código:
     - geração: `gemini-3.1-flash-lite-preview` com fallback para `gemini-3.1-pro-preview`
     - embeddings: `gemini-embedding-2-preview`
     - dimensionalidade esperada: `768`
     - secret requerido nas functions: `GEMINI_API_KEY`
+    - expansão de query: `gemini-3.1-flash-lite-preview` com timeout de `3s`
+    - recuperação híbrida: `match_count = 12`
+    - telemetria nova: `rag_quality_score` e `expanded_query`
 - Corpus inicial:
   - status: `iniciado com prova real`
   - situação conhecida:
     - existe 1 documento legado no remoto: `MODELO_DE_OFICIO_PDDE.pdf`
     - existe 1 documento novo processado no contrato novo: `SEI-Guia-do-usuario-Versao-final.pdf`
     - o documento novo possui `88` chunks persistidos e `88` embeddings persistidos
-    - os chunks do documento novo usam texto limpo, sem o prefixo legado `[Fonte: ... | Página: ...]`
+    - o documento novo atualmente persistido foi ingerido antes do uplift paralelo do RAG e permanece sem o prefixo automático em `content`
     - o documento novo já grava `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
     - o chat público já respondeu com grounding real ao novo manual em múltiplas perguntas
     - a conta provisionada visível no formulário do admin autentica sessão, mas não coincide com o admin bootstrap ativo em `public.admin_users`; para o teste operacional desta fase deve ser usada a conta administrativa real
     - a rodada local do BLOCO 4C com `document_hash`, deduplicação prévia e concorrência controlada já foi publicada em `main`
+    - uploads futuros, sob o `main` atual, passam a usar chunking semântico com `sectionTitle` e prefixo automático `[Fonte: ... | Página: ...]` em `chunk.content`
     - o próximo teste remoto objetivo continua sendo repetir o upload do mesmo PDF para validar a deduplicação em ambiente real
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
 - o corpus remoto atual não mostra mistura entre gerações de embedding, mas ainda há um documento legado sem embeddings e sem metadados novos
+- o uplift paralelo do RAG alterou a política de construção de chunks para uploads futuros; leituras antigas que assumiam `content` sempre limpo deixaram de valer
 
 ## Regras de atualização deste arquivo
 - Atualize este arquivo sempre que mudar algo em:

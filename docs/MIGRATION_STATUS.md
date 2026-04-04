@@ -19,6 +19,18 @@ Ultima atualizacao: 2026-03-31
 
 ## Nota operacional recente
 
+Em 2026-04-04, `origin/main` recebeu um uplift paralelo do RAG já publicado em produção:
+
+- expansão de query com LLM e média normalizada entre embeddings original e expandida
+- aumento do `match_count` de `8` para `12`
+- enriquecimento por chunks adjacentes em recuperações fortes
+- prompt sensível à qualidade da recuperação
+- `finalConfidence`, ambiguidades e avisos expostos no schema enviado ao Gemini
+- chunking semântico com `sectionTitle`
+- `rag_quality_score` e `expanded_query` na telemetria
+
+Nuance importante: esse uplift também reintroduziu prefixo automático `[Fonte: ... | Página: ...]` em `chunk.content` para uploads futuros, substituindo a decisão anterior de manter o texto dos chunks estritamente limpo.
+
 Em 2026-04-03, o `main` passou a refletir explicitamente o contrato Gemini efetivamente adotado no ambiente:
 
 - geração com `gemini-3.1-flash-lite-preview` e fallback `gemini-3.1-pro-preview`
