@@ -26,7 +26,7 @@ import {
   KNOWLEDGE_INGESTION_PRIORITY_LABELS,
   KNOWLEDGE_TOPIC_SCOPE_LABELS,
 } from "@/lib/knowledge-document-classifier";
-import type { PreparedChunk } from "@/lib/admin-ingestion";
+import { computeBlobHash, type PreparedChunk, type PreparedPdfIngestion } from "@/lib/admin-ingestion";
 
 const AdminDocumentsCard = lazy(() => import("@/components/admin/AdminDocumentsCard"));
 const UsageStatsCard = lazy(() => import("@/components/UsageStatsCard"));
@@ -222,6 +222,75 @@ function describeDuplicateDocument(
   }
 
   return `"${duplicateName}" já está cadastrado na base documental da CLARA com status ${duplicateStatus}.`;
+}
+
+interface DuplicateDocumentCandidate {
+  id: string;
+  name?: string | null;
+  status?: string | null;
+  file_path?: string | null;
+  storage_path?: string | null;
+  page_count?: number | null;
+  text_char_count?: number | null;
+}
+
+async function findLegacyDuplicateDocument(
+  fileName: string,
+  prepared: PreparedPdfIngestion,
+): Promise<DuplicateDocumentCandidate | null> {
+  const { data: candidates, error } = await supabase
+    .from("documents")
+    .select("id, name, status, file_path, storage_path, page_count, text_char_count")
+    .eq("file_name", fileName)
+    .is("document_hash", null)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    throw new Error(`Falha ao verificar documentos legados: ${error.message}`);
+  }
+
+  const sortedCandidates = ((candidates ?? []) as DuplicateDocumentCandidate[]).sort((left, right) => {
+    const leftScore = Number(left.page_count === prepared.pages.length) + Number(left.text_char_count === prepared.fullText.length);
+    const rightScore = Number(right.page_count === prepared.pages.length) + Number(right.text_char_count === prepared.fullText.length);
+    return rightScore - leftScore;
+  });
+
+  for (const candidate of sortedCandidates) {
+    const candidateStoragePath = candidate.storage_path ?? candidate.file_path;
+    if (!candidateStoragePath) continue;
+
+    const { data: storedBlob, error: downloadError } = await supabase.storage
+      .from("documents")
+      .download(candidateStoragePath);
+
+    if (downloadError || !storedBlob) {
+      console.warn("Legacy duplicate download failed:", downloadError?.message ?? candidateStoragePath);
+      continue;
+    }
+
+    const remoteHash = await computeBlobHash(storedBlob);
+    if (remoteHash !== prepared.documentHash) {
+      continue;
+    }
+
+    const { error: backfillError } = await supabase
+      .from("documents")
+      .update({
+        document_hash: prepared.documentHash,
+        page_count: candidate.page_count ?? prepared.pages.length,
+        text_char_count: candidate.text_char_count ?? prepared.fullText.length,
+      })
+      .eq("id", candidate.id);
+
+    if (backfillError) {
+      throw new Error(`Falha ao reconciliar hash de documento legado: ${backfillError.message}`);
+    }
+
+    return candidate;
+  }
+
+  return null;
 }
 
 function isExcludedFromGrounding(input: {
@@ -592,6 +661,24 @@ export default function Admin() {
 
       if (duplicateDocument) {
         const duplicateMessage = describeDuplicateDocument(file.name, duplicateDocument);
+        updateIngestion(file.name, {
+          status: "failed",
+          phaseLabel: "Documento já cadastrado",
+          progress: 100,
+          lastError: {
+            code: "DUPLICATE_DOCUMENT",
+            message: duplicateMessage,
+          },
+        });
+        toast.warning("Documento já ingerido", {
+          description: duplicateMessage,
+        });
+        return;
+      }
+
+      const legacyDuplicateDocument = await findLegacyDuplicateDocument(file.name, prepared);
+      if (legacyDuplicateDocument) {
+        const duplicateMessage = describeDuplicateDocument(file.name, legacyDuplicateDocument);
         updateIngestion(file.name, {
           status: "failed",
           phaseLabel: "Documento já cadastrado",

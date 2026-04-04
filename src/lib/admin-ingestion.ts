@@ -49,8 +49,12 @@ async function sha256HexFromArrayBuffer(arrayBuffer: ArrayBuffer): Promise<strin
     .join("");
 }
 
+export async function computeBlobHash(blob: Blob): Promise<string> {
+  return sha256HexFromArrayBuffer(await blob.arrayBuffer());
+}
+
 export async function computeFileHash(file: File): Promise<string> {
-  return sha256HexFromArrayBuffer(await file.arrayBuffer());
+  return computeBlobHash(file);
 }
 
 export async function buildPreparedChunksFromPages(

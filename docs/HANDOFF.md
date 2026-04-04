@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T02:24:10.000Z
+- Data/hora: 2026-04-04T03:45:00.000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `main`
-- Commit de base oficial: `9d7c96167d34bcf25dd53dbbef946a78d1dc522a`
-- Head da sessão: `9d7c96167d34bcf25dd53dbbef946a78d1dc522a`
-- Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-chat-active-workspace-polish.md`
+- Branch de referência: `session/2026-04-04/HOME/CODEX/BLOCO-4C-DEDUP-LEGACY-FIX`
+- Commit de base oficial: `de83905cf943b5968f8bab6dfa7b78ea9c961758`
+- Head da sessão: `de83905cf943b5968f8bab6dfa7b78ea9c961758`
+- Último relatório: `docs/operational-reports/2026-04-04-block-4c-dedup-legacy-reconciliation.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção, sistema visual novo da CLARA reconciliado em `main` e aba do chat refinada como workspace institucional
+- Fase atual: Pré-lançamento com BLOCO 4C em correção final de deduplicação, produção já alinhada ao novo workspace do chat e corpus remoto reconciliado após detectar duplicação causada por documento legado sem hash
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload do mesmo PDF.
+- Próxima ação recomendada: publicar a correção da deduplicação legada, então repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso sem novo custo.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -64,9 +64,13 @@
 - A aba do chat recebeu um polimento adicional para ficar mais densa como ambiente de trabalho: topo mais compacto em conversa ativa, acoes com hierarquia melhor, estado vazio mais enxuto e mensagens da CLARA com identidade visual mais forte
 - `npm run validate` continuou passando com `71` testes apos esta rodada final de layout
 - O refinamento final do workspace do chat ja foi publicado em producao no deploy canônico `dpl_Cdtyh6GZWHU1jQy5Pgg1otkCNuT6`
+- O reupload do mesmo PDF revelou uma lacuna de deduplicação para documentos legados sem `document_hash`
+- A UI admin agora baixa candidatos legados com o mesmo `file_name`, compara o SHA-256 do arquivo armazenado e faz backfill do `document_hash` antes de bloquear o upload duplicado
+- O duplicado remoto do `SEI-Guia-do-usuario-Versao-final.pdf` foi removido após prova de identidade por hash, mantendo apenas o documento canônico com `88/88` chunks e `88/88` embeddings
+- `npm run validate` voltou a passar com `72` testes após a correção da deduplicação legada
 
 ## Itens pendentes
-- Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
+- Validar a deduplicação em ambiente real repetindo um upload controlado na UI após publicar a correção desta branch
 - Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
@@ -86,6 +90,7 @@
 - As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas no backlog, sem competir com a prioridade atual.
 - A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
+- O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.
 - A validacao estetica final do chat agora prioriza acabamento fino e densidade institucional; o proximo passo operacional volta a ser a trilha funcional do `4C`.
 
 ## Preambulo obrigatório para qualquer IA

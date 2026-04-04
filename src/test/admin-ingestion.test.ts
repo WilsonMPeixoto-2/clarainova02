@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildPreparedChunksFromPages,
+  computeBlobHash,
   computeFileHash,
   sanitizeFileName,
   type PageText,
@@ -48,5 +49,18 @@ describe("admin ingestion helpers", () => {
     expect(hashA).toBe(hashB);
     expect(hashA).not.toBe(hashC);
     expect(hashA).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("computes the same hash for a stored blob and the original file bytes", async () => {
+    const payload = "conteudo do manual";
+    const file = new File([payload], "manual.pdf", { type: "application/pdf" });
+    const blob = new Blob([payload], { type: "application/pdf" });
+
+    const [fileHash, blobHash] = await Promise.all([
+      computeFileHash(file),
+      computeBlobHash(blob),
+    ]);
+
+    expect(blobHash).toBe(fileHash);
   });
 });
