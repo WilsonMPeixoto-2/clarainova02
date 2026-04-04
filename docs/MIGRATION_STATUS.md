@@ -19,6 +19,31 @@ Ultima atualizacao: 2026-03-31
 
 ## Nota operacional recente
 
+Em 2026-04-04, a migration `20260404084500_refine_hybrid_search_for_governed_corpus.sql` foi aplicada remotamente via `supabase db query --linked` e registrada no histórico de `supabase_migrations.schema_migrations`.
+
+Ela refinou `public.hybrid_search_chunks` para considerar:
+
+- `documents.name`
+- `documents.source_name`
+- `documents.version_label`
+- `document_chunks.section_title`
+
+na fase keyword do ranking híbrido, além de alinhar a função aos novos `topic_scope` do corpus governado:
+
+- `pen_manual_compativel`
+- `pen_compatibilidade`
+- `pen_release_note`
+- `interface_update`
+
+Na mesma rodada, o corpus ativo passou a incluir `COBERTURA_P2` do PEN e `APOIO_P3` versionado, e a avaliação ampliada do lote 3 registrou:
+
+- `16/16` respostas `HTTP 200`
+- `16/16` sem web fallback
+- `15/16` com `answerScopeMatch = exact`
+- `13/16` com a referência esperada explicitamente presente
+
+O gap remanescente deixou de ser infraestrutura e passou a ser roteamento por `fonte-alvo nomeada` para casos como wiki, UFSCar e nota oficial de versão específica.
+
 Em 2026-04-04, `origin/main` recebeu um uplift paralelo do RAG já publicado em produção:
 
 - expansão de query com LLM e média normalizada entre embeddings original e expandida

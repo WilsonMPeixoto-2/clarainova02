@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T08:12:25.1535704Z
+- Data/hora: 2026-04-04T09:10:00Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `main`
-- Commit de base oficial: `5c59b2169afff642871747b166286a43fc1348ea`
-- Head da sessão: `5c59b2169afff642871747b166286a43fc1348ea`
-- Último relatório: `docs/operational-reports/2026-04-04-main-integration-and-production-deploy-corpus-batch-1.md`
+- Commit de base oficial: `e2d29b0225ad050939f4cbc073d3883d93199a9f`
+- Head da sessão: `e2d29b0225ad050939f4cbc073d3883d93199a9f`
+- Último relatório: `docs/operational-reports/2026-04-04-rag-batch-2-coverage-and-version-eval.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com núcleo local do corpus SEI.Rio ativo em produção, RAG ampliado publicado e governança editorial do corpus formalizada
+- Fase atual: Pré-lançamento com núcleo local, cobertura PEN compatível e apoio versionado já ingeridos, `hybrid_search_chunks` refinada no remoto e avaliação ampliada do RAG concluída
 - Bloco ativo: BLOCO 5 — Corpus inicial real e prova empírica do RAG
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: substituir a captura parcial do Decreto Rio nº 55.615/2025 por um texto oficial íntegro, atualizar o manifesto e ampliar a bateria de perguntas reais sobre o núcleo local antes de decidir a abertura da camada PEN.
+- Próxima ação recomendada: melhorar o roteamento por fonte nomeada para perguntas de versão/interface, substituir o Decreto Rio nº 55.615/2025 por texto oficial íntegro e ampliar a bateria manual sobre núcleo, cobertura e apoio.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -82,11 +82,18 @@
 - A Edge Function remota `embed-chunks` já foi republicada para a versão `16`
 - O batch 1 de corpus foi integrado em `main` e publicado em produção no deploy `dpl_ycURU2FVB1ABYuFRzdSckTo9K984`
 - A avaliação inicial do RAG contra o núcleo local registrou `9/9` respostas `HTTP 200`, sem web fallback, com `answerScopeMatch = exact` e `finalConfidence = 1`
+- A camada `COBERTURA_P2` do PEN foi ingerida no corpus ativo com governança explícita por `topic_scope`, `search_weight` e manifesto editorial
+- A camada `APOIO_P3` versionado agora inclui a wiki SEI-RJ 4.1 e a correspondência de ícones da UFSCar, ambas ingeridas com precedência inferior ao núcleo local
+- A migration `20260404084500_refine_hybrid_search_for_governed_corpus.sql` foi aplicada remotamente via `supabase db query --linked` e registrada em `supabase_migrations.schema_migrations`
+- A função `hybrid_search_chunks` remota agora considera título, origem institucional, versão e `section_title` na fase keyword do ranking híbrido
+- A Edge Function remota `chat` foi republicada até a versão `18`, com bônus de intenção para perguntas sobre nota oficial, wiki, UFSCar, interface e versão
+- O avaliador em lote `scripts/corpus/evaluate_rag_batch.py` foi criado para medir groundedness, fallback, confiança final, acerto de escopo e aderência às referências esperadas
+- A avaliação ampliada do lote 3 registrou `16/16` respostas com `HTTP 200`, `16/16` sem web fallback, `15/16` com `answerScopeMatch = exact` e `13/16` com `expectedAllMet = true`
 
 ## Itens pendentes
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
-- Executar uma bateria ampliada de `15–20` perguntas reais sobre o núcleo local do SEI.Rio, com rubricagem manual
-- Decidir quando ingerir a camada `COBERTURA_P2` do PEN mantendo precedência inferior ao núcleo SEI.Rio
+- Introduzir um roteamento leve por fonte nomeada para perguntas como `segundo a nota oficial`, `segundo a wiki` e `segundo o material da UFSCar`
+- Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C
 - Decidir o destino final do documento legado `MODELO_DE_OFICIO_PDDE.pdf` no remoto
 
@@ -107,6 +114,8 @@
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
 - O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.
 - O uplift paralelo do RAG reverteu parcialmente a premissa de `texto limpo sem prefixo` para uploads futuros: o código atual volta a prefixar `chunk.content` com fonte/página para reaproveitar o parser e a atribuição de referências já existentes.
+- A migration da busca híbrida não depende mais de `SUPABASE_DB_PASSWORD`: a CLI atual permitiu execução remota segura com `supabase db query --linked`.
+- Mesmo após a ingestão de cobertura e apoio, a CLARA ainda não ancora perfeitamente perguntas que nomeiam explicitamente uma fonte externa; o gap atual é de roteamento por fonte-alvo, não de falta de corpus.
 - A validacao estetica final do chat agora prioriza acabamento fino e densidade institucional; o proximo passo operacional volta a ser a trilha funcional do `4C`.
 
 ## Preambulo obrigatório para qualquer IA

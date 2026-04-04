@@ -2,13 +2,13 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-04
-- Base local usada na verificação: `origin/main @ 5c59b2169afff642871747b166286a43fc1348ea`
+- Base local usada na verificação: `main @ e2d29b0225ad050939f4cbc073d3883d93199a9f`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `5c59b2169afff642871747b166286a43fc1348ea`
+- `origin/main` atualmente alinhada ao commit local preparado para publicação: `e2d29b0225ad050939f4cbc073d3883d93199a9f`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
@@ -22,7 +22,7 @@
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código, a terceira rodada de polimento da janela do chat e o novo sistema visual do símbolo da CLARA
+  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código, a terceira rodada de polimento da janela do chat, o novo sistema visual da CLARA, o batch 1 do corpus local e a expansão governada de `cobertura`/`apoio`
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `git`
@@ -42,8 +42,8 @@
 ## Edge Functions verificadas
 - `chat`
   - status: `ACTIVE`
-  - versão observada: `15`
-  - última atualização observada: `2026-04-04 04:03:53 UTC`
+  - versão observada: `18`
+  - última atualização observada: `2026-04-04 08:58:28 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
   - versão observada: `16`
@@ -84,6 +84,7 @@
     - o `main` agora inclui um uplift paralelo do RAG com expansão de query, recuperação com janela maior, enriquecimento por chunks adjacentes, prompt sensível à qualidade da recuperação e UI grounded mais rica
     - a Edge Function remota `chat` já foi republicada com esse novo comportamento
     - `embed-chunks` não precisou de nova publicação nesta rodada específica
+    - a migration remota `20260404084500_refine_hybrid_search_for_governed_corpus.sql` já foi aplicada e alinhou `hybrid_search_chunks` ao corpus governado por `título`, `origem`, `versão` e `section_title`
   - implementação declarada no código:
     - geração: `gemini-3.1-flash-lite-preview` com fallback para `gemini-3.1-pro-preview`
     - embeddings: `gemini-embedding-2-preview`
@@ -93,7 +94,7 @@
     - recuperação híbrida: `match_count = 12`
     - telemetria nova: `rag_quality_score` e `expanded_query`
 - Corpus inicial:
-  - status: `núcleo local ativo em produção`
+  - status: `núcleo local, cobertura PEN e apoio versionado ativos`
   - situação conhecida:
     - o corpus ativo já contém um núcleo local do SEI.Rio formado por decretos, resolução, guias, FAQs e termo de uso oficiais
     - o batch local ingerido inclui:
@@ -108,10 +109,12 @@
     - o documento `SEI-Guia-do-usuario-Versao-final.pdf` segue ativo como cobertura operacional e pode competir em perguntas amplas, mas não substitui o núcleo local
     - o documento legado `MODELO_DE_OFICIO_PDDE.pdf` foi inativado por estar fora do escopo SEI
     - o Decreto Rio nº 55.615/2025 está fora do corpus ativo por captura ainda parcial
-    - materiais `COBERTURA_P2` do PEN e `APOIO_P3` versionado já foram baixados para staging local, mas ainda não foram ingeridos no grounding principal
+    - materiais `COBERTURA_P2` do PEN já foram ingeridos com precedência editorial inferior ao núcleo SEI.Rio
+    - materiais `APOIO_P3` versionado já foram ingeridos com `topic_scope = interface_update` e peso reduzido
     - uploads futuros, sob o `main` atual, passam a usar chunking semântico com `sectionTitle` e prefixo automático `[Fonte: ... | Página: ...]` em `chunk.content`
     - a avaliação inicial do RAG sobre o núcleo local registrou `9/9` respostas `HTTP 200`, sem web fallback e com escopo exato
-    - o próximo teste remoto objetivo continua sendo repetir o upload do mesmo PDF para validar a deduplicação na UI, enquanto a próxima frente de corpus é substituir o Decreto 55.615 por texto íntegro
+    - a avaliação ampliada do lote 3 registrou `16/16` respostas `HTTP 200`, `16/16` sem web fallback, `15/16` com `answerScopeMatch = exact` e `13/16` com a referência esperada explicitamente presente
+    - a próxima frente de corpus é substituir o Decreto 55.615 por texto íntegro e melhorar o roteamento por fonte nomeada para wiki/UFSCar/notas oficiais específicas
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
