@@ -6,7 +6,7 @@ Ultima atualizacao: 2026-04-04
 
 | Frente | Status |
 |---|---|
-| Baseline local/github | Sincronizado em `main` |
+| Baseline local/github | Sincronizado em `main @ 6770c85` |
 | Vinculo real entre frontend e Supabase | Comprovado |
 | Login administrativo real | Comprovado com conta provisionada |
 | Login administrativo com Google | Pendente no ambiente real |
@@ -16,9 +16,20 @@ Ultima atualizacao: 2026-04-04
 | Source-target routing | Publicado |
 | Producao refletindo o baseline atual | Publicada |
 
-**A linha principal saiu do estágio de certificação básica e passou para uma operação governada de corpus/RAG: corpus auditado, retrieval em dois estágios, avaliação `16/16` e baseline remoto reconciliado com `main`.**
+**A linha principal saiu do estágio de certificação básica e passou para uma operação governada de corpus/RAG; o próximo ciclo não é mais de fundação, e sim de excelência do sistema RAG, benchmark e fidelidade do sistema de perguntas e respostas.**
 
 ## Nota operacional recente
+
+Em 2026-04-04, uma auditoria completa do sistema RAG foi concluída e redefiniu o BLOCO 5 como uma trilha específica de excelência:
+
+- benchmark canônico e gate de regressão
+- retrieval governado por metadados reais
+- source-target routing de alta precisão
+- fidelidade nativa entre `Direto` e `Didático`
+- transparência editorial no frontend
+- expansão contínua do corpus sob protocolo
+
+Essa redefinição não reabre blocos anteriores; ela apenas substitui a formulação genérica de “prova empírica do RAG” por um plano mais preciso e compatível com a maturidade atual do projeto.
 
 Em 2026-04-04, `origin/main` recebeu o commit `17de564` com source-target routing e auditoria do corpus remoto:
 

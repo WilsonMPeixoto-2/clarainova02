@@ -2,15 +2,16 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-04
-- Base local usada na verificação: `main @ faf4f1ab7a29879727175f561bb6863f68602694`
+- Base local usada na verificação: `main @ 6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit local preparado para publicação: `faf4f1ab7a29879727175f561bb6863f68602694`
+- `origin/main` atualmente alinhada ao commit local preparado para publicação: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 - Trabalho local em andamento fora de `main`:
-  - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
+  - branch ativa de sessão: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
+  - o trabalho atual é documental e de planejamento; a linha principal continua íntegra em `main`
 - Observação de análise remota:
   - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral
   - a branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não de integração
@@ -22,13 +23,13 @@
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código, o sistema visual atual da CLARA, a deduplicação legada corrigida, o corpus governado completo (`núcleo`, `cobertura`, `apoio`), o source-target routing publicado e a rodada de UX do chat com scroll contido e distinção mais forte entre `Direto` e `Didático`
+  - a produção deve refletir o baseline publicado a partir de `main`, já com a pilha Gemini nova declarada no código, o sistema visual atual da CLARA, a deduplicação legada corrigida, o corpus governado completo (`núcleo`, `cobertura`, `apoio`), o source-target routing publicado, a rodada de UX do chat com scroll contido e distinção mais forte entre `Direto` e `Didático`, e o `HEAD` oficial `6770c85`
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `git`
   - status: `READY`
-  - deployment id: `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
-  - commit publicado: `faf4f1ab7a29879727175f561bb6863f68602694`
+  - deployment id: `dpl_3oxY1twafjrNT7mvj8or4sK3zhHi`
+  - commit publicado: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`

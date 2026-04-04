@@ -3,18 +3,22 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T18:30:30Z
+- Data/hora: 2026-04-04T18:43:54Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `main`
-- Commit de base oficial: `faf4f1ab7a29879727175f561bb6863f68602694`
-- Head da sessão: `faf4f1ab7a29879727175f561bb6863f68602694`
-- Último relatório: `docs/operational-reports/2026-04-04-main-integration-and-production-deploy-chat-scroll-and-didactic-polish.md`
+- Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
+- Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
+- Head da sessão: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
+- Último relatório: `docs/operational-reports/2026-04-04-rag-system-audit-and-plan-reset.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 em consolidação governada, com o parêntese de UX do chat já integrado em `main` e publicado em produção
-- Bloco ativo: BLOCO 5 — Corpus inicial real e prova empírica do RAG (parêntese de UX do chat)
-- Status da sessão: `main_aligned`
-- Próxima ação recomendada: retomar a trilha funcional do BLOCO 5 com substituição do Decreto `55.615`, bateria manual ampliada e prova residual de deduplicação na UI admin, mantendo o novo UX do chat como baseline publicado.
+- Fase atual: BLOCO 5 resetado para excelência do RAG e do sistema de perguntas e respostas
+- Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
+- Status da sessão: `session_in_progress`
+- Próxima ação recomendada: abrir o `5A` com benchmark canônico e gate de regressão do RAG antes de tocar retrieval, source-target routing e fidelidade entre modos.
+
+## Nota de alinhamento
+- A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
+- O estado real do projeto continua estável em `origin/main`; o que precisou de reconciliação foi a trilha de continuidade e o plano canônico.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
