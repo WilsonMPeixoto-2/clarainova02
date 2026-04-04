@@ -2,13 +2,13 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-04
-- Base local usada na verificação: `main @ 52415a9e51da0f40c6b11d794011b7472b193364`
+- Base local usada na verificação: `main @ faf4f1ab7a29879727175f561bb6863f68602694`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit local preparado para publicação: `52415a9e51da0f40c6b11d794011b7472b193364`
+- `origin/main` atualmente alinhada ao commit local preparado para publicação: `faf4f1ab7a29879727175f561bb6863f68602694`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
@@ -27,8 +27,8 @@
 - Deploy canônico mais recente observado:
   - source: `git`
   - status: `READY`
-  - deployment id: `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi`
-  - commit publicado: `52415a9e51da0f40c6b11d794011b7472b193364`
+  - deployment id: `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
+  - commit publicado: `faf4f1ab7a29879727175f561bb6863f68602694`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`

@@ -10,7 +10,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ 52415a9e51da0f40c6b11d794011b7472b193364`
+- Fonte oficial integrada: `origin/main @ faf4f1ab7a29879727175f561bb6863f68602694`
 - Frente imediata mais importante: consolidar o corpus governado já ativo com a substituição do Decreto `55.615` parcial, ampliar a bateria manual e monitorar o source-target routing antes de abrir novas frentes documentais maiores
 - Ordem de execução atualmente aceita:
   1. manter o corpus governado ativo e corrigir lacunas documentais críticas do núcleo local

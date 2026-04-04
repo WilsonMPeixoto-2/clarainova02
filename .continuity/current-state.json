@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "52415a9",
+  "last_integrated_main_sha": "faf4f1a",
   "current_phase": "BLOCO 5 em consolidacao governada, com o parêntese de UX do chat já integrado em main e publicado em produção",
   "active_block": "BLOCO 5 — Corpus inicial real e prova empírica do RAG (parêntese de UX do chat)",
   "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T18:23:30Z",
+  "last_update_utc": "2026-04-04T18:30:30Z",
   "completed_items": [
     "A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial",
     "embed-chunks e get-usage-stats republicadas no projeto oficial com verify_jwt endurecido",
@@ -128,9 +128,9 @@
     "O gap de roteamento por fonte-alvo foi resolvido com source-target routing em dois estágios (hybrid_search_chunks + fetch_targeted_chunks); a avaliação batch 3 confirma 16/16 perfeito.",
     "Os prints antigos na pasta IMAGENS do desktop foram usados como referência de cadência didática: resumo, aviso importante, lista operacional e checklist bem segmentados.",
     "O PDF `SDP_PRESTACAO_DE_CONTAS_GAD_4_CRE.pdf` está sendo usado apenas como benchmark de forma didática para instrução processual no SEI-Rio, não como fonte normativa do corpus governado.",
-    "A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre Direto e Didático já foi integrada em `main` e publicada no deploy de produção `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi`."
+    "A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre Direto e Didático já foi integrada em `main` e publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi`; a continuidade consolidada desta rodada foi republicada no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`."
   ],
   "session_status": "main_aligned",
   "last_report": "docs/operational-reports/2026-04-04-main-integration-and-production-deploy-chat-scroll-and-didactic-polish.md",
-  "last_session_head_sha": "52415a9"
+  "last_session_head_sha": "faf4f1a"
 }

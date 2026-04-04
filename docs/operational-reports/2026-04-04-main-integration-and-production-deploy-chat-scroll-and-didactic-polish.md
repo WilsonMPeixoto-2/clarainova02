@@ -13,7 +13,8 @@ Registrar a promocao para `main` e a publicacao em producao da rodada de UX do c
 - Branch integrada: `main`
 - Commit funcional promovido: `bc1db65` — `feat(chat): fix scroll containment and strengthen didactic mode`
 - Commit de continuidade promovido: `52415a9` — `docs(continuity): clarify didactic benchmark reference`
-- Estado final apos integracao: `main == origin/main == 52415a9e51da0f40c6b11d794011b7472b193364`
+- Commit final de reconciliacao documental: `faf4f1a` — `docs(continuity): align main after chat ux production deploy`
+- Estado final apos reconciliacao: `main == origin/main == faf4f1ab7a29879727175f561bb6863f68602694`
 
 ## Publicacao remota
 
@@ -26,6 +27,10 @@ Registrar a promocao para `main` e a publicacao em producao da rodada de UX do c
 - Commit publicado: `52415a9e51da0f40c6b11d794011b7472b193364`
 - URL observada do deploy: `https://clarainova02-dvism79ee-wilson-m-peixotos-projects.vercel.app`
 - Alias canonico esperado: `https://clarainova02.vercel.app`
+- Deploy de reconciliacao documental: `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
+- Status da reconciliacao: `READY`
+- Commit publicado na reconciliacao: `faf4f1ab7a29879727175f561bb6863f68602694`
+- URL observada da reconciliacao: `https://clarainova02-3vmwobl6m-wilson-m-peixotos-projects.vercel.app`
 
 ### Supabase
 - Projeto: `jasqctuzeznwdtbcuixn`

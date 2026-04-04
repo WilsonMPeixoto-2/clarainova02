@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T18:23:30Z
+- Data/hora: 2026-04-04T18:30:30Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `main`
-- Commit de base oficial: `52415a9e51da0f40c6b11d794011b7472b193364`
-- Head da sessão: `52415a9e51da0f40c6b11d794011b7472b193364`
+- Commit de base oficial: `faf4f1ab7a29879727175f561bb6863f68602694`
+- Head da sessão: `faf4f1ab7a29879727175f561bb6863f68602694`
 - Último relatório: `docs/operational-reports/2026-04-04-main-integration-and-production-deploy-chat-scroll-and-didactic-polish.md`
 
 ## Estado atual resumido
@@ -101,7 +101,7 @@
 - O modo `Didático` passou a deduplicar conteúdo repetido com leveza, para reforçar sem redundar
 - O estado de loading do chat deixou de usar um ícone disforme e agora usa um avatar derivado da imagem premium da CLARA
 - O seletor `Direto` / `Didático` agora tem contraste mais explícito entre ativo e inativo, com leitura visual imediata do modo selecionado
-- A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main` e publicada em produção no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi`
+- A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
