@@ -3,7 +3,7 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "9d7c96167d34bcf25dd53dbbef946a78d1dc522a",
-  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção, sistema visual novo da CLARA reconciliado em `main` e a aba do chat refinada como workspace institucional; a validação remota de deduplicação segue como próximo bloqueio funcional",
+  "current_phase": "Pré-lançamento com BLOCO 4C publicado em produção, sistema visual novo da CLARA reconciliado em `main` e a aba do chat refinada como workspace institucional; a validacao remota de deduplicacao segue como proximo bloqueio funcional",
   "active_block": "BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão",
   "active_branch": "main",
   "last_tool": "CODEX",
@@ -65,13 +65,13 @@
     "Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível",
     "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto",
     "Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido",
-    "Confirmar o novo deploy canônico de produção apos a rodada final de refinamento do chat"
+    "Liberar a carga curada do corpus inicial apenas depois do smoke test remoto"
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini"
   ],
-  "next_action": "Confirmar o novo deploy canônico de produção e, em seguida, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicacao por reupload controlado do mesmo PDF.",
+  "next_action": "Retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicacao por reupload controlado do mesmo PDF.",
   "notes": [
     "A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.",
     "O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.",
@@ -86,6 +86,6 @@
     "A branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não como base operacional, por regredir continuidade e reembaralhar migrations canônicas."
   ],
   "session_status": "in_progress",
-  "last_report": "docs/operational-reports/2026-04-03-chat-active-workspace-polish.md",
+  "last_report": "docs/operational-reports/2026-04-03-main-integration-and-production-deploy-chat-active-workspace-polish.md",
   "last_session_head_sha": "9d7c96167d34bcf25dd53dbbef946a78d1dc522a"
 }
