@@ -125,7 +125,8 @@
     "O uplift paralelo do RAG reverteu parcialmente a premissa de `texto limpo sem prefixo` para uploads futuros: o código atual volta a prefixar `chunk.content` com fonte/página para reaproveitar o parser e a atribuição de referências já existentes.",
     "A migration da busca híbrida não depende mais de `SUPABASE_DB_PASSWORD`: a CLI atual permitiu execução remota segura com `supabase db query --linked`.",
     "O gap de roteamento por fonte-alvo foi resolvido com source-target routing em dois estágios (hybrid_search_chunks + fetch_targeted_chunks); a avaliação batch 3 confirma 16/16 perfeito.",
-    "Os prints antigos na pasta IMAGENS do desktop foram usados como referência de cadência didática: resumo, aviso importante, lista operacional e checklist bem segmentados."
+    "Os prints antigos na pasta IMAGENS do desktop foram usados como referência de cadência didática: resumo, aviso importante, lista operacional e checklist bem segmentados.",
+    "O PDF `SDP_PRESTACAO_DE_CONTAS_GAD_4_CRE.pdf` está sendo usado apenas como benchmark de forma didática para instrução processual no SEI-Rio, não como fonte normativa do corpus governado."
   ],
   "session_status": "in_progress",
   "last_report": "docs/operational-reports/2026-04-04-chat-scroll-and-didactic-polish.md",

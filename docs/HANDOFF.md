@@ -129,6 +129,7 @@
 - A migration da busca híbrida não depende mais de `SUPABASE_DB_PASSWORD`: a CLI atual permitiu execução remota segura com `supabase db query --linked`.
 - O gap de roteamento por fonte-alvo foi resolvido com source-target routing em dois estágios; o foco agora é monitorar precisão residual e ampliar a bateria manual.
 - A validacao estetica final do chat agora prioriza acabamento fino e densidade institucional; o proximo passo operacional volta a ser a trilha funcional do `4C`.
+- O PDF `SDP_PRESTACAO_DE_CONTAS_GAD_4_CRE.pdf` está sendo usado apenas como referência de cadência didática para instrução processual no SEI-Rio, não como fonte normativa do corpus governado.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade

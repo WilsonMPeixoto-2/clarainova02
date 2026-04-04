@@ -112,6 +112,19 @@ Esta rodada não muda o plano macro do projeto. Ela abre apenas um parêntese de
 - o modo `Direto` continua objetivo, mas menos telegráfico
 - o modo `Didático` fica mais claramente guiado, com melhor cadência e menos repetição
 
+## Observação editorial importante
+
+O PDF `SDP_PRESTACAO_DE_CONTAS_GAD_4_CRE.pdf` foi usado nesta rodada apenas como
+**referência de forma didática** para instrução processual no SEI-Rio:
+
+- segmentação em etapas
+- alternância entre resumo, alerta, ação e checklist
+- ritmo de leitura mais guiado
+
+Ele **não** foi tratado aqui como verdade normativa do corpus do SEI-Rio nem como
+fonte de grounding prioritário. O uso nesta frente é estritamente de
+**benchmark de apresentação e cadência de resposta**.
+
 ## Próxima ação recomendada
 
 - validar visualmente essa rodada em uso real
