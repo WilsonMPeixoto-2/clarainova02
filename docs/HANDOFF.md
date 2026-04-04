@@ -3,15 +3,15 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-03T23:31:00.000Z
+- Data/hora: 2026-04-04T02:24:10.000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `main`
-- Commit de base oficial: `fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
-- Head da sessão: `fc2f200d145ca4fa9f7021f062f1ef92508fbf98`
-- Último relatório: `docs/operational-reports/2026-04-03-main-integration-and-production-deploy-symbol-system.md`
+- Commit de base oficial: `9d7c96167d34bcf25dd53dbbef946a78d1dc522a`
+- Head da sessão: `9d7c96167d34bcf25dd53dbbef946a78d1dc522a`
+- Último relatório: `docs/operational-reports/2026-04-03-chat-active-workspace-polish.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção e sistema visual novo da CLARA reconciliado em `main`
+- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção, sistema visual novo da CLARA reconciliado em `main` e aba do chat refinada como workspace institucional
 - Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
 - Status da sessão: `in_progress`
 - Próxima ação recomendada: confirmar o novo deploy canônico de produção e, em seguida, retomar a prioridade funcional do BLOCO 4C com o teste remoto de deduplicação por reupload do mesmo PDF.
@@ -61,12 +61,14 @@
 - Favicon, ícones de PWA, share card e `ClaraMonogram` agora estão prontos para adotar o novo selo neural/perfil
 - A rodada do sistema visual da CLARA foi promovida para `main` por fast-forward
 - O `main` remoto recebeu commits paralelos de outra ferramenta para ícones e assets de identidade; esse histórico foi absorvido por merge sem perder a versão aprovada do símbolo
+- A aba do chat recebeu um polimento adicional para ficar mais densa como ambiente de trabalho: topo mais compacto em conversa ativa, acoes com hierarquia melhor, estado vazio mais enxuto e mensagens da CLARA com identidade visual mais forte
+- `npm run validate` continuou passando com `71` testes apos esta rodada final de layout
 
 ## Itens pendentes
 - Validar a deduplicação em ambiente real repetindo um upload controlado quando houver sessão admin disponível
 - Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
 - Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
-- Confirmar o novo deploy canônico de produção após a integração do sistema visual da CLARA em `main`
+- Confirmar o novo deploy canônico de produção apos a rodada final de refinamento do chat
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
@@ -83,7 +85,7 @@
 - As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas no backlog, sem competir com a prioridade atual.
 - A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
-- A validação estética final aprovou a nova direção visual; o próximo passo operacional é apenas confirmar o deploy canônico antes de retomar a trilha funcional do `4C`.
+- A validacao estetica final do chat agora prioriza acabamento fino e densidade institucional; o proximo passo operacional continua sendo confirmar o deploy canônico antes de retomar a trilha funcional do `4C`.
 
 ## Preambulo obrigatório para qualquer IA
 1. tratar `origin/main` como única fonte oficial de verdade
