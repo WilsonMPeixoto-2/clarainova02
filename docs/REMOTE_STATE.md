@@ -2,21 +2,21 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-04
-- Base local usada na verificação: `origin/main @ 10291b004d4bfbecf50fa09695101c210d59a9eb`
+- Base local usada na verificação: `origin/main @ 5c59b2169afff642871747b166286a43fc1348ea`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit: `10291b004d4bfbecf50fa09695101c210d59a9eb`
+- `origin/main` atualmente alinhada ao commit: `5c59b2169afff642871747b166286a43fc1348ea`
 - Trabalho local em andamento fora de `main`:
   - nenhuma branch de sessão bloqueando a linha principal neste instante; o próximo trabalho pode reabrir uma branch nova a partir de `main`
 - Observação de análise remota:
   - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral
   - a branch `origin/copilot/analise-completa-codigos-e-layout` foi tratada apenas como fonte de leitura, não de integração
 - Observação de continuidade:
-  - a trilha principal deixou de depender da PR `#13`; o hardening atual está sendo preparado diretamente a partir de `main` com migration incremental e endurecimento de borda
-  - o BLOCO 4A já alterou a produção, o BLOCO 4B foi provado em produção, o BLOCO 4C já está em `main`, a terceira rodada de polimento da janela do chat foi promovida, o sistema visual novo da CLARA foi integrado e um uplift paralelo do RAG também já entrou na linha principal
+  - a trilha principal deixou de depender da PR `#13`; o hardening atual segue diretamente a partir de `main`
+  - o BLOCO 4C já está publicado em produção, o uplift paralelo do RAG já entrou na linha principal e o batch 1 de corpus governado do SEI.Rio já foi integrado
 
 ## Vercel
 - Projeto canônico: `clarainova02`
@@ -27,8 +27,8 @@
 - Deploy canônico mais recente observado:
   - source: `git`
   - status: `READY`
-  - deployment id: `dpl_4FSCwyQZrGGm3BkkeMQijDU4wMQE`
-  - commit publicado: `10291b004d4bfbecf50fa09695101c210d59a9eb`
+  - deployment id: `dpl_ycURU2FVB1ABYuFRzdSckTo9K984`
+  - commit publicado: `5c59b2169afff642871747b166286a43fc1348ea`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`
@@ -46,8 +46,8 @@
   - última atualização observada: `2026-04-04 04:03:53 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
-  - versão observada: `13`
-  - última atualização observada: `2026-04-03 07:32:52 UTC`
+  - versão observada: `16`
+  - última atualização observada: `2026-04-04 08:09:31 UTC`
 - `get-usage-stats`
   - status: `ACTIVE`
   - versão observada: `11`
@@ -93,18 +93,25 @@
     - recuperação híbrida: `match_count = 12`
     - telemetria nova: `rag_quality_score` e `expanded_query`
 - Corpus inicial:
-  - status: `iniciado com prova real`
+  - status: `núcleo local ativo em produção`
   - situação conhecida:
-    - existe 1 documento legado no remoto: `MODELO_DE_OFICIO_PDDE.pdf`
-    - existe 1 documento novo processado no contrato novo: `SEI-Guia-do-usuario-Versao-final.pdf`
-    - o documento novo possui `88` chunks persistidos e `88` embeddings persistidos
-    - o documento novo atualmente persistido foi ingerido antes do uplift paralelo do RAG e permanece sem o prefixo automático em `content`
-    - o documento novo já grava `embedding_model`, `embedding_dim`, `embedded_at` e `chunk_metadata_json`
-    - o chat público já respondeu com grounding real ao novo manual em múltiplas perguntas
-    - a conta provisionada visível no formulário do admin autentica sessão, mas não coincide com o admin bootstrap ativo em `public.admin_users`; para o teste operacional desta fase deve ser usada a conta administrativa real
-    - a rodada local do BLOCO 4C com `document_hash`, deduplicação prévia e concorrência controlada já foi publicada em `main`
+    - o corpus ativo já contém um núcleo local do SEI.Rio formado por decretos, resolução, guias, FAQs e termo de uso oficiais
+    - o batch local ingerido inclui:
+      - Decreto Rio nº 57.250/2025
+      - Resolução CVL nº 237/2025
+      - Guia do usuário interno – SEI.Rio
+      - Guia de migração – SEI.Rio
+      - Guia do usuário externo – SEI.Rio
+      - FAQ do servidor – SEI.Rio
+      - FAQ do cidadão – SEI.Rio
+      - Termo de Uso e Aviso de Privacidade do SEI.Rio
+    - o documento `SEI-Guia-do-usuario-Versao-final.pdf` segue ativo como cobertura operacional e pode competir em perguntas amplas, mas não substitui o núcleo local
+    - o documento legado `MODELO_DE_OFICIO_PDDE.pdf` foi inativado por estar fora do escopo SEI
+    - o Decreto Rio nº 55.615/2025 está fora do corpus ativo por captura ainda parcial
+    - materiais `COBERTURA_P2` do PEN e `APOIO_P3` versionado já foram baixados para staging local, mas ainda não foram ingeridos no grounding principal
     - uploads futuros, sob o `main` atual, passam a usar chunking semântico com `sectionTitle` e prefixo automático `[Fonte: ... | Página: ...]` em `chunk.content`
-    - o próximo teste remoto objetivo continua sendo repetir o upload do mesmo PDF para validar a deduplicação em ambiente real
+    - a avaliação inicial do RAG sobre o núcleo local registrou `9/9` respostas `HTTP 200`, sem web fallback e com escopo exato
+    - o próximo teste remoto objetivo continua sendo repetir o upload do mesmo PDF para validar a deduplicação na UI, enquanto a próxima frente de corpus é substituir o Decreto 55.615 por texto íntegro
 
 ## Divergências remotas que exigem cuidado
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google

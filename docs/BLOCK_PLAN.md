@@ -10,12 +10,13 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ 10291b004d4bfbecf50fa09695101c210d59a9eb`
-- Frente imediata mais importante: concluir e validar o BLOCO 4C para tornar a ingestão mais eficiente e segura antes da carga curada do corpus
+- Fonte oficial integrada: `origin/main @ 5c59b2169afff642871747b166286a43fc1348ea`
+- Frente imediata mais importante: consolidar o núcleo local do corpus SEI.Rio já ativo em produção, substituir o Decreto 55.615 parcial e ampliar a avaliação empírica do RAG antes de abrir a camada PEN
 - Ordem de execução atualmente aceita:
-  1. consolidar deduplicação, paralelismo controlado e testes mínimos do pipeline
-  2. depois formar corpus curado e medir o RAG real
-  3. por fim atacar acessibilidade, hotspots e testes de sustentação
+  1. manter o núcleo local ativo e corrigir lacunas documentais críticas
+  2. ampliar a bateria de perguntas reais e rubricar a qualidade do RAG
+  3. só então decidir a ingestão da cobertura PEN com precedência inferior
+  4. por fim atacar acessibilidade, hotspots e testes de sustentação
 
 ## Blocos oficiais
 
@@ -25,8 +26,8 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 | 1 | Certificação operacional do ambiente real | `integrated` | Bloco 0 integrado | baseline estável e Supabase/Vercel apontando para o projeto oficial | login provisionado real, upload real, grounding real e produção publicada |
 | 2 | Polimento institucional, presença pública e observabilidade enxuta | `integrated` | Bloco 1 integrado | produto já operacional nas frentes centrais | camada institucional, OG/PWA, PDF e métricas agregadas fortalecidos em `main` |
 | 3 | Hardening Supabase, RLS e JWT administrativo | `ready_to_integrate` | Bloco 2 integrado | produto operando com conta provisionada e functions administrativas ainda permissivas | policies públicas fechadas, JWT de borda endurecido e estado remoto/documental alinhado |
-| 4 | Consolidação operacional externa | `in_progress` | Bloco 3 estabilizado | camada interna segura e previsível | Google OAuth funcional, Gemini saneado, contrato Gemini alinhado no código, smoke test real concluído e pipeline pronto para endurecimento |
-| 5 | Corpus inicial real e prova empírica do RAG | `planned` | Bloco 4 integrado | operação externa previsível e sem bloqueio crítico | lote curado carregado, perguntas reais classificadas e cobertura medida |
+| 4 | Consolidação operacional externa | `residual_check` | Bloco 3 estabilizado | camada interna segura e previsível | Google OAuth funcional, Gemini saneado, contrato Gemini alinhado no código, smoke test real concluído e deduplicação validada também via UI |
+| 5 | Corpus inicial real e prova empírica do RAG | `in_progress` | Bloco 4 suficientemente estável | operação externa previsível e sem bloqueio crítico | lote curado carregado, perguntas reais classificadas e cobertura medida |
 | 6 | Acessibilidade, hotspots e testes de sustentação | `planned` | Bloco 5 em trilha segura | segurança, OAuth/Gemini e corpus já suficientemente estáveis | menu móvel, modais, hotspots de manutenção e cobertura de testes mais robustos |
 
 ## Próxima ação por bloco
@@ -53,17 +54,18 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
   - a execução do BLOCO 4 continua dependente de configuração externa no Supabase/Google
 
 ### Bloco 4 — Consolidação operacional externa
-- Estado: `in_progress`
+- Estado: `residual_check`
 - Objetivo: eliminar bloqueios externos que impedem operação previsível e alinhar o código ao contrato Gemini realmente adotado
 - Subetapa concluída: `4B — Verificação remota do corpus e smoke test grounded`
 - Subetapa atual: `4C — Deduplicação, paralelismo e testes do pipeline de ingestão`
-- Estado do 4C: implementação publicada em `main`, com refinamentos paralelos do painel do chat e uplift paralelo do RAG já incorporados; falta repetir um upload controlado para provar deduplicação no ambiente real
-- Próxima ação: validar a deduplicação em ambiente real antes de liberar a carga curada do corpus, já observando o comportamento sob o RAG ampliado
+- Estado do 4C: implementação publicada em `main`, com deduplicação legada corrigida, refinamentos paralelos do painel do chat e uplift paralelo do RAG já incorporados; falta apenas a prova residual de reupload controlado na UI
+- Próxima ação: manter a prova residual de deduplicação na fila operacional, sem bloquear a consolidação do corpus local já ativo
 
 ### Bloco 5 — Corpus inicial real e prova empírica do RAG
-- Estado: `planned`
+- Estado: `in_progress`
 - Objetivo: transformar a CLARA de tecnicamente pronta em documentalmente confiável
-- Próxima ação: montar lote curado de 5–10 PDFs, carregar por prioridade e medir perguntas reais antes de mexer em retrieval
+- Estado atual: política canônica de curadoria, manifesto do corpus, staging por camadas e batch 1 do SEI.Rio já integrados em `main` e publicados em produção
+- Próxima ação: substituir o Decreto Rio nº 55.615/2025 por captura íntegra oficial, ampliar a bateria de perguntas reais para `15–20` itens e só então decidir a entrada da camada `COBERTURA_P2`
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
 - Estado: `planned`

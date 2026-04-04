@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T07:03:08.808Z
+- Data/hora: 2026-04-04T08:12:25.1535704Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-CONTINUITY-SYNC`
-- Commit de base oficial: `10291b004d4bfbecf50fa09695101c210d59a9eb`
-- Head da sessão: `10291b004d4bfbecf50fa09695101c210d59a9eb`
-- Último relatório: `docs/operational-reports/2026-04-04-rag-pipeline-upgrade-sync.md`
+- Branch de referência: `main`
+- Commit de base oficial: `5c59b2169afff642871747b166286a43fc1348ea`
+- Head da sessão: `5c59b2169afff642871747b166286a43fc1348ea`
+- Último relatório: `docs/operational-reports/2026-04-04-main-integration-and-production-deploy-corpus-batch-1.md`
 
 ## Estado atual resumido
-- Fase atual: Pré-lançamento com BLOCO 4C publicado em produção, correção de deduplicação legada já no ar e uplift paralelo do RAG integrado em `main` e produção; o próximo passo útil continua sendo um novo reupload controlado na UI admin
-- Bloco ativo: BLOCO 4C — Deduplicação, paralelismo e testes do pipeline de ingestão
+- Fase atual: Pré-lançamento com núcleo local do corpus SEI.Rio ativo em produção, RAG ampliado publicado e governança editorial do corpus formalizada
+- Bloco ativo: BLOCO 5 — Corpus inicial real e prova empírica do RAG
 - Status da sessão: `in_progress`
-- Próxima ação recomendada: repetir um reupload controlado do mesmo PDF na UI admin para comprovar o bloqueio gracioso de duplicidade já com a correção publicada em produção, agora sob o RAG ampliado que já está em `main` e produção.
+- Próxima ação recomendada: substituir a captura parcial do Decreto Rio nº 55.615/2025 por um texto oficial íntegro, atualizar o manifesto e ampliar a bateria de perguntas reais sobre o núcleo local antes de decidir a abertura da camada PEN.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -75,12 +75,20 @@
 - A resposta grounded no frontend ganhou badge de confiança, cópia rápida, listas expansíveis e citações clicáveis com scroll para a referência correspondente
 - A ingestão passou a usar chunking semântico com detecção de `sectionTitle`; para uploads futuros, `chunk.content` volta a incluir prefixo automático `[Fonte: ... | Página: ...]` por compatibilidade com a atribuição de referências
 - A telemetria do chat agora registra `rag_quality_score` e `expanded_query`
+- A política canônica de curadoria do corpus foi registrada em `docs/corpus-curation-policy.md`
+- O manifesto `docs/corpus_manifest.csv` agora governa camada, prioridade, SHA-256, status de download e status de ingestão por documento
+- O lote local do SEI.Rio (`P1` + `P2`) foi localizado, nomeado segundo a política oficial, ingerido seletivamente e já está servindo grounding em produção
+- O Decreto Rio nº 55.615/2025 permanece fora do corpus ativo por captura oficial ainda parcial
+- A Edge Function remota `embed-chunks` já foi republicada para a versão `16`
+- O batch 1 de corpus foi integrado em `main` e publicado em produção no deploy `dpl_ycURU2FVB1ABYuFRzdSckTo9K984`
+- A avaliação inicial do RAG contra o núcleo local registrou `9/9` respostas `HTTP 200`, sem web fallback, com `answerScopeMatch = exact` e `finalConfidence = 1`
 
 ## Itens pendentes
-- Validar a deduplicação em ambiente real repetindo um upload controlado na UI após publicar a correção desta branch
-- Decidir se o documento legado `MODELO_DE_OFICIO_PDDE.pdf` será reprocessado ou removido
-- Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
-- Liberar a carga curada do corpus inicial apenas depois do smoke test remoto
+- Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
+- Executar uma bateria ampliada de `15–20` perguntas reais sobre o núcleo local do SEI.Rio, com rubricagem manual
+- Decidir quando ingerir a camada `COBERTURA_P2` do PEN mantendo precedência inferior ao núcleo SEI.Rio
+- Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C
+- Decidir o destino final do documento legado `MODELO_DE_OFICIO_PDDE.pdf` no remoto
 
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
