@@ -8,7 +8,7 @@
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T18:43:54Z",
+  "last_update_utc": "2026-04-04T18:49:40Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -35,5 +35,5 @@
   ],
   "session_status": "session_in_progress",
   "last_report": "docs/operational-reports/2026-04-04-rag-system-audit-and-plan-reset.md",
-  "last_session_head_sha": "6770c85"
+  "last_session_head_sha": "9e36a4a"
 }

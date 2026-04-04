@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T18:43:54Z
+- Data/hora: 2026-04-04T18:49:40Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
+- Head da sessão: `9e36a4a7ec1ad406389bd63f8f9b6361e9d83036`
 - Último relatório: `docs/operational-reports/2026-04-04-rag-system-audit-and-plan-reset.md`
 
 ## Estado atual resumido
