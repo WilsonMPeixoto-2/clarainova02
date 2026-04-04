@@ -7,7 +7,7 @@
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-03/HOME/CODEX/SYMBOL-SYSTEM`
 - Commit de base oficial: `7951c8df91839e1276fd7606b1082a6662a8bd00`
-- Head da sessão: `7951c8df91839e1276fd7606b1082a6662a8bd00`
+- Head da sessão: `8a1ea47b2c2e2556d893f88b80d345e1e99d419f`
 - Último relatório: `docs/operational-reports/2026-04-03-clara-symbol-system.md`
 
 ## Estado atual resumido
