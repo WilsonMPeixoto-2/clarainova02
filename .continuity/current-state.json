@@ -3,37 +3,45 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 resetado para excelencia do RAG e do sistema de perguntas e respostas",
+  "current_phase": "BLOCO 5 com R0, R1 e R2 implementados localmente, abrindo agora a fase R3 de batch embedding e re-embed controlado",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-04T18:49:40Z",
+  "last_update_utc": "2026-04-05T06:23:58Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
     "O RAG em produção já opera com query expansion, retrieval híbrido com `match_count = 12`, enriquecimento por chunks adjacentes, source-target routing e telemetria de qualidade.",
     "O frontend já expõe respostas estruturadas com badge de confiança, cópia rápida, referências clicáveis, exportação e distinção visual mais forte entre `Direto` e `Didático`.",
-    "A auditoria completa do sistema RAG foi concluída e resultou em um reset específico do BLOCO 5, focado em benchmark, retrieval governado e fidelidade do sistema de perguntas e respostas."
+    "A auditoria completa do sistema RAG foi concluída e resultou em um reset específico do BLOCO 5, focado em benchmark, retrieval governado e fidelidade do sistema de perguntas e respostas.",
+    "A prioridade operacional do BLOCO 5 foi reordenada em 2026-04-05 para antecipar a trilha R0-R6 antes da continuação dos subblocos 5B-5F.",
+    "O R0 foi concluido com benchmark canonico congelado, resumo por categoria, comandos locais de gate e baseline reproduzivel em `Direto` e `Didatico`.",
+    "O R1 foi implementado localmente em `supabase/functions/chat/index.ts`, com estrategia de geracao por complexidade, `thinkingLevel`, `maxOutputTokens = 8192` e query expansion com contexto curto.",
+    "A rodada local foi validada com `python -m py_compile scripts/corpus/evaluate_rag_batch.py`, `npm run rag:evaluate:canonical` e `npm run validate`.",
+    "O R2 foi implementado localmente com framing textual assimetrico para query/document embedding, metadata de contrato versionada e remocao do prefixo `[Fonte: ... | Pagina: ...]` do conteudo vetorial novo.",
+    "Os testes locais passaram com `17` suites e `74` testes apos a cobertura adicional do contrato de embedding e do chunking limpo."
   ],
   "pending_items": [
-    "Abrir o 5A com benchmark canônico do RAG, perguntas fixas por categoria e gate mínimo de regressão.",
-    "Fazer o retrieval usar de forma explícita `scope_instance`, `escopo_usuario` e `module_tags`, além dos metadados já ativos.",
-    "Adicionar guardas para evitar overboost do source-target routing quando a fonte nomeada tiver aderência semântica fraca.",
-    "Refinar a fidelidade nativa entre `Direto` e `Didático`, reduzindo dependência de pós-processamento.",
+    "Executar R3 com batch embedding nativo e re-embed controlado do corpus atual.",
+    "Executar R4 e R5 com benchmark controlado de chunking e dimensionalidade antes de retomar `5B-5F`.",
+    "Publicar e reavaliar o R1-R2 contra o benchmark canônico após a próxima integração/deploy desta branch.",
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela."
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
   ],
-  "next_action": "Abrir o 5A com benchmark canônico e gate de regressão do RAG, usando essa régua antes de tocar retrieval, source-target routing e fidelidade entre modos.",
+  "next_action": "Abrir o R3 com batch embedding nativo e preparar um re-embed controlado do corpus sob o contrato textual implementado em R2, antes de qualquer experimento de chunking ou dimensionalidade.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
+    "A partir de 2026-04-05, a ordem operacional imediata dentro do BLOCO 5 passa a ser R0, R1, R2, R3, R4, R5 e só depois a retomada dos subblocos canônicos 5B-5F.",
+    "O baseline do benchmark canônico ficou perfeito em `Didatico` e teve uma única oscilação de referência explícita em `Direto` (`Q10`), mas ainda dentro do gate mínimo adotado para o lote.",
+    "No R2, `taskType` e `title` foram preservados como pistas de API, mas o contrato semântico passou a usar framing textual explícito e metadado versionado para reduzir dependência de prefixos artificiais no conteúdo vetorial.",
     "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-04-rag-system-audit-and-plan-reset.md",
-  "last_session_head_sha": "9e36a4a"
+  "last_report": "docs/operational-reports/2026-04-05-r2-embedding-contract-alignment.md",
+  "last_session_head_sha": "8f90b46"
 }

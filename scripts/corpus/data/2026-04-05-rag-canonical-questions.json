@@ -1,0 +1,98 @@
+[
+  {
+    "id": "Q1",
+    "category": "norma_nucleo",
+    "question": "O que o Decreto Rio nº 55.615, de 1º de janeiro de 2025, determina sobre a substituição do Processo.rio pelo SEI-Rio?",
+    "expectedReferences": ["Decreto Rio nº 55.615"]
+  },
+  {
+    "id": "Q2",
+    "category": "norma_nucleo",
+    "question": "Como é composto o número do processo no SEI.Rio segundo a Resolução CVL nº 237/2025?",
+    "expectedReferences": ["Resolução CVL nº 237"]
+  },
+  {
+    "id": "Q3",
+    "category": "procedimento_interno",
+    "question": "Como fazer login no SEI.Rio usando a matrícula?",
+    "expectedReferences": ["Guia do usuário interno"]
+  },
+  {
+    "id": "Q4",
+    "category": "procedimento_interno",
+    "question": "Como incluir um documento externo em um processo no SEI.Rio?",
+    "expectedReferences": ["Guia do usuário interno"]
+  },
+  {
+    "id": "Q5",
+    "category": "procedimento_interno",
+    "question": "Como disponibilizar um processo em bloco de assinatura no SEI.Rio?",
+    "expectedReferences": ["Guia do usuário interno"]
+  },
+  {
+    "id": "Q6",
+    "category": "procedimento_interno",
+    "question": "Como enviar um processo para uma ou mais unidades no SEI.Rio?",
+    "expectedReferences": ["Guia do usuário interno"]
+  },
+  {
+    "id": "Q7",
+    "category": "transicao_migracao",
+    "question": "Quando a migração manual do Processo.rio para o SEI.Rio deve ser usada?",
+    "expectedReferences": ["Guia de migração"]
+  },
+  {
+    "id": "Q8",
+    "category": "transicao_migracao",
+    "question": "Durante a transição, o servidor pode continuar usando o Processo.rio ao mesmo tempo que o SEI.Rio?",
+    "expectedReferences": ["Decreto Rio nº 55.615", "Guia de migração"]
+  },
+  {
+    "id": "Q9",
+    "category": "usuario_externo",
+    "question": "Qual nível da conta gov.br permite liberação automática do cadastro no SEI.Rio para usuário externo?",
+    "expectedReferences": ["Guia do usuário externo", "Perguntas frequentes do cidadão"]
+  },
+  {
+    "id": "Q10",
+    "category": "usuario_externo",
+    "question": "O credenciamento de usuário externo no SEI.Rio é pessoal e intransferível?",
+    "expectedReferences": ["Termo de Uso", "Decreto Rio nº 57.250"]
+  },
+  {
+    "id": "Q11",
+    "category": "usuario_externo",
+    "question": "Como redefinir a senha do usuário externo no SEI.Rio?",
+    "expectedReferences": ["Guia do usuário externo", "Perguntas frequentes do cidadão"]
+  },
+  {
+    "id": "Q12",
+    "category": "fonte_nomeada_e_versao",
+    "question": "O que a nota oficial do SEI 5.0.3 informa sobre a compatibilidade do Tramita GOV.BR e dos módulos do PEN?",
+    "expectedReferences": ["Nota oficial MGI sobre o SEI 5.0.3"]
+  },
+  {
+    "id": "Q13",
+    "category": "fonte_nomeada_e_versao",
+    "question": "Segundo a nota oficial do SEI 5.0, quais mudanças estruturais foram destacadas na nova versão?",
+    "expectedReferences": ["Nota oficial MGI sobre o SEI 5.0"]
+  },
+  {
+    "id": "Q14",
+    "category": "fonte_nomeada_e_versao",
+    "question": "O que mudou na interface do SEI 4.1 segundo a wiki SEI-RJ?",
+    "expectedReferences": ["Novidades da versão 4.1"]
+  },
+  {
+    "id": "Q15",
+    "category": "fonte_nomeada_e_versao",
+    "question": "Na transição para o SEI 4.0, o que aconteceu com os ícones e o menu lateral segundo o material da UFSCar?",
+    "expectedReferences": ["Correspondência de Ícones SEI => SEI 4.0"]
+  },
+  {
+    "id": "Q16",
+    "category": "fonte_nomeada_e_versao",
+    "question": "No SEI 5.0.3, quais módulos do PEN foram informados como compatíveis?",
+    "expectedReferences": ["Nota oficial MGI sobre o SEI 5.0.3"]
+  }
+]

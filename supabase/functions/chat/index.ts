@@ -1,5 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { GoogleGenAI } from "npm:@google/genai";
+import {
+  buildQueryEmbeddingText,
+  EMBEDDING_CONTRACT_VERSION,
+} from "../_shared/embedding-contract.ts";
 
 import {
   prepareKnowledgeDecision,
@@ -47,39 +51,88 @@ const MAX_CONVERSATION_MESSAGES = 20;
 const EMBEDDING_TIMEOUT_MS = 10_000;
 const SEARCH_TIMEOUT_MS = 8_000;
 const GENERATION_TIMEOUT_MS = 45_000;
+const MAX_OUTPUT_TOKENS = 8192;
 const EMBEDDING_DIM = 768;
 const QUERY_EMBEDDING_MODEL = 'gemini-embedding-2-preview';
-const QUERY_EMBEDDING_TASK_TYPE = 'RETRIEVAL_QUERY';
 const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
 type ChatResponseMode = (typeof CHAT_RESPONSE_MODES)[number];
 const DEFAULT_CHAT_RESPONSE_MODE: ChatResponseMode = 'didatico';
 const KEYWORD_FALLBACK_QUERY_EMBEDDING = JSON.stringify(Array.from({ length: EMBEDDING_DIM }, () => 0));
 const QUERY_EXPANSION_TIMEOUT_MS = 3_000;
-const QUERY_EXPANSION_MODEL = 'gemini-3.1-flash-lite-preview';
+const GEMINI_FLASH_LITE_MODEL = 'gemini-3.1-flash-lite-preview';
+const GEMINI_PRO_MODEL = 'gemini-3.1-pro-preview';
+type GeminiModelName = typeof GEMINI_FLASH_LITE_MODEL | typeof GEMINI_PRO_MODEL;
+type GeminiThinkingLevel = 'low' | 'high';
+type GenerationStrategy = {
+  orderedModels: GeminiModelName[];
+  thinkingLevel: GeminiThinkingLevel;
+  structuredTemperature: number;
+  structuredTopP: number;
+  streamTemperature: number;
+  streamTopP: number;
+};
+const QUERY_EXPANSION_MODEL = GEMINI_FLASH_LITE_MODEL;
 
 const QUERY_EXPANSION_PROMPT = `Você é um especialista em reformulação de buscas documentais sobre o sistema SEI-Rio (Sistema Eletrônico de Informações da Prefeitura do Rio de Janeiro).
 
 Receba a pergunta do usuário e gere UMA reformulação otimizada para busca em base documental.
 
 Regras:
+- Se houver contexto recente da conversa, use esse contexto apenas para resolver elipses e retomar o assunto correto da pergunta atual.
 - A reformulação deve usar termos técnicos e formais presentes em manuais e guias do SEI-Rio.
 - Mantenha o significado original, mas use vocabulário documental (ex: "juntar documentos" → "inclusão de documentos externos em processo SEI-Rio").
 - Inclua termos-chave específicos do domínio SEI quando relevantes (tramitação, unidade, bloco de assinatura, despacho, ciência, etc.).
 - Responda APENAS com a reformulação, sem explicações ou prefixos.
+- Não invente contexto novo que não esteja na conversa.
 - Se a pergunta já for técnica e precisa, repita-a com mínimas variações.
 - Máximo 40 palavras.`;
 
-async function expandQuery(ai: GoogleGenAI, userMessage: string): Promise<string | null> {
+function compactConversationSnippet(messages: Array<{ role: string; content: string }>): string {
+  const recentContext = messages
+    .slice(-4, -1)
+    .map((message) => {
+      const label = message.role === 'assistant' ? 'CLARA' : 'Usuário';
+      const content = message.content.replace(/\s+/g, ' ').trim().slice(0, 280);
+      return `- ${label}: ${content}`;
+    })
+    .filter(Boolean);
+
+  return recentContext.join('\n');
+}
+
+function buildQueryExpansionInput(
+  messages: Array<{ role: string; content: string }>,
+  userMessage: string,
+): string {
+  const contextSnippet = compactConversationSnippet(messages);
+  if (!contextSnippet) {
+    return `Pergunta atual: ${userMessage}`;
+  }
+
+  return `Contexto recente da conversa:
+${contextSnippet}
+
+Pergunta atual: ${userMessage}`;
+}
+
+async function expandQuery(
+  ai: GoogleGenAI,
+  messages: Array<{ role: string; content: string }>,
+  userMessage: string,
+): Promise<string | null> {
   try {
     const result = await withTimeout(
       ai.models.generateContent({
         model: QUERY_EXPANSION_MODEL,
-        contents: userMessage,
+        contents: buildQueryExpansionInput(messages, userMessage),
         config: {
           systemInstruction: QUERY_EXPANSION_PROMPT,
           maxOutputTokens: 80,
           temperature: 0.2,
           topP: 0.7,
+          thinkingConfig: {
+            thinkingLevel: 'low',
+          },
         },
       }),
       QUERY_EXPANSION_TIMEOUT_MS,
@@ -143,6 +196,33 @@ PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIDATICO
 - Explique rapidamente termos tecnicos ou pontos que costumam gerar erro.
 - Use userNotice e cautionNotice quando ajudarem a orientar a leitura, nao apenas como comentario lateral.
 - Mantenha cautelas, ambiguidade e pedidos de esclarecimento quando forem necessarios.`;
+}
+
+function buildGenerationStrategy(options: {
+  intentLabel: string;
+  responseMode: ChatResponseMode;
+  sourceTarget: SourceTargetRoute | null;
+  retrievalQuality: RetrievalQualityInfo | null;
+}): GenerationStrategy {
+  const retrievalTier = options.retrievalQuality?.confidenceTier ?? 'fraca';
+  const complexRequest =
+    options.responseMode === 'didatico' ||
+    options.sourceTarget !== null ||
+    options.intentLabel === 'conceito' ||
+    options.intentLabel === 'erro_sistema' ||
+    retrievalTier === 'moderada' ||
+    retrievalTier === 'fraca';
+
+  return {
+    orderedModels: complexRequest
+      ? [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL]
+      : [GEMINI_FLASH_LITE_MODEL, GEMINI_PRO_MODEL],
+    thinkingLevel: complexRequest ? 'high' : 'low',
+    structuredTemperature: options.responseMode === 'didatico' ? 0.15 : 0.1,
+    structuredTopP: options.responseMode === 'didatico' ? 0.9 : 0.8,
+    streamTemperature: options.responseMode === 'didatico' ? 0.45 : 0.2,
+    streamTopP: options.responseMode === 'didatico' ? 0.95 : 0.8,
+  };
 }
 
 // ============================================================
@@ -299,11 +379,6 @@ REGRAS DE SEGURANÇA
 // ============================================================
 // MODEL FALLBACK with @google/genai SDK
 // ============================================================
-
-const GEMINI_MODELS = [
-  'gemini-3.1-flash-lite-preview',
-  'gemini-3.1-pro-preview',
-];
 
 type HybridSearchChunk = {
   id: string;
@@ -754,9 +829,10 @@ async function readSseText(stream: ReadableStream<Uint8Array>): Promise<string> 
  */
 async function streamWithGenAI(
   ai: GoogleGenAI,
-  model: string,
+  model: GeminiModelName,
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
+  strategy: GenerationStrategy,
 ): Promise<ReadableStream<Uint8Array>> {
   const contents = buildModelContents(messages);
 
@@ -765,9 +841,12 @@ async function streamWithGenAI(
     contents,
     config: {
       systemInstruction: systemPrompt,
-      maxOutputTokens: 4096,
-      temperature: 0.1,
-      topP: 0.8,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      temperature: strategy.streamTemperature,
+      topP: strategy.streamTopP,
+      thinkingConfig: {
+        thinkingLevel: strategy.thinkingLevel,
+      },
     },
   });
 
@@ -806,19 +885,23 @@ async function generateStructuredWithFallback(
   ai: GoogleGenAI,
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
+  strategy: GenerationStrategy,
 ): Promise<{ response: ClaraStructuredResponse; plainText: string; model: string } | null> {
   const contents = buildModelContents(messages);
 
-  for (const model of GEMINI_MODELS) {
+  for (const model of strategy.orderedModels) {
     try {
       const response = await ai.models.generateContent({
         model,
         contents,
         config: {
           systemInstruction: systemPrompt,
-          maxOutputTokens: 4096,
-          temperature: 0.1,
-          topP: 0.8,
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          temperature: strategy.structuredTemperature,
+          topP: strategy.structuredTopP,
+          thinkingConfig: {
+            thinkingLevel: strategy.thinkingLevel,
+          },
           responseMimeType: 'application/json',
           responseJsonSchema: claraResponseJsonSchema,
         },
@@ -847,12 +930,13 @@ async function callGeminiWithFallback(
   ai: GoogleGenAI,
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
+  strategy: GenerationStrategy,
 ): Promise<{ stream: ReadableStream<Uint8Array>; model: string }> {
   const failures: string[] = [];
 
-  for (const model of GEMINI_MODELS) {
+  for (const model of strategy.orderedModels) {
     try {
-      const stream = await streamWithGenAI(ai, model, systemPrompt, messages);
+      const stream = await streamWithGenAI(ai, model, systemPrompt, messages, strategy);
       return { stream, model };
     } catch (err: unknown) {
       const msg = getErrorMessage(err, String(err ?? ''));
@@ -908,6 +992,11 @@ Deno.serve(async (req) => {
       }
     }
 
+    const chatMessages = messages.map((m: { role: string; content: string }) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    }));
+
     const requestStartedAt = Date.now();
     const requestId = crypto.randomUUID();
 
@@ -953,7 +1042,7 @@ Deno.serve(async (req) => {
     }
 
     // --- GUARDRAILS ---
-    const lastUserMessage = [...messages].reverse().find((m: { role: string }) => m.role === 'user');
+    const lastUserMessage = [...chatMessages].reverse().find((m: { role: string }) => m.role === 'user');
     const normalizedQuery = lastUserMessage ? normalizeQueryText(lastUserMessage.content) : '';
     const intentLabel = inferIntentLabel(normalizedQuery);
     const { topicLabel, subtopicLabel } = inferTopicLabels(normalizedQuery);
@@ -1032,16 +1121,16 @@ Deno.serve(async (req) => {
             withTimeout(
               ai.models.embedContent({
                 model: QUERY_EMBEDDING_MODEL,
-                contents: lastUserMessage.content,
+                contents: buildQueryEmbeddingText(lastUserMessage.content),
                 config: {
                   outputDimensionality: EMBEDDING_DIM,
-                  taskType: QUERY_EMBEDDING_TASK_TYPE,
+                  taskType: 'RETRIEVAL_QUERY',
                 },
               }),
               EMBEDDING_TIMEOUT_MS,
               'embedding',
             ),
-            expandQuery(ai, lastUserMessage.content),
+            expandQuery(ai, chatMessages, lastUserMessage.content),
           ]);
 
           expandedQueryText = expanded;
@@ -1055,10 +1144,10 @@ Deno.serve(async (req) => {
                 const expandedEmbeddingResult = await withTimeout(
                   ai.models.embedContent({
                     model: QUERY_EMBEDDING_MODEL,
-                    contents: expandedQueryText,
+                    contents: buildQueryEmbeddingText(expandedQueryText),
                     config: {
                       outputDimensionality: EMBEDDING_DIM,
-                      taskType: QUERY_EMBEDDING_TASK_TYPE,
+                      taskType: 'RETRIEVAL_QUERY',
                     },
                   }),
                   EMBEDDING_TIMEOUT_MS,
@@ -1075,7 +1164,7 @@ Deno.serve(async (req) => {
             }
 
             queryEmbeddingPayload = JSON.stringify(finalEmbedding);
-            queryEmbeddingModel = QUERY_EMBEDDING_MODEL;
+            queryEmbeddingModel = `${QUERY_EMBEDDING_MODEL}:${EMBEDDING_CONTRACT_VERSION}`;
           }
         } catch (embeddingError) {
           console.warn('Query embedding fallback to keyword-only retrieval:', embeddingError);
@@ -1227,14 +1316,15 @@ Deno.serve(async (req) => {
       : '';
     const sourceTargetPrompt = sourceTarget ? buildSourceTargetPrompt(sourceTarget) : '';
     const systemPromptWithContext = `${SYSTEM_PROMPT}${buildResponseModePrompt(responseMode)}${retrievalQualityPrompt}${sourceTargetPrompt}${knowledgeContext}`;
-
-    const chatMessages = messages.map((m: { role: string; content: string }) => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: m.content,
-    }));
+    const generationStrategy = buildGenerationStrategy({
+      intentLabel,
+      responseMode,
+      sourceTarget,
+      retrievalQuality,
+    });
 
     const structuredResult = await withTimeout(
-      generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages),
+      generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages, generationStrategy),
       GENERATION_TIMEOUT_MS,
       'structured_generation',
     ).catch((err) => {
@@ -1261,6 +1351,7 @@ REESCRITA OBRIGATORIA:
 - Nao mencione base interna, analise interna, comparacao de fontes, RAG, embeddings, backend, telemetria, schema ou qualquer bastidor do sistema.
 - Se houver base suficiente, responda em passo a passo claro sobre o SEI-Rio.`,
             chatMessages,
+            generationStrategy,
           ),
           GENERATION_TIMEOUT_MS,
           'leakage_repair',
@@ -1317,7 +1408,7 @@ REESCRITA OBRIGATORIA:
     // --- CALL GEMINI WITH FALLBACK ---
     let result: { stream: ReadableStream<Uint8Array>; model: string };
     try {
-      result = await callGeminiWithFallback(ai, systemPromptWithContext, chatMessages);
+      result = await callGeminiWithFallback(ai, systemPromptWithContext, chatMessages, generationStrategy);
     } catch (err: unknown) {
       const rawErrorMsg = getErrorMessage(err);
       const errorMsg = getPublicErrorMessage(err);
@@ -1380,7 +1471,7 @@ REESCRITA OBRIGATORIA:
             request_id: requestId,
             retrieval_mode: retrievalMode,
             sources: retrievalSources,
-            attempted_models: GEMINI_MODELS,
+            attempted_models: generationStrategy.orderedModels,
           },
         }).then(({ error }) => {
           if (error) console.error('chat_metrics failure insert error:', error);

@@ -3,22 +3,29 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-04T18:49:40Z
+- Data/hora: 2026-04-05T06:23:58Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `9e36a4a7ec1ad406389bd63f8f9b6361e9d83036`
-- Último relatório: `docs/operational-reports/2026-04-04-rag-system-audit-and-plan-reset.md`
+- Head da sessão: `8f90b46cfdfdd9733f049a2800d21574a4bcc783`
+- Último relatório: `docs/operational-reports/2026-04-05-r2-embedding-contract-alignment.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 resetado para excelência do RAG e do sistema de perguntas e respostas
+- Fase atual: BLOCO 5 com `R0`, `R1` e `R2` implementados localmente, abrindo agora a fase `R3` de batch embedding e re-embed controlado
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: abrir o `5A` com benchmark canônico e gate de regressão do RAG antes de tocar retrieval, source-target routing e fidelidade entre modos.
+- Próxima ação recomendada: abrir o `R3` com batch embedding nativo e preparar um re-embed controlado do corpus sob o contrato textual implementado em `R2`.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
 - O estado real do projeto continua estável em `origin/main`; o que precisou de reconciliação foi a trilha de continuidade e o plano canônico.
+
+## Prioridade imediata
+- A partir de `2026-04-05`, a ordem operacional imediata dentro do BLOCO 5 passa a ser `R0`, `R1`, `R2`, `R3`, `R4`, `R5` e só depois a retomada dos subblocos `5B-5F`.
+- `R0` cobre benchmark canônico, baseline reproduzível e gate local do RAG. Esta etapa já foi concluída nesta branch.
+- `R1` cobre ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e query expansion com contexto curto. Esta etapa já foi implementada localmente e validada nesta branch.
+- `R2` foi concluído localmente com framing textual assimétrico no contrato de embedding, metadata versionada e separação entre semântica vetorial e metadado de citação.
+- `R3-R5` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -108,6 +115,9 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
+- Executar `R3` com batch embedding nativo e preparar re-embed controlado do corpus
+- Publicar e reavaliar o `R1-R2` contra o benchmark canônico após a próxima integração/deploy desta branch
+- Rodar `R4` e `R5` de forma experimental e controlada antes de retomar `5B-5F`
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C

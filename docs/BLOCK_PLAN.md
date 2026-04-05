@@ -11,12 +11,14 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 
 ## Linha mestra atual
 - Fonte oficial integrada: `origin/main @ 6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Frente imediata mais importante: redefinir o BLOCO 5 como trilha de excelência do RAG, com benchmark canônico, retrieval governado por metadados reais e fidelidade mais nativa entre `Direto` e `Didático`
+- Frente imediata mais importante: executar a trilha prioritária `R0-R6` dentro do BLOCO 5 antes de retomar os subblocos canônicos `5B-5F`, começando por benchmark congelado, ajustes imediatos de geração e correção do contrato de embeddings
 - Ordem de execução atualmente aceita:
-  1. abrir o `5A` com benchmark canônico e gate de regressão do RAG
-  2. fazer o retrieval usar explicitamente `scope_instance`, `escopo_usuario` e `module_tags`
-  3. endurecer o source-target routing contra overboost sem perder a vitória da fonte nomeada
-  4. consolidar a fidelidade entre `Direto` e `Didático`, depois transparência editorial no frontend, e só então seguir com novas expansões de corpus
+  1. executar `R0` com benchmark canônico congelado, baseline reproduzível e gate local do RAG em `Direto` e `Didático`
+  2. executar `R1` com ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e expansão de query com contexto curto
+  3. executar `R2` com correção do contrato de `gemini-embedding-2-preview`, usando instruções textuais assimétricas por tarefa e prefixo de domínio institucional
+  4. executar `R3` com batch embedding nativo e re-embed controlado do corpus
+  5. executar `R4` e `R5` como experimentos controlados de chunking e dimensionalidade
+  6. só então retomar `5B`, `5C`, `5D`, `5E` e `5F` com a régua fixa já estabilizada
 
 ## Blocos oficiais
 
@@ -64,7 +66,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Estado: `in_progress`
 - Objetivo: transformar a CLARA de funcional e grounded em previsivelmente excelente na recuperação, geração e explicação da própria confiança
-- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção
+- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0` foi fechado com benchmark canônico congelado e `R1` foi implementado localmente e validado nesta branch
 - Subfrentes canônicas:
   - `5A` benchmark e gate de regressão
   - `5B` retrieval governado por metadados reais
@@ -72,7 +74,15 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
   - `5D` arquitetura da resposta e fidelidade entre modos
   - `5E` UX grounded e transparência editorial
   - `5F` operação contínua do corpus
-- Próxima ação: abrir o `5A` com bateria fixa por categoria e critérios mínimos de aceite antes de novas mudanças de retrieval e resposta
+- Trilha imediata priorizada:
+  - `R0` baseline canônico e gate local do benchmark
+  - `R1` ajustes imediatos de geração
+  - `R2` contrato de embeddings alinhado ao Embeddings 2
+  - `R3` batch embedding e re-embed controlado
+  - `R4` experimento de chunking
+  - `R5` experimento de dimensionalidade
+  - `R6` retorno aos subblocos `5B-5F`
+- Próxima ação: abrir `R3` com batch embedding nativo e preparação de re-embed controlado do corpus sob o contrato textual implementado em `R2`
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
 - Estado: `planned`

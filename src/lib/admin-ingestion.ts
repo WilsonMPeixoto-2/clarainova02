@@ -191,9 +191,8 @@ export async function buildPreparedChunksFromPages(
     if (!page.text.trim()) continue;
     const pageChunks = semanticSplit(page.text);
     for (const chunk of pageChunks) {
-      const sourcePrefix = `[Fonte: ${sourceTag} | Página: ${page.pageNumber}] `;
       chunks.push({
-        content: `${sourcePrefix}${chunk}`,
+        content: chunk,
         pageStart: page.pageNumber,
         pageEnd: page.pageNumber,
         sectionTitle: detectSectionTitle(page.text, chunk),

@@ -2,9 +2,11 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { GoogleGenAI } from "npm:@google/genai";
 import {
   buildDocumentChunkMetadata,
+  buildDocumentEmbeddingText,
   estimateTokenCount,
   normalizeL2,
-  EMBEDDING_NORMALIZATION,
+  EMBEDDING_CONTRACT_VERSION,
+  EMBEDDING_DOMAIN_SCOPE,
 } from "../_shared/embedding-contract.ts";
 
 const ALLOWED_ORIGINS = [
@@ -31,6 +33,7 @@ function buildCorsHeaders(req: Request) {
 const EMBEDDING_MODEL = "gemini-embedding-2-preview";
 const EMBEDDING_DIM = 768;
 const DOCUMENT_EMBEDDING_TASK_TYPE = "RETRIEVAL_DOCUMENT";
+const DOCUMENT_EMBEDDING_INPUT_STYLE = "textual_task_instruction_plus_api_task_type";
 const EMBED_TIMEOUT_MS = 15_000;
 const EMBED_RETRY_DELAYS_MS = [1500, 3000, 6000];
 const EMBED_CONCURRENCY = 3;
@@ -237,7 +240,11 @@ async function requireAdminUser(
   return Boolean(data?.user_id);
 }
 
-async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string, title?: string | null) {
+async function generateEmbeddingWithRetry(
+  ai: GoogleGenAI,
+  chunk: StructuredChunkPayload,
+  title?: string | null,
+) {
   for (let attempt = 0; attempt <= EMBED_RETRY_DELAYS_MS.length; attempt++) {
     try {
       const config: Record<string, unknown> = {
@@ -249,10 +256,17 @@ async function generateEmbeddingWithRetry(ai: GoogleGenAI, text: string, title?:
         config.title = title.trim();
       }
 
+      const embeddingText = buildDocumentEmbeddingText({
+        content: chunk.content,
+        titleUsed: title ?? null,
+        sectionTitle: chunk.sectionTitle,
+        sourceTag: chunk.sourceTag,
+      });
+
       const result = await Promise.race([
         ai.models.embedContent({
           model: EMBEDDING_MODEL,
-          contents: text,
+          contents: embeddingText,
           config,
         }),
         new Promise<never>((_, reject) =>
@@ -298,7 +312,7 @@ async function generateEmbeddingsWithConcurrency(
   for (let index = 0; index < chunks.length; index += EMBED_CONCURRENCY) {
     const slice = chunks.slice(index, index + EMBED_CONCURRENCY);
     const results = await Promise.all(
-      slice.map((chunk) => generateEmbeddingWithRetry(ai, chunk.content, title)),
+      slice.map((chunk) => generateEmbeddingWithRetry(ai, chunk, title)),
     );
 
     for (let offset = 0; offset < results.length; offset++) {
@@ -408,6 +422,8 @@ Deno.serve(async (req) => {
         embedding_model: EMBEDDING_MODEL,
         embedding_dim: EMBEDDING_DIM,
         task_type: DOCUMENT_EMBEDDING_TASK_TYPE,
+        input_style: DOCUMENT_EMBEDDING_INPUT_STYLE,
+        contract_version: EMBEDDING_CONTRACT_VERSION,
         concurrency: EMBED_CONCURRENCY,
         title_used: normalizedTitle,
       },
@@ -441,6 +457,9 @@ Deno.serve(async (req) => {
           sectionTitle: chunk.sectionTitle,
           taskType: DOCUMENT_EMBEDDING_TASK_TYPE,
           titleUsed: normalizedTitle,
+          inputStyle: DOCUMENT_EMBEDDING_INPUT_STYLE,
+          contractVersion: EMBEDDING_CONTRACT_VERSION,
+          domainScope: EMBEDDING_DOMAIN_SCOPE,
         }),
       };
     }));
