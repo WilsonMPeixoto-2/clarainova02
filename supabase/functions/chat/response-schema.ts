@@ -1,5 +1,10 @@
 import { z } from "npm:zod@4.3.6";
 import type { KnowledgeReference } from "./knowledge.ts";
+import {
+  buildEditorialNotices,
+  buildEditorialSubtitle,
+  type EditorialProfile,
+} from "./editorial.ts";
 
 export const claraReferenceSchema = z.object({
   id: z.number().int().positive(),
@@ -508,7 +513,7 @@ export function buildGroundedReferences(
     tipo: inferReferenceTypeFromMetadata(reference),
     autorEntidade: "Base documental CLARA",
     titulo: reference.documentName,
-    subtitulo: reference.sectionTitle ?? null,
+    subtitulo: buildEditorialSubtitle(reference),
     local: null,
     editoraOuOrgao: null,
     ano: null,
@@ -522,11 +527,20 @@ export function sanitizeStructuredResponse(
   response: ClaraStructuredResponse,
   options: {
     groundedReferences: ClaraStructuredResponse["referenciasFinais"];
+    groundedReferenceProfile?: EditorialProfile | null;
     usedRag: boolean;
     responseMode: ChatResponseMode;
   },
 ): ClaraStructuredResponse {
   const validIds = new Set(options.groundedReferences.map((reference) => reference.id));
+  const editorialNotices = buildEditorialNotices(options.groundedReferenceProfile ?? null, {
+    userNotice: response.analiseDaResposta.userNotice
+      ? sanitizeText(response.analiseDaResposta.userNotice)
+      : null,
+    cautionNotice: response.analiseDaResposta.cautionNotice
+      ? sanitizeText(response.analiseDaResposta.cautionNotice)
+      : null,
+  });
   const sanitized = {
     ...response,
     tituloCurto: sanitizeText(response.tituloCurto),
@@ -543,6 +557,20 @@ export function sanitizeStructuredResponse(
     })),
     observacoesFinais: response.observacoesFinais.map(sanitizeText),
     referenciasFinais: options.usedRag ? options.groundedReferences : [],
+    analiseDaResposta: {
+      ...response.analiseDaResposta,
+      clarificationQuestion: response.analiseDaResposta.clarificationQuestion
+        ? sanitizeText(response.analiseDaResposta.clarificationQuestion)
+        : null,
+      clarificationReason: response.analiseDaResposta.clarificationReason
+        ? sanitizeText(response.analiseDaResposta.clarificationReason)
+        : null,
+      userNotice: editorialNotices.userNotice ? sanitizeText(editorialNotices.userNotice) : null,
+      cautionNotice: editorialNotices.cautionNotice ? sanitizeText(editorialNotices.cautionNotice) : null,
+      ambiguityReason: response.analiseDaResposta.ambiguityReason
+        ? sanitizeText(response.analiseDaResposta.ambiguityReason)
+        : null,
+    },
   };
 
   return adaptStructuredResponseForMode(sanitized, options.responseMode);

@@ -141,6 +141,8 @@ describe("prepareKnowledgeDecision", () => {
         sourceLabel: "Guia SEI-Rio.pdf - Bloco de assinatura - Página 44-45",
         documentName: "Guia SEI-Rio.pdf",
         documentKind: null,
+        documentAuthorityLevel: null,
+        documentTopicScope: null,
         pageLabel: "44-45",
         sectionTitle: "Bloco de assinatura",
       },

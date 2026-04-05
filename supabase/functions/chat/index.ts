@@ -71,6 +71,11 @@ import {
   sanitizeStructuredResponse,
   type ClaraStructuredResponse,
 } from "./response-schema.ts";
+import {
+  buildEditorialNotices,
+  summarizeEditorialProfile,
+  type EditorialProfile,
+} from "./editorial.ts";
 
 const ALLOWED_ORIGINS = [
   'https://clarainova02.vercel.app',
@@ -788,6 +793,7 @@ function buildGroundedFallbackResponse(
   question: string,
   chunks: HybridSearchChunk[],
   groundedReferences: ClaraStructuredResponse["referenciasFinais"],
+  groundedReferenceProfile: EditorialProfile | null,
   responseMode: ChatResponseMode,
   retrievalQuality: RetrievalQualityInfo | null,
   sourceTarget: SourceTargetRoute | null,
@@ -816,6 +822,14 @@ function buildGroundedFallbackResponse(
   const supportingNotice = sourceTarget
     ? `Mantive a resposta priorizando a fonte solicitada: ${sourceTarget.label.replace(/_/g, ' ')}.`
     : `Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: "${question}".`;
+  const editorialNotices = buildEditorialNotices(groundedReferenceProfile, {
+    userNotice: responseMode === 'direto'
+      ? 'Resposta montada diretamente a partir das referências documentais recuperadas.'
+      : 'Organizei a orientação diretamente a partir das referências documentais recuperadas, sem extrapolar além do que os trechos sustentam.',
+    cautionNotice: fallbackItems.length > 0
+      ? null
+      : 'Os trechos recuperados foram curtos, então mantive a resposta estritamente documental.',
+  });
 
   const fallbackStep = fallbackItems.length > 0
     ? {
@@ -876,10 +890,8 @@ function buildGroundedFallbackResponse(
       clarificationReason: null,
       internalExpansionPerformed: false,
       webFallbackUsed: false,
-      userNotice: responseMode === 'direto'
-        ? 'Resposta montada diretamente a partir das referências documentais recuperadas.'
-        : 'Organizei a orientação diretamente a partir das referências documentais recuperadas, sem extrapolar além do que os trechos sustentam.',
-      cautionNotice: fallbackItems.length > 0 ? null : 'Os trechos recuperados foram curtos, então mantive a resposta estritamente documental.',
+      userNotice: editorialNotices.userNotice,
+      cautionNotice: editorialNotices.cautionNotice,
       ambiguityReason: null,
       comparedSources: [],
       prioritizedSources: groundedReferences.map((reference) => reference.titulo),
@@ -1463,6 +1475,7 @@ Deno.serve(async (req) => {
     let matchedChunks: HybridSearchChunk[] = [];
     let searchMetricId: string | null = null;
     let groundedReferences: ClaraStructuredResponse["referenciasFinais"] = [];
+    let groundedReferenceProfile: EditorialProfile | null = null;
     let queryEmbeddingModel = KEYWORD_ONLY_QUERY_EMBEDDING_MODEL;
     let searchMode = 'keyword_only';
     let expandedQueryText: string | null = null;
@@ -1669,6 +1682,7 @@ Deno.serve(async (req) => {
             retrievalQuality = decision.retrievalQuality;
             sourceTargetStatus = decision.sourceTargetStatus;
             groundedReferences = buildGroundedReferences(decision.references);
+            groundedReferenceProfile = summarizeEditorialProfile(decision.references);
 
             if (decision.knowledgeContext) {
               retrievalMode = "model_grounded";
@@ -1802,6 +1816,7 @@ Deno.serve(async (req) => {
       const initialSanitizationStartedAt = Date.now();
       let structuredResponse = sanitizeStructuredResponse(structuredResult.response, {
         groundedReferences,
+        groundedReferenceProfile,
         usedRag: retrievalMode === "model_grounded",
         responseMode,
       });
@@ -1842,6 +1857,7 @@ REESCRITA OBRIGATORIA:
           resolvedStructuredResult = repairedStructuredResult;
           structuredResponse = sanitizeStructuredResponse(repairedStructuredResult.response, {
             groundedReferences,
+            groundedReferenceProfile,
             usedRag: retrievalMode === "model_grounded",
             responseMode,
           });
@@ -1930,6 +1946,7 @@ REESCRITA OBRIGATORIA:
           lastUserMessage.content,
           matchedChunks,
           groundedReferences,
+          groundedReferenceProfile,
           responseMode,
           retrievalQuality,
           sourceTarget,

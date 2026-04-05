@@ -18,6 +18,8 @@ export interface KnowledgeReference {
   sourceLabel: string;
   documentName: string;
   documentKind?: string | null;
+  documentAuthorityLevel?: string | null;
+  documentTopicScope?: string | null;
   pageLabel?: string;
   sectionTitle?: string;
 }
@@ -869,6 +871,8 @@ export function prepareKnowledgeDecision(
     sourceLabel: chunk.sourceLabel,
     documentName: chunk.documentName,
     documentKind: chunk.documentKind ?? null,
+    documentAuthorityLevel: chunk.documentAuthorityLevel ?? null,
+    documentTopicScope: chunk.documentTopicScope ?? null,
     pageLabel: chunk.pageLabel,
     sectionTitle: chunk.sectionTitle,
   }));
