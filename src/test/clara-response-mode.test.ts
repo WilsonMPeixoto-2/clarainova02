@@ -11,7 +11,7 @@ describe('clara response modes', () => {
     const didactic = buildMockStructuredResponse('Como montar um bloco de assinatura?', 'didatico');
 
     expect(direct.modoResposta).toBe('checklist');
-    expect(didactic.modoResposta).toBe('passo_a_passo');
+    expect(didactic.modoResposta).toBe('combinado');
     expect(direct.etapas.length).toBeLessThanOrEqual(3);
     expect(didactic.etapas.length).toBeGreaterThanOrEqual(direct.etapas.length);
     expect(direct.observacoesFinais.length).toBeLessThanOrEqual(didactic.observacoesFinais.length);

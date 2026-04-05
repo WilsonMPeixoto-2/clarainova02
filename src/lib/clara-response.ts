@@ -162,9 +162,18 @@ function adaptStructuredResponseForMode(
   responseMode: ChatResponseMode,
 ): ClaraStructuredResponse {
   if (responseMode === 'didatico') {
+    const didacticMode = response.etapas.length > 0
+      && (
+        response.observacoesFinais.length > 0
+        || response.analiseDaResposta.userNotice
+        || response.termosDestacados.length > 0
+      )
+      ? 'combinado'
+      : response.etapas.length > 0 ? 'passo_a_passo' : 'explicacao';
+
     return {
       ...response,
-      modoResposta: response.etapas.length > 0 ? 'passo_a_passo' : 'explicacao',
+      modoResposta: didacticMode,
       etapas: renumberSteps(
         response.etapas.slice(0, 5).map((step) => ({
           ...step,
@@ -172,7 +181,13 @@ function adaptStructuredResponseForMode(
           destaques: dedupeStrings(step.destaques, 3),
         })),
       ),
-      observacoesFinais: dedupeStrings(response.observacoesFinais, 3),
+      observacoesFinais: dedupeStrings(response.observacoesFinais, 4),
+      termosDestacados: response.termosDestacados
+        .filter((highlight, index, all) => {
+          const normalized = normalizeComparableText(highlight.texto);
+          return all.findIndex((candidate) => normalizeComparableText(candidate.texto) === normalized) === index;
+        })
+        .slice(0, 6),
       analiseDaResposta: {
         ...response.analiseDaResposta,
         processStates: response.analiseDaResposta.processStates.slice(0, 4),
@@ -203,17 +218,20 @@ function adaptStructuredResponseForMode(
         const normalized = normalizeComparableText(highlight.texto);
         return all.findIndex((candidate) => normalizeComparableText(candidate.texto) === normalized) === index;
       })
-      .slice(0, 4),
+      .slice(0, 2),
     analiseDaResposta: {
       ...response.analiseDaResposta,
       userNotice: null,
       clarificationReason: response.analiseDaResposta.clarificationReason
         ? takeFirstSentence(response.analiseDaResposta.clarificationReason)
         : null,
+      ambiguityReason: response.analiseDaResposta.ambiguityReason
+        ? takeFirstSentence(response.analiseDaResposta.ambiguityReason)
+        : null,
       cautionNotice: response.analiseDaResposta.cautionNotice
         ? takeFirstSentence(response.analiseDaResposta.cautionNotice)
         : null,
-      processStates: conciseProcessStates,
+      processStates: conciseProcessStates.slice(0, 1),
     },
   };
 }
@@ -285,6 +303,7 @@ export function formatReferenceAbnt(reference: ClaraReference) {
 export function renderStructuredResponseToPlainText(response: ClaraStructuredResponse) {
   const lines: string[] = [response.tituloCurto, '', response.resumoInicial];
   const analysis = response.analiseDaResposta;
+  const isChecklist = response.modoResposta === 'checklist';
 
   if (analysis.clarificationRequested && analysis.clarificationQuestion) {
     lines.push('', 'Antes de seguir');
@@ -294,8 +313,18 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
     lines.push(analysis.clarificationQuestion);
   }
 
+  if (analysis.userNotice) {
+    lines.push('', isChecklist ? 'Observação' : 'Orientação inicial');
+    lines.push(analysis.userNotice);
+  }
+
+  if (analysis.cautionNotice) {
+    lines.push('', 'Atenção');
+    lines.push(analysis.cautionNotice);
+  }
+
   if (response.etapas.length > 0) {
-    lines.push('', 'Passo a passo');
+    lines.push('', isChecklist ? 'Checklist rápido' : 'Passo a passo guiado');
     response.etapas.forEach((step) => {
       lines.push(`${step.numero}. ${step.titulo}`);
       lines.push(step.conteudo);
@@ -313,9 +342,17 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
   }
 
   if (response.observacoesFinais.length > 0) {
-    lines.push('Observações finais');
+    lines.push(isChecklist ? 'Conferência final' : 'Observações finais');
     response.observacoesFinais.forEach((observation) => {
       lines.push(`- ${observation}`);
+    });
+    lines.push('');
+  }
+
+  if (!isChecklist && response.termosDestacados.length > 0) {
+    lines.push('Termos importantes');
+    response.termosDestacados.forEach((highlight) => {
+      lines.push(`- ${highlight.texto}`);
     });
     lines.push('');
   }
