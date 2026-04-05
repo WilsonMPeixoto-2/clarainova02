@@ -31,12 +31,12 @@
 - Deploy canônico mais recente observado:
   - source: `preview_promote_recovery`
   - status: `READY`
-  - deployment id: `dpl_BEb1nZLVzF58hbdoi3EjgJJnumoJ`
+  - deployment id: `dpl_EhukXtSyy6G7c493r5koYX4aMiS6`
   - commit publicado: `43ad740133f7e6fa96798dcf58f32bf0921a5659`
   - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/EhukXtSyy6G7c493r5koYX4aMiS6`
   - aliases observados:
     - `https://clarainova02.vercel.app`
-    - `https://clarainova02-19jnpyk7r-wilson-m-peixotos-projects.vercel.app`
+    - `https://clarainova02-qa15zwqa3-wilson-m-peixotos-projects.vercel.app`
 
 ## Supabase
 - Projeto oficial: `jasqctuzeznwdtbcuixn`

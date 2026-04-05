@@ -69,7 +69,7 @@
 - O benchmark canônico remoto pós-publicação do fechamento `R6A-R6B` ficou green:
   - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
   - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
-- O `5B` já foi publicado em produção a partir do commit `43ad740`, com a migration remota `20260406000500_add_metadata_filters_to_hybrid_search.sql`, Edge Function `chat` promovida para a versão `34` e produção web observada no deploy `dpl_BEb1nZLVzF58hbdoi3EjgJJnumoJ`.
+- O `5B` já foi publicado em produção a partir do commit `43ad740`, com a migration remota `20260406000500_add_metadata_filters_to_hybrid_search.sql`, Edge Function `chat` promovida para a versão `34` e produção web observada no deploy `dpl_EhukXtSyy6G7c493r5koYX4aMiS6`.
 - A `chat` agora tenta primeiro uma busca híbrida governada por `topic_scope`, `source_name`, `document name` e `version_label`, voltando para a busca aberta apenas quando o subconjunto governado não entrega resultado suficiente.
 - O benchmark canônico remoto pós-publicação do `5B` permaneceu green:
   - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`

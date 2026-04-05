@@ -24,7 +24,7 @@
 - Vercel oficial:
   - preview local publicado em `https://clarainova02-fkvctibft-wilson-m-peixotos-projects.vercel.app`
   - promoção concluída para produção
-  - deploy de produção observado no alias oficial: `dpl_BEb1nZLVzF58hbdoi3EjgJJnumoJ`
+  - deploy de produção observado no alias oficial: `dpl_EhukXtSyy6G7c493r5koYX4aMiS6`
   - URL oficial ativa: `https://clarainova02.vercel.app`
 
 ## Validação local
