@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T08:37:43.5146944Z
+- Data/hora: 2026-04-05T08:40:16.1959254Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `13bb28f00fd32598b57f3cf531c767fd7e634e2d`
+- Head da sessão: `97a4eb2b87ee6de7cd7152225d70c95b475dd227`
 - Último relatório: `docs/operational-reports/2026-04-05-r3a-production-publish-and-benchmark.md`
 
 ## Estado atual resumido
