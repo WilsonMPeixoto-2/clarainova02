@@ -9,10 +9,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Decreto Rio nº 55.615 de 1º de janeiro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -21,69 +21,53 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": null,
         "paginas": "1",
         "tipo": "norma"
       },
       {
         "id": 2,
         "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "3",
+        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "paginas": "1",
         "tipo": "norma"
       },
       {
         "id": 3,
         "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
+        "subtitulo": "EDUARDO PAES",
+        "paginas": "12",
         "tipo": "norma"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
+        "titulo": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "subtitulo": "EDUARDO PAES",
         "paginas": "2",
         "tipo": "norma"
       }
     ],
     "referenceLabels": [
+      "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Decreto Rio nº 55.615 de 1º de janeiro de 2025"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Decreto Rio nº 55.615",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Decreto Rio nº 55.615 de 1º de janeiro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Decreto Rio nº 55.615 de 1º de janeiro de 2025. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- DECRETO RIO Nº 55.615, DE 1º DE JANEIRO DE 2025 Fonte institucional secundária: Câmara Municipal do Rio de Janeiro (texto legislativo citado, com referência ao D.O.RIO de 01.01.2025).\n- Dispõe sobre a substituição do Sistema Eletrônico de Documentos e Processos - Processo.rio pelo Sistema Eletrônico de Informações - SEI-Rio.\n- Protocolo: 1128886 Data: 24/11/2025 Título: DECRETO RIO Nº 57250 Página(s): a DECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025 Institui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de processos no âmbito do Poder Executivo do Município do Rio de Janeiro.\n- O PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela legislação em vigor e CONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender todas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de Janeiro; CONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de processos administrativos; CONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2; CONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos eletrônicos adotado pelo Processo Eletrônico Nacional - PEN; CONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre o Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI); CONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024, assinado com o Tribunal Regional Federal da 4ª Região - TRF4; CONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do Processo.rio pelo Sistema Eletrônico de Informações - SEI; CONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19 de novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do Rio de Janeiro; CONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como Lei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018, que consolida, em âmbito municipal, a supracitada Lei Federal; CONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de Dados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política Municipal de Proteção de Dados Municipais; CONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº 22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o Decreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da Cidade do Rio de Janeiro - PGD Carioca; CONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de assinatura eletrônica no âmbito da Administração Pública Municipal, DECRETA:\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"O que o Decreto Rio nº 55.615, de 1º de janeiro de 2025, determina sobre a substituição do Processo.rio pelo SEI-Rio?\".\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: EDUARDO PAES. p. 12.\n[4] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025: EDUARDO PAES. p. 2."
   },
   {
     "id": "Q2",
@@ -95,10 +79,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Resolucao CVL nº 237 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -107,8 +91,8 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": "Secretaria Municipal de Trabalho e",
         "paginas": "1",
         "tipo": "norma"
       },
@@ -116,60 +100,44 @@
         "id": 2,
         "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
         "subtitulo": null,
-        "paginas": "3",
+        "paginas": "6",
         "tipo": "norma"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
+        "titulo": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "subtitulo": null,
         "paginas": "1",
         "tipo": "norma"
       },
       {
         "id": 4,
         "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "2",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
         "tipo": "norma"
       }
     ],
     "referenceLabels": [
+      "Resolucao CVL nº 237 de 19 de novembro de 2025",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+      "Resolucao CVL nº 237 de 19 de novembro de 2025",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Resolução CVL nº 237",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Resolucao CVL nº 237 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Resolucao CVL nº 237 de 19 de novembro de 2025. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Protocolo: 1128898 Data: 24/11/2025 Título: RESOLUÇÃO CVL Nº 237 Página(s): a RESOLUÇÃO CVL Nº 237 DE 19 DE NOVEMBRO DE 2025.\n- Estabelece os números de identificação dos órgãos no âmbito do Poder Executivo para composição do número do processo no SEI.Rio.\n- I - ser formado de maneira cronológica, lógica e contínua; II - publicidade das informações como preceito geral e o sigilo como exceção; III - atribuição individual de nível de acesso a cada documento, considerando as hipóteses legais de sigilo e restrição de acesso às informações nele contidas, sendo possível sua ampliação ou limitação, sempre que necessário.\n- A atribuição de nível de acesso restrito ou sigiloso deve ser acompanhada de justificativa legal.\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como é composto o número do processo no SEI.Rio segundo a Resolução CVL nº 237/2025?\".\n\nReferencias\n[1] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: Secretaria Municipal de Trabalho e. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 6.\n[3] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025. p. 1.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11."
   },
   {
     "id": "Q3",
@@ -181,10 +149,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Guia de migracao – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -193,69 +161,53 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Processo criado no SEI",
+        "paginas": "3",
+        "tipo": "guia"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "Clique no número de processo para acessar todos os",
+        "paginas": "59",
+        "tipo": "guia"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Incluindo o processo digitalizado no SEI",
+        "paginas": "4",
+        "tipo": "guia"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Guia de migracao – SEI.Rio",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+      "Guia do usuario externo – SEI.Rio",
+      "Guia de migracao – SEI.Rio"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário interno",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia de migracao – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Guia de migracao – SEI.Rio. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Após migração automática não concluída\n- Como opção direta para migração\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como fazer login no SEI.Rio usando a matrícula?\".\n\nReferencias\n[1] Base documental CLARA. Guia de migracao – SEI.Rio: Processo criado no SEI. p. 3.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Clique no número de processo para acessar todos os. p. 59.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha. p. 1.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI. p. 4."
   },
   {
     "id": "Q4",
@@ -267,10 +219,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -279,69 +231,61 @@
     "references": [
       {
         "id": 1,
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "- Ações disponíveis em um processo 17",
+        "paginas": "2",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Incluindo o processo digitalizado no SEI",
+        "paginas": "4",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": null,
+        "paginas": "20",
+        "tipo": "guia"
+      },
+      {
+        "id": 4,
         "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
         "subtitulo": null,
         "paginas": "5",
         "tipo": "norma"
       },
       {
-        "id": 2,
+        "id": 5,
         "titulo": "Perguntas frequentes do servidor – SEI.Rio",
         "subtitulo": "Mover documento",
         "paginas": "1",
         "tipo": "outro"
-      },
-      {
-        "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
-      },
-      {
-        "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
       }
     ],
     "referenceLabels": [
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+      "Guia de migracao – SEI.Rio",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Perguntas frequentes do servidor – SEI.Rio",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Perguntas frequentes do servidor – SEI.Rio"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário interno",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 5] Art. 12. O credenciamento de usuário externo se dará através de autocadastro, com autenticação\nobrigatória através da plataforma gov.br, nível prata ou ouro.\nArt. 13. O credenciamento de usuário externo no SEI.Rio é ato pessoal e intransferível, estando\ncondicionado à aceitação das regras que disciplinam o uso do sistema, com a consequente\nresponsabilização do usuário em caso de uso indevido.\nArt. 14. O descredenciamento de usuário externo se dará:\nI - por solicitação expressa do usuário;\nII - em razão do descumprimento das condições regulamentares que disciplinam a utilização do\nsistema;\nIII - a critério da Administração.\nArt. 15. O usuário externo poderá:\nI - ter acesso externo a processos administrativos em que figura como parte, representante ou\ninteressado direto;\nII - assinar e/ou incluir documentos;\nIII - peticionar para abrir novo processo ou compor processo já existente.\nArt. 16. Sem prejuízo dos deveres fixados nos Termos de Uso e Política de Privacidade, é de\nresponsabilidade do usuário externo:\nI - manter o sigilo de suas credenciais de acesso e sua senha eletrônica, não sendo oponível, em\nnenhuma hipótese, a alegação de uso por outrem;\nII - manter seus dados cadastrais atualizados;\nIII - verificar, por meio do recibo eletrônico de protocolo, o recebimento das petições e dos\ndocumentos transmitidos através do peticionamento eletrônico;\nIV - consultar periodicamente o andamento de suas solicitações no SEI.Rio e verificar o recebimento\nde intimações, conforme art. 41;\nV - respeitar o prazo estabelecido para apresentação de recursos;\nVI - anexar os documentos necessários pelo serviço solicitado;\nVII - conservar os originais em papel dos documentos digitalizados enviados pelo peticionamento\neletrônico, até que decaia o direito da Administração de rever os atos praticados no processo.\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[2] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio: Mover documento. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Como opção direta para migração\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como incluir um documento externo em um processo no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Ações disponíveis em um processo 17. p. 2.\n[2] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI. p. 4.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 20.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[5] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio: Mover documento. p. 1."
   },
   {
     "id": "Q5",
@@ -353,10 +297,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -365,69 +309,53 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "Clique no número de processo para acessar todos os",
+        "paginas": "59",
+        "tipo": "guia"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "- Incluir em Bloco",
+        "paginas": "47",
+        "tipo": "guia"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
         "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "paginas": "51",
+        "tipo": "guia"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
         "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO III",
-        "paginas": "4",
-        "tipo": "norma"
+        "paginas": "58",
+        "tipo": "guia"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário interno",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III. p. 4."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada). A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- ● Acessando o conteúdo de um Bloco de Reunião - DISPONIBILIZADO: Clicando no botão , a tela Processos do Bloco de Reunião é apresentada e o(s) processo(s) do bloco são exibidos, conforme tela abaixo.\n- Clique no número de processo para acessar todos os documentos inseridos, inclusive as Minutas.\n- 18.1 - Bloco de Assinatura O Bloco de Assinatura é um recurso utilizado para a visualização e assinatura de minutas de documentos por usuários de unidades diferentes da unidade elaboradora do documento.\n- Também poderá ser utilizado com a finalidade de agrupar documentos produzidos na própria unidade, para assinatura em lote.\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como disponibilizar um processo em bloco de assinatura no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Clique no número de processo para acessar todos os. p. 59.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Incluir em Bloco. p. 47.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 51.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 58."
   },
   {
     "id": "Q6",
@@ -439,10 +367,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -452,58 +380,50 @@
       {
         "id": 1,
         "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "Indica que o processo possui um Controle de",
+        "paginas": "7",
+        "tipo": "guia"
+      },
+      {
+        "id": 2,
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": null,
+        "paginas": "18",
+        "tipo": "guia"
+      },
+      {
+        "id": 3,
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
         "subtitulo": null,
         "paginas": "34",
         "tipo": "guia"
       },
       {
-        "id": 2,
+        "id": 4,
         "titulo": "Guia de migracao – SEI.Rio",
         "subtitulo": "Selecione expedientes e processos para a migração em lote",
         "paginas": "2",
         "tipo": "guia"
       },
       {
-        "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
-      },
-      {
         "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
+        "titulo": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+        "subtitulo": null,
+        "paginas": "14",
         "tipo": "norma"
       }
     ],
     "referenceLabels": [
       "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
       "Guia de migracao – SEI.Rio",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Termo de Uso e Aviso de Privacidade do SEI.Rio"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
@@ -513,7 +433,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n○ - Excluir Acompanhamento - Permite ao usuário excluir\nprocesso(s) do acompanhamento especial.\n13 - Enviar Processo\nNo sei.rio os processos são tramitados exclusivamente entre Unidades, não\nhá envio direto para logins individuais.\nUm processo enviado para outra unidade deixa de aparecer na tela\n\"Controle de Processos\" da unidade que o enviou, mas ainda pode ser\nacessado por meio da Pesquisa ou do Acompanhamento Especial, se essa\nopção tiver sido ativada pelo usuário.\nO SEI também possibilita que um processo enviado a outra unidade\npermaneça aberto na unidade atual.\nEssa funcionalidade permite que diferentes unidades exerçam suas\natividades paralelamente, desde que as tarefas não dependam umas das\noutras.\nOs documentos inseridos pelas unidades serão apresentados na árvore do\nprocesso em ordem cronológica, permitindo que a unidade remetente\nacompanhe a instrução.\nGuia do Usuário - Data de atualização - 17/04/2025 34\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 34.\n[2] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote. p. 2.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2."
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada). A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- 13 - Enviar Processo No sei.rio os processos são tramitados exclusivamente entre Unidades, não há envio direto para logins individuais.\n- Um processo enviado para outra unidade deixa de aparecer na tela \"Controle de Processos\" da unidade que o enviou, mas ainda pode ser acessado por meio da Pesquisa ou do Acompanhamento Especial, se essa opção tiver sido ativada pelo usuário.\n- Ao finalizar uma migração automática, manual, ou em lote, o sistema enviará a informação para o e-mail dos interessados registrados na criação do documento, orientando o acompanhamento do processo.\n- Migração automática A migração automática deve ser executada por meio do botão na tela do processo ou expediente.\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como enviar um processo para uma ou mais unidades no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo possui um Controle de. p. 7.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 18.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 34.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote. p. 2.\n[5] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio. p. 14."
   },
   {
     "id": "Q7",
@@ -525,10 +445,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Guia de migracao – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -537,69 +457,53 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Selecione expedientes e processos para a migração em lote",
+        "paginas": "2",
+        "tipo": "guia"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Incluindo o processo digitalizado no SEI",
+        "paginas": "4",
+        "tipo": "guia"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
+        "titulo": "Guia de migracao – SEI.Rio",
+        "subtitulo": "Processo criado no SEI",
         "paginas": "3",
-        "tipo": "norma"
+        "tipo": "guia"
       },
       {
         "id": 4,
         "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO IV",
-        "paginas": "5",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
         "tipo": "norma"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+      "Guia de migracao – SEI.Rio",
+      "Guia de migracao – SEI.Rio",
+      "Guia de migracao – SEI.Rio",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Guia de migração",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO IV. p. 5.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia de migracao – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Guia de migracao – SEI.Rio. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Como opção direta para migração\n- Após migração automática não concluída\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Quando a migração manual do Processo.rio para o SEI.Rio deve ser usada?\".\n\nReferencias\n[1] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote. p. 2.\n[2] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI. p. 4.\n[3] Base documental CLARA. Guia de migracao – SEI.Rio: Processo criado no SEI. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11."
   },
   {
     "id": "Q8",
@@ -612,10 +516,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -624,23 +528,23 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "Indica que o processo recebido pela unidade",
+        "paginas": "6",
+        "tipo": "guia"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "Indica que o processo possui um Controle de",
+        "paginas": "7",
+        "tipo": "guia"
       },
       {
         "id": 3,
         "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
+        "subtitulo": "CAPÍTULO VII",
+        "paginas": "11",
         "tipo": "norma"
       },
       {
@@ -649,34 +553,18 @@
         "subtitulo": "CAPÍTULO III",
         "paginas": "4",
         "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
@@ -690,7 +578,7 @@
       }
     ],
     "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III. p. 4.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2."
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada). A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- 3.1.1 - Glossário de símbolos Ao lado de cada processo, símbolos fornecem ao usuário informações visuais da situação do processo dentro da Unidade.\n- Símbolos Descrição Login entre parênteses Indica o usuário a quem o processo foi atribuído na unidade Processo com número em preto 11177.000001/2025-15 Indica que já foi acessado por algum usuário da unidade Processo com número em vermelho 11177.000001/2025-15 Indica que ainda não foi acessado Processo com número em azul Indica que foi acessado e/ou que sofreu 11177.000001/2025-15 alguma ação realizada pelo usuário no login/sessão atual Processo com fundo preto Indica processo sigiloso já acessado por 11177.000001/2025-15 alguém da unidade.\n- Indica que o processo enviado pela unidade com Retorno Programado está aguardando retorno de outra unidade Indica que o processo enviado pela unidade com Retorno Programado teve o retorno cumprido Indica que o processo enviado pela unidade com Retorno Programado está com prazo de devolução expirado (atrasado) Indica que um documento foi incluído ou assinado no processo Indica a existência de uma anotação simples Indica a existência de uma anotação com prioridade Alerta o usuário de que existe um documento sigiloso (com credencial) para ser assinado Indica que o processo possui um marcador Indica que o processo possui um Ponto de Controle Indica que o processo possui um Controle de Prazo a vencer Indica que o processo possui um Controle de Prazo concluído Indica que o processo possui um Controle de Prazo vencido (atrasado) Guia do Usuário - Data de atualização - 17/04/2025 7\n- DAS DISPOSIÇÕES FINAIS E TRANSITÓRIAS Art.\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Durante a transição, o servidor pode continuar usando o Processo.rio ao mesmo tempo que o SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo recebido pela unidade. p. 6.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo possui um Controle de. p. 7.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII. p. 11.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III. p. 4."
   },
   {
     "id": "Q9",
@@ -703,10 +591,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Guia do usuario externo – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -715,73 +603,57 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Perguntas frequentes do cidadao – SEI.Rio",
         "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": null,
         "paginas": "2",
-        "tipo": "norma"
+        "tipo": "guia"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO III",
-        "paginas": "4",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": null,
+        "paginas": "60",
+        "tipo": "guia"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Guia do usuario externo – SEI.Rio",
+      "Perguntas frequentes do cidadao – SEI.Rio",
+      "Guia do usuario externo – SEI.Rio",
+      "Guia do usuário interno – SEI.Rio (versão final consolidada)"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário externo",
-        "matched": false
+        "matched": true
       },
       {
         "expected": "Perguntas frequentes do cidadão",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III. p. 4.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuario externo – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuario externo – SEI.Rio. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Guia do usuario externo – SEI.Rio Origem oficial: https://sei.rio/cidadao/guia-do-usuario/ Capturado em: 2026-04-04T04:48:40-03:00 Observacao: PDF consolidado localmente a partir da serie oficial do SEI.Rio para staging e ingestao controlada.\n- Iniciando o cadastro com login gov.br Iniciando o cadastro com login gov.br Para que seu cadastro seja liberado automaticamente, realize o cadastro com conta de nível prata ou ouro.\n- Perguntas frequentes do cidadao – SEI.Rio Origem oficial: https://sei.rio/cidadao/faq/ Capturado em: 2026-04-04T04:26:13-03:00 Observacao: PDF gerado localmente a partir do HTML oficial para staging e ingestao controlada.\n- Tema da pergunta elaborada Acesse sei.rio > Clique em Acessar o sei!\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Qual nível da conta gov.br permite liberação automática do cadastro no SEI.Rio para usuário externo?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha. p. 1.\n[2] Base documental CLARA. Perguntas frequentes do cidadao – SEI.Rio. p. 1.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio. p. 2.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 60."
   },
   {
     "id": "Q10",
@@ -794,10 +666,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -806,73 +678,57 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
         "subtitulo": null,
         "paginas": "5",
         "tipo": "norma"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
         "subtitulo": null,
-        "paginas": "3",
+        "paginas": "14",
         "tipo": "norma"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO III",
-        "paginas": "4",
-        "tipo": "norma"
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "2",
+        "tipo": "guia"
       },
       {
         "id": 4,
         "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
         "subtitulo": null,
-        "paginas": "2",
+        "paginas": "5",
         "tipo": "norma"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+      "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+      "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+      "Guia do usuario externo – SEI.Rio",
       "Decreto Rio nº 57.250 de 19 de novembro de 2025"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Termo de Uso",
-        "matched": false
+        "matched": true
       },
       {
         "expected": "Decreto Rio nº 57.250",
         "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 5] Art. 12. O credenciamento de usuário externo se dará através de autocadastro, com autenticação\nobrigatória através da plataforma gov.br, nível prata ou ouro.\nArt. 13. O credenciamento de usuário externo no SEI.Rio é ato pessoal e intransferível, estando\ncondicionado à aceitação das regras que disciplinam o uso do sistema, com a consequente\nresponsabilização do usuário em caso de uso indevido.\nArt. 14. O descredenciamento de usuário externo se dará:\nI - por solicitação expressa do usuário;\nII - em razão do descumprimento das condições regulamentares que disciplinam a utilização do\nsistema;\nIII - a critério da Administração.\nArt. 15. O usuário externo poderá:\nI - ter acesso externo a processos administrativos em que figura como parte, representante ou\ninteressado direto;\nII - assinar e/ou incluir documentos;\nIII - peticionar para abrir novo processo ou compor processo já existente.\nArt. 16. Sem prejuízo dos deveres fixados nos Termos de Uso e Política de Privacidade, é de\nresponsabilidade do usuário externo:\nI - manter o sigilo de suas credenciais de acesso e sua senha eletrônica, não sendo oponível, em\nnenhuma hipótese, a alegação de uso por outrem;\nII - manter seus dados cadastrais atualizados;\nIII - verificar, por meio do recibo eletrônico de protocolo, o recebimento das petições e dos\ndocumentos transmitidos através do peticionamento eletrônico;\nIV - consultar periodicamente o andamento de suas solicitações no SEI.Rio e verificar o recebimento\nde intimações, conforme art. 41;\nV - respeitar o prazo estabelecido para apresentação de recursos;\nVI - anexar os documentos necessários pelo serviço solicitado;\nVII - conservar os originais em papel dos documentos digitalizados enviados pelo peticionamento\neletrônico, até que decaia o direito da Administração de rever os atos praticados no processo.\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III. p. 4.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- O credenciamento de usuário externo se dará através de autocadastro, com autenticação obrigatória através da plataforma gov.br, nível prata ou ouro.\n- O credenciamento de usuário externo no SEI.Rio é ato pessoal e intransferível, estando condicionado à aceitação das regras que disciplinam o uso do sistema, com a consequente responsabilização do usuário em caso de uso indevido.\n- É de responsabilidade do usuário externo: O usuário é responsável pela reparação de todos e quaisquer danos, diretos ou indiretos (inclusive decorrentes de violação de quaisquer direitos de outros usuários; de terceiros, inclusive direitos de propriedade intelectual; de sigilo; e de personalidade), que sejam causados à Administração Pública, a qualquer outro Usuário, ou ainda a qualquer terceiro, inclusive em virtude do descumprimento do disposto nestes Termos de Uso e Aviso de Privacidade ou de qualquer ato praticado a partir de seu acesso ao serviço.\n- Também considera-se de responsabilidade do usuário externo: a) Manter sigilo da senha de acesso e assinatura eletrônica; b) Utilizar cadastro do gov.br para realizar o autocadastro de usuário externo, devendo ser mantido atualizado, inclusive o endereço de e-mail; c) Observar e atender aos requisitos estabelecidos pelo sistema, no que se refere ao formato e ao tamanho dos arquivos transmitidos eletronicamente; d) Conservar os documentos originais digitalizados enviados por meio do Módulo de Peticionamento, Intimações e Procurações até que decaia o direito da Administração de rever os atos praticados no processo; e) Verificar, por meio do protocolo eletrônico, o recebimento da solicitação e dos documentos transmitidos eletronicamente; f) Observar o cumprimento dos prazos dos atos processuais em meio eletrônico, realizados no dia e na hora do envio da solicitação registrada no sistema, sendo tempestivos os atos praticados até às vinte e três horas e as vinte e três horas e cinquenta e nove minutos segundos do último dia do prazo, considerado sempre o horário oficial de Brasília, independente do fuso horário em que se encontre o usuário externo; g) Consultar, periodicamente, o Módulo de Peticionamento, Intimações e Procurações, a fim de verificar o andamento das solicitações e os prazos para cumprimento de intimações ou apresentação de recursos; h) Verificar as notificações de andamento dos processos enviadas por e mail; i) Verificar o funcionamento da rede de comunicação, o acesso ao provedor de internet e as configurações do computador utilizado nas transmissões eletrônicas; j) Observar os períodos de manutenção programada realizados na plataforma pela Prefeitura do Rio; k) Definir o nível de acesso restrito aos documentos que contenham dados\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"O credenciamento de usuário externo no SEI.Rio é pessoal e intransferível?\".\n\nReferencias\n[1] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio. p. 5.\n[2] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio. p. 14.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio. p. 2.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5."
   },
   {
     "id": "Q11",
@@ -885,10 +741,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.74,
-    "answerScopeMatch": "probable",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Perguntas frequentes do servidor – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -897,41 +753,27 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
+        "titulo": "Guia do usuario externo – SEI.Rio",
+        "subtitulo": "Alteração de senha",
+        "paginas": "1",
+        "tipo": "guia"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Guia do usuario externo – SEI.Rio",
         "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "paginas": "2",
+        "tipo": "guia"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO III",
-        "paginas": "4",
-        "tipo": "norma"
+        "titulo": "Perguntas frequentes do cidadao – SEI.Rio",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
         "titulo": "Perguntas frequentes do servidor – SEI.Rio",
         "subtitulo": null,
         "paginas": "2",
@@ -939,31 +781,29 @@
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+      "Guia do usuario externo – SEI.Rio",
+      "Guia do usuario externo – SEI.Rio",
+      "Perguntas frequentes do cidadao – SEI.Rio",
       "Perguntas frequentes do servidor – SEI.Rio"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Itens para conferir"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário externo",
-        "matched": false
+        "matched": true
       },
       {
         "expected": "Perguntas frequentes do cidadão",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Itens para conferir\nNo Decreto Rio nº 57.250 de 19 de novembro de 2025, estes itens aparecem como base de conferência para o encaminhamento da prestação de contas do PDDE.\n- Cadastro incompleto ou incorreto e falta de permissão de acesso:\n- Senha expirada ou incorreta:\n- Problemas técnicos temporários:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III. p. 4.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[6] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio. p. 2."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Perguntas frequentes do servidor – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Perguntas frequentes do servidor – SEI.Rio. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Cadastro incompleto ou incorreto e falta de permissão de acesso:\n- Senha expirada ou incorreta:\n- Problemas técnicos temporários:\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como redefinir a senha do usuário externo no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha. p. 1.\n[2] Base documental CLARA. Guia do usuario externo – SEI.Rio. p. 2.\n[3] Base documental CLARA. Perguntas frequentes do cidadao – SEI.Rio. p. 1.\n[4] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio. p. 2."
   },
   {
     "id": "Q12",
@@ -975,10 +815,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -987,69 +827,53 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "titulo": "Nota oficial MGI sobre o SEI 5.0.3",
+        "subtitulo": "Notícias",
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
+        "titulo": "Painel de compatibilidade de versões do SEI com módulos do PEN",
+        "subtitulo": "Notícias",
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "titulo": "Nota oficial MGI sobre o SEI 5.0.3",
+        "subtitulo": null,
         "paginas": "1",
-        "tipo": "norma"
+        "tipo": "outro"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
+        "titulo": "Nota oficial MGI sobre o SEI 5.0",
+        "subtitulo": "Notícias",
         "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO IV",
-        "paginas": "5",
-        "tipo": "norma"
+        "tipo": "outro"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Nota oficial MGI sobre o SEI 5.0.3",
+      "Painel de compatibilidade de versões do SEI com módulos do PEN",
+      "Nota oficial MGI sobre o SEI 5.0.3",
+      "Nota oficial MGI sobre o SEI 5.0"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Nota oficial MGI sobre o SEI 5.0.3",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO IV. p. 5."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- NOVA VERSÃO DO SEI Gestão disponibiliza versão 5.0.3 do SEI e versões compatíveis do Tramita GOV.BR e outros módulos O Ministério da Gestão e da Inovação em Serviços Públicos (MGI) disponibilizou, no repositório do Processo Eletrônico Nacional (PEN), a versão 5.0.3 do Sistema Eletrônico de Informações (SEI) , desenvolvida pelo Tribunal Regional Federal da 4ª Região (TRF4).\n- Também foi disponibilizada a versão 4 .0.\n- COMPATIBILIDADE Consulta rápida: painel mostra quais versões do SEI funcionam com módulos do PEN Órgãos e entidades públicas de todo o país que utilizam ou planejam adotar soluções do Processo Eletrônico Nacional (PEN) já podem consultar um painel de compatibilidade d as versões do Sistema Eletrônico de Informações (SEI) .\n- A ferramenta mostra quais versões do SEI funcionam corretamente com os principais módulos do PEN, como Gestão Documental, Login GOV.BR , Integração ao Tramita GOV.BR , entre outros.\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"O que a nota oficial do SEI 5.0.3 informa sobre a compatibilidade do Tramita GOV.BR e dos módulos do PEN?\".\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: Notícias. p. 1.\n[2] Base documental CLARA. Painel de compatibilidade de versões do SEI com módulos do PEN: Notícias. p. 1.\n[3] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3. p. 1.\n[4] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0: Notícias. p. 1."
   },
   {
     "id": "Q13",
@@ -1061,10 +885,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Nota oficial MGI sobre a versão 4.1.5 do SEI e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -1073,69 +897,53 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
+        "titulo": "Nota oficial MGI sobre a versão 4.1.5 do SEI",
+        "subtitulo": null,
         "paginas": "1",
-        "tipo": "norma"
+        "tipo": "outro"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
+        "titulo": "Nota oficial MGI sobre o SEI 5.0",
+        "subtitulo": "Notícias",
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Nota oficial MGI sobre a versão 4.1.5 do SEI",
         "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Nota oficial MGI sobre a versão 4.1.5 do SEI",
         "subtitulo": null,
         "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
+        "tipo": "outro"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Nota oficial MGI sobre a versão 4.1.5 do SEI",
+      "Nota oficial MGI sobre o SEI 5.0",
+      "Nota oficial MGI sobre a versão 4.1.5 do SEI",
+      "Nota oficial MGI sobre a versão 4.1.5 do SEI"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Nota oficial MGI sobre o SEI 5.0",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Nota oficial MGI sobre a versão 4.1.5 do SEI e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Nota oficial MGI sobre a versão 4.1.5 do SEI. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Nota oficial MGI sobre a versao 4.1.5 do SEI Origem oficial: https://www.gov.br/gestao/pt-br/assuntos/gestaoeinovacao/informacoes-sistemas-e-servicos-de-gestao/proc esso-eletronico-nacional/noticias/2025/ministerio-da-gestao-lanca-versao-4-1-5-do-sei-com-melhorias-e-novas-funcionalida des Capturado em: 2026-04-04T04:38:49-03:00 Observacao: PDF gerado localmente a partir do HTML oficial para staging e ingestao controlada.\n- Notícias SEI Ministério da Gestão lança versão 4.1.5 do SEI com melhorias e novas funcionalidades O Ministério da Gestão e da Inovação em Serviços Públicos (MGI) disponibilizou uma nova versão do SEI, a 4.1.5 MGI , para órgãos e entidades do Poder Executivo Federal.\n- LANÇAMENTO SEI 5.0: Nova versão do Sistema Eletrônico de Informações (SEI) aprimora usabilidade, segurança e experiência do usuário A nova versão do Sistema Eletrônico de Informações (SEI) já está no ar !\n- O SEI 5.0 apresenta interface mais moderna e atualização significativa dos componentes de infraestrutura , oferece ndo mais segurança e melhorias na usabilidade, garantindo mais eficiência e praticidade para a gestão de processos eletrônicos no setor público.\n\nObservacoes finais\n- Mantive a resposta priorizando a fonte solicitada: nota oficial sei 5.0.\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI. p. 1.\n[2] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0: Notícias. p. 1.\n[3] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI. p. 1.\n[4] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI. p. 2."
   },
   {
     "id": "Q14",
@@ -1147,10 +955,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Novidades da versão 4.1 – Wiki SEI-RJ e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -1159,69 +967,53 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
+        "titulo": "Novidades da versão 4.1 – Wiki SEI-RJ",
+        "subtitulo": null,
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
+        "titulo": "Novidades da versão 4.1 – Wiki SEI-RJ",
+        "subtitulo": null,
+        "paginas": "3",
+        "tipo": "outro"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Novidades da versão 4.1 – Wiki SEI-RJ",
         "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "paginas": "2",
+        "tipo": "outro"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "5",
-        "tipo": "norma"
+        "titulo": "Novidades da versão 4.1 – Wiki SEI-RJ",
+        "subtitulo": "Templates",
+        "paginas": "4",
+        "tipo": "outro"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Novidades da versão 4.1 – Wiki SEI-RJ",
+      "Novidades da versão 4.1 – Wiki SEI-RJ",
+      "Novidades da versão 4.1 – Wiki SEI-RJ",
+      "Novidades da versão 4.1 – Wiki SEI-RJ"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Novidades da versão 4.1",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Novidades da versão 4.1 – Wiki SEI-RJ e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Novidades da versão 4.1 – Wiki SEI-RJ. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Painel de Controle exibe mais informações com layout em cartões e ícone para acesso rápido na barra\n- Reabertura Programada de processos\n- Aumento no tamanho do texto de marcadores para até 500 caracteres.\n- Novo campo de valor monetário no cadastro de documentos e filtro de pesquisa\n\nObservacoes finais\n- Mantive a resposta priorizando a fonte solicitada: wiki sei rj.\n\nReferencias\n[1] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ. p. 1.\n[2] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ. p. 3.\n[3] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ. p. 2.\n[4] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: Templates. p. 4."
   },
   {
     "id": "Q15",
@@ -1233,10 +1025,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Correspondência de Ícones SEI => SEI 4.0 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -1245,69 +1037,53 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
+        "titulo": "Correspondência de Ícones SEI => SEI 4.0",
+        "subtitulo": "Ícones de Sinalização dos Processos e Documentos",
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
+        "titulo": "Manual do Usuário SEI 4.0+",
+        "subtitulo": "Autenticar Documentos Externos",
+        "paginas": "4",
+        "tipo": "guia"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
+        "titulo": "Manual do Usuário SEI 4.0+",
+        "subtitulo": "Acesso ao Sistema",
+        "paginas": "1",
+        "tipo": "guia"
       },
       {
         "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
-        "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
+        "titulo": "Manual do Usuário SEI 4.0+",
+        "subtitulo": "Gerenciamento dos Processos Sigilosos na Unidade",
         "paginas": "5",
-        "tipo": "norma"
+        "tipo": "guia"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Correspondência de Ícones SEI => SEI 4.0",
+      "Manual do Usuário SEI 4.0+",
+      "Manual do Usuário SEI 4.0+",
+      "Manual do Usuário SEI 4.0+"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Correspondência de Ícones SEI => SEI 4.0",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 5."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Correspondência de Ícones SEI => SEI 4.0 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Correspondência de Ícones SEI => SEI 4.0. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Correspondência de Ícones SEI => SEI 4.0 Origem oficial: https://www.portalsei.ufscar.br/duvidas-frequentes/sei-4.0/correspondencia-de-icones-sei-sei-4.0 Capturado em: 2026-04-04T05:29:19-03:00 Observacao: PDF gerado localmente a partir do HTML oficial para staging e ingestao controlada.\n- Uma das principais mudanças do SEI para o SEI 4.0 refere-se à modernização do layout e à mudança nos ícones e no menu lateral.\n- Operações básicas com documentos Incluir Documentos Inserindo um Documento Interno em um Grupo de Processos Inserindo um Documento Externo Editar Documentos Incluindo Imagens em Documentos Referenciando Documentos ou Processos Versões do Documento Comparando duas versões de um documento Consultar/Alterar Documentos Assinar Documento Interno Excluir Documento Interno ou Externo Cancelar Documento Incluir Documentos Inserindo um Documento Interno em um Grupo de Processos Inserindo um Documento Externo Inserindo um Documento Interno em um Grupo de Processos Inserindo um Documento Externo Editar Documentos Incluindo Imagens em Documentos Referenciando Documentos ou Processos Incluindo Imagens em Documentos Referenciando Documentos ou Processos Versões do Documento Comparando duas versões de um documento Comparando duas versões de um documento Consultar/Alterar Documentos Assinar Documento Interno Excluir Documento Interno ou Externo Cancelar Documento Outras operações com Documentos Favoritos Situações de Utilização de um Documento Salvo em Favoritos Criando um Grupo de Favoritos Tela do Processo – Ícone Adicionar aos Favoritos Menu Principal – Opção Favoritos Textos Padrão Situações de Utilização de um Texto Padrão Mover Documentos Externos Ordenar Árvore do Processo Publicar/Agendar Publicação Visualizando Publicações/Agendamentos Gerando Publicação Relacionada Autenticar Documentos Externos Gerar Circular Enviando o Documento Assinado, por E-mail, ao Destinatário Favoritos Situações de Utilização de um Documento Salvo em Favoritos Criando um Grupo de Favoritos Tela do Processo – Ícone Adicionar aos Favoritos Menu Principal – Opção Favoritos Situações de Utilização de um Documento Salvo em Favoritos Criando um Grupo de Favoritos Tela do Processo – Ícone Adicionar aos Favoritos Menu Principal – Opção Favoritos Tela do Processo – Ícone Adicionar aos Favoritos Menu Principal – Opção Favoritos Textos Padrão Situações de Utilização de um Texto Padrão Situações de Utilização de um Texto Padrão Mover Documentos Externos Ordenar Árvore do Processo Publicar/Agendar Publicação Visualizando Publicações/Agendamentos Gerando Publicação Relacionada Visualizando Publicações/Agendamentos Gerando Publicação Relacionada Autenticar Documentos Externos Gerar Circular Enviando o Documento Assinado, por E-mail, ao Destinatário Enviando o Documento Assinado, por E-mail, ao Destinatário\n- Manual do Usuario SEI 4.0+ Origem oficial: https://manuais.processoeletronico.gov.br/pt-br/latest/SEI/index.html Capturado em: 2026-04-04T04:38:49-03:00 Observacao: PDF gerado localmente a partir do HTML oficial para staging e ingestao controlada.\n\nObservacoes finais\n- Mantive a resposta priorizando a fonte solicitada: material ufscar.\n\nReferencias\n[1] Base documental CLARA. Correspondência de Ícones SEI => SEI 4.0: Ícones de Sinalização dos Processos e Documentos. p. 1.\n[2] Base documental CLARA. Manual do Usuário SEI 4.0+: Autenticar Documentos Externos. p. 4.\n[3] Base documental CLARA. Manual do Usuário SEI 4.0+: Acesso ao Sistema. p. 1.\n[4] Base documental CLARA. Manual do Usuário SEI 4.0+: Gerenciamento dos Processos Sigilosos na Unidade. p. 5."
   },
   {
     "id": "Q16",
@@ -1319,10 +1095,10 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Checklist documental localizado",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.",
-    "finalConfidence": 0.58,
-    "answerScopeMatch": "weak",
+    "title": "Síntese documental localizada",
+    "summary": "Encontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
+    "finalConfidence": 0.98,
+    "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
     "ambiguityInSources": false,
@@ -1331,68 +1107,44 @@
     "references": [
       {
         "id": 1,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "Do Órgão Gestor",
-        "paginas": "2",
-        "tipo": "norma"
+        "titulo": "Nota oficial MGI sobre o SEI 5.0.3",
+        "subtitulo": "Notícias",
+        "paginas": "1",
+        "tipo": "outro"
       },
       {
         "id": 2,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "DAS DISPOSIÇÕES PRELIMINARES",
-        "paginas": "1",
-        "tipo": "norma"
+        "titulo": "Nota oficial MGI sobre o SEI 5.0.3",
+        "subtitulo": null,
+        "paginas": "2",
+        "tipo": "outro"
       },
       {
         "id": 3,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "titulo": "Nota oficial MGI sobre o SEI 5.0.3",
         "subtitulo": null,
-        "paginas": "3",
-        "tipo": "norma"
-      },
-      {
-        "id": 4,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO I",
         "paginas": "1",
-        "tipo": "norma"
-      },
-      {
-        "id": 5,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": null,
-        "paginas": "2",
-        "tipo": "norma"
-      },
-      {
-        "id": 6,
-        "titulo": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-        "subtitulo": "CAPÍTULO IV",
-        "paginas": "5",
-        "tipo": "norma"
+        "tipo": "outro"
       }
     ],
     "referenceLabels": [
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025",
-      "Decreto Rio nº 57.250 de 19 de novembro de 2025"
+      "Nota oficial MGI sobre o SEI 5.0.3",
+      "Nota oficial MGI sobre o SEI 5.0.3",
+      "Nota oficial MGI sobre o SEI 5.0.3"
     ],
     "steps": [
       {
         "numero": 1,
-        "titulo": "Trecho documental recuperado"
+        "titulo": "Síntese documental"
       }
     ],
     "expectedReferenceHits": [
       {
         "expected": "Nota oficial MGI sobre o SEI 5.0.3",
-        "matched": false
+        "matched": true
       }
     ],
-    "expectedAllMet": false,
-    "plainText": "Checklist documental localizado\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada na rota principal.\n\nPasso a passo\n1. Trecho documental recuperado\n[Fonte: NUCLEO_P1_decreto_instituicao_sei_rio_57250_2025.pdf | Página: 1] Protocolo: 1128886\nData: 24/11/2025\nTítulo: DECRETO RIO Nº 57250\nPágina(s): a\nDECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025\nInstitui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de\nprocessos no âmbito do Poder Executivo do Município do Rio de Janeiro.\nO PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela\nlegislação em vigor e\nCONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender\ntodas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de\nJaneiro;\nCONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de\nprocessos administrativos;\nCONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2;\nCONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos\neletrônicos adotado pelo Processo Eletrônico Nacional - PEN;\nCONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre\no Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI);\nCONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024,\nassinado com o Tribunal Regional Federal da 4ª Região - TRF4;\nCONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do\nProcesso.rio pelo Sistema Eletrônico de Informações - SEI;\nCONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19\nde novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do\nRio de Janeiro;\nCONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como\nLei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018,\nque consolida, em âmbito municipal, a supracitada Lei Federal;\nCONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de\nDados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política\nMunicipal de Proteção de Dados Municipais;\nCONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº\n22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o\nDecreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da\nCidade do Rio de Janeiro - PGD Carioca;\nCONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de\nassinatura eletrônica no âmbito da Administração Pública Municipal,\nDECRETA:\n\nObservacoes finais\n- Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: Do Órgão Gestor. p. 2.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO I. p. 1.\n[5] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025. p. 2.\n[6] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO IV. p. 5."
+    "expectedAllMet": true,
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- NOVA VERSÃO DO SEI Gestão disponibiliza versão 5.0.3 do SEI e versões compatíveis do Tramita GOV.BR e outros módulos O Ministério da Gestão e da Inovação em Serviços Públicos (MGI) disponibilizou, no repositório do Processo Eletrônico Nacional (PEN), a versão 5.0.3 do Sistema Eletrônico de Informações (SEI) , desenvolvida pelo Tribunal Regional Federal da 4ª Região (TRF4).\n- Também foi disponibilizada a versão 4 .0.\n- SEI 5.0.2 A assinatura avançada gov.br, se configurada para usuários internos, agora estará disponível sem a necessidade de realizar o login no sistema pelo gov.br ; Corrigida a identificação de login gov.br para usuários externos quando o SEI e SIP executam no mesmo endereço: “Houve um erro ao efetuar login no serviço” ; Corrigido erro na assinatura avançada gov.br por usuário externo em documento sigiloso: “Documento não está disponível para assinatura” ; Corrigida a pesquisa por parte de números ao utilizar o caractere \"*\" (asterisco) ; Corrigido erro eventual de parâmetro não encontrado quando o parâmetro existe sem valor informado.\n- SEI 5.0.1 No novo editor foi adicionado um botão no menu relacionado a tabelas, chamado “Alterar tema da tabela” ; Os comentários em trechos de documentos agora são exibidos após a assinatura, e foi adicionado o novo nível de visibilidade “Tramitação” (visível apenas para as unidades por onde o processo passou) ; Na assinatura por usuário externo, o processo não estava sendo sinalizado com o triângulo na unidade geradora do documento ; Agora, na árvore do processo, ao clicar no ícone da caneta de assinatura, serão listadas todas as assinaturas do documento ; Saiba mais em gov.br/pen Saiba como aderir ao ProPEN em gov.br/ propen\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"No SEI 5.0.3, quais módulos do PEN foram informados como compatíveis?\".\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: Notícias. p. 1.\n[2] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3. p. 2.\n[3] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3. p. 1."
   }
 ]

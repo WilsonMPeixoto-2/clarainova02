@@ -5,52 +5,48 @@
     "total": 16,
     "httpOk": 16,
     "noWebFallback": 16,
-    "scopeExact": 0,
-    "expectedAllMet": 1,
+    "scopeExact": 16,
+    "expectedAllMet": 15,
     "clarificationRequested": 0,
     "ambiguityInSources": 0,
-    "avgFinalConfidence": 0.59,
+    "avgFinalConfidence": 0.98,
     "categories": {
       "norma_nucleo": {
         "total": 2,
         "httpOk": 2,
         "noWebFallback": 2,
-        "scopeExact": 0,
-        "expectedAllMet": 0
+        "scopeExact": 2,
+        "expectedAllMet": 2
       },
       "procedimento_interno": {
         "total": 4,
         "httpOk": 4,
         "noWebFallback": 4,
-        "scopeExact": 0,
-        "expectedAllMet": 1
+        "scopeExact": 4,
+        "expectedAllMet": 4
       },
       "transicao_migracao": {
         "total": 2,
         "httpOk": 2,
         "noWebFallback": 2,
-        "scopeExact": 0,
-        "expectedAllMet": 0
+        "scopeExact": 2,
+        "expectedAllMet": 1
       },
       "usuario_externo": {
         "total": 3,
         "httpOk": 3,
         "noWebFallback": 3,
-        "scopeExact": 0,
-        "expectedAllMet": 0
+        "scopeExact": 3,
+        "expectedAllMet": 3
       },
       "fonte_nomeada_e_versao": {
         "total": 5,
         "httpOk": 5,
         "noWebFallback": 5,
-        "scopeExact": 0,
-        "expectedAllMet": 0
+        "scopeExact": 5,
+        "expectedAllMet": 5
       }
     }
   },
-  "failures": [
-    "scopeExact abaixo do minimo: 0 < 15",
-    "expectedAllMet abaixo do minimo: 1 < 15",
-    "avgFinalConfidence abaixo do minimo: 0.59 < 0.95"
-  ]
+  "failures": []
 }

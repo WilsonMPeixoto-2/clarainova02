@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T11:45:00.0000000Z
+- Data/hora: 2026-04-05T12:40:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `f95273f1c0cfd2be456602d559f4dcf6528f194c`
-- Último relatório: `docs/operational-reports/2026-04-05-r4b-production-admin-gap-dashboard.md`
+- Head da sessão: `1cf67a9701d12a6a378fd7f033966925d855a7fd`
+- Último relatório: `docs/operational-reports/2026-04-05-r5a-incident-recovery-keyword-rescue-and-benchmark.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A-R4B` já publicados em produção, com budget real, telemetria por estágio, breakdown de prompt/histórico, feedback do usuário e dashboard admin de gaps
+- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A-R4B` já publicados em produção e `R5A` recuperado em produção com fallback keyword-only direcionado, grounded fallback recalibrado e benchmark remoto novamente green
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: abrir o `R5A` com batch embedding nativo e re-embed controlado do corpus.
+- Próxima ação recomendada: abrir o `R5B` com cache de embeddings para perguntas recorrentes.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -45,7 +45,12 @@
 - A publicação do `R4B` saiu do commit `f95273f`, foi para o deploy web `dpl_J37W4zYAhPYbK53B5aVvpaeqnTJX` e promoveu a Edge Function `get-usage-stats` para a versão `12`.
 - A validação local do `R4B` ficou green com `23` suites e `95` testes, sem tocar na frente paralela de layout.
 - O benchmark canônico remoto executado logo após o `R4B` não ficou green: `Didático` e `Direto` colapsaram para `scopeExact 0/16` e `expectedAllMet 1/16`, com respostas desviando para `Guia documental localizado`. Como o escopo do `R4B` foi admin-only e não alterou `chat` nem corpus, isso foi classificado como incidente externo/concomitante e puxou `R5A` para a frente imediata.
-- `R5A-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
+- `R5A` foi fechado em produção ao longo dos commits `d038269`, `4d4a8b4` e `1cf67a9`, com degradacao segura para `keyword_only`, rescue lexical dirigido por documento/fonte/versao, grounded fallback reescrito para o dominio SEI-Rio e rate limit elevado para suportar a bateria canônica.
+- A publicação final do `R5A` saiu no deploy web `dpl_5SCxT5wjBWpGd84prMyqgibia416` e promoveu a Edge Function `chat` para a versão `31`.
+- O benchmark canônico remoto voltou a green após a recuperação do `R5A`:
+  - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+  - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+- `R5B-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
 
@@ -137,8 +142,8 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Executar `R5A` com batch embedding nativo e re-embed controlado do corpus
-- Executar `R5B-R5C` com cache de embeddings e validação de frescor do corpus
+- Executar `R5B` com cache de embeddings para perguntas recorrentes
+- Executar `R5C` com validação de frescor do corpus
 - Executar `R6A-R6B` como experimentos benchmarkados antes de retomar `5B-5F`
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
