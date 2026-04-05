@@ -380,6 +380,11 @@ export type Database = {
           request_id: string | null
           subtopic_label: string | null
           topic_label: string | null
+          user_feedback_comment: string | null
+          user_feedback_reason: string | null
+          user_feedback_source: string | null
+          user_feedback_submitted_at: string | null
+          user_feedback_value: string | null
           used_external_web: boolean | null
           used_rag: boolean | null
         }
@@ -396,6 +401,11 @@ export type Database = {
           request_id?: string | null
           subtopic_label?: string | null
           topic_label?: string | null
+          user_feedback_comment?: string | null
+          user_feedback_reason?: string | null
+          user_feedback_source?: string | null
+          user_feedback_submitted_at?: string | null
+          user_feedback_value?: string | null
           used_external_web?: boolean | null
           used_rag?: boolean | null
         }
@@ -412,6 +422,11 @@ export type Database = {
           request_id?: string | null
           subtopic_label?: string | null
           topic_label?: string | null
+          user_feedback_comment?: string | null
+          user_feedback_reason?: string | null
+          user_feedback_source?: string | null
+          user_feedback_submitted_at?: string | null
+          user_feedback_value?: string | null
           used_external_web?: boolean | null
           used_rag?: boolean | null
         }
