@@ -7,7 +7,7 @@
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `212d57b62b5b3b71083f7730309452811df5c258`
+- Head da sessão: `053283e8c9b2958179f3a0e8a6ce88a17fd70434`
 - Último relatório: `docs/operational-reports/2026-04-05-emergency-rag-fallback-floor-and-recovery.md`
 
 ## Estado atual resumido
