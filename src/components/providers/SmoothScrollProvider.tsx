@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import Lenis from "lenis";
 
 const LenisContext = createContext<Lenis | null>(null);
@@ -8,34 +8,35 @@ export function useLenis() {
 }
 
 const SmoothScrollProvider = ({ children }: { children: React.ReactNode }) => {
-  const lenisRef = useRef<Lenis | null>(null);
-
-  useEffect(() => {
+  const [lenisInstance] = useState<Lenis | null>(() => {
+    if (typeof window === "undefined") return null;
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
+    if (prefersReduced) return null;
 
-    const lenis = new Lenis({
+    return new Lenis({
       lerp: 0.1,
       smoothWheel: true,
     });
-    lenisRef.current = lenis;
+  });
+
+  useEffect(() => {
+    if (!lenisInstance) return;
 
     let rafId: number;
     const raf = (time: number) => {
-      lenis.raf(time);
+      lenisInstance.raf(time);
       rafId = requestAnimationFrame(raf);
     };
     rafId = requestAnimationFrame(raf);
 
     return () => {
       cancelAnimationFrame(rafId);
-      lenis.destroy();
-      lenisRef.current = null;
+      lenisInstance.destroy();
     };
-  }, []);
+  }, [lenisInstance]);
 
   return (
-    <LenisContext.Provider value={lenisRef.current}>
+    <LenisContext.Provider value={lenisInstance}>
       {children}
     </LenisContext.Provider>
   );

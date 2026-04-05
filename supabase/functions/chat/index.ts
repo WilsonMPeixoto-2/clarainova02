@@ -16,6 +16,11 @@ import {
   createTimeBudgetTracker,
   type ChatStageTimings,
 } from "./timing-budget.ts";
+import {
+  buildPromptTelemetry,
+  buildPromptTelemetryMetadata,
+  type ChatPromptTelemetry,
+} from "./prompt-telemetry.ts";
 
 import {
   prepareKnowledgeDecision,
@@ -710,6 +715,7 @@ interface TelemetryContext {
   expandedQuery: string | null;
   sourceTargetLabel: string | null;
   stageTimings: ChatStageTimings;
+  promptTelemetry: ChatPromptTelemetry;
   budgetTotalMs: number;
   budgetElapsedMs: number;
   budgetRemainingMs: number;
@@ -746,9 +752,7 @@ async function recordTelemetry(
   const responseStatus = ctx.retrievalMode === 'model_grounded' ? 'answered' : 'partial';
   const usedRag = ctx.retrievalMode === 'model_grounded';
   const totalLatency = Date.now() - ctx.requestStartedAt;
-  const promptEstimate = estimateTokenCount(
-    `${ctx.systemPromptWithContext}\n${ctx.chatMessages.map((m) => m.content).join('\n')}`
-  );
+  const promptEstimate = ctx.promptTelemetry.totalPromptTokens;
   const responseEstimate = estimateTokenCount(responseText);
 
   const { data: chatMetricRow, error: chatMetricError } = await ctx.supabase
@@ -778,6 +782,7 @@ async function recordTelemetry(
           selected_document_ids: ctx.selectedDocumentIds,
           selected_chunk_ids: ctx.selectedChunkIds,
           ...buildTimingBudgetMetadata(ctx),
+          ...buildPromptTelemetryMetadata(ctx.promptTelemetry),
           output_mode: outputMode,
           response_mode: ctx.responseMode,
           rag_quality_score: ctx.ragQualityScore,
@@ -1410,11 +1415,20 @@ Deno.serve(async (req) => {
       }
     }
 
+    const responseModePrompt = buildResponseModePrompt(responseMode);
     const retrievalQualityPrompt = retrievalQuality
       ? buildRetrievalQualityPrompt(retrievalQuality, retrievalMode)
       : '';
     const sourceTargetPrompt = sourceTarget ? buildSourceTargetPrompt(sourceTarget) : '';
-    const systemPromptWithContext = `${SYSTEM_PROMPT}${buildResponseModePrompt(responseMode)}${retrievalQualityPrompt}${sourceTargetPrompt}${knowledgeContext}`;
+    const systemPromptWithContext = `${SYSTEM_PROMPT}${responseModePrompt}${retrievalQualityPrompt}${sourceTargetPrompt}${knowledgeContext}`;
+    const promptTelemetry = buildPromptTelemetry({
+      systemPrompt: SYSTEM_PROMPT,
+      responseModePrompt,
+      retrievalQualityPrompt,
+      sourceTargetPrompt,
+      knowledgeContext,
+      messages: chatMessages,
+    });
     const generationStrategy = buildGenerationStrategy({
       intentLabel,
       responseMode,
@@ -1518,6 +1532,7 @@ REESCRITA OBRIGATORIA:
         ragQualityScore, expandedQuery: expandedQueryText,
         sourceTargetLabel: sourceTarget?.label ?? null,
         stageTimings,
+        promptTelemetry,
         budgetTotalMs: REQUEST_TIME_BUDGET_MS,
         budgetElapsedMs: timeBudgetTracker.elapsedMs(),
         budgetRemainingMs: timeBudgetTracker.remainingMs(),
@@ -1582,6 +1597,7 @@ REESCRITA OBRIGATORIA:
           expandedQuery: expandedQueryText,
           sourceTargetLabel: sourceTarget?.label ?? null,
           stageTimings,
+          promptTelemetry,
           budgetTotalMs: REQUEST_TIME_BUDGET_MS,
           budgetElapsedMs: timeBudgetTracker.elapsedMs(),
           budgetRemainingMs: timeBudgetTracker.remainingMs(),
@@ -1632,6 +1648,7 @@ REESCRITA OBRIGATORIA:
             retrieval_mode: retrievalMode,
             sources: retrievalSources,
             attempted_models: generationStrategy.orderedModels,
+            ...buildPromptTelemetryMetadata(promptTelemetry),
             embedding_ms: stageTimings.embeddingMs,
             expansion_ms: stageTimings.expansionMs,
             search_ms: stageTimings.searchMs,
@@ -1693,6 +1710,7 @@ REESCRITA OBRIGATORIA:
         expandedQuery: expandedQueryText,
         sourceTargetLabel: sourceTarget?.label ?? null,
         stageTimings,
+        promptTelemetry,
         budgetTotalMs: REQUEST_TIME_BUDGET_MS,
         budgetElapsedMs: timeBudgetTracker.elapsedMs(),
         budgetRemainingMs: timeBudgetTracker.remainingMs(),
