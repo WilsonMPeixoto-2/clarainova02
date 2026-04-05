@@ -6,7 +6,7 @@
     "httpOk": 16,
     "noWebFallback": 16,
     "scopeExact": 16,
-    "expectedAllMet": 15,
+    "expectedAllMet": 16,
     "clarificationRequested": 0,
     "ambiguityInSources": 0,
     "avgFinalConfidence": 1.0,
@@ -37,7 +37,7 @@
         "httpOk": 3,
         "noWebFallback": 3,
         "scopeExact": 3,
-        "expectedAllMet": 2
+        "expectedAllMet": 3
       },
       "fonte_nomeada_e_versao": {
         "total": 5,

@@ -2,7 +2,7 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-05
-- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 921a29bfcdbc20295d265490b5694a5327f48832`
+- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 705cc3cfc3a9383e1549cb10da521c01d1676985`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
@@ -11,7 +11,7 @@
 - `origin/main` atualmente alinhada ao commit local preparado para publicação: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 - Trabalho local em andamento fora de `main`:
   - branch ativa de sessão: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
-  - a branch de sessão foi publicada em `origin` até o commit `921a29bfcdbc20295d265490b5694a5327f48832`
+  - a branch de sessão foi publicada em `origin` até o commit `705cc3cfc3a9383e1549cb10da521c01d1676985`
   - a linha principal continua íntegra em `main`, mas a produção foi manualmente atualizada a partir da branch de sessão
 - Observação de análise remota:
   - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral
@@ -24,19 +24,19 @@
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção agora reflete manualmente o pacote `R0-R2` publicado a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET` no commit `921a29bfcdbc20295d265490b5694a5327f48832`
-  - isso inclui o baseline canônico do benchmark no repositório, a nova estratégia local de geração e o contrato textual de embeddings já publicado também nas Edge Functions do Supabase
+  - a produção agora reflete manualmente o pacote corretivo publicado a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET` no commit `705cc3cfc3a9383e1549cb10da521c01d1676985`
+  - isso inclui a correção de cobertura obrigatória de evidências no retrieval, a normalização remota do `Termo de Uso`, a migration pendente de targeted retrieval e a nova publicação da `chat`
   - `origin/main` continua sendo a fonte oficial integrada, então existe divergência intencional e documentada entre `main` e a produção até a próxima reconciliação
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `manual_cli`
   - status: `READY`
-  - deployment id: `dpl_6PmUpzDwgk7qTezehN8qbUxLTYjC`
-  - commit publicado: `921a29bfcdbc20295d265490b5694a5327f48832`
-  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/6PmUpzDwgk7qTezehN8qbUxLTYjC`
+  - deployment id: `dpl_9AhU94T5UGSjjzKhF7ZtHUTLTy6o`
+  - commit publicado: `705cc3cfc3a9383e1549cb10da521c01d1676985`
+  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/9AhU94T5UGSjjzKhF7ZtHUTLTy6o`
   - aliases observados:
     - `https://clarainova02.vercel.app`
-    - `https://clarainova02-ls5nz160f-wilson-m-peixotos-projects.vercel.app`
+    - `https://clarainova02-qzycz69ea-wilson-m-peixotos-projects.vercel.app`
 
 ## Supabase
 - Projeto oficial: `jasqctuzeznwdtbcuixn`
@@ -46,8 +46,8 @@
 ## Edge Functions verificadas
 - `chat`
   - status: `ACTIVE`
-  - versão observada: `23`
-  - última atualização observada: `2026-04-05 06:29:37 UTC`
+  - versão observada: `24`
+  - última atualização observada: `2026-04-05 07:00:23 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
   - versão observada: `17`
@@ -83,12 +83,14 @@
     - conferir `Client ID` e `Client Secret`
     - alinhar redirect URLs no Supabase e no Google Console
 - Gemini / embeddings:
-  - status: `pacote R0-R2 publicado em produção na web e nas functions críticas`
+  - status: `pacote R0-R2 publicado e regressão pós-publicação já corrigida em produção`
   - situação conhecida:
-    - a Edge Function remota `chat` já foi republicada na versão `23` com a estratégia de geração por complexidade introduzida em `R1`
+    - a Edge Function remota `chat` já foi republicada na versão `24` com a correção de cobertura de evidências para `Q8` e `Q10`
     - a Edge Function remota `embed-chunks` já foi republicada na versão `17` com o contrato textual assimétrico de embeddings introduzido em `R2`
-    - a produção web foi atualizada manualmente por Vercel CLI com o pacote do repositório até o commit `921a29b`
+    - a produção web foi atualizada manualmente por Vercel CLI com o pacote do repositório até o commit `705cc3c`
     - a migration remota `20260404084500_refine_hybrid_search_for_governed_corpus.sql` já foi aplicada e alinhou `hybrid_search_chunks` ao corpus governado por `título`, `origem`, `versão` e `section_title`
+    - a migration remota `20260404134500_add_targeted_chunk_retrieval.sql` também já está aplicada no projeto oficial
+    - a migration remota `20260405114000_normalize_term_document_metadata.sql` normalizou o `document_kind` do `Termo de Uso` para `termo`
   - implementação declarada no código:
     - geração: roteamento entre `gemini-3.1-flash-lite-preview` e `gemini-3.1-pro-preview` por complexidade, com `thinkingLevel` e temperatura dinâmica
     - embeddings: `gemini-embedding-2-preview`
@@ -121,12 +123,15 @@
     - a avaliação inicial do RAG sobre o núcleo local registrou `9/9` respostas `HTTP 200`, sem web fallback e com escopo exato
     - a avaliação ampliada do lote 3 registrou `16/16` respostas `HTTP 200`, `16/16` sem web fallback, `15/16` com `answerScopeMatch = exact` e `13/16` com a referência esperada explicitamente presente
     - o corpus remoto foi auditado e limpo: o guia legado de `88` chunks virou `NUCLEO_P1`, a versão governada inferior foi desativada e o `MODELO_DE_OFICIO_PDDE.pdf` saiu do corpus ativo
-    - o `topic_scope` do Termo de Uso foi corrigido para `sei_rio_termo`
+    - o `topic_scope` do Termo de Uso foi corrigido para `sei_rio_termo` e o `document_kind` remoto agora está normalizado para `termo`
     - a avaliação batch 3 pós source-routing registrou `16/16` perfeito em todas as métricas principais
+    - o benchmark canônico remoto pós-correção voltou a ficar green:
+      - `Didático`: `16/16 expectedAllMet`
+      - `Direto`: `16/16 expectedAllMet`
     - a próxima frente de corpus é substituir o Decreto `55.615` por texto íntegro oficial e ampliar a bateria manual
 
 ## Divergências remotas que exigem cuidado
-- a produção web e as functions `chat` / `embed-chunks` estão à frente de `origin/main`, porque o deploy de `2026-04-05` partiu manualmente da branch de sessão `921a29b`
+- a produção web e as functions `chat` / `embed-chunks` estão à frente de `origin/main`, porque os deploys manuais de `2026-04-05` partiram da branch de sessão e o último deles publicou `705cc3c`
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
 - o corpus remoto atual não mostra mistura entre gerações de embedding, mas ainda há um documento legado sem embeddings e sem metadados novos
 - o histórico documental anterior ainda contém leituras que assumiam prefixo textual em `chunk.content`; sob `R2`, o fluxo novo voltou a separar conteúdo vetorial limpo e metadado de citação

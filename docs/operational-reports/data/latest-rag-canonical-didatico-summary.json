@@ -5,11 +5,11 @@
     "total": 16,
     "httpOk": 16,
     "noWebFallback": 16,
-    "scopeExact": 16,
+    "scopeExact": 15,
     "expectedAllMet": 16,
     "clarificationRequested": 0,
     "ambiguityInSources": 0,
-    "avgFinalConfidence": 1.0,
+    "avgFinalConfidence": 0.9875,
     "categories": {
       "norma_nucleo": {
         "total": 2,
@@ -22,7 +22,7 @@
         "total": 4,
         "httpOk": 4,
         "noWebFallback": 4,
-        "scopeExact": 4,
+        "scopeExact": 3,
         "expectedAllMet": 4
       },
       "transicao_migracao": {

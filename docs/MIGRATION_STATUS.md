@@ -1,6 +1,6 @@
 # Status da Migracao e Operacao — Linha Principal Reconciliada
 
-Ultima atualizacao: 2026-04-04
+Ultima atualizacao: 2026-04-05
 
 ## Resumo executivo
 
@@ -14,11 +14,33 @@ Ultima atualizacao: 2026-04-04
 | Deduplicacao legada por `document_hash` | Publicada |
 | Corpus governado (`núcleo`, `cobertura`, `apoio`) | Ativo |
 | Source-target routing | Publicado |
+| Normalizacao remota do `Termo de Uso` | Publicada |
 | Producao refletindo o baseline atual | Publicada |
 
 **A linha principal saiu do estágio de certificação básica e passou para uma operação governada de corpus/RAG; o próximo ciclo não é mais de fundação, e sim de excelência do sistema RAG, benchmark e fidelidade do sistema de perguntas e respostas.**
 
 ## Nota operacional recente
+
+Em 2026-04-05, a regressão pós-publicação do benchmark canônico foi fechada em produção:
+
+- `Q8` voltou a citar `Decreto Rio nº 55.615` e `Guia de migração`
+- `Q10` voltou a citar `Termo de Uso` e `Decreto Rio nº 57.250`
+- a Edge Function remota `chat` foi republicada na versão `24`
+- o deploy manual de produção na Vercel ficou `READY` em `dpl_9AhU94T5UGSjjzKhF7ZtHUTLTy6o`
+- `Didático` voltou a `16/16 expectedAllMet`
+- `Direto` voltou a `16/16 expectedAllMet`
+
+Na mesma rodada, `supabase db push --linked` aplicou remotamente:
+
+- `20260404134500_add_targeted_chunk_retrieval.sql`
+- `20260405114000_normalize_term_document_metadata.sql`
+
+Com isso, o `Termo de Uso e Aviso de Privacidade do SEI.Rio` passou a refletir no metadata remoto:
+
+- `topic_scope = sei_rio_termo`
+- `document_kind = termo`
+- `authority_level = official`
+- `search_weight = 1.12`
 
 Em 2026-04-04, uma auditoria completa do sistema RAG foi concluída e redefiniu o BLOCO 5 como uma trilha específica de excelência:
 
