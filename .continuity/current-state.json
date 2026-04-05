@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada, R3A publicado e R3B publicado em producao com budget real e telemetria por estagio",
+  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada, R3A, R3B e R3C publicados em producao, com budget real, telemetria por estagio e breakdown de prompt/historico",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T09:47:30.2048013Z",
+  "last_update_utc": "2026-04-05T10:49:00.0000000Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -33,10 +33,12 @@
     "O benchmark canonico remoto pós-publicacao do R3A ficou green: `Didatico` com `16/16 expectedAllMet`, `15/16 scopeExact` e `avgFinalConfidence 0.9938`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact` e `avgFinalConfidence 1.0`.",
     "O R3B foi implementado localmente com budget total por request, decisao explicita de pular structured quando o tempo restante fica baixo e telemetria por estagio (`embedding`, `expansion`, `search`, `generation`, `sanitization`) gravada em `metadata_json` de `chat_metrics`.",
     "O R3B foi publicado em producao a partir do commit `e77ce9b3535b654acf1da6e5af5d7096a9da8d68`, com deploy web `dpl_HgFuvt4mnCVZNwN9ikNCNMedE2aY`, alias mantido em `https://clarainova02.vercel.app` e Edge Function `chat` promovida para a versao `26`.",
-    "O benchmark canonico remoto pós-publicacao do R3B ficou green: `Didatico` com `16/16 expectedAllMet`, `15/16 scopeExact` e `avgFinalConfidence 0.9938`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact` e `avgFinalConfidence 0.9938`."
+    "O benchmark canonico remoto pós-publicacao do R3B ficou green: `Didatico` com `16/16 expectedAllMet`, `15/16 scopeExact` e `avgFinalConfidence 0.9938`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact` e `avgFinalConfidence 0.9938`.",
+    "O R3C foi publicado em producao a partir do commit `ac237c0c2473c9f3c0fb5e57c3cce939177b2933`, com deploy web `dpl_EGa5TVJ7eKLAKNKZzRzskH96cxK9`, alias mantido em `https://clarainova02.vercel.app` e Edge Function `chat` promovida para a versao `27`.",
+    "O `chat_metrics.metadata_json` agora registra breakdown de prompt e historico enviado, incluindo tokens por segmento, contagem de mensagens e flag `prompt_over_10k`.",
+    "O benchmark canonico remoto pós-publicacao do R3C ficou green: `Didatico` com `16/16 expectedAllMet`, `15/16 scopeExact` e `avgFinalConfidence 0.9906`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact` e `avgFinalConfidence 1.0`."
   ],
   "pending_items": [
-    "Executar R3C com telemetria de tamanho do prompt e historico enviado.",
     "Executar R4A e R4B com feedback explicito do usuario e dashboard admin de gaps.",
     "Executar R5A-R5C com batch embedding nativo, cache de embeddings e validacao de frescor do corpus.",
     "Executar R6A e R6B com benchmark controlado de chunking/dimensionalidade e avaliacao de context caching explicito antes de retomar `5B-5F`.",
@@ -47,7 +49,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
   ],
-  "next_action": "Abrir o R3C com telemetria de tamanho do prompt e do historico enviado, preservando o R3B como baseline publicado e benchmarkado.",
+  "next_action": "Abrir o R4A com feedback explicito do usuario vinculado ao request_id, preservando R3C como baseline publicado e benchmarkado.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
@@ -57,9 +59,10 @@
     "A producao ficou temporariamente à frente de `origin/main` porque os deploys de 2026-04-05 partiram manualmente da branch de sessao; essa divergencia está documentada e precisa ser preservada na proxima reconciliacao com `main`.",
     "A nova leva de melhorias proposta pelo usuario foi triada: `thinkingLevel`, temperatura dinamica, `maxOutputTokens`, query expansion contextual, routing de modelos, framing textual de embeddings e `HNSW` ja estao resolvidos ou presentes; a trilha imediata agora segue `R3A`, `R3B`, `R3C`, `R4A`, `R4B`, `R5A`, `R5B`, `R5C`, `R6A` e `R6B`.",
     "O R3A foi implementado sem tocar no layout do chat: a mudanca ficou concentrada em `chat-api`, helper puro de contexto, parser do backend e ajustes de retrieval para follow-ups curtos.",
+    "O R3C tambem evitou tocar no layout do chat; a unica excecao foi um ajuste minimo em `SmoothScrollProvider` para remover um erro de lint introduzido no branch atual e restaurar a automacao de validacao.",
     "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-05-r3b-production-publish-and-benchmark.md",
-  "last_session_head_sha": "786d773"
+  "last_report": "docs/operational-reports/2026-04-05-r3c-production-publish-and-benchmark.md",
+  "last_session_head_sha": "ac237c0"
 }

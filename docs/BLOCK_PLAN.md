@@ -11,7 +11,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 
 ## Linha mestra atual
 - Fonte oficial integrada: `origin/main @ 6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Frente imediata mais importante: executar a trilha prioritária refinada `R3C-R6B` dentro do BLOCO 5 antes de retomar os subblocos canônicos `5B-5F`, agora já com `R0-R2` publicados, a regressão pós-publicação corrigida, o `R3A` publicado em produção e o `R3B` publicado em produção
+- Frente imediata mais importante: executar a trilha prioritária refinada `R4A-R6B` dentro do BLOCO 5 antes de retomar os subblocos canônicos `5B-5F`, agora já com `R0-R2` publicados, a regressão pós-publicação corrigida e `R3A-R3C` publicados em produção
 - Ordem de execução atualmente aceita:
   1. executar `R0` com benchmark canônico congelado, baseline reproduzível e gate local do RAG em `Direto` e `Didático`
   2. executar `R1` com ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e expansão de query com contexto curto
@@ -71,7 +71,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Estado: `in_progress`
 - Objetivo: transformar a CLARA de funcional e grounded em previsivelmente excelente na recuperação, geração e explicação da própria confiança
-- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0-R2` foram publicados, a regressão pós-publicação de `Q8`/`Q10` foi corrigida, o benchmark canônico remoto voltou a green, o `R3A` foi publicado em produção com benchmark remoto green e o `R3B` foi publicado em produção com budget real e telemetria por estágio
+- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0-R2` foram publicados, a regressão pós-publicação de `Q8`/`Q10` foi corrigida, o benchmark canônico remoto voltou a green, `R3A` e `R3B` foram publicados em produção e o `R3C` também já foi publicado com telemetria explícita de prompt/histórico
 - Subfrentes canônicas:
   - `5A` benchmark e gate de regressão
   - `5B` retrieval governado por metadados reais
@@ -94,7 +94,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
   - `R6A` experimento de chunking e dimensionalidade
   - `R6B` avaliação de context caching explícito
   - `R7` retorno aos subblocos `5B-5F` e roadmap alto esforço depois disso
-- Próxima ação: abrir o `R3C` com telemetria de tamanho do prompt e do histórico enviado, mantendo o `R3B` como baseline publicado e benchmarkado
+- Próxima ação: abrir o `R4A` com feedback explícito do usuário vinculado ao `request_id`, mantendo o `R3C` como baseline publicado e benchmarkado
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
 - Estado: `planned`

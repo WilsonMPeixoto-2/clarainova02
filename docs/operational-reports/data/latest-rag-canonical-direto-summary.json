@@ -9,7 +9,7 @@
     "expectedAllMet": 16,
     "clarificationRequested": 0,
     "ambiguityInSources": 0,
-    "avgFinalConfidence": 0.9938,
+    "avgFinalConfidence": 1.0,
     "categories": {
       "norma_nucleo": {
         "total": 2,

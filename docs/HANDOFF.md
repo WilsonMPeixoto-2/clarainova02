@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T09:47:30.2048013Z
+- Data/hora: 2026-04-05T10:49:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `786d77356eab18c65d4d04543a682d20d630f064`
-- Último relatório: `docs/operational-reports/2026-04-05-r3b-production-publish-and-benchmark.md`
+- Head da sessão: `ac237c0c2473c9f3c0fb5e57c3cce939177b2933`
+- Último relatório: `docs/operational-reports/2026-04-05-r3c-production-publish-and-benchmark.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A` publicado e `R3B` já publicado em produção com budget real e telemetria por estágio
+- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A`, `R3B` e `R3C` já publicados em produção, com budget real, telemetria por estágio e breakdown de prompt/histórico
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: abrir o `R3C` com telemetria de tamanho do prompt e do histórico enviado.
+- Próxima ação recomendada: abrir o `R4A` com feedback explícito do usuário vinculado a `request_id`.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -34,7 +34,10 @@
 - `R3B` já foi publicado em produção: a `chat` agora mede `embedding_ms`, `expansion_ms`, `search_ms`, `generation_ms` e `sanitization_ms`, e decide explicitamente quando pular structured para preservar budget de stream.
 - A publicação do `R3B` saiu do commit `e77ce9b`, foi para o deploy web `dpl_HgFuvt4mnCVZNwN9ikNCNMedE2aY` e promoveu a Edge Function `chat` para a versão `26`.
 - O benchmark canônico remoto pós-publicação ficou green: `Didático` com `16/16 expectedAllMet`, `15/16 scopeExact`, `avgFinalConfidence 0.9938`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact`, `avgFinalConfidence 0.9938`.
-- `R3C-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
+- `R3C` já foi publicado em produção: a `chat` agora registra breakdown explícito de tamanho de prompt e do histórico enviado em `chat_metrics.metadata_json`, incluindo tokens por segmento, contagem de mensagens e flag `prompt_over_10k`.
+- A publicação do `R3C` saiu do commit `ac237c0`, foi para o deploy web `dpl_EGa5TVJ7eKLAKNKZzRzskH96cxK9` e promoveu a Edge Function `chat` para a versão `27`.
+- O benchmark canônico remoto pós-publicação do `R3C` ficou green: `Didático` com `16/16 expectedAllMet`, `15/16 scopeExact`, `avgFinalConfidence 0.9906`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact`, `avgFinalConfidence 1.0`.
+- `R4A-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
 
@@ -126,7 +129,6 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Executar `R3C` com telemetria de tamanho do prompt e do histórico enviado
 - Executar `R4A` e `R4B` com feedback explícito do usuário e dashboard de gaps no admin
 - Executar `R5A-R5C` com batch embedding nativo, cache de embeddings e validação de frescor do corpus
 - Executar `R6A-R6B` como experimentos benchmarkados antes de retomar `5B-5F`
@@ -152,6 +154,7 @@
 - A nova leva de melhorias enviada pelo usuário já foi triada: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens`, query expansion contextual, routing de modelos, framing textual de embeddings e `HNSW` já estão resolvidos ou presentes; a trilha imediata agora segue `R3A`, `R3B`, `R3C`, `R4A`, `R4B`, `R5A`, `R5B`, `R5C`, `R6A` e `R6B`.
 - O `R3A` foi implementado e publicado sem tocar nos componentes de layout do chat; a mudança ficou concentrada em `src/lib/chat-api.ts`, `supabase/functions/chat/index.ts`, `supabase/functions/chat/conversation-context.ts` e testes dedicados.
 - O `R3B` também ficou fora do layout: a mudança está concentrada em `supabase/functions/chat/index.ts`, `supabase/functions/chat/timing-budget.ts` e testes dedicados de budget/telemetria.
+- O `R3C` também preservou a frente paralela de layout; a única exceção foi um ajuste mínimo em `SmoothScrollProvider` para remover um erro de lint real do branch atual e restaurar `npm run validate`.
 - A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
 - O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.
