@@ -7,6 +7,9 @@ import UsageStatsCard from "@/components/UsageStatsCard";
 const { invokeMock } = vi.hoisted(() => ({
   invokeMock: vi.fn(),
 }));
+const fetchMock = vi.fn();
+
+vi.stubGlobal("fetch", fetchMock);
 
 vi.mock("@/integrations/supabase/client", () => ({
   hasSupabaseConfig: true,
@@ -35,10 +38,39 @@ function renderWithQueryClient() {
 
 afterEach(() => {
   invokeMock.mockReset();
+  fetchMock.mockReset();
 });
 
 describe("UsageStatsCard", () => {
   it("renders the content gap section with grouped topics and recent cases", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        checkedAt: "2026-04-05T13:10:00Z",
+        summary: {
+          totalEntries: 17,
+          checkedEntries: 17,
+          currentCount: 12,
+          changedCount: 1,
+          requestFailedCount: 1,
+          missingUrlCount: 0,
+          headersMissingCount: 2,
+          monitorCount: 1,
+        },
+        items: [
+          {
+            downloadDate: "2026-04-04",
+            fileName: "NUCLEO_P1_guia_migracao_sei_rio_2026.pdf",
+            freshnessStatus: "changed",
+            httpStatus: 200,
+            note: "A origem parece mais recente do que a data registrada no manifesto.",
+            remoteLastModified: "2026-04-05T00:00:00Z",
+            title: "Guia de migração – SEI.Rio",
+          },
+        ],
+      }),
+    });
+
     invokeMock.mockResolvedValue({
       data: {
         month: "2026-04",
@@ -93,5 +125,9 @@ describe("UsageStatsCard", () => {
     expect(screen.getByText(/Faltou detalhe/i)).toBeInTheDocument();
     expect(screen.getByText(/Expansão aplicada:/i)).toBeInTheDocument();
     expect(screen.getByText(/Faltou explicar a exceção\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Frescor do corpus/i)).toBeInTheDocument();
+    expect(screen.getByText(/Fontes mais recentes/i)).toBeInTheDocument();
+    expect(screen.getByText(/Guia de migração/i)).toBeInTheDocument();
+    expect(screen.getByText(/A origem parece mais recente/i)).toBeInTheDocument();
   });
 });

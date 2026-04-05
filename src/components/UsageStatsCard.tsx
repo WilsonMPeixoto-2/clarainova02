@@ -55,10 +55,48 @@ interface UsageStats {
   recent_content_gaps: ContentGapCaseInsight[];
 }
 
+interface CorpusFreshnessItem {
+  downloadDate: string | null;
+  fileName: string;
+  freshnessStatus: string;
+  httpStatus: number | null;
+  note: string;
+  remoteLastModified: string | null;
+  title: string;
+}
+
+interface CorpusFreshnessReport {
+  checkedAt: string;
+  items: CorpusFreshnessItem[];
+  summary: {
+    changedCount: number;
+    checkedEntries: number;
+    currentCount: number;
+    headersMissingCount: number;
+    missingUrlCount: number;
+    monitorCount: number;
+    requestFailedCount: number;
+    totalEntries: number;
+  };
+}
+
 async function fetchUsageStats(): Promise<UsageStats> {
   const { data, error } = await supabase.functions.invoke("get-usage-stats");
   if (error) throw error;
   return data as UsageStats;
+}
+
+async function fetchCorpusFreshness(): Promise<CorpusFreshnessReport | null> {
+  try {
+    const response = await fetch("/data/latest-corpus-freshness.json", { cache: "no-store" });
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json() as CorpusFreshnessReport;
+  } catch {
+    return null;
+  }
 }
 
 const GAP_REASON_LABELS: Record<string, string> = {
@@ -80,6 +118,15 @@ const SIGNAL_LABELS: Record<string, string> = {
   sem_cobertura: "Sem cobertura",
 };
 
+const FRESHNESS_STATUS_LABELS: Record<string, string> = {
+  changed: "Fonte mais recente",
+  current: "Em dia",
+  headers_missing: "Sem cabeçalhos úteis",
+  missing_url: "Sem URL",
+  monitor: "Monitorar",
+  request_failed: "Falha na checagem",
+};
+
 function formatGapReason(reason: string | null) {
   if (!reason) return "Sem motivo classificado";
   return GAP_REASON_LABELS[reason] ?? reason.replaceAll("_", " ");
@@ -94,11 +141,20 @@ function formatSignalLabel(signal: string) {
   return SIGNAL_LABELS[signal] ?? signal.replaceAll("_", " ");
 }
 
+function formatFreshnessStatus(status: string) {
+  return FRESHNESS_STATUS_LABELS[status] ?? status.replaceAll("_", " ");
+}
+
 export default function UsageStatsCard() {
   const { data: stats, isPending: loading } = useQuery({
     queryKey: ["usage-stats"],
     queryFn: fetchUsageStats,
     enabled: hasSupabaseConfig,
+  });
+  const { data: freshnessReport } = useQuery({
+    queryKey: ["corpus-freshness-report"],
+    queryFn: fetchCorpusFreshness,
+    retry: false,
   });
 
   const items = stats
@@ -165,6 +221,16 @@ export default function UsageStatsCard() {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+  const freshnessAlerts = freshnessReport?.items.filter((item) => item.freshnessStatus !== "current").slice(0, 6) ?? [];
+  const freshnessCheckedAt = freshnessReport?.checkedAt
+    ? new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC",
+      }).format(new Date(freshnessReport.checkedAt))
+    : null;
 
   return (
     <Card>
@@ -330,6 +396,87 @@ export default function UsageStatsCard() {
                 </p>
               )}
             </div>
+            {freshnessReport && (
+              <div className="rounded-lg border border-border/80 bg-muted/20 p-3">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Frescor do corpus
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Leitura manual mais recente do manifesto documental. Use para detectar fontes externas que mudaram depois do download registrado.
+                  </p>
+                  {freshnessCheckedAt && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Última checagem UTC: <span className="text-foreground">{freshnessCheckedAt}</span>
+                    </p>
+                  )}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3 py-1 text-xs text-foreground">
+                    <span>Entradas verificadas</span>
+                    <strong className="text-[hsl(var(--gold-1))]">
+                      {freshnessReport.summary.checkedEntries}/{freshnessReport.summary.totalEntries}
+                    </strong>
+                  </span>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3 py-1 text-xs text-foreground">
+                    <span>Fontes mais recentes</span>
+                    <strong className="text-[hsl(var(--gold-1))]">{freshnessReport.summary.changedCount}</strong>
+                  </span>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3 py-1 text-xs text-foreground">
+                    <span>Falhas na checagem</span>
+                    <strong className="text-[hsl(var(--gold-1))]">{freshnessReport.summary.requestFailedCount}</strong>
+                  </span>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3 py-1 text-xs text-foreground">
+                    <span>Sem cabeçalhos úteis</span>
+                    <strong className="text-[hsl(var(--gold-1))]">{freshnessReport.summary.headersMissingCount}</strong>
+                  </span>
+                </div>
+                {freshnessAlerts.length > 0 ? (
+                  <div className="mt-3 space-y-3">
+                    {freshnessAlerts.map((item) => (
+                      <div
+                        key={item.fileName}
+                        className="rounded-lg border border-border/80 bg-background/70 p-3"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                              {item.fileName}
+                            </p>
+                            <p className="text-sm font-medium text-foreground">{item.title}</p>
+                          </div>
+                          <span className="rounded-full border border-border/80 bg-muted/30 px-2.5 py-1 text-[11px] font-medium text-foreground">
+                            {formatFreshnessStatus(item.freshnessStatus)}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                          {item.downloadDate && (
+                            <span className="rounded-full border border-border/80 bg-muted/20 px-2.5 py-1">
+                              Download {item.downloadDate}
+                            </span>
+                          )}
+                          {item.remoteLastModified && (
+                            <span className="rounded-full border border-border/80 bg-muted/20 px-2.5 py-1">
+                              Remoto {item.remoteLastModified.slice(0, 10)}
+                            </span>
+                          )}
+                          {item.httpStatus !== null && (
+                            <span className="rounded-full border border-border/80 bg-muted/20 px-2.5 py-1">
+                              HTTP {item.httpStatus}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-3 text-xs text-muted-foreground">{item.note}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Nenhuma fonte externa apareceu mais nova que o download registrado nesta rodada.
+                  </p>
+                )}
+              </div>
+            )}
             <div className="rounded-lg border border-border/80 bg-muted/20 p-3 text-xs text-muted-foreground">
               Use este card para leitura rápida do volume operacional e da saúde do produto. Os totais dependem da telemetria disponível no backend ativo e não substituem auditoria detalhada por evento.
             </div>
