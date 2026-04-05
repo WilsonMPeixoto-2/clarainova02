@@ -182,10 +182,9 @@ def build_chunks(pages: list[dict], source_tag: str) -> list[dict]:
         if not text:
             continue
         for chunk in semantic_split(text):
-            source_prefix = f"[Fonte: {source_tag} | Página: {page['pageNumber']}] "
             chunks.append(
                 {
-                    "content": f"{source_prefix}{chunk}",
+                    "content": chunk,
                     "pageStart": page["pageNumber"],
                     "pageEnd": page["pageNumber"],
                     "sectionTitle": detect_section_title(text, chunk),
@@ -319,6 +318,7 @@ def derive_governance(row: dict[str, str], chunk_count: int) -> tuple[dict, dict
         "grounding_enabled": grounding_enabled,
         "governance_activation_requested": is_active,
         "readiness_summary": "Aguardando embeddings",
+        "embedding_rebuild_strategy": "manifest_batch_ingestion",
     }
 
     document = {
@@ -509,6 +509,7 @@ def ingest_row(service_role_key: str, row: dict[str, str]):
         ),
         "last_embedding_attempt_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "last_embedding_request_ids": request_ids,
+        "embedding_rebuild_strategy": "manifest_batch_ingestion",
     }
     rest_update(
         service_role_key,

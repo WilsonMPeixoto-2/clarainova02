@@ -21,6 +21,7 @@
     "rag:evaluate:canonical:didatico": "python scripts/corpus/evaluate_rag_batch.py --questions scripts/corpus/data/2026-04-05-rag-canonical-questions.json --output docs/operational-reports/data/latest-rag-canonical-didatico.json --summary-output docs/operational-reports/data/latest-rag-canonical-didatico-summary.json --response-mode didatico --min-http-ok 16 --min-no-web-fallback 16 --min-scope-exact 15 --min-expected-all-met 15 --min-avg-final-confidence 0.95",
     "rag:evaluate:canonical:direto": "python scripts/corpus/evaluate_rag_batch.py --questions scripts/corpus/data/2026-04-05-rag-canonical-questions.json --output docs/operational-reports/data/latest-rag-canonical-direto.json --summary-output docs/operational-reports/data/latest-rag-canonical-direto-summary.json --response-mode direto --min-http-ok 16 --min-no-web-fallback 16 --min-scope-exact 15 --min-expected-all-met 15 --min-avg-final-confidence 0.95",
     "rag:evaluate:canonical": "npm run rag:evaluate:canonical:didatico && npm run rag:evaluate:canonical:direto",
+    "rag:reembed:active": "python scripts/corpus/reembed_active_corpus.py",
     "validate": "npm run typecheck && npm run lint && npm test && npm run build"
   },
   "dependencies": {

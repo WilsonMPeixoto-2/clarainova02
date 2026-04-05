@@ -36,7 +36,7 @@ const DOCUMENT_EMBEDDING_TASK_TYPE = "RETRIEVAL_DOCUMENT";
 const DOCUMENT_EMBEDDING_INPUT_STYLE = "textual_task_instruction_plus_api_task_type";
 const EMBED_TIMEOUT_MS = 15_000;
 const EMBED_RETRY_DELAYS_MS = [1500, 3000, 6000];
-const EMBED_CONCURRENCY = 3;
+const EMBED_API_BATCH_SIZE = 5;
 
 function getErrorMessage(error: unknown, fallback = "Erro interno"): string {
   if (error instanceof Error && error.message.trim()) return error.message;
@@ -240,11 +240,20 @@ async function requireAdminUser(
   return Boolean(data?.user_id);
 }
 
-async function generateEmbeddingWithRetry(
+async function generateEmbeddingBatchWithRetry(
   ai: GoogleGenAI,
-  chunk: StructuredChunkPayload,
+  chunks: StructuredChunkPayload[],
   title?: string | null,
 ) {
+  const embeddingTexts = chunks.map((chunk) =>
+    buildDocumentEmbeddingText({
+      content: chunk.content,
+      titleUsed: title ?? null,
+      sectionTitle: chunk.sectionTitle,
+      sourceTag: chunk.sourceTag,
+    })
+  );
+
   for (let attempt = 0; attempt <= EMBED_RETRY_DELAYS_MS.length; attempt++) {
     try {
       const config: Record<string, unknown> = {
@@ -256,17 +265,10 @@ async function generateEmbeddingWithRetry(
         config.title = title.trim();
       }
 
-      const embeddingText = buildDocumentEmbeddingText({
-        content: chunk.content,
-        titleUsed: title ?? null,
-        sectionTitle: chunk.sectionTitle,
-        sourceTag: chunk.sourceTag,
-      });
-
       const result = await Promise.race([
         ai.models.embedContent({
           model: EMBEDDING_MODEL,
-          contents: embeddingText,
+          contents: embeddingTexts,
           config,
         }),
         new Promise<never>((_, reject) =>
@@ -274,18 +276,29 @@ async function generateEmbeddingWithRetry(
         ),
       ]);
 
-      const values = result.embeddings?.[0]?.values;
-      if (!values || values.length !== EMBEDDING_DIM) {
-        console.warn(`Embedding dimension mismatch: expected ${EMBEDDING_DIM}, got ${values?.length ?? 0}`);
-        return null;
+      const valuesList = result.embeddings?.map((embedding) => embedding.values ?? null) ?? [];
+      if (valuesList.length !== chunks.length) {
+        console.warn(`Embedding batch size mismatch: expected ${chunks.length}, got ${valuesList.length}`);
+        return new Array(chunks.length).fill(null);
       }
 
-      return normalizeL2(values);
+      return valuesList.map((values, index) => {
+        if (!values || values.length !== EMBEDDING_DIM) {
+          console.warn(
+            `Embedding dimension mismatch at batch index ${index}: expected ${EMBEDDING_DIM}, got ${values?.length ?? 0}`,
+          );
+          return null;
+        }
+
+        return normalizeL2(values);
+      });
     } catch (err: unknown) {
       const msg = getErrorMessage(err);
       console.error("Embedding error:", msg);
 
-      if (msg === "EMBED_TIMEOUT") return null;
+      if (msg === "EMBED_TIMEOUT") {
+        return new Array(chunks.length).fill(null);
+      }
 
       const status = getErrorStatus(err);
       const retryable = status === 429 || (status !== undefined && status >= 500);
@@ -295,32 +308,32 @@ async function generateEmbeddingWithRetry(
         continue;
       }
 
-      return null;
+      return new Array(chunks.length).fill(null);
     }
   }
 
-  return null;
+  return new Array(chunks.length).fill(null);
 }
 
-async function generateEmbeddingsWithConcurrency(
+async function generateEmbeddingsWithNativeBatching(
   ai: GoogleGenAI,
   chunks: StructuredChunkPayload[],
   title?: string | null,
 ) {
-  const embeddings: Array<number[] | null> = new Array(chunks.length).fill(null);
+  const embeddings: Array<number[] | null> = [];
+  let apiCalls = 0;
 
-  for (let index = 0; index < chunks.length; index += EMBED_CONCURRENCY) {
-    const slice = chunks.slice(index, index + EMBED_CONCURRENCY);
-    const results = await Promise.all(
-      slice.map((chunk) => generateEmbeddingWithRetry(ai, chunk, title)),
-    );
-
-    for (let offset = 0; offset < results.length; offset++) {
-      embeddings[index + offset] = results[offset];
-    }
+  for (let index = 0; index < chunks.length; index += EMBED_API_BATCH_SIZE) {
+    const batch = chunks.slice(index, index + EMBED_API_BATCH_SIZE);
+    const results = await generateEmbeddingBatchWithRetry(ai, batch, title);
+    embeddings.push(...results);
+    apiCalls += 1;
   }
 
-  return embeddings;
+  return {
+    embeddings,
+    apiCalls,
+  };
 }
 
 /**
@@ -424,13 +437,13 @@ Deno.serve(async (req) => {
         task_type: DOCUMENT_EMBEDDING_TASK_TYPE,
         input_style: DOCUMENT_EMBEDDING_INPUT_STYLE,
         contract_version: EMBEDDING_CONTRACT_VERSION,
-        concurrency: EMBED_CONCURRENCY,
+        embed_api_batch_size: EMBED_API_BATCH_SIZE,
         title_used: normalizedTitle,
       },
     });
 
     const embeddingStart = Date.now();
-    const embeddings = await generateEmbeddingsWithConcurrency(ai, validChunks, normalizedTitle);
+    const { embeddings, apiCalls } = await generateEmbeddingsWithNativeBatching(ai, validChunks, normalizedTitle);
     const embedding_ms = Date.now() - embeddingStart;
 
     // Build rows using ONLY columns that exist in document_chunks
@@ -498,7 +511,8 @@ Deno.serve(async (req) => {
         request_id,
         embedding_ms,
         db_ms,
-        concurrency: EMBED_CONCURRENCY,
+        embed_api_batch_size: EMBED_API_BATCH_SIZE,
+        embed_api_calls: apiCalls,
       },
     });
 
@@ -510,7 +524,8 @@ Deno.serve(async (req) => {
         request_id,
         embedding_ms,
         db_ms,
-        concurrency: EMBED_CONCURRENCY,
+        embed_api_batch_size: EMBED_API_BATCH_SIZE,
+        embed_api_calls: apiCalls,
       }),
       { headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
     );
