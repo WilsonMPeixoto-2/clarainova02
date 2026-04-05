@@ -10,6 +10,12 @@ import {
   type ChatContextSummary,
   type ChatConversationMessage,
 } from "./conversation-context.ts";
+import {
+  addStageTiming,
+  createChatStageTimings,
+  createTimeBudgetTracker,
+  type ChatStageTimings,
+} from "./timing-budget.ts";
 
 import {
   prepareKnowledgeDecision,
@@ -57,6 +63,12 @@ const MAX_CONVERSATION_MESSAGES = 20;
 const EMBEDDING_TIMEOUT_MS = 10_000;
 const SEARCH_TIMEOUT_MS = 8_000;
 const GENERATION_TIMEOUT_MS = 45_000;
+const REQUEST_TIME_BUDGET_MS = 50_000;
+const MIN_STRUCTURED_REMAINING_MS = 20_000;
+const STREAM_FALLBACK_RESERVE_MS = 8_000;
+const STREAM_INIT_TIMEOUT_MS = 20_000;
+const MIN_LEAKAGE_REPAIR_REMAINING_MS = 8_000;
+const LEAKAGE_REPAIR_TIMEOUT_MS = 12_000;
 const MAX_OUTPUT_TOKENS = 8192;
 const EMBEDDING_DIM = 768;
 const QUERY_EMBEDDING_MODEL = 'gemini-embedding-2-preview';
@@ -78,6 +90,15 @@ type GenerationStrategy = {
   streamTopP: number;
 };
 const QUERY_EXPANSION_MODEL = GEMINI_FLASH_LITE_MODEL;
+const CHAT_TIME_BUDGET_CONFIG = {
+  totalMs: REQUEST_TIME_BUDGET_MS,
+  minStructuredRemainingMs: MIN_STRUCTURED_REMAINING_MS,
+  streamFallbackReserveMs: STREAM_FALLBACK_RESERVE_MS,
+  maxStructuredTimeoutMs: GENERATION_TIMEOUT_MS,
+  maxStreamInitTimeoutMs: STREAM_INIT_TIMEOUT_MS,
+  minLeakageRepairRemainingMs: MIN_LEAKAGE_REPAIR_REMAINING_MS,
+  maxLeakageRepairTimeoutMs: LEAKAGE_REPAIR_TIMEOUT_MS,
+} as const;
 
 const QUERY_EXPANSION_PROMPT = `Você é um especialista em reformulação de buscas documentais sobre o sistema SEI-Rio (Sistema Eletrônico de Informações da Prefeitura do Rio de Janeiro).
 
@@ -688,6 +709,31 @@ interface TelemetryContext {
   ragQualityScore: number | null;
   expandedQuery: string | null;
   sourceTargetLabel: string | null;
+  stageTimings: ChatStageTimings;
+  budgetTotalMs: number;
+  budgetElapsedMs: number;
+  budgetRemainingMs: number;
+  structuredSkippedForBudget: boolean;
+  structuredTimeoutMs: number | null;
+  streamInitTimeoutMs: number | null;
+  leakageRepairTimeoutMs: number | null;
+}
+
+function buildTimingBudgetMetadata(ctx: TelemetryContext) {
+  return {
+    embedding_ms: ctx.stageTimings.embeddingMs,
+    expansion_ms: ctx.stageTimings.expansionMs,
+    search_ms: ctx.stageTimings.searchMs,
+    generation_ms: ctx.stageTimings.generationMs,
+    sanitization_ms: ctx.stageTimings.sanitizationMs,
+    time_budget_ms: ctx.budgetTotalMs,
+    budget_elapsed_ms: ctx.budgetElapsedMs,
+    budget_remaining_ms: ctx.budgetRemainingMs,
+    structured_skipped_for_budget: ctx.structuredSkippedForBudget,
+    structured_timeout_ms: ctx.structuredTimeoutMs,
+    stream_init_timeout_ms: ctx.streamInitTimeoutMs,
+    leakage_repair_timeout_ms: ctx.leakageRepairTimeoutMs,
+  };
 }
 
 async function recordTelemetry(
@@ -731,6 +777,7 @@ async function recordTelemetry(
           sources: ctx.retrievalSources,
           selected_document_ids: ctx.selectedDocumentIds,
           selected_chunk_ids: ctx.selectedChunkIds,
+          ...buildTimingBudgetMetadata(ctx),
           output_mode: outputMode,
           response_mode: ctx.responseMode,
           rag_quality_score: ctx.ragQualityScore,
@@ -1018,6 +1065,12 @@ Deno.serve(async (req) => {
 
     const requestStartedAt = Date.now();
     const requestId = crypto.randomUUID();
+    const stageTimings = createChatStageTimings();
+    const timeBudgetTracker = createTimeBudgetTracker(requestStartedAt, CHAT_TIME_BUDGET_CONFIG);
+    let structuredSkippedForBudget = false;
+    let structuredTimeoutMsUsed: number | null = null;
+    let streamInitTimeoutMsUsed: number | null = null;
+    let leakageRepairTimeoutMsUsed: number | null = null;
 
     const apiKey = Deno.env.get('GEMINI_API_KEY');
     if (!apiKey) {
@@ -1088,6 +1141,18 @@ Deno.serve(async (req) => {
           metadata_json: {
             guardrail_blocked: true,
             client_ip: clientIP,
+            embedding_ms: stageTimings.embeddingMs,
+            expansion_ms: stageTimings.expansionMs,
+            search_ms: stageTimings.searchMs,
+            generation_ms: stageTimings.generationMs,
+            sanitization_ms: stageTimings.sanitizationMs,
+            time_budget_ms: REQUEST_TIME_BUDGET_MS,
+            budget_elapsed_ms: timeBudgetTracker.elapsedMs(),
+            budget_remaining_ms: timeBudgetTracker.remainingMs(),
+            structured_skipped_for_budget: structuredSkippedForBudget,
+            structured_timeout_ms: structuredTimeoutMsUsed,
+            stream_init_timeout_ms: streamInitTimeoutMsUsed,
+            leakage_repair_timeout_ms: leakageRepairTimeoutMsUsed,
           },
         }).then(({ error }) => {
           if (error) console.error('chat_metrics guardrail insert error:', error);
@@ -1133,12 +1198,13 @@ Deno.serve(async (req) => {
 
     if (lastUserMessage) {
       try {
-        const searchStartedAt = Date.now();
         let queryEmbeddingPayload = KEYWORD_FALLBACK_QUERY_EMBEDDING;
         const contextualizedQuery = buildContextualizedEmbeddingQuery(chatMessages, lastUserMessage.content);
         keywordQueryText = contextualizedQuery.queryText || lastUserMessage.content;
 
         try {
+          const embeddingStartedAt = Date.now();
+          const expansionStartedAt = Date.now();
           const [embeddingResult, expanded] = await Promise.all([
             withTimeout(
               ai.models.embedContent({
@@ -1151,8 +1217,12 @@ Deno.serve(async (req) => {
               }),
               EMBEDDING_TIMEOUT_MS,
               'embedding',
-            ),
-            expandQuery(ai, chatMessages, lastUserMessage.content),
+            ).finally(() => {
+              addStageTiming(stageTimings, 'embeddingMs', Date.now() - embeddingStartedAt);
+            }),
+            expandQuery(ai, chatMessages, lastUserMessage.content).finally(() => {
+              addStageTiming(stageTimings, 'expansionMs', Date.now() - expansionStartedAt);
+            }),
           ]);
 
           expandedQueryText = expanded;
@@ -1162,6 +1232,7 @@ Deno.serve(async (req) => {
             let finalEmbedding = normalizeL2(originalEmbedding);
 
             if (expandedQueryText) {
+              const expandedEmbeddingStartedAt = Date.now();
               try {
                 const expandedEmbeddingResult = await withTimeout(
                   ai.models.embedContent({
@@ -1182,6 +1253,8 @@ Deno.serve(async (req) => {
                 }
               } catch {
                 console.warn('Expanded query embedding failed, using original only');
+              } finally {
+                addStageTiming(stageTimings, 'embeddingMs', Date.now() - expandedEmbeddingStartedAt);
               }
             }
 
@@ -1192,113 +1265,117 @@ Deno.serve(async (req) => {
           console.warn('Query embedding fallback to keyword-only retrieval:', embeddingError);
         }
 
-        const { data: chunks, error: matchErr } = await withTimeout(
-          supabase.rpc('hybrid_search_chunks', {
-            query_embedding: queryEmbeddingPayload,
-            query_text: keywordQueryText,
-            match_count: 12,
-          }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
-          SEARCH_TIMEOUT_MS,
-          'hybrid_search',
-        );
-
-        searchLatencyMs = Date.now() - searchStartedAt;
-
-        if (matchErr) {
-          console.error("Hybrid search error:", matchErr);
-        } else if (chunks && chunks.length > 0) {
-          // Supplementary targeted retrieval for source-routed queries
-          if (sourceTarget && sourceTarget.topicScopes.length > 0 && queryEmbeddingPayload !== KEYWORD_FALLBACK_QUERY_EMBEDDING) {
-            try {
-              const scopeFilter = sourceTarget.topicScopes.map((s) => `topic_scope.eq.${s}`).join(',');
-              const nameFilter = sourceTarget.sourceNamePatterns.map((p) => `source_name.ilike.${p}`).join(',');
-              const orFilter = [scopeFilter, nameFilter].filter(Boolean).join(',');
-              const { data: targetDocs } = await supabase
-                .from('documents')
-                .select('id')
-                .eq('is_active', true)
-                .or(orFilter);
-
-              if (targetDocs && targetDocs.length > 0) {
-                const existingIds = new Set(chunks.map((c) => c.id));
-                const { data: targetChunks } = await supabase.rpc('fetch_targeted_chunks', {
-                  query_embedding: queryEmbeddingPayload,
-                  target_document_ids: targetDocs.map((d) => d.id),
-                  match_count: 3,
-                }) as { data: HybridSearchChunk[] | null };
-
-                if (targetChunks) {
-                  for (const tc of targetChunks) {
-                    if (!existingIds.has(tc.id)) {
-                      chunks.push(tc);
-                      existingIds.add(tc.id);
-                    }
-                  }
-                }
-              }
-            } catch (err) {
-              console.warn('Targeted retrieval failed (non-fatal):', err instanceof Error ? err.message : err);
-            }
-          }
-
-          matchedChunks = chunks;
-          searchResultCount = chunks.length;
-          selectedChunkIds = chunks.map((chunk) => chunk.id);
-          selectedDocumentIds = Array.from(new Set(chunks.map((chunk) => chunk.document_id)));
-          const decision = prepareKnowledgeDecision(
-            lastUserMessage.content,
-            chunks as RetrievedChunk[],
-            sourceTarget,
+        const searchStartedAt = Date.now();
+        try {
+          const { data: chunks, error: matchErr } = await withTimeout(
+            supabase.rpc('hybrid_search_chunks', {
+              query_embedding: queryEmbeddingPayload,
+              query_text: keywordQueryText,
+              match_count: 12,
+            }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
+            SEARCH_TIMEOUT_MS,
+            'hybrid_search',
           );
 
-          retrievalSources = decision.sources;
-          retrievalTopScore = decision.topScore;
-          retrievalQuality = decision.retrievalQuality;
-          groundedReferences = buildGroundedReferences(decision.references);
-
-          if (decision.knowledgeContext) {
-            retrievalMode = "model_grounded";
-            knowledgeContext = decision.knowledgeContext;
-
-            if (decision.retrievalQuality.confidenceTier !== 'fraca' && selectedChunkIds.length > 0) {
+          if (matchErr) {
+            console.error("Hybrid search error:", matchErr);
+          } else if (chunks && chunks.length > 0) {
+            // Supplementary targeted retrieval for source-routed queries
+            if (sourceTarget && sourceTarget.topicScopes.length > 0 && queryEmbeddingPayload !== KEYWORD_FALLBACK_QUERY_EMBEDDING) {
               try {
-                const { data: chunkMeta } = await supabase
-                  .from('document_chunks')
-                  .select('id, document_id, chunk_index')
-                  .in('id', selectedChunkIds.slice(0, 3));
+                const scopeFilter = sourceTarget.topicScopes.map((s) => `topic_scope.eq.${s}`).join(',');
+                const nameFilter = sourceTarget.sourceNamePatterns.map((p) => `source_name.ilike.${p}`).join(',');
+                const orFilter = [scopeFilter, nameFilter].filter(Boolean).join(',');
+                const { data: targetDocs } = await supabase
+                  .from('documents')
+                  .select('id')
+                  .eq('is_active', true)
+                  .or(orFilter);
 
-                if (chunkMeta && chunkMeta.length > 0) {
-                  const topChunk = chunkMeta.sort((a: { chunk_index: number }, b: { chunk_index: number }) => a.chunk_index - b.chunk_index)[0];
-                  const adjacentIndexes = [topChunk.chunk_index - 1, topChunk.chunk_index + 1].filter((i: number) => i >= 0);
-                  const existingIndexes = new Set(chunkMeta.map((c: { chunk_index: number }) => c.chunk_index));
-                  const needed = adjacentIndexes.filter((i: number) => !existingIndexes.has(i));
+                if (targetDocs && targetDocs.length > 0) {
+                  const existingIds = new Set(chunks.map((c) => c.id));
+                  const { data: targetChunks } = await supabase.rpc('fetch_targeted_chunks', {
+                    query_embedding: queryEmbeddingPayload,
+                    target_document_ids: targetDocs.map((d) => d.id),
+                    match_count: 3,
+                  }) as { data: HybridSearchChunk[] | null };
 
-                  if (needed.length > 0) {
-                    const { data: adjacentChunks } = await supabase
-                      .from('document_chunks')
-                      .select('content, page_start, section_title, document_id')
-                      .eq('document_id', topChunk.document_id)
-                      .in('chunk_index', needed)
-                      .eq('is_active', true)
-                      .limit(2);
-
-                    if (adjacentChunks && adjacentChunks.length > 0) {
-                      const docName = chunks?.find((c: HybridSearchChunk) => c.document_id === topChunk.document_id)?.document_name;
-                      const enrichedAdjacent = adjacentChunks.map((ac: { content: string; page_start?: number; section_title?: string }) => ({
-                        content: ac.content,
-                        document_name: docName || undefined,
-                        section_title: ac.section_title || undefined,
-                        page_start: ac.page_start || undefined,
-                      }));
-                      knowledgeContext = enrichKnowledgeContextWithAdjacent(knowledgeContext, enrichedAdjacent);
+                  if (targetChunks) {
+                    for (const tc of targetChunks) {
+                      if (!existingIds.has(tc.id)) {
+                        chunks.push(tc);
+                        existingIds.add(tc.id);
+                      }
                     }
                   }
                 }
-              } catch (adjError) {
-                console.warn('Adjacent chunk enrichment failed (non-fatal):', adjError);
+              } catch (err) {
+                console.warn('Targeted retrieval failed (non-fatal):', err instanceof Error ? err.message : err);
+              }
+            }
+
+            matchedChunks = chunks;
+            searchResultCount = chunks.length;
+            selectedChunkIds = chunks.map((chunk) => chunk.id);
+            selectedDocumentIds = Array.from(new Set(chunks.map((chunk) => chunk.document_id)));
+            const decision = prepareKnowledgeDecision(
+              lastUserMessage.content,
+              chunks as RetrievedChunk[],
+              sourceTarget,
+            );
+
+            retrievalSources = decision.sources;
+            retrievalTopScore = decision.topScore;
+            retrievalQuality = decision.retrievalQuality;
+            groundedReferences = buildGroundedReferences(decision.references);
+
+            if (decision.knowledgeContext) {
+              retrievalMode = "model_grounded";
+              knowledgeContext = decision.knowledgeContext;
+
+              if (decision.retrievalQuality.confidenceTier !== 'fraca' && selectedChunkIds.length > 0) {
+                try {
+                  const { data: chunkMeta } = await supabase
+                    .from('document_chunks')
+                    .select('id, document_id, chunk_index')
+                    .in('id', selectedChunkIds.slice(0, 3));
+
+                  if (chunkMeta && chunkMeta.length > 0) {
+                    const topChunk = chunkMeta.sort((a: { chunk_index: number }, b: { chunk_index: number }) => a.chunk_index - b.chunk_index)[0];
+                    const adjacentIndexes = [topChunk.chunk_index - 1, topChunk.chunk_index + 1].filter((i: number) => i >= 0);
+                    const existingIndexes = new Set(chunkMeta.map((c: { chunk_index: number }) => c.chunk_index));
+                    const needed = adjacentIndexes.filter((i: number) => !existingIndexes.has(i));
+
+                    if (needed.length > 0) {
+                      const { data: adjacentChunks } = await supabase
+                        .from('document_chunks')
+                        .select('content, page_start, section_title, document_id')
+                        .eq('document_id', topChunk.document_id)
+                        .in('chunk_index', needed)
+                        .eq('is_active', true)
+                        .limit(2);
+
+                      if (adjacentChunks && adjacentChunks.length > 0) {
+                        const docName = chunks?.find((c: HybridSearchChunk) => c.document_id === topChunk.document_id)?.document_name;
+                        const enrichedAdjacent = adjacentChunks.map((ac: { content: string; page_start?: number; section_title?: string }) => ({
+                          content: ac.content,
+                          document_name: docName || undefined,
+                          section_title: ac.section_title || undefined,
+                          page_start: ac.page_start || undefined,
+                        }));
+                        knowledgeContext = enrichKnowledgeContextWithAdjacent(knowledgeContext, enrichedAdjacent);
+                      }
+                    }
+                  }
+                } catch (adjError) {
+                  console.warn('Adjacent chunk enrichment failed (non-fatal):', adjError);
+                }
               }
             }
           }
+        } finally {
+          searchLatencyMs = Date.now() - searchStartedAt;
+          addStageTiming(stageTimings, 'searchMs', searchLatencyMs);
         }
       } catch (ragError) {
         console.error('RAG search error (non-fatal):', ragError);
@@ -1344,51 +1421,83 @@ Deno.serve(async (req) => {
       sourceTarget,
       retrievalQuality,
     });
+    structuredTimeoutMsUsed = timeBudgetTracker.structuredTimeoutMs();
+    structuredSkippedForBudget = structuredTimeoutMsUsed === null;
 
-    const structuredResult = await withTimeout(
-      generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages, generationStrategy),
-      GENERATION_TIMEOUT_MS,
-      'structured_generation',
-    ).catch((err) => {
-      console.warn('Structured generation failed/timed out, falling back to stream:', err.message);
-      return null;
-    });
+    if (structuredSkippedForBudget) {
+      console.warn(
+        `Skipping structured generation due to remaining budget (${timeBudgetTracker.remainingMs()}ms). Falling back to stream path.`,
+      );
+    }
+
+    let structuredResult: Awaited<ReturnType<typeof generateStructuredWithFallback>> = null;
+    if (structuredTimeoutMsUsed != null) {
+      const structuredGenerationStartedAt = Date.now();
+      structuredResult = await withTimeout(
+        generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages, generationStrategy),
+        structuredTimeoutMsUsed,
+        'structured_generation',
+      ).catch((err) => {
+        console.warn('Structured generation failed/timed out, falling back to stream:', err.message);
+        return null;
+      }).finally(() => {
+        addStageTiming(stageTimings, 'generationMs', Date.now() - structuredGenerationStartedAt);
+      });
+    }
 
     if (structuredResult && lastUserMessage) {
       let resolvedStructuredResult = structuredResult;
+      const initialSanitizationStartedAt = Date.now();
       let structuredResponse = sanitizeStructuredResponse(structuredResult.response, {
         groundedReferences,
         usedRag: retrievalMode === "model_grounded",
         responseMode,
       });
+      const hasInternalLeakage = responseHasInternalProcessLeakage(structuredResponse);
+      addStageTiming(stageTimings, 'sanitizationMs', Date.now() - initialSanitizationStartedAt);
 
-      if (responseHasInternalProcessLeakage(structuredResponse)) {
-        const repairedStructuredResult = await withTimeout(
-          generateStructuredWithFallback(
-            ai,
-            `${systemPromptWithContext}
+      if (hasInternalLeakage) {
+        leakageRepairTimeoutMsUsed = timeBudgetTracker.leakageRepairTimeoutMs();
+        let repairedStructuredResult: Awaited<ReturnType<typeof generateStructuredWithFallback>> = null;
+
+        if (leakageRepairTimeoutMsUsed != null) {
+          const leakageRepairStartedAt = Date.now();
+          repairedStructuredResult = await withTimeout(
+            generateStructuredWithFallback(
+              ai,
+              `${systemPromptWithContext}
 
 REESCRITA OBRIGATORIA:
 - Reescreva a resposta focando apenas na orientacao operacional ao usuario.
 - Nao mencione base interna, analise interna, comparacao de fontes, RAG, embeddings, backend, telemetria, schema ou qualquer bastidor do sistema.
 - Se houver base suficiente, responda em passo a passo claro sobre o SEI-Rio.`,
-            chatMessages,
-            generationStrategy,
-          ),
-          GENERATION_TIMEOUT_MS,
-          'leakage_repair',
-        ).catch(() => null);
+              chatMessages,
+              generationStrategy,
+            ),
+            leakageRepairTimeoutMsUsed,
+            'leakage_repair',
+          ).catch(() => null).finally(() => {
+            addStageTiming(stageTimings, 'generationMs', Date.now() - leakageRepairStartedAt);
+          });
+        } else {
+          console.warn(
+            `Skipping leakage repair due to remaining budget (${timeBudgetTracker.remainingMs()}ms).`,
+          );
+        }
 
         if (repairedStructuredResult) {
+          const repairedSanitizationStartedAt = Date.now();
           resolvedStructuredResult = repairedStructuredResult;
           structuredResponse = sanitizeStructuredResponse(repairedStructuredResult.response, {
             groundedReferences,
             usedRag: retrievalMode === "model_grounded",
             responseMode,
           });
+          addStageTiming(stageTimings, 'sanitizationMs', Date.now() - repairedSanitizationStartedAt);
         }
       }
 
+      const renderStartedAt = Date.now();
       const structuredPlainText = renderStructuredResponseToPlainText(structuredResponse);
 
       const ragQualityScore = computeRagQualityScore(
@@ -1396,6 +1505,7 @@ REESCRITA OBRIGATORIA:
         structuredResponse,
         structuredResponse.referenciasFinais.length,
       );
+      addStageTiming(stageTimings, 'sanitizationMs', Date.now() - renderStartedAt);
 
       const telemetryCtx: TelemetryContext = {
         supabase, requestId, requestStartedAt,
@@ -1407,6 +1517,14 @@ REESCRITA OBRIGATORIA:
         searchMetricId, knowledgeContext, responseMode,
         ragQualityScore, expandedQuery: expandedQueryText,
         sourceTargetLabel: sourceTarget?.label ?? null,
+        stageTimings,
+        budgetTotalMs: REQUEST_TIME_BUDGET_MS,
+        budgetElapsedMs: timeBudgetTracker.elapsedMs(),
+        budgetRemainingMs: timeBudgetTracker.remainingMs(),
+        structuredSkippedForBudget,
+        structuredTimeoutMs: structuredTimeoutMsUsed,
+        streamInitTimeoutMs: streamInitTimeoutMsUsed,
+        leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
       };
 
       await recordTelemetry(
@@ -1430,7 +1548,19 @@ REESCRITA OBRIGATORIA:
     // --- CALL GEMINI WITH FALLBACK ---
     let result: { stream: ReadableStream<Uint8Array>; model: string };
     try {
-      result = await callGeminiWithFallback(ai, systemPromptWithContext, chatMessages, generationStrategy);
+      streamInitTimeoutMsUsed = timeBudgetTracker.streamInitTimeoutMs();
+      if (streamInitTimeoutMsUsed == null) {
+        throw new Error('Timeout: stream_generation sem budget restante');
+      }
+
+      const streamGenerationStartedAt = Date.now();
+      result = await withTimeout(
+        callGeminiWithFallback(ai, systemPromptWithContext, chatMessages, generationStrategy),
+        streamInitTimeoutMsUsed,
+        'stream_generation',
+      ).finally(() => {
+        addStageTiming(stageTimings, 'generationMs', Date.now() - streamGenerationStartedAt);
+      });
     } catch (err: unknown) {
       const rawErrorMsg = getErrorMessage(err);
       const errorMsg = getPublicErrorMessage(err);
@@ -1451,6 +1581,14 @@ REESCRITA OBRIGATORIA:
           ragQualityScore: computeRagQualityScore(retrievalQuality, fallbackResponse, fallbackResponse.referenciasFinais.length),
           expandedQuery: expandedQueryText,
           sourceTargetLabel: sourceTarget?.label ?? null,
+          stageTimings,
+          budgetTotalMs: REQUEST_TIME_BUDGET_MS,
+          budgetElapsedMs: timeBudgetTracker.elapsedMs(),
+          budgetRemainingMs: timeBudgetTracker.remainingMs(),
+          structuredSkippedForBudget,
+          structuredTimeoutMs: structuredTimeoutMsUsed,
+          streamInitTimeoutMs: streamInitTimeoutMsUsed,
+          leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
         };
 
         await recordTelemetry(
@@ -1494,6 +1632,18 @@ REESCRITA OBRIGATORIA:
             retrieval_mode: retrievalMode,
             sources: retrievalSources,
             attempted_models: generationStrategy.orderedModels,
+            embedding_ms: stageTimings.embeddingMs,
+            expansion_ms: stageTimings.expansionMs,
+            search_ms: stageTimings.searchMs,
+            generation_ms: stageTimings.generationMs,
+            sanitization_ms: stageTimings.sanitizationMs,
+            time_budget_ms: REQUEST_TIME_BUDGET_MS,
+            budget_elapsed_ms: timeBudgetTracker.elapsedMs(),
+            budget_remaining_ms: timeBudgetTracker.remainingMs(),
+            structured_skipped_for_budget: structuredSkippedForBudget,
+            structured_timeout_ms: structuredTimeoutMsUsed,
+            stream_init_timeout_ms: streamInitTimeoutMsUsed,
+            leakage_repair_timeout_ms: leakageRepairTimeoutMsUsed,
           },
         }).then(({ error }) => {
           if (error) console.error('chat_metrics failure insert error:', error);
@@ -1542,6 +1692,14 @@ REESCRITA OBRIGATORIA:
         ragQualityScore: computeRagQualityScore(retrievalQuality, null, retrievalSources.length),
         expandedQuery: expandedQueryText,
         sourceTargetLabel: sourceTarget?.label ?? null,
+        stageTimings,
+        budgetTotalMs: REQUEST_TIME_BUDGET_MS,
+        budgetElapsedMs: timeBudgetTracker.elapsedMs(),
+        budgetRemainingMs: timeBudgetTracker.remainingMs(),
+        structuredSkippedForBudget,
+        structuredTimeoutMs: structuredTimeoutMsUsed,
+        streamInitTimeoutMs: streamInitTimeoutMsUsed,
+        leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
       };
 
       void readSseText(telemetryStream)
