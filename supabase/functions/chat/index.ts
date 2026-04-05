@@ -22,6 +22,11 @@ import {
   type ChatPromptTelemetry,
 } from "./prompt-telemetry.ts";
 import {
+  buildDocumentRescuePlan,
+  buildKeywordSearchCandidates,
+  type DocumentRescuePlan,
+} from "./keyword-rescue.ts";
+import {
   KEYWORD_ONLY_QUERY_EMBEDDING_MODEL,
   shouldUseSemanticRetrieval,
 } from "./retrieval-mode.ts";
@@ -264,6 +269,65 @@ function buildGenerationStrategy(options: {
     streamTemperature: options.responseMode === 'didatico' ? 0.45 : 0.2,
     streamTopP: options.responseMode === 'didatico' ? 0.95 : 0.8,
   };
+}
+
+function buildDocumentRescueOrFilter(plan: DocumentRescuePlan): string | null {
+  const filters = [
+    ...plan.topicScopes.map((scope) => `topic_scope.eq.${scope}`),
+    ...plan.sourceNamePatterns.map((pattern) => `source_name.ilike.${pattern}`),
+    ...plan.namePatterns.map((pattern) => `name.ilike.${pattern}`),
+    ...plan.versionPatterns.map((pattern) => `version_label.ilike.${pattern}`),
+  ];
+
+  return filters.length > 0 ? filters.join(',') : null;
+}
+
+async function fetchKeywordSearchMatches(
+  supabase: ReturnType<typeof createClient>,
+  queryEmbeddingPayload: string | null,
+  queryText: string,
+  matchCount = 12,
+): Promise<HybridSearchChunk[] | null> {
+  const { data: chunks, error } = await withTimeout(
+    supabase.rpc('hybrid_search_chunks', {
+      query_embedding: queryEmbeddingPayload,
+      query_text: queryText,
+      match_count: matchCount,
+    }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
+    SEARCH_TIMEOUT_MS,
+    'hybrid_search',
+  );
+
+  if (error) {
+    console.error("Hybrid search error:", error);
+    return null;
+  }
+
+  return chunks;
+}
+
+async function fetchTargetedKeywordMatches(
+  supabase: ReturnType<typeof createClient>,
+  queryText: string,
+  targetDocumentIds: string[],
+  matchCount = 4,
+): Promise<HybridSearchChunk[] | null> {
+  const { data, error } = await withTimeout(
+    supabase.rpc('fetch_targeted_keyword_chunks', {
+      query_text: queryText,
+      target_document_ids: targetDocumentIds,
+      match_count: matchCount,
+    }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
+    SEARCH_TIMEOUT_MS,
+    'targeted_keyword_search',
+  );
+
+  if (error) {
+    console.warn('Targeted keyword retrieval failed (non-fatal):', error);
+    return null;
+  }
+
+  return data;
 }
 
 // ============================================================
@@ -1284,52 +1348,95 @@ Deno.serve(async (req) => {
 
         const searchStartedAt = Date.now();
         try {
-          const { data: chunks, error: matchErr } = await withTimeout(
-            supabase.rpc('hybrid_search_chunks', {
-              query_embedding: queryEmbeddingPayload,
-              query_text: keywordQueryText,
-              match_count: 12,
-            }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
-            SEARCH_TIMEOUT_MS,
-            'hybrid_search',
-          );
+          const keywordSearchCandidates = buildKeywordSearchCandidates(keywordQueryText, expandedQueryText);
+          const rescuePlan = buildDocumentRescuePlan(lastUserMessage.content, sourceTarget);
+          let chunks: HybridSearchChunk[] = [];
 
-          if (matchErr) {
-            console.error("Hybrid search error:", matchErr);
-          } else if (chunks && chunks.length > 0) {
-            // Supplementary targeted retrieval for source-routed queries
-            if (sourceTarget && sourceTarget.topicScopes.length > 0 && shouldUseSemanticRetrieval(queryEmbeddingPayload)) {
-              try {
-                const scopeFilter = sourceTarget.topicScopes.map((s) => `topic_scope.eq.${s}`).join(',');
-                const nameFilter = sourceTarget.sourceNamePatterns.map((p) => `source_name.ilike.${p}`).join(',');
-                const orFilter = [scopeFilter, nameFilter].filter(Boolean).join(',');
-                const { data: targetDocs } = await supabase
+          for (const candidate of keywordSearchCandidates) {
+            const found = await fetchKeywordSearchMatches(
+              supabase,
+              queryEmbeddingPayload,
+              candidate,
+              12,
+            );
+
+            if (found && found.length > 0) {
+              chunks = found;
+              keywordQueryText = candidate;
+              break;
+            }
+          }
+
+          const shouldUseSemantic = shouldUseSemanticRetrieval(queryEmbeddingPayload);
+          let targetDocumentIds: string[] = [];
+
+          if (rescuePlan && (!shouldUseSemantic || chunks.length === 0 || sourceTarget)) {
+            try {
+              const rescueOrFilter = buildDocumentRescueOrFilter(rescuePlan);
+              if (rescueOrFilter) {
+                const { data: targetDocs, error: targetDocError } = await supabase
                   .from('documents')
                   .select('id')
                   .eq('is_active', true)
-                  .or(orFilter);
+                  .or(rescueOrFilter);
 
-                if (targetDocs && targetDocs.length > 0) {
-                  const existingIds = new Set(chunks.map((c) => c.id));
-                  const { data: targetChunks } = await supabase.rpc('fetch_targeted_chunks', {
-                    query_embedding: queryEmbeddingPayload,
-                    target_document_ids: targetDocs.map((d) => d.id),
-                    match_count: 3,
-                  }) as { data: HybridSearchChunk[] | null };
+                if (targetDocError) {
+                  console.warn('Target document resolution failed (non-fatal):', targetDocError);
+                } else if (targetDocs && targetDocs.length > 0) {
+                  targetDocumentIds = targetDocs.map((doc) => doc.id);
+                }
+              }
+            } catch (err) {
+              console.warn('Target document resolution failed (non-fatal):', err instanceof Error ? err.message : err);
+            }
+          }
 
-                  if (targetChunks) {
-                    for (const tc of targetChunks) {
-                      if (!existingIds.has(tc.id)) {
-                        chunks.push(tc);
-                        existingIds.add(tc.id);
-                      }
-                    }
+          if (sourceTarget && sourceTarget.topicScopes.length > 0 && shouldUseSemantic && chunks.length > 0) {
+            // Supplementary targeted retrieval for source-routed queries
+            try {
+              const existingIds = new Set(chunks.map((c) => c.id));
+              const { data: targetChunks } = await supabase.rpc('fetch_targeted_chunks', {
+                query_embedding: queryEmbeddingPayload,
+                target_document_ids: targetDocumentIds,
+                match_count: 3,
+              }) as { data: HybridSearchChunk[] | null };
+
+              if (targetChunks) {
+                for (const tc of targetChunks) {
+                  if (!existingIds.has(tc.id)) {
+                    chunks.push(tc);
+                    existingIds.add(tc.id);
                   }
                 }
-              } catch (err) {
-                console.warn('Targeted retrieval failed (non-fatal):', err instanceof Error ? err.message : err);
+              }
+            } catch (err) {
+              console.warn('Targeted retrieval failed (non-fatal):', err instanceof Error ? err.message : err);
+            }
+          } else if (!shouldUseSemantic && targetDocumentIds.length > 0) {
+            const rescueQuery = keywordSearchCandidates[0] ?? keywordQueryText;
+            const targetedKeywordChunks = await fetchTargetedKeywordMatches(
+              supabase,
+              rescueQuery,
+              targetDocumentIds,
+              chunks.length > 0 ? 3 : 4,
+            );
+
+            if (targetedKeywordChunks && targetedKeywordChunks.length > 0) {
+              const existingIds = new Set(chunks.map((chunk) => chunk.id));
+              for (const targetChunk of targetedKeywordChunks) {
+                if (!existingIds.has(targetChunk.id)) {
+                  chunks.push(targetChunk);
+                  existingIds.add(targetChunk.id);
+                }
+              }
+
+              if (chunks.length > 0) {
+                searchMode = 'keyword_only_targeted';
               }
             }
+          }
+
+          if (chunks.length > 0) {
 
             matchedChunks = chunks;
             searchResultCount = chunks.length;
