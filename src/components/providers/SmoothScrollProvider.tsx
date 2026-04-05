@@ -1,5 +1,11 @@
-import { useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import Lenis from "lenis";
+
+const LenisContext = createContext<Lenis | null>(null);
+
+export function useLenis() {
+  return useContext(LenisContext);
+}
 
 const SmoothScrollProvider = ({ children }: { children: React.ReactNode }) => {
   const lenisRef = useRef<Lenis | null>(null);
@@ -28,7 +34,11 @@ const SmoothScrollProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  return <>{children}</>;
+  return (
+    <LenisContext.Provider value={lenisRef.current}>
+      {children}
+    </LenisContext.Provider>
+  );
 };
 
 export default SmoothScrollProvider;

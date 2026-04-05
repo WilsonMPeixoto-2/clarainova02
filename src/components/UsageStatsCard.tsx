@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   ChatTeardropText,
@@ -29,30 +29,18 @@ interface UsageStats {
   top_topics: TopicInsight[];
 }
 
+async function fetchUsageStats(): Promise<UsageStats> {
+  const { data, error } = await supabase.functions.invoke("get-usage-stats");
+  if (error) throw error;
+  return data as UsageStats;
+}
+
 export default function UsageStatsCard() {
-  const [stats, setStats] = useState<UsageStats | null>(null);
-  const [loading, setLoading] = useState(hasSupabaseConfig);
-
-  useEffect(() => {
-    if (!hasSupabaseConfig) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchStats = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("get-usage-stats");
-        if (!error && data) {
-          setStats(data as UsageStats);
-        }
-      } catch (e) {
-        console.error("Failed to fetch usage stats:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, []);
+  const { data: stats, isPending: loading } = useQuery({
+    queryKey: ["usage-stats"],
+    queryFn: fetchUsageStats,
+    enabled: hasSupabaseConfig,
+  });
 
   const items = stats
     ? [

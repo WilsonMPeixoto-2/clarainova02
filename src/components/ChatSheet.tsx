@@ -727,12 +727,14 @@ const ChatSheet = () => {
                   </div>
                 )}
 
+                <AnimatePresence mode="popLayout">
                 {messages.map((message, index) => (
                   <motion.div
                     key={`${message.role}-${index}`}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     initial={{ opacity: 0, y: 12, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
                     transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <div
@@ -763,6 +765,7 @@ const ChatSheet = () => {
                     </div>
                   </motion.div>
                 ))}
+                </AnimatePresence>
 
                 {isLoading && !isStreaming && (
                   <motion.div
