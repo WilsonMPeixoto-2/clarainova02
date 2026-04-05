@@ -239,6 +239,7 @@ def derive_governance(row: dict[str, str], chunk_count: int) -> tuple[dict, dict
             "resolucao": "sei_rio_norma",
             "guia": "sei_rio_guia",
             "manual": "sei_rio_manual",
+            "termo": "sei_rio_termo",
             "faq": "sei_rio_faq",
         }.get(tipo, "material_apoio")
         search_weight = {
@@ -271,6 +272,7 @@ def derive_governance(row: dict[str, str], chunk_count: int) -> tuple[dict, dict
         "resolucao": "norma",
         "guia": "guia",
         "manual": "manual",
+        "termo": "termo",
         "faq": "faq",
     }.get(tipo, "apoio")
     source_type = {

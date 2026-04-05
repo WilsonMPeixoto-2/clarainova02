@@ -455,6 +455,7 @@ function inferReferenceTypeFromMetadata(reference: KnowledgeReference): ClaraStr
   if (reference.documentKind === "manual") return "manual";
   if (reference.documentKind === "guia") return "guia";
   if (reference.documentKind === "norma") return "norma";
+  if (reference.documentKind === "termo") return "norma";
   return inferReferenceType(reference.documentName);
 }
 

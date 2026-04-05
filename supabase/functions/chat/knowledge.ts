@@ -147,11 +147,34 @@ const DOCUMENT_KIND_SCORE: Record<string, number> = {
   norma: 1.2,
   manual: 1,
   guia: 0.8,
+  termo: 0.95,
   faq: 0.45,
   administrativo: 0.3,
   apoio: 0.15,
   internal_technical: -4,
 };
+
+interface ChunkScore {
+  accept: boolean;
+  overlap: number;
+  finalScore: number;
+  technicalMatches: number;
+}
+
+interface CoverageRequirement {
+  key: string;
+  minCount: number;
+  scoreBoost: number;
+  matchesChunk: (chunk: ParsedChunk) => boolean;
+}
+
+interface ScoredChunkEntry {
+  chunk: ParsedChunk;
+  index: number;
+  score: ChunkScore;
+  routeMatch: boolean;
+  coverageKeys: string[];
+}
 
 function normalizeText(value: string): string {
   return value
@@ -399,8 +422,130 @@ function containsExactVersionLabel(text: string, label: string) {
   return pattern.test(text);
 }
 
-function scoreChunk(question: string, tokens: string[], chunk: ParsedChunk, index: number) {
-  const searchCorpus = `${chunk.documentName}\n${chunk.documentSourceName ?? ""}\n${chunk.sectionTitle ?? ""}\n${chunk.content.slice(0, 1200)}`;
+function buildChunkSearchCorpus(chunk: ParsedChunk) {
+  return `${chunk.documentName}\n${chunk.documentSourceName ?? ""}\n${chunk.sectionTitle ?? ""}\n${chunk.content.slice(0, 1200)}`;
+}
+
+function buildChunkSelectionKey(chunk: ParsedChunk) {
+  return `${chunk.documentName}|${chunk.pageLabel ?? ""}|${chunk.sectionTitle ?? ""}|${chunk.content.slice(0, 80)}`;
+}
+
+function buildCoverageRequirements(question: string): CoverageRequirement[] {
+  const normalizedQuestion = normalizeText(question);
+  const requirements: CoverageRequirement[] = [];
+
+  const asksTransitionCoexistence =
+    /\btransic/.test(normalizedQuestion) &&
+    /\bprocesso(?:\s|\.|-)?rio\b/.test(normalizedQuestion) &&
+    (
+      /\bcontinuar\b/.test(normalizedQuestion) ||
+      /ao mesmo tempo/.test(normalizedQuestion) ||
+      /\bsimultan/.test(normalizedQuestion)
+    );
+
+  if (asksTransitionCoexistence) {
+    requirements.push({
+      key: "transition_migration_guide",
+      minCount: 1,
+      scoreBoost: 7.5,
+      matchesChunk: (chunk) => {
+        const normalizedChunk = normalizeText(buildChunkSearchCorpus(chunk));
+        return chunk.documentTopicScope === "sei_rio_guia" && /migrac/.test(normalizedChunk);
+      },
+    });
+    requirements.push({
+      key: "transition_substitution_norm",
+      minCount: 1,
+      scoreBoost: 9,
+      matchesChunk: (chunk) => {
+        const normalizedChunk = normalizeText(buildChunkSearchCorpus(chunk));
+        const mentionsTransitionDecree =
+          /\b55\.615\b/.test(normalizedChunk) ||
+          (/substitu/.test(normalizedChunk) && /\bprocesso(?:\s|\.|-)?rio\b/.test(normalizedChunk));
+        return chunk.documentTopicScope === "sei_rio_norma" && mentionsTransitionDecree;
+      },
+    });
+  }
+
+  const asksExternalCredentialResponsibility =
+    /\busuario externo\b/.test(normalizedQuestion) &&
+    (
+      /\bcredenc/.test(normalizedQuestion) ||
+      /\bpessoal\b/.test(normalizedQuestion) ||
+      /\bintransfer/.test(normalizedQuestion) ||
+      /\bcredenciais\b/.test(normalizedQuestion) ||
+      /uso indevido/.test(normalizedQuestion)
+    );
+
+  if (asksExternalCredentialResponsibility) {
+    requirements.push({
+      key: "external_user_terms",
+      minCount: 1,
+      scoreBoost: 8.5,
+      matchesChunk: (chunk) => {
+        const normalizedChunk = normalizeText(buildChunkSearchCorpus(chunk));
+        return chunk.documentTopicScope === "sei_rio_termo" || /termo de uso/.test(normalizedChunk);
+      },
+    });
+    requirements.push({
+      key: "external_user_norm",
+      minCount: 1,
+      scoreBoost: 5.5,
+      matchesChunk: (chunk) => {
+        const normalizedChunk = normalizeText(buildChunkSearchCorpus(chunk));
+        const addressesExternalUser =
+          /\busuario externo\b/.test(normalizedChunk) ||
+          /\bcredenc/.test(normalizedChunk) ||
+          /\bato pessoal e intransferivel\b/.test(normalizedChunk);
+        return chunk.documentTopicScope === "sei_rio_norma" && addressesExternalUser;
+      },
+    });
+  }
+
+  return requirements;
+}
+
+function selectScoredChunks(
+  allScored: ScoredChunkEntry[],
+  sourceTarget: SourceTargetRoute | null | undefined,
+  coverageRequirements: CoverageRequirement[],
+) {
+  const selected: ScoredChunkEntry[] = [];
+  const selectedKeys = new Set<string>();
+
+  const tryAddEntry = (entry: ScoredChunkEntry) => {
+    const key = buildChunkSelectionKey(entry.chunk);
+    if (selectedKeys.has(key) || selected.length >= MAX_SELECTED_CHUNKS) return false;
+    selected.push(entry);
+    selectedKeys.add(key);
+    return true;
+  };
+
+  if (sourceTarget) {
+    const routed = allScored.filter((entry) => entry.routeMatch).slice(0, MIN_ROUTED_CHUNKS);
+    for (const entry of routed) tryAddEntry(entry);
+  }
+
+  for (const requirement of coverageRequirements) {
+    let added = 0;
+    for (const entry of allScored) {
+      if (!entry.coverageKeys.includes(requirement.key)) continue;
+      if (tryAddEntry(entry)) added += 1;
+      if (added >= requirement.minCount || selected.length >= MAX_SELECTED_CHUNKS) break;
+    }
+  }
+
+  for (const entry of allScored) {
+    if (selected.length >= MAX_SELECTED_CHUNKS) break;
+    tryAddEntry(entry);
+  }
+
+  selected.sort((left, right) => right.score.finalScore - left.score.finalScore);
+  return selected;
+}
+
+function scoreChunk(question: string, tokens: string[], chunk: ParsedChunk, index: number): ChunkScore {
+  const searchCorpus = buildChunkSearchCorpus(chunk);
   const overlap = lexicalOverlap(tokens, searchCorpus);
   const questionVersionLabels = extractVersionLabels(question);
   const chunkVersionLabels = extractVersionLabels(searchCorpus);
@@ -607,16 +752,24 @@ export function prepareKnowledgeDecision(
   sourceTarget?: SourceTargetRoute | null,
 ): KnowledgeDecision {
   const questionTokens = tokenizeQuestion(question);
+  const coverageRequirements = buildCoverageRequirements(question);
   const allScored = chunks
     .filter((chunk) => Number.isFinite(chunk.similarity))
     .sort((left, right) => right.similarity - left.similarity)
     .map(parseChunk)
-    .map((chunk, index) => ({
-      chunk,
-      index,
-      score: scoreChunk(question, questionTokens, chunk, index),
-      routeMatch: sourceTarget ? sourceTarget.matches(chunk) : false,
-    }))
+    .map((chunk, index) => {
+      const score = scoreChunk(question, questionTokens, chunk, index);
+      const coverageMatches = coverageRequirements.filter((requirement) => requirement.matchesChunk(chunk));
+      const coverageBoost = coverageMatches.reduce((sum, requirement) => sum + requirement.scoreBoost, 0);
+
+      return {
+        chunk,
+        index,
+        score: coverageBoost > 0 ? { ...score, finalScore: score.finalScore + coverageBoost } : score,
+        routeMatch: sourceTarget ? sourceTarget.matches(chunk) : false,
+        coverageKeys: coverageMatches.map((requirement) => requirement.key),
+      };
+    })
     .filter(({ score }) => score.accept);
 
   if (sourceTarget) {
@@ -629,19 +782,7 @@ export function prepareKnowledgeDecision(
 
   allScored.sort((left, right) => right.score.finalScore - left.score.finalScore);
 
-  let scoredChunks: typeof allScored;
-  if (sourceTarget) {
-    const routed = allScored.filter((e) => e.routeMatch);
-    const nonRouted = allScored.filter((e) => !e.routeMatch);
-    const guaranteedRouted = routed.slice(0, MIN_ROUTED_CHUNKS);
-    const remaining = [...routed.slice(MIN_ROUTED_CHUNKS), ...nonRouted]
-      .sort((a, b) => b.score.finalScore - a.score.finalScore);
-    const merged = [...guaranteedRouted, ...remaining].slice(0, MAX_SELECTED_CHUNKS);
-    merged.sort((a, b) => b.score.finalScore - a.score.finalScore);
-    scoredChunks = merged;
-  } else {
-    scoredChunks = allScored.slice(0, MAX_SELECTED_CHUNKS);
-  }
+  const scoredChunks = selectScoredChunks(allScored, sourceTarget, coverageRequirements);
 
   const parsedChunks = scoredChunks.map(({ chunk }) => chunk);
 

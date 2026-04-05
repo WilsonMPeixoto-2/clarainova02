@@ -2,6 +2,7 @@ export type KnowledgeTopicScope =
   | 'sei_rio_manual'
   | 'sei_rio_guia'
   | 'sei_rio_norma'
+  | 'sei_rio_termo'
   | 'sei_rio_faq'
   | 'rotina_administrativa'
   | 'material_apoio'
@@ -11,6 +12,7 @@ export type KnowledgeDocumentKind =
   | 'manual'
   | 'guia'
   | 'norma'
+  | 'termo'
   | 'faq'
   | 'administrativo'
   | 'apoio'
@@ -42,6 +44,7 @@ export const KNOWLEDGE_TOPIC_SCOPES: KnowledgeTopicScope[] = [
   'sei_rio_manual',
   'sei_rio_guia',
   'sei_rio_norma',
+  'sei_rio_termo',
   'sei_rio_faq',
   'rotina_administrativa',
   'material_apoio',
@@ -52,6 +55,7 @@ export const KNOWLEDGE_DOCUMENT_KINDS: KnowledgeDocumentKind[] = [
   'manual',
   'guia',
   'norma',
+  'termo',
   'faq',
   'administrativo',
   'apoio',
@@ -129,6 +133,7 @@ export const KNOWLEDGE_TOPIC_SCOPE_LABELS: Record<KnowledgeTopicScope, string> =
   sei_rio_manual: 'Manual do SEI-Rio',
   sei_rio_guia: 'Guia do SEI-Rio',
   sei_rio_norma: 'Norma do SEI-Rio',
+  sei_rio_termo: 'Termo do SEI-Rio',
   sei_rio_faq: 'FAQ do SEI-Rio',
   rotina_administrativa: 'Rotina administrativa',
   material_apoio: 'Material de apoio',
@@ -139,6 +144,7 @@ export const KNOWLEDGE_DOCUMENT_KIND_LABELS: Record<KnowledgeDocumentKind, strin
   manual: 'Manual',
   guia: 'Guia',
   norma: 'Norma',
+  termo: 'Termo',
   faq: 'FAQ',
   administrativo: 'Administrativo',
   apoio: 'Apoio',
@@ -178,6 +184,7 @@ export interface KnowledgeDocumentClassification {
   guideScore: number;
   normativeScore: number;
   manualScore: number;
+  termScore: number;
   searchWeight: number;
   tags: string[];
   excludedFromChatReason: string | null;
@@ -275,6 +282,14 @@ const MANUAL_PATTERNS = [
   /\bmanual de uso\b/i,
 ];
 
+const TERM_PATTERNS = [
+  /\btermo de uso\b/i,
+  /\baviso de privacidade\b/i,
+  /\bcontrato de ades[aã]o\b/i,
+  /\bautocadastro\b/i,
+  /\busu[aá]rio externo\b/i,
+];
+
 const NORMATIVE_PATTERNS = [
   /\bportaria\b/i,
   /\binstruc[aã]o normativa\b/i,
@@ -296,6 +311,7 @@ function buildTags(input: {
   guideScore: number;
   normativeScore: number;
   manualScore: number;
+  termScore: number;
 }) {
   const tags: string[] = [];
 
@@ -305,6 +321,7 @@ function buildTags(input: {
   if (input.manualScore > 0) tags.push('manual');
   if (input.guideScore > 0) tags.push('guia');
   if (input.normativeScore > 0) tags.push('norma');
+  if (input.termScore > 0) tags.push('termo');
   if (input.faqScore > 0) tags.push('faq');
 
   return tags;
@@ -320,6 +337,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
   const guideScore = countMatches(GUIDE_PATTERNS, corpus);
   const normativeScore = countMatches(NORMATIVE_PATTERNS, corpus);
   const manualScore = countMatches(MANUAL_PATTERNS, corpus);
+  const termScore = countMatches(TERM_PATTERNS, corpus);
   const tags = buildTags({
     seiScore,
     proceduralScore,
@@ -328,6 +346,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
     guideScore,
     normativeScore,
     manualScore,
+    termScore,
   });
   const isSeiRioMaterial = seiScore > 0;
 
@@ -345,9 +364,31 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
       guideScore,
       normativeScore,
       manualScore,
+      termScore,
       searchWeight: 0,
       tags: ['interno-tecnico'],
       excludedFromChatReason: 'internal_technical',
+    };
+  }
+
+  if (termScore > 0 && isSeiRioMaterial) {
+    return {
+      topicScope: 'sei_rio_termo',
+      documentKind: 'termo',
+      authorityLevel: 'official',
+      shouldIndex: true,
+      warning: null,
+      technicalScore,
+      proceduralScore,
+      officialScore,
+      faqScore,
+      guideScore,
+      normativeScore,
+      manualScore,
+      termScore,
+      searchWeight: 1.12,
+      tags,
+      excludedFromChatReason: null,
     };
   }
 
@@ -365,6 +406,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
       guideScore,
       normativeScore,
       manualScore,
+      termScore,
       searchWeight: officialScore > 0 ? 1.35 : 1.2,
       tags,
       excludedFromChatReason: null,
@@ -385,6 +427,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
       guideScore,
       normativeScore,
       manualScore,
+      termScore,
       searchWeight: officialScore > 0 ? 1.3 : 1.15,
       tags,
       excludedFromChatReason: null,
@@ -405,6 +448,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
       guideScore,
       normativeScore,
       manualScore,
+      termScore,
       searchWeight: officialScore > 0 ? 1.18 : 1.05,
       tags,
       excludedFromChatReason: null,
@@ -425,6 +469,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
       guideScore,
       normativeScore,
       manualScore,
+      termScore,
       searchWeight: 0.92,
       tags,
       excludedFromChatReason: null,
@@ -445,6 +490,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
       guideScore,
       normativeScore,
       manualScore,
+      termScore,
       searchWeight: 0.95,
       tags,
       excludedFromChatReason: null,
@@ -464,6 +510,7 @@ export function classifyKnowledgeDocument(fileName: string, text: string): Knowl
     guideScore,
     normativeScore,
     manualScore,
+    termScore,
     searchWeight: 0.8,
     tags,
     excludedFromChatReason: null,
@@ -483,6 +530,7 @@ export function recommendKnowledgeGovernance(
 
   if (
     classification.documentKind === 'norma' ||
+    classification.documentKind === 'termo' ||
     (classification.documentKind === 'manual' && classification.authorityLevel === 'official')
   ) {
     return {

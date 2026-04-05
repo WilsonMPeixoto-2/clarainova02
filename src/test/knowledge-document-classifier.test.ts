@@ -41,6 +41,19 @@ describe("knowledge document classifier", () => {
     expect(result.shouldIndex).toBe(true);
   });
 
+  it("classifies SEI-Rio terms as official term material instead of generic support", () => {
+    const result = classifyKnowledgeDocument(
+      "Termo de Uso e Aviso de Privacidade do SEI.Rio.pdf",
+      "O presente Termo de Uso do SEI.Rio disciplina o credenciamento de usuário externo, o autocadastro com gov.br e as responsabilidades pela guarda de senha e uso indevido do serviço.",
+    );
+
+    expect(result.topicScope).toBe("sei_rio_termo");
+    expect(result.documentKind).toBe("termo");
+    expect(result.authorityLevel).toBe("official");
+    expect(result.searchWeight).toBeGreaterThanOrEqual(1);
+    expect(result.shouldIndex).toBe(true);
+  });
+
   it("prioritizes normative documents when procedural and normative signals coexist", () => {
     const result = classifyKnowledgeDocument(
       "Portaria sobre tramitacao no SEI-Rio.pdf",
@@ -80,6 +93,18 @@ describe("knowledge document classifier", () => {
     expect(recommendKnowledgeGovernance(supportMaterial)).toMatchObject({
       corpusCategory: "apoio_complementar",
       ingestionPriority: "baixa",
+    });
+  });
+
+  it("keeps SEI-Rio terms in the official corpus lane", () => {
+    const term = classifyKnowledgeDocument(
+      "Termo de Uso e Aviso de Privacidade do SEI.Rio.pdf",
+      "O Termo de Uso do SEI.Rio regula o credenciamento de usuário externo, responsabilidades de uso e proteção de dados pessoais no serviço.",
+    );
+
+    expect(recommendKnowledgeGovernance(term)).toMatchObject({
+      corpusCategory: "nucleo_oficial",
+      ingestionPriority: "alta",
     });
   });
 });

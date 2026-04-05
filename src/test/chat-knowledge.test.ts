@@ -172,4 +172,172 @@ describe("prepareKnowledgeDecision", () => {
     expect(decision.references[0]?.documentName).toBe("Manual SEI-Rio.pdf");
     expect(decision.sources[0]).toContain("Manual SEI-Rio.pdf");
   });
+
+  it("guarantees migration guide and substitution decree coverage for transition coexistence questions", () => {
+    const decision = prepareKnowledgeDecision(
+      "Durante a transição, o servidor pode continuar usando o Processo.rio ao mesmo tempo que o SEI.Rio?",
+      [
+        {
+          document_name: "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+          document_kind: "norma",
+          document_authority_level: "official",
+          document_search_weight: 1.35,
+          document_topic_scope: "sei_rio_norma",
+          similarity: 0.019,
+          content:
+            "[Fonte: Decreto Rio nº 57.250 de 19 de novembro de 2025 | Página: 1]\n\nO SEI.Rio passa a ser o sistema corporativo de gestão de processos e documentos administrativos no âmbito do Poder Executivo municipal.",
+        },
+        {
+          document_name: "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+          document_kind: "norma",
+          document_authority_level: "official",
+          document_search_weight: 1.35,
+          document_topic_scope: "sei_rio_norma",
+          similarity: 0.0185,
+          content:
+            "[Fonte: Decreto Rio nº 57.250 de 19 de novembro de 2025 | Página: 4]\n\nOs novos processos devem ser iniciados no SEI.Rio conforme cronograma definido para a implantação do sistema.",
+        },
+        {
+          document_name: "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+          document_kind: "norma",
+          document_authority_level: "official",
+          document_search_weight: 1.35,
+          document_topic_scope: "sei_rio_norma",
+          similarity: 0.018,
+          content:
+            "[Fonte: Decreto Rio nº 57.250 de 19 de novembro de 2025 | Página: 11]\n\nO período de transição terá marcos definidos para abertura, instrução e encerramento do uso operacional do Processo.rio.",
+        },
+        {
+          document_name: "Guia de migracao – SEI.Rio",
+          document_kind: "guia",
+          document_authority_level: "official",
+          document_search_weight: 1.12,
+          document_topic_scope: "sei_rio_guia",
+          similarity: 0.0175,
+          content:
+            "[Fonte: Guia de migracao – SEI.Rio | Página: 1]\n\nDurante a migração, os processos que ainda não foram migrados podem continuar recebendo instrução no Processo.rio até o marco final do período de transição.",
+        },
+        {
+          document_name: "Guia do usuário interno – SEI.Rio",
+          document_kind: "guia",
+          document_authority_level: "official",
+          document_search_weight: 1.12,
+          document_topic_scope: "sei_rio_guia",
+          similarity: 0.017,
+          content:
+            "[Fonte: Guia do usuário interno – SEI.Rio | Página: 3]\n\nO acesso ao SEI.Rio exige login por matrícula e navegação pelos menus de processo, documento e assinatura.",
+        },
+        {
+          document_name: "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+          document_kind: "norma",
+          document_authority_level: "official",
+          document_search_weight: 1.35,
+          document_topic_scope: "sei_rio_norma",
+          similarity: 0.0165,
+          content:
+            "[Fonte: Decreto Rio nº 57.250 de 19 de novembro de 2025 | Página: 5]\n\nO credenciamento de usuário externo no SEI.Rio será feito por autocadastro com autenticação gov.br.",
+        },
+        {
+          document_name: "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+          document_kind: "norma",
+          document_authority_level: "official",
+          document_search_weight: 1.32,
+          document_topic_scope: "sei_rio_norma",
+          similarity: 0.011,
+          content:
+            "[Fonte: Decreto Rio nº 55.615 de 1º de janeiro de 2025 | Página: 1]\n\nDispõe sobre a substituição do Sistema Eletrônico de Documentos e Processos - Processo.rio pelo Sistema Eletrônico de Informações - SEI-Rio.",
+        },
+      ],
+    );
+
+    const documentNames = decision.references.map((reference) => reference.documentName);
+
+    expect(documentNames).toContain("Guia de migracao – SEI.Rio");
+    expect(documentNames).toContain("Decreto Rio nº 55.615 de 1º de janeiro de 2025");
+    expect(decision.references).toHaveLength(6);
+  });
+
+  it("guarantees terms coverage for external-user responsibility questions even when the term chunk ranks lower", () => {
+    const decision = prepareKnowledgeDecision(
+      "O credenciamento de usuário externo no SEI.Rio é pessoal e intransferível?",
+      [
+        {
+          document_name: "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+          document_kind: "norma",
+          document_authority_level: "official",
+          document_search_weight: 1.35,
+          document_topic_scope: "sei_rio_norma",
+          similarity: 0.019,
+          content:
+            "[Fonte: Decreto Rio nº 57.250 de 19 de novembro de 2025 | Página: 5]\n\nO credenciamento de usuário externo no SEI.Rio é ato pessoal e intransferível, condicionado à aceitação das regras do sistema.",
+        },
+        {
+          document_name: "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+          document_kind: "norma",
+          document_authority_level: "official",
+          document_search_weight: 1.35,
+          document_topic_scope: "sei_rio_norma",
+          similarity: 0.018,
+          content:
+            "[Fonte: Decreto Rio nº 57.250 de 19 de novembro de 2025 | Página: 4]\n\nOs usuários internos e externos devem observar os deveres de acesso, guarda de informações e proteção dos dados tratados no sistema.",
+        },
+        {
+          document_name: "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+          document_kind: "norma",
+          document_authority_level: "official",
+          document_search_weight: 1.35,
+          document_topic_scope: "sei_rio_norma",
+          similarity: 0.0175,
+          content:
+            "[Fonte: Decreto Rio nº 57.250 de 19 de novembro de 2025 | Página: 7]\n\nO uso do sistema deve observar os níveis de acesso e as responsabilidades pela guarda das informações.",
+        },
+        {
+          document_name: "Guia do usuario externo – SEI.Rio",
+          document_kind: "guia",
+          document_authority_level: "official",
+          document_search_weight: 1.12,
+          document_topic_scope: "sei_rio_guia",
+          similarity: 0.017,
+          content:
+            "[Fonte: Guia do usuario externo – SEI.Rio | Página: 2]\n\nO usuário externo deve manter seus dados cadastrais atualizados para acessar corretamente o módulo de peticionamento.",
+        },
+        {
+          document_name: "Guia do usuario externo – SEI.Rio",
+          document_kind: "guia",
+          document_authority_level: "official",
+          document_search_weight: 1.12,
+          document_topic_scope: "sei_rio_guia",
+          similarity: 0.0165,
+          content:
+            "[Fonte: Guia do usuario externo – SEI.Rio | Página: 1]\n\nA autenticação do usuário externo é feita com conta gov.br prata ou ouro para acesso ao SEI.Rio.",
+        },
+        {
+          document_name: "Perguntas frequentes do cidadão – SEI.Rio",
+          document_kind: "faq",
+          document_authority_level: "institutional",
+          document_search_weight: 0.92,
+          document_topic_scope: "sei_rio_faq",
+          similarity: 0.016,
+          content:
+            "[Fonte: Perguntas frequentes do cidadão – SEI.Rio | Página: 1]\n\nO cadastro do usuário externo depende da autenticação gov.br e do preenchimento correto dos dados pessoais.",
+        },
+        {
+          document_name: "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+          document_kind: "apoio",
+          document_authority_level: "official",
+          document_search_weight: 1.12,
+          document_topic_scope: "sei_rio_termo",
+          similarity: 0.0105,
+          content:
+            "[Fonte: Termo de Uso e Aviso de Privacidade do SEI.Rio | Página: 5]\n\nÉ de responsabilidade do usuário externo manter sigilo da senha de acesso e assinatura eletrônica, respondendo pelo uso indevido praticado a partir de seu acesso ao serviço.",
+        },
+      ],
+    );
+
+    const documentNames = decision.references.map((reference) => reference.documentName);
+
+    expect(documentNames).toContain("Termo de Uso e Aviso de Privacidade do SEI.Rio");
+    expect(documentNames).toContain("Decreto Rio nº 57.250 de 19 de novembro de 2025");
+    expect(decision.references).toHaveLength(6);
+  });
 });
