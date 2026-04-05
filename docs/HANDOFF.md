@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T08:07:12.7995418Z
+- Data/hora: 2026-04-05T08:37:43.5146944Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `c65e07cf574669a66f7850dae99efbad0c88adae`
-- Último relatório: `docs/operational-reports/2026-04-05-r3a-follow-up-contextualization-implementation.md`
+- Head da sessão: `13bb28f00fd32598b57f3cf531c767fd7e634e2d`
+- Último relatório: `docs/operational-reports/2026-04-05-r3a-production-publish-and-benchmark.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada e `R3A` implementado localmente para follow-ups contextualizados
+- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada e `R3A` já publicado em produção com benchmark remoto green
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: publicar o `R3A` em produção, verificar benchmark remoto e abrir o `R3B` com observabilidade por estágio e budget de timeout.
+- Próxima ação recomendada: abrir o `R3B` com observabilidade por estágio e budget de timeout.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -28,7 +28,9 @@
 - `R2` foi concluído localmente com framing textual assimétrico no contrato de embedding, metadata versionada e separação entre semântica vetorial e metadado de citação.
 - A regressão pós-publicação do benchmark remoto foi fechada nesta mesma branch com correção de cobertura obrigatória de evidências para transição (`Q8`) e usuário externo (`Q10`), mais normalização do `document_kind` do `Termo de Uso`.
 - Em `2026-04-05`, a trilha foi refinada para `R3A`, `R3B`, `R3C`, `R4A`, `R4B`, `R5A`, `R5B`, `R5C`, `R6A` e `R6B` antes da retomada dos subblocos canônicos.
-- `R3A` já foi implementado localmente: o backend agora pode contextualizar follow-ups curtos com `tituloCurto + resumoInicial` da última resposta estruturada da CLARA, sem tocar no layout do chat.
+- `R3A` já foi publicado em produção: o backend agora pode contextualizar follow-ups curtos com `tituloCurto + resumoInicial` da última resposta estruturada da CLARA, sem tocar no layout do chat.
+- A publicação do `R3A` saiu do commit `13bb28f`, foi para o deploy web `dpl_BxTyARLVQ4yXDpXvjetSJRsxtS3Q` e promoveu a Edge Function `chat` para a versão `25`.
+- O benchmark canônico remoto pós-publicação ficou green: `Didático` com `16/16 expectedAllMet`, `15/16 scopeExact`, `avgFinalConfidence 0.9938`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact`, `avgFinalConfidence 1.0`.
 - `R3B-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
@@ -121,7 +123,6 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Publicar o `R3A` em produção e rodar benchmark remoto pós-deploy
 - Executar `R3B` com observabilidade por estágio e budget real de timeout
 - Executar `R3C` com telemetria de tamanho do prompt e do histórico enviado
 - Executar `R4A` e `R4B` com feedback explícito do usuário e dashboard de gaps no admin
@@ -147,7 +148,7 @@
 - O formulário do admin continua exibindo uma conta provisionada que autentica sessão, mas não equivale ao admin bootstrap ativo em `public.admin_users`; ela deve falhar com `403` nas functions administrativas.
 - As oportunidades futuras de Matryoshka, context caching, Google Search grounding nativo e multimodalidade por print foram preservadas no backlog, sem competir com a prioridade atual.
 - A nova leva de melhorias enviada pelo usuário já foi triada: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens`, query expansion contextual, routing de modelos, framing textual de embeddings e `HNSW` já estão resolvidos ou presentes; a trilha imediata agora segue `R3A`, `R3B`, `R3C`, `R4A`, `R4B`, `R5A`, `R5B`, `R5C`, `R6A` e `R6B`.
-- O `R3A` foi implementado sem tocar nos componentes de layout do chat; a mudança ficou concentrada em `src/lib/chat-api.ts`, `supabase/functions/chat/index.ts`, `supabase/functions/chat/conversation-context.ts` e testes dedicados.
+- O `R3A` foi implementado e publicado sem tocar nos componentes de layout do chat; a mudança ficou concentrada em `src/lib/chat-api.ts`, `supabase/functions/chat/index.ts`, `supabase/functions/chat/conversation-context.ts` e testes dedicados.
 - A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
 - O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.

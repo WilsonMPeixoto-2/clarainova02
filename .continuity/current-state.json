@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada e R3A implementado localmente para follow-ups contextualizados antes da trilha de observabilidade",
+  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada e R3A publicado em producao com benchmark remoto green antes da trilha de observabilidade",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T08:07:12.7995418Z",
+  "last_update_utc": "2026-04-05T08:37:43.5146944Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -28,10 +28,11 @@
     "O Supabase oficial recebeu as migrations `20260404134500_add_targeted_chunk_retrieval.sql` e `20260405114000_normalize_term_document_metadata.sql`, e a Edge Function `chat` foi republicada para a versao `24`.",
     "A producao web foi republicada manualmente na Vercel pelo deployment `dpl_9AhU94T5UGSjjzKhF7ZtHUTLTy6o`, mantendo o alias `https://clarainova02.vercel.app` no ar.",
     "O benchmark canonico remoto voltou a ficar green apos a correcao: `Didatico` com `16/16 expectedAllMet` e `Direto` com `16/16 expectedAllMet`.",
-    "O R3A foi implementado localmente com contexto estruturado minimo no transporte do chat, heuristica de follow-up anaforico no retrieval e testes dedicados para garantir que perguntas novas e explicitas nao herdem contexto indevido."
+    "O R3A foi implementado localmente com contexto estruturado minimo no transporte do chat, heuristica de follow-up anaforico no retrieval e testes dedicados para garantir que perguntas novas e explicitas nao herdem contexto indevido.",
+    "O R3A foi publicado em producao a partir do commit `13bb28f00fd32598b57f3cf531c767fd7e634e2d`, com deploy web `dpl_BxTyARLVQ4yXDpXvjetSJRsxtS3Q`, alias mantido em `https://clarainova02.vercel.app` e Edge Function `chat` promovida para a versao `25`.",
+    "O benchmark canonico remoto pós-publicacao do R3A ficou green: `Didatico` com `16/16 expectedAllMet`, `15/16 scopeExact` e `avgFinalConfidence 0.9938`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact` e `avgFinalConfidence 1.0`."
   ],
   "pending_items": [
-    "Publicar o R3A em producao, rodar benchmark remoto e atualizar a continuidade com o resultado da rodada.",
     "Executar R3B com observabilidade por estagio e budget real de timeout.",
     "Executar R3C com telemetria de tamanho do prompt e historico enviado.",
     "Executar R4A e R4B com feedback explicito do usuario e dashboard admin de gaps.",
@@ -44,7 +45,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
   ],
-  "next_action": "Publicar o R3A em producao, verificar o benchmark remoto e, sem regressao, abrir o R3B com observabilidade por estagio e budget de timeout.",
+  "next_action": "Abrir o R3B com observabilidade por estagio e budget de timeout, preservando o R3A como baseline publicado e benchmarkado.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
@@ -57,6 +58,6 @@
     "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-05-r3a-follow-up-contextualization-implementation.md",
-  "last_session_head_sha": "c65e07c"
+  "last_report": "docs/operational-reports/2026-04-05-r3a-production-publish-and-benchmark.md",
+  "last_session_head_sha": "13bb28f"
 }
