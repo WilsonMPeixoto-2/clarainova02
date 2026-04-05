@@ -11,6 +11,17 @@ PROJECT_REF = "jasqctuzeznwdtbcuixn"
 SUPABASE_URL = "https://jasqctuzeznwdtbcuixn.supabase.co"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+GENERIC_COPY_MARKERS = [
+    "resposta documental guiada",
+    "síntese documental localizada",
+    "sintese documental localizada",
+    "encontrei respaldo documental em",
+    "organizei a resposta como uma leitura guiada",
+    "organizei abaixo os pontos mais úteis dos trechos recuperados",
+    "mantive a resposta estritamente apoiada nas referências recuperadas",
+    "mantive a resposta estritamente apoiada nas referencias recuperadas",
+]
+
 
 def run_supabase_cli_json(*args: str):
     result = subprocess.run(
@@ -76,6 +87,7 @@ def compute_summary(results: list[dict], response_mode: str) -> dict:
                 "noWebFallback": 0,
                 "scopeExact": 0,
                 "expectedAllMet": 0,
+                "nonGenericText": 0,
             },
         )
         bucket["total"] += 1
@@ -87,6 +99,8 @@ def compute_summary(results: list[dict], response_mode: str) -> dict:
             bucket["scopeExact"] += 1
         if result.get("expectedAllMet") is True:
             bucket["expectedAllMet"] += 1
+        if result.get("genericCopyDetected") is False:
+            bucket["nonGenericText"] += 1
 
     avg_final_confidence = None
     if confidence_values:
@@ -99,6 +113,8 @@ def compute_summary(results: list[dict], response_mode: str) -> dict:
         "noWebFallback": sum(1 for result in ok_results if result.get("webFallbackUsed") is False),
         "scopeExact": sum(1 for result in ok_results if result.get("answerScopeMatch") == "exact"),
         "expectedAllMet": sum(1 for result in ok_results if result.get("expectedAllMet") is True),
+        "nonGenericText": sum(1 for result in ok_results if result.get("genericCopyDetected") is False),
+        "genericCopyDetected": sum(1 for result in ok_results if result.get("genericCopyDetected") is True),
         "clarificationRequested": sum(
             1 for result in ok_results if result.get("clarificationRequested") is True
         ),
@@ -134,7 +150,22 @@ def evaluate_gate(summary: dict, args: argparse.Namespace) -> list[str]:
                 f"{avg_final_confidence} < {args.min_avg_final_confidence}"
             )
 
+    if args.max_generic_copy_detected is not None:
+        generic_copy_detected = summary.get("genericCopyDetected", 0)
+        if generic_copy_detected > args.max_generic_copy_detected:
+            failures.append(
+                "genericCopyDetected acima do maximo: "
+                f"{generic_copy_detected} > {args.max_generic_copy_detected}"
+            )
+
     return failures
+
+
+def has_generic_copy(*values: str | None) -> bool:
+    visible_copy = normalize(" ".join(value for value in values if isinstance(value, str)))
+    if not visible_copy:
+        return False
+    return any(marker in visible_copy for marker in GENERIC_COPY_MARKERS)
 
 
 def main() -> int:
@@ -148,6 +179,7 @@ def main() -> int:
     parser.add_argument("--min-scope-exact", type=int)
     parser.add_argument("--min-expected-all-met", type=int)
     parser.add_argument("--min-avg-final-confidence", type=float)
+    parser.add_argument("--max-generic-copy-detected", type=int)
     args = parser.parse_args()
 
     questions_path = Path(args.questions)
@@ -202,6 +234,7 @@ def main() -> int:
                 hit = expected_reference_matched(expected, reference_titles)
                 expected_hits.append({"expected": expected, "matched": hit})
             expected_all_met = all(hit["matched"] for hit in expected_hits) if expected_hits else None
+            generic_copy_detected = has_generic_copy(title, summary, plain_text)
 
             record.update(
                 {
@@ -232,6 +265,7 @@ def main() -> int:
                         }
                         for step in structured.get("etapas") or []
                     ],
+                    "genericCopyDetected": generic_copy_detected,
                     "expectedReferenceHits": expected_hits,
                     "expectedAllMet": expected_all_met,
                     "plainText": plain_text,

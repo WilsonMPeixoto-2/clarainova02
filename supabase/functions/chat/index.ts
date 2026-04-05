@@ -789,6 +789,147 @@ function extractKeyStatements(chunks: HybridSearchChunk[]): string[] {
   return Array.from(statements);
 }
 
+const FALLBACK_NOISE_PATTERNS = [
+  /\borigem oficial:/i,
+  /\bcapturado em:/i,
+  /\bobservacao:\s*pdf gerado localmente/i,
+  /\bprotocolo:\s*\d+/i,
+  /\bguia do usuario\b.*\bdata de atualizacao\b/i,
+  /\bnova versao do sei\b/i,
+  /\bmanual do usuario sei 4/i,
+];
+
+const FALLBACK_ACTION_PATTERNS = [
+  /\babra\b/i,
+  /\bacesse\b/i,
+  /\bclique\b/i,
+  /\bselecione\b/i,
+  /\bescolha\b/i,
+  /\bpreencha\b/i,
+  /\bconfirme\b/i,
+  /\benvie\b/i,
+  /\binclu(?:a|ir)\b/i,
+  /\bassin(?:e|ar)\b/i,
+  /\butilize\b/i,
+  /\buse\b/i,
+  /\bdeve\b/i,
+  /\bpode\b/i,
+  /\bpermite\b/i,
+  /\bexige\b/i,
+  /\bacesse\b/i,
+];
+
+function sanitizeFallbackEvidenceText(value: string): string {
+  return value
+    .replace(/\[Fonte:[^\]]+\]\s*/gi, '')
+    .replace(/\bOrigem oficial:[^\n]+/gi, '')
+    .replace(/\bCapturado em:[^\n]+/gi, '')
+    .replace(/\bObservacao:\s*PDF gerado localmente[^\n]*/gi, '')
+    .replace(/\bProtocolo:\s*\d+[^\n]*/gi, '')
+    .replace(/\s+/g, ' ')
+    .replace(/^[\s\-–•●\d.:)]+/, '')
+    .trim();
+}
+
+function normalizeFallbackEvidence(value: string): string {
+  return sanitizeFallbackEvidenceText(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function looksLikeFallbackNoise(candidate: string, normalizedQuestion: string): boolean {
+  const normalized = normalizeFallbackEvidence(candidate);
+  if (!normalized) return true;
+  if (normalized.length < 36) return true;
+  if (FALLBACK_NOISE_PATTERNS.some((pattern) => pattern.test(candidate))) return true;
+  if (!/[\p{L}]/u.test(candidate)) return true;
+
+  const migrationQuestion = /\bmigrac/.test(normalizedQuestion);
+  if (!migrationQuestion && /\bmigrac/.test(normalized) && !FALLBACK_ACTION_PATTERNS.some((pattern) => pattern.test(candidate))) {
+    return true;
+  }
+
+  const uppercaseRatio = candidate.replace(/[^A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ]/g, '').length / Math.max(candidate.length, 1);
+  if (uppercaseRatio > 0.45 && !/[.!?]/.test(candidate) && normalized.length < 120) {
+    return true;
+  }
+
+  const hasAction = FALLBACK_ACTION_PATTERNS.some((pattern) => pattern.test(candidate));
+  if (!hasAction && !/[.:;]/.test(candidate) && normalized.length < 60) {
+    return true;
+  }
+
+  return false;
+}
+
+function scoreFallbackChunk(question: string, chunk: HybridSearchChunk): number {
+  const normalizedQuestion = normalizeQueryText(question);
+  const normalizedContent = normalizeQueryText(chunk.content);
+  const normalizedSection = normalizeQueryText(chunk.section_title ?? '');
+  const proceduralQuestion = /(?:como|passo a passo|etapas|procedimento|fazer|usar|incluir|encaminh|assinatura|documento|processo)/.test(normalizedQuestion);
+  let score = chunk.similarity;
+
+  if (proceduralQuestion) {
+    if (chunk.document_kind === 'manual' || chunk.document_kind === 'guia') score += 0.02;
+    if (chunk.document_kind === 'norma') score -= 0.012;
+    if (FALLBACK_ACTION_PATTERNS.some((pattern) => pattern.test(chunk.content))) score += 0.02;
+    if (!/\bmigrac/.test(normalizedQuestion) && /\bmigrac/.test(normalizedContent)) score -= 0.04;
+  }
+
+  if (normalizedQuestion.includes('documento externo') && /\bdocumento externo\b/.test(normalizedContent)) score += 0.03;
+  if (normalizedQuestion.includes('login') && /\blogin|matricul|senha\b/.test(normalizedContent)) score += 0.03;
+  if (normalizedQuestion.includes('bloco de assinatura') && /\bbloco de assinatura\b/.test(normalizedContent)) score += 0.03;
+  if (normalizedSection && normalizedQuestion && normalizedQuestion.includes(normalizedSection)) score += 0.015;
+
+  return score;
+}
+
+function buildFallbackEvidence(question: string, chunks: HybridSearchChunk[]): string[] {
+  const normalizedQuestion = normalizeQueryText(question);
+  const seen = new Set<string>();
+  const evidence: string[] = [];
+  const rankedChunks = [...chunks].sort((left, right) => scoreFallbackChunk(question, right) - scoreFallbackChunk(question, left));
+
+  for (const chunk of rankedChunks) {
+    const sentenceCandidates = chunk.content
+      .split(/(?<=[.!?])\s+|\n+/)
+      .map((candidate) => sanitizeFallbackEvidenceText(candidate))
+      .filter(Boolean);
+    const lineCandidates = chunk.content
+      .split(/\n+/)
+      .map((candidate) => sanitizeFallbackEvidenceText(candidate))
+      .filter(Boolean);
+
+    for (const candidate of [...sentenceCandidates, ...lineCandidates]) {
+      const normalizedCandidate = normalizeFallbackEvidence(candidate);
+      if (!normalizedCandidate || seen.has(normalizedCandidate)) continue;
+      if (looksLikeFallbackNoise(candidate, normalizedQuestion)) continue;
+
+      seen.add(normalizedCandidate);
+      evidence.push(candidate.replace(/\s+/g, ' ').trim());
+      if (evidence.length >= 4) {
+        return evidence;
+      }
+    }
+  }
+
+  return evidence;
+}
+
+function buildFallbackTitle(question: string, responseMode: ChatResponseMode): string {
+  const trimmed = question.replace(/\s+/g, ' ').trim().replace(/[?!.]+$/, '');
+  if (!trimmed) {
+    return responseMode === 'direto' ? 'Resposta objetiva' : 'Resposta documental';
+  }
+
+  if (trimmed.length <= 88) {
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  }
+
+  return `${trimmed.slice(0, 85).trimEnd()}...`;
+}
+
 function buildGroundedFallbackResponse(
   question: string,
   chunks: HybridSearchChunk[],
@@ -798,101 +939,93 @@ function buildGroundedFallbackResponse(
   retrievalQuality: RetrievalQualityInfo | null,
   sourceTarget: SourceTargetRoute | null,
 ): ClaraStructuredResponse {
-  const primaryDocument = chunks[0]?.document_name?.trim() || "documento recuperado";
-  const checklistItems = extractChecklistItems(chunks);
-  const keyStatements = extractKeyStatements(chunks);
+  const rankedChunks = [...chunks].sort((left, right) => scoreFallbackChunk(question, right) - scoreFallbackChunk(question, left));
+  const primaryChunk = rankedChunks[0] ?? chunks[0] ?? null;
+  const primaryDocument = primaryChunk?.document_name?.trim() || "documento recuperado";
+  const checklistItems = extractChecklistItems(rankedChunks);
+  const keyStatements = extractKeyStatements(rankedChunks);
+  const fallbackEvidence = buildFallbackEvidence(question, rankedChunks);
   const citations = groundedReferences.map((reference) => reference.id);
   const confidenceTier = retrievalQuality?.confidenceTier ?? 'moderada';
-  const finalConfidence = confidenceTier === 'alta'
-    ? 0.98
-    : confidenceTier === 'boa'
-      ? 0.96
-      : confidenceTier === 'moderada'
-        ? 0.91
-        : 0.82;
-  const answerScopeMatch = sourceTarget || groundedReferences.length >= 2 || keyStatements.length >= 2
+  const evidenceQuality = fallbackEvidence.length >= 2 ? 'strong'
+    : fallbackEvidence.length === 1 ? 'partial'
+    : 'weak';
+  const finalConfidence = evidenceQuality === 'strong'
+    ? (confidenceTier === 'alta' ? 0.9 : confidenceTier === 'boa' ? 0.84 : 0.78)
+    : evidenceQuality === 'partial'
+      ? 0.68
+      : 0.42;
+  const answerScopeMatch = evidenceQuality === 'strong'
     ? 'exact'
-    : confidenceTier === 'fraca'
+    : evidenceQuality === 'partial'
       ? 'probable'
-      : 'exact';
-  const fallbackItems = (checklistItems.length > 0 ? checklistItems : keyStatements).slice(
-    0,
-    responseMode === 'direto' ? 4 : 5,
-  );
+      : 'insufficient';
   const supportingNotice = sourceTarget
-    ? `Mantive a resposta priorizando a fonte solicitada: ${sourceTarget.label.replace(/_/g, ' ')}.`
-    : `Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: "${question}".`;
+    ? `Priorizo abaixo a fonte que você pediu: ${sourceTarget.label.replace(/_/g, ' ')}.`
+    : null;
   const editorialNotices = buildEditorialNotices(groundedReferenceProfile, {
-    userNotice: responseMode === 'direto'
-      ? 'Resposta montada diretamente a partir das referências documentais recuperadas.'
-      : 'Organizei a orientação diretamente a partir das referências documentais recuperadas, sem extrapolar além do que os trechos sustentam.',
-    cautionNotice: fallbackItems.length > 0
-      ? null
-      : 'Os trechos recuperados foram curtos, então mantive a resposta estritamente documental.',
+    userNotice: null,
+    cautionNotice: evidenceQuality === 'weak'
+      ? 'Os trechos recuperados ficaram relacionados ao tema, mas não sustentam sozinhos um passo a passo confiável para esta pergunta.'
+      : null,
   });
-
-  const fallbackStep = fallbackItems.length > 0
-    ? {
-        numero: 1,
-        titulo: responseMode === 'direto' ? "Síntese documental" : "Orientação guiada a partir das referências",
-        conteudo: responseMode === 'direto'
-          ? `Encontrei respaldo documental em ${primaryDocument}. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.`
-          : `Encontrei respaldo documental em ${primaryDocument}. Organizei abaixo os pontos mais úteis dos trechos recuperados para responder à sua pergunta com base estrita nas fontes.`,
-        itens: fallbackItems,
-        destaques: [],
-        alerta: responseMode === 'didatico'
-          ? 'Se algum passo variar na sua unidade, use as referências finais para conferir a redação exata do documento recuperado.'
-          : null,
-        citacoes: citations,
-      }
+  const detailItems = evidenceQuality === 'strong'
+    ? fallbackEvidence.slice(1, responseMode === 'direto' ? 2 : 3)
+    : [];
+  const summary = evidenceQuality === 'strong'
+    ? fallbackEvidence[0]
+    : evidenceQuality === 'partial'
+      ? `${fallbackEvidence[0]} Confira as referências finais para validar o contexto completo antes de seguir.`
+      : `As referências recuperadas não sustentam um passo a passo confiável para responder com segurança à sua pergunta sobre "${question}".`;
+  const fallbackStep = evidenceQuality === 'weak'
+    ? null
     : {
         numero: 1,
-        titulo: "Trecho documental recuperado",
-        conteudo: chunks[0]?.content.trim() || `Encontrei conteúdo relevante em ${primaryDocument}.`,
-        itens: [],
+        titulo: responseMode === 'direto' ? 'Resposta sustentada pelas fontes' : 'O que as referências indicam',
+        conteudo: fallbackEvidence[0],
+        itens: detailItems,
         destaques: [],
-        alerta: null,
+        alerta: editorialNotices.cautionNotice,
         citacoes: citations,
       };
+  const fallbackObservations = [
+    supportingNotice,
+    evidenceQuality === 'partial'
+      ? 'A resposta ficou parcialmente sustentada pelas referências recuperadas. Vale conferir a fonte final antes de executar a rotina.'
+      : null,
+    evidenceQuality === 'weak'
+      ? 'As referências finais abaixo mostram o material recuperado nesta tentativa. Se você quiser, eu posso responder melhor com a tela, a ação exata ou o tipo de documento envolvido.'
+      : null,
+    editorialNotices.cautionNotice && evidenceQuality !== 'strong' ? editorialNotices.cautionNotice : null,
+  ].filter(Boolean) as string[];
 
   return {
-    tituloCurto: responseMode === 'direto'
-      ? 'Síntese documental localizada'
-      : 'Resposta documental guiada',
-    resumoInicial: responseMode === 'direto'
-      ? `Encontrei respaldo documental em ${primaryDocument} e mantive a resposta focada no que os trechos recuperados sustentam diretamente.`
-      : `Encontrei respaldo documental em ${primaryDocument} e organizei a resposta como uma leitura guiada dos pontos recuperados nas referências.`,
-    resumoCitacoes: citations,
-    modoResposta: fallbackItems.length > 0
+    tituloCurto: buildFallbackTitle(question, responseMode),
+    resumoInicial: summary,
+    resumoCitacoes: citations.length > 0 ? [citations[0]] : [],
+    modoResposta: fallbackStep
       ? (responseMode === 'direto' ? 'checklist' : 'passo_a_passo')
       : 'explicacao',
-    etapas: [fallbackStep],
-    observacoesFinais: [
-      responseMode === 'direto'
-        ? supportingNotice
-        : `${supportingNotice} Se houver necessidade de validação adicional, confira a redação completa nas referências finais.`,
-    ],
-    termosDestacados: [
-      { texto: primaryDocument, tipo: 'norma' },
-      ...(groundedReferences[1]
-        ? [{ texto: groundedReferences[1].titulo, tipo: 'norma' as const }]
-        : []),
-    ],
+    etapas: fallbackStep ? [fallbackStep] : [],
+    observacoesFinais: fallbackObservations,
+    termosDestacados: [],
     referenciasFinais: groundedReferences,
     analiseDaResposta: {
-      questionUnderstandingConfidence: Math.max(0.86, finalConfidence - 0.02),
+      questionUnderstandingConfidence: Math.max(0.56, finalConfidence - 0.06),
       finalConfidence,
       answerScopeMatch,
-      ambiguityInUserQuestion: false,
-      ambiguityInSources: false,
+      ambiguityInUserQuestion: evidenceQuality === 'weak',
+      ambiguityInSources: evidenceQuality !== 'strong',
       clarificationRequested: false,
       clarificationQuestion: null,
       clarificationReason: null,
       internalExpansionPerformed: false,
       webFallbackUsed: false,
-      userNotice: editorialNotices.userNotice,
-      cautionNotice: editorialNotices.cautionNotice,
-      ambiguityReason: null,
+      userNotice: null,
+      cautionNotice: evidenceQuality === 'strong' ? null : editorialNotices.cautionNotice,
+      ambiguityReason: evidenceQuality === 'weak'
+        ? 'Os trechos recuperados ficaram relacionados ao tema, mas não sustentaram uma instrução operacional confiável.'
+        : null,
       comparedSources: [],
       prioritizedSources: groundedReferences.map((reference) => reference.titulo),
       processStates: [],

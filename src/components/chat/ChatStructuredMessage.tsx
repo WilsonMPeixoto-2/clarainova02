@@ -261,21 +261,35 @@ export function ChatStructuredMessage({
     navigator.clipboard.writeText(plainText).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {
+      setCopied(false);
     });
   }, [response]);
   const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
   const processStates = useMemo(() => analysis.processStates.slice(0, 4), [analysis.processStates]);
+  const isLeanDocumentResponse = !analysis.clarificationRequested
+    && !analysis.userNotice
+    && !analysis.cautionNotice
+    && processStates.length === 0
+    && groupedHighlights.length === 0
+    && response.referenciasFinais.length > 0;
   const confidenceTier = analysis.answerScopeMatch === 'exact' ? 'high'
     : analysis.answerScopeMatch === 'probable' ? 'good'
     : analysis.answerScopeMatch === 'weak' ? 'moderate' : 'low';
   const responseMeta = [
-    modeMeta.modeBadge,
+    isLeanDocumentResponse ? null : modeMeta.modeBadge,
     response.etapas.length > 0 ? `${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''}` : null,
     response.referenciasFinais.length > 0
       ? `${response.referenciasFinais.length} referência${response.referenciasFinais.length > 1 ? 's' : ''}`
       : null,
     analysis.cautionNotice ? 'Exige atenção' : null,
   ].filter(Boolean) as string[];
+  const kickerLabel = isLeanDocumentResponse && resolvedMode === 'didatico'
+    ? 'Resposta sustentada pelas fontes'
+    : modeMeta.kicker;
+  const summaryLabel = isLeanDocumentResponse ? 'Resposta' : modeMeta.summaryLabel;
+  const stepSectionTitle = isLeanDocumentResponse ? 'Trecho principal' : modeMeta.stepTitle;
+  const stepSectionDetail = isLeanDocumentResponse ? undefined : modeMeta.stepDetail;
 
   return (
     <div
@@ -297,7 +311,7 @@ export function ChatStructuredMessage({
               draggable={false}
             />
           </span>
-          {modeMeta.kicker}
+          {kickerLabel}
           <button
             type="button"
             className="chat-copy-button"
@@ -323,17 +337,19 @@ export function ChatStructuredMessage({
           </div>
         )}
         <div className="chat-response-summary-block">
-          <p className="chat-response-summary-label">{modeMeta.summaryLabel}</p>
+          <p className="chat-response-summary-label">{summaryLabel}</p>
           <p className="chat-response-summary">
             {response.resumoInicial}
             <CitationList citations={response.resumoCitacoes} />
           </p>
         </div>
 
-        <section className="chat-response-lens" aria-label={modeMeta.lensTitle}>
-          <p className="chat-response-lens-label">{modeMeta.lensTitle}</p>
-          <p className="chat-response-lens-copy">{modeMeta.lensCopy}</p>
-        </section>
+        {!isLeanDocumentResponse && (
+          <section className="chat-response-lens" aria-label={modeMeta.lensTitle}>
+            <p className="chat-response-lens-label">{modeMeta.lensTitle}</p>
+            <p className="chat-response-lens-copy">{modeMeta.lensCopy}</p>
+          </section>
+        )}
 
 
         {analysis.clarificationRequested && analysis.clarificationQuestion && (
@@ -419,8 +435,8 @@ export function ChatStructuredMessage({
         <section className="chat-section-shell" aria-label="Etapas sugeridas">
           <SectionHeading
             icon={CheckCircle}
-            title={modeMeta.stepTitle}
-            detail={modeMeta.stepDetail}
+            title={stepSectionTitle}
+            detail={stepSectionDetail}
           />
           {response.etapas.length > 1 && (
             <div className="chat-step-progress" aria-label={`${response.etapas.length} etapas`}>

@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { DownloadSimple, Printer, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
+import { CircleNotch, DownloadSimple, Printer, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
