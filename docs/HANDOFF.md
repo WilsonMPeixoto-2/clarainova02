@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T09:34:48.4186571Z
+- Data/hora: 2026-04-05T09:45:14.5756370Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `97a4eb2b87ee6de7cd7152225d70c95b475dd227`
-- Último relatório: `docs/operational-reports/2026-04-05-r3b-stage-observability-and-time-budget.md`
+- Head da sessão: `e77ce9b3535b654acf1da6e5af5d7096a9da8d68`
+- Último relatório: `docs/operational-reports/2026-04-05-r3b-production-publish-and-benchmark.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A` publicado e `R3B` implementado localmente com budget real e telemetria por estágio
+- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A` publicado e `R3B` já publicado em produção com budget real e telemetria por estágio
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: publicar o `R3B` em produção, verificar benchmark remoto e então abrir o `R3C`.
+- Próxima ação recomendada: abrir o `R3C` com telemetria de tamanho do prompt e do histórico enviado.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -31,7 +31,9 @@
 - `R3A` já foi publicado em produção: o backend agora pode contextualizar follow-ups curtos com `tituloCurto + resumoInicial` da última resposta estruturada da CLARA, sem tocar no layout do chat.
 - A publicação do `R3A` saiu do commit `13bb28f`, foi para o deploy web `dpl_BxTyARLVQ4yXDpXvjetSJRsxtS3Q` e promoveu a Edge Function `chat` para a versão `25`.
 - O benchmark canônico remoto pós-publicação ficou green: `Didático` com `16/16 expectedAllMet`, `15/16 scopeExact`, `avgFinalConfidence 0.9938`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact`, `avgFinalConfidence 1.0`.
-- `R3B` já foi implementado localmente: a `chat` agora mede `embedding_ms`, `expansion_ms`, `search_ms`, `generation_ms` e `sanitization_ms`, e decide explicitamente quando pular structured para preservar budget de stream.
+- `R3B` já foi publicado em produção: a `chat` agora mede `embedding_ms`, `expansion_ms`, `search_ms`, `generation_ms` e `sanitization_ms`, e decide explicitamente quando pular structured para preservar budget de stream.
+- A publicação do `R3B` saiu do commit `e77ce9b`, foi para o deploy web `dpl_HgFuvt4mnCVZNwN9ikNCNMedE2aY` e promoveu a Edge Function `chat` para a versão `26`.
+- O benchmark canônico remoto pós-publicação ficou green: `Didático` com `16/16 expectedAllMet`, `15/16 scopeExact`, `avgFinalConfidence 0.9938`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact`, `avgFinalConfidence 0.9938`.
 - `R3C-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
@@ -124,7 +126,6 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Publicar o `R3B` em produção e rodar benchmark remoto pós-deploy
 - Executar `R3C` com telemetria de tamanho do prompt e do histórico enviado
 - Executar `R4A` e `R4B` com feedback explícito do usuário e dashboard de gaps no admin
 - Executar `R5A-R5C` com batch embedding nativo, cache de embeddings e validação de frescor do corpus
