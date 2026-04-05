@@ -404,21 +404,13 @@
         "subtitulo": "Selecione expedientes e processos para a migração em lote",
         "paginas": "2",
         "tipo": "guia"
-      },
-      {
-        "id": 5,
-        "titulo": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
-        "subtitulo": null,
-        "paginas": "14",
-        "tipo": "norma"
       }
     ],
     "referenceLabels": [
       "Guia do usuário interno – SEI.Rio (versão final consolidada)",
       "Guia do usuário interno – SEI.Rio (versão final consolidada)",
       "Guia do usuário interno – SEI.Rio (versão final consolidada)",
-      "Guia de migracao – SEI.Rio",
-      "Termo de Uso e Aviso de Privacidade do SEI.Rio"
+      "Guia de migracao – SEI.Rio"
     ],
     "steps": [
       {
@@ -433,7 +425,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada). A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- 13 - Enviar Processo No sei.rio os processos são tramitados exclusivamente entre Unidades, não há envio direto para logins individuais.\n- Um processo enviado para outra unidade deixa de aparecer na tela \"Controle de Processos\" da unidade que o enviou, mas ainda pode ser acessado por meio da Pesquisa ou do Acompanhamento Especial, se essa opção tiver sido ativada pelo usuário.\n- Ao finalizar uma migração automática, manual, ou em lote, o sistema enviará a informação para o e-mail dos interessados registrados na criação do documento, orientando o acompanhamento do processo.\n- Migração automática A migração automática deve ser executada por meio do botão na tela do processo ou expediente.\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como enviar um processo para uma ou mais unidades no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo possui um Controle de. p. 7.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 18.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 34.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote. p. 2.\n[5] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio. p. 14."
+    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nPasso a passo\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada). A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- 13 - Enviar Processo No sei.rio os processos são tramitados exclusivamente entre Unidades, não há envio direto para logins individuais.\n- Um processo enviado para outra unidade deixa de aparecer na tela \"Controle de Processos\" da unidade que o enviou, mas ainda pode ser acessado por meio da Pesquisa ou do Acompanhamento Especial, se essa opção tiver sido ativada pelo usuário.\n- Ao finalizar uma migração automática, manual, ou em lote, o sistema enviará a informação para o e-mail dos interessados registrados na criação do documento, orientando o acompanhamento do processo.\n- Migração automática A migração automática deve ser executada por meio do botão na tela do processo ou expediente.\n\nObservacoes finais\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como enviar um processo para uma ou mais unidades no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo possui um Controle de. p. 7.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 18.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada). p. 34.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote. p. 2."
   },
   {
     "id": "Q7",

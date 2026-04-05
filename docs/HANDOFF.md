@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T13:45:54.2803328Z
+- Data/hora: 2026-04-05T18:32:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `7fc5dddda891cd3ef638847973143e7809006122`
-- Último relatório: `docs/operational-reports/2026-04-05-r6a-r6b-finalization-publish-and-benchmark.md`
+- Head da sessão: `43ad740133f7e6fa96798dcf58f32bf0921a5659`
+- Último relatório: `docs/operational-reports/2026-04-05-5b-metadata-governed-retrieval-publish-and-benchmark.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R6B` fechados, publicados ou benchmarkados em produção, benchmark canônico remoto green e frente imediata pronta para voltar aos subblocos `5B-5F`
+- Fase atual: BLOCO 5 com `R0-R6B` fechados, `5B` já publicado em produção e benchmark canônico remoto green
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: retomar `5B` com retrieval governado por metadados reais.
+- Próxima ação recomendada: retomar `5C` com source-target routing de alta precisão.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -69,7 +69,12 @@
 - O benchmark canônico remoto pós-publicação do fechamento `R6A-R6B` ficou green:
   - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
   - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
-- `R6A-R6B` deixam de ser a frente imediata; a próxima retomada recomendada volta para `5B-5F`.
+- O `5B` já foi publicado em produção a partir do commit `43ad740`, com a migration remota `20260406000500_add_metadata_filters_to_hybrid_search.sql`, Edge Function `chat` promovida para a versão `34` e produção web observada no deploy `dpl_BEb1nZLVzF58hbdoi3EjgJJnumoJ`.
+- A `chat` agora tenta primeiro uma busca híbrida governada por `topic_scope`, `source_name`, `document name` e `version_label`, voltando para a busca aberta apenas quando o subconjunto governado não entrega resultado suficiente.
+- O benchmark canônico remoto pós-publicação do `5B` permaneceu green:
+  - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+  - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+- O `5B` foi fechado sem tocar no layout paralelo do chat; a mudança ficou contida em SQL, Edge Function `chat` e testes.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
 
@@ -161,7 +166,7 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Retomar `5B-5F` agora que `R6A-R6B` foram fechados em produção
+- Retomar `5C-5F` agora que `5B` foi publicado em produção
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C

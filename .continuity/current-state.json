@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 com R0-R6B publicados ou fechados em producao, regressao pós-publicacao controlada, benchmark canônico remoto green e a trilha imediata pronta para voltar aos subblocos 5B-5F",
+  "current_phase": "BLOCO 5 com R0-R6B fechados, 5B publicado em producao com retrieval governado por metadados reais e benchmark canônico remoto green",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T13:45:54.2803328Z",
+  "last_update_utc": "2026-04-05T18:32:00.0000000Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -60,10 +60,13 @@
     "Na Vercel oficial, as tentativas diretas de `vercel --prod` bateram em erro interno da plataforma; a recuperacao valida foi promover previews `READY` para os deploys de producao `dpl_hsq7NmMPznu5CniYa6ZFNKEsaTfT` e, no fechamento documental/publico, `dpl_Dhz8kF6XsyrhxjstR7rKiayT3kgE`, mantendo `https://clarainova02.vercel.app` ativa.",
     "O R6B foi fechado com telemetria de uso do provedor Gemini em `chat_metrics.metadata_json`, script auditor `scripts/corpus/evaluate_prompt_cache_readiness.py` e decisao explicita de nao priorizar context caching explicito nesta rodada.",
     "A amostra recente do R6B ficou com `avgPromptTokens = 4508.62`, `p95PromptTokens = 5718`, `maxPromptTokens = 7072`, `prompt_over_10k = 0`, `grounded_fallback = 180/200` linhas (`90%`) e `providerUsageRows = 0`, entao o gargalo atual nao e cache explicito e sim a predominancia do caminho de fallback.",
-    "O benchmark canonico remoto pós-publicacao do fechamento `R6A-R6B` ficou green: `Didatico` com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`; `Direto` com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`."
+    "O benchmark canonico remoto pós-publicacao do fechamento `R6A-R6B` ficou green: `Didatico` com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`; `Direto` com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`.",
+    "O subbloco canonico `5B` foi publicado em producao a partir do commit `43ad740133f7e6fa96798dcf58f32bf0921a5659`, com a migration remota `20260406000500_add_metadata_filters_to_hybrid_search.sql`, deploy web observado em `dpl_BEb1nZLVzF58hbdoi3EjgJJnumoJ` e Edge Function `chat` promovida para a versao `34`.",
+    "A `chat` agora tenta primeiro uma busca hibrida governada por `topic_scope`, `source_name`, `document name` e `version_label`, voltando para a busca aberta apenas quando o subconjunto governado nao entrega resultado suficiente.",
+    "O benchmark canonico remoto pós-publicacao do `5B` permaneceu green: `Didatico` e `Direto` ficaram com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.98`."
   ],
   "pending_items": [
-    "Retomar `5B-5F` agora que a trilha `R0-R6B` foi fechada e benchmarkada em producao.",
+    "Retomar `5C-5F` agora que a trilha `R0-R6B` foi fechada e o `5B` foi publicado em producao.",
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",
     "Manter multimodalidade em PDFs e Google Search grounding como roadmap posterior, sem competir com a trilha imediata."
   ],
@@ -71,7 +74,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
   ],
-  "next_action": "Retomar o `5B` com retrieval governado por metadados reais, preservando a frente paralela de layout e mantendo o R5C como rotina manual de verificacao do manifesto.",
+  "next_action": "Retomar o `5C` com source-target routing de alta precisao, preservando a frente paralela de layout e mantendo o R5C como rotina manual de verificacao do manifesto.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
@@ -84,9 +87,10 @@
     "O R3C tambem evitou tocar no layout do chat; a unica excecao foi um ajuste minimo em `SmoothScrollProvider` para remover um erro de lint introduzido no branch atual e restaurar a automacao de validacao.",
     "O R4A manteve a frente visual sob controle: o unico encaixe no chat foi um bloco discreto de feedback no rodape da resposta estruturada, sem reabrir a arquitetura do layout.",
     "O R4B tambem evitou conflito com a frente paralela de layout: a mudanca visual ficou restrita ao card administrativo de métricas/gaps.",
-    "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação."
+    "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação.",
+    "O `5B` tambem evitou conflito com a frente paralela de layout: a mudanca ficou concentrada em SQL, Edge Function `chat`, helper de governanca de retrieval e testes."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-05-r6a-r6b-finalization-publish-and-benchmark.md",
-  "last_session_head_sha": "7fc5ddd"
+  "last_report": "docs/operational-reports/2026-04-05-5b-metadata-governed-retrieval-publish-and-benchmark.md",
+  "last_session_head_sha": "43ad740"
 }
