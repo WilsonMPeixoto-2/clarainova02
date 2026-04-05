@@ -1,5 +1,4 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { GoogleGenAI } from "npm:@google/genai";
 import {
   buildDocumentChunkMetadata,
   buildDocumentEmbeddingText,
@@ -241,7 +240,7 @@ async function requireAdminUser(
 }
 
 async function generateEmbeddingBatchWithRetry(
-  ai: GoogleGenAI,
+  geminiKey: string,
   chunks: StructuredChunkPayload[],
   title?: string | null,
 ) {
@@ -256,25 +255,47 @@ async function generateEmbeddingBatchWithRetry(
 
   for (let attempt = 0; attempt <= EMBED_RETRY_DELAYS_MS.length; attempt++) {
     try {
-      const config: Record<string, unknown> = {
-        outputDimensionality: EMBEDDING_DIM,
-        taskType: DOCUMENT_EMBEDDING_TASK_TYPE,
-      };
+      const requests = embeddingTexts.map((text) => {
+        const request: Record<string, unknown> = {
+          model: `models/${EMBEDDING_MODEL}`,
+          content: {
+            parts: [{ text }],
+          },
+          taskType: DOCUMENT_EMBEDDING_TASK_TYPE,
+          outputDimensionality: EMBEDDING_DIM,
+        };
 
-      if (title && title.trim()) {
-        config.title = title.trim();
-      }
+        if (title && title.trim()) {
+          request.title = title.trim();
+        }
 
-      const result = await Promise.race([
-        ai.models.embedContent({
-          model: EMBEDDING_MODEL,
-          contents: embeddingTexts,
-          config,
+        return request;
+      });
+
+      const response = await Promise.race([
+        fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:batchEmbedContents`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": geminiKey,
+          },
+          body: JSON.stringify({ requests }),
         }),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("EMBED_TIMEOUT")), EMBED_TIMEOUT_MS)
         ),
       ]);
+
+      if (!response.ok) {
+        const details = await response.text();
+        throw Object.assign(new Error(`EMBED_HTTP_${response.status}: ${details}`), {
+          status: response.status,
+        });
+      }
+
+      const result = await response.json() as {
+        embeddings?: Array<{ values?: number[] | null }>;
+      };
 
       const valuesList = result.embeddings?.map((embedding) => embedding.values ?? null) ?? [];
       if (valuesList.length !== chunks.length) {
@@ -316,7 +337,7 @@ async function generateEmbeddingBatchWithRetry(
 }
 
 async function generateEmbeddingsWithNativeBatching(
-  ai: GoogleGenAI,
+  geminiKey: string,
   chunks: StructuredChunkPayload[],
   title?: string | null,
 ) {
@@ -325,7 +346,7 @@ async function generateEmbeddingsWithNativeBatching(
 
   for (let index = 0; index < chunks.length; index += EMBED_API_BATCH_SIZE) {
     const batch = chunks.slice(index, index + EMBED_API_BATCH_SIZE);
-    const results = await generateEmbeddingBatchWithRetry(ai, batch, title);
+    const results = await generateEmbeddingBatchWithRetry(geminiKey, batch, title);
     embeddings.push(...results);
     apiCalls += 1;
   }
@@ -420,8 +441,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const ai = new GoogleGenAI({ apiKey: geminiKey });
-
     await safeLogEvent(supabase, {
       document_id,
       ingestion_job_id,
@@ -443,7 +462,7 @@ Deno.serve(async (req) => {
     });
 
     const embeddingStart = Date.now();
-    const { embeddings, apiCalls } = await generateEmbeddingsWithNativeBatching(ai, validChunks, normalizedTitle);
+    const { embeddings, apiCalls } = await generateEmbeddingsWithNativeBatching(geminiKey, validChunks, normalizedTitle);
     const embedding_ms = Date.now() - embeddingStart;
 
     // Build rows using ONLY columns that exist in document_chunks
