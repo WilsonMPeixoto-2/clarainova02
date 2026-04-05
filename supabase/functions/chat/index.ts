@@ -21,6 +21,10 @@ import {
   buildPromptTelemetryMetadata,
   type ChatPromptTelemetry,
 } from "./prompt-telemetry.ts";
+import {
+  KEYWORD_ONLY_QUERY_EMBEDDING_MODEL,
+  shouldUseSemanticRetrieval,
+} from "./retrieval-mode.ts";
 
 import {
   prepareKnowledgeDecision,
@@ -80,7 +84,6 @@ const QUERY_EMBEDDING_MODEL = 'gemini-embedding-2-preview';
 const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
 type ChatResponseMode = (typeof CHAT_RESPONSE_MODES)[number];
 const DEFAULT_CHAT_RESPONSE_MODE: ChatResponseMode = 'didatico';
-const KEYWORD_FALLBACK_QUERY_EMBEDDING = JSON.stringify(Array.from({ length: EMBEDDING_DIM }, () => 0));
 const QUERY_EXPANSION_TIMEOUT_MS = 3_000;
 const GEMINI_FLASH_LITE_MODEL = 'gemini-3.1-flash-lite-preview';
 const GEMINI_PRO_MODEL = 'gemini-3.1-pro-preview';
@@ -716,6 +719,8 @@ interface TelemetryContext {
   sourceTargetLabel: string | null;
   stageTimings: ChatStageTimings;
   promptTelemetry: ChatPromptTelemetry;
+  queryEmbeddingModel: string;
+  searchMode: string;
   budgetTotalMs: number;
   budgetElapsedMs: number;
   budgetRemainingMs: number;
@@ -785,6 +790,8 @@ async function recordTelemetry(
           ...buildPromptTelemetryMetadata(ctx.promptTelemetry),
           output_mode: outputMode,
           response_mode: ctx.responseMode,
+          query_embedding_model: ctx.queryEmbeddingModel,
+          search_mode: ctx.searchMode,
           rag_quality_score: ctx.ragQualityScore,
           expanded_query: ctx.expandedQuery,
           source_target: ctx.sourceTargetLabel,
@@ -1159,6 +1166,8 @@ Deno.serve(async (req) => {
             structured_timeout_ms: structuredTimeoutMsUsed,
             stream_init_timeout_ms: streamInitTimeoutMsUsed,
             leakage_repair_timeout_ms: leakageRepairTimeoutMsUsed,
+            query_embedding_model: null,
+            search_mode: 'guardrail_skipped',
           },
         }).then(({ error }) => {
           if (error) console.error('chat_metrics guardrail insert error:', error);
@@ -1197,14 +1206,15 @@ Deno.serve(async (req) => {
     let matchedChunks: HybridSearchChunk[] = [];
     let searchMetricId: string | null = null;
     let groundedReferences: ClaraStructuredResponse["referenciasFinais"] = [];
-    let queryEmbeddingModel = 'keyword_fallback_zero_vector';
+    let queryEmbeddingModel = KEYWORD_ONLY_QUERY_EMBEDDING_MODEL;
+    let searchMode = 'keyword_only';
     let expandedQueryText: string | null = null;
     let retrievalQuality: RetrievalQualityInfo | null = null;
     let keywordQueryText = lastUserMessage?.content ?? '';
 
     if (lastUserMessage) {
       try {
-        let queryEmbeddingPayload = KEYWORD_FALLBACK_QUERY_EMBEDDING;
+        let queryEmbeddingPayload: string | null = null;
         const contextualizedQuery = buildContextualizedEmbeddingQuery(chatMessages, lastUserMessage.content);
         keywordQueryText = contextualizedQuery.queryText || lastUserMessage.content;
 
@@ -1266,6 +1276,7 @@ Deno.serve(async (req) => {
 
             queryEmbeddingPayload = JSON.stringify(finalEmbedding);
             queryEmbeddingModel = `${QUERY_EMBEDDING_MODEL}:${EMBEDDING_CONTRACT_VERSION}${contextualizedQuery.isContextualized ? ':followup_context_v1' : ''}`;
+            searchMode = 'hybrid';
           }
         } catch (embeddingError) {
           console.warn('Query embedding fallback to keyword-only retrieval:', embeddingError);
@@ -1287,7 +1298,7 @@ Deno.serve(async (req) => {
             console.error("Hybrid search error:", matchErr);
           } else if (chunks && chunks.length > 0) {
             // Supplementary targeted retrieval for source-routed queries
-            if (sourceTarget && sourceTarget.topicScopes.length > 0 && queryEmbeddingPayload !== KEYWORD_FALLBACK_QUERY_EMBEDDING) {
+            if (sourceTarget && sourceTarget.topicScopes.length > 0 && shouldUseSemanticRetrieval(queryEmbeddingPayload)) {
               try {
                 const scopeFilter = sourceTarget.topicScopes.map((s) => `topic_scope.eq.${s}`).join(',');
                 const nameFilter = sourceTarget.sourceNamePatterns.map((p) => `source_name.ilike.${p}`).join(',');
@@ -1397,7 +1408,7 @@ Deno.serve(async (req) => {
           normalized_query: normalizedQuery,
           query_embedding_model: queryEmbeddingModel,
           keyword_query_text: keywordQueryText,
-          search_mode: 'hybrid',
+          search_mode: searchMode,
           merged_hits_count: searchResultCount,
           top_score: retrievalTopScore || null,
           avg_score: averageScore(matchedChunks),
@@ -1534,6 +1545,8 @@ REESCRITA OBRIGATORIA:
         sourceTargetLabel: sourceTarget?.label ?? null,
         stageTimings,
         promptTelemetry,
+        queryEmbeddingModel,
+        searchMode,
         budgetTotalMs: REQUEST_TIME_BUDGET_MS,
         budgetElapsedMs: timeBudgetTracker.elapsedMs(),
         budgetRemainingMs: timeBudgetTracker.remainingMs(),
@@ -1599,6 +1612,8 @@ REESCRITA OBRIGATORIA:
           sourceTargetLabel: sourceTarget?.label ?? null,
           stageTimings,
           promptTelemetry,
+          queryEmbeddingModel,
+          searchMode,
           budgetTotalMs: REQUEST_TIME_BUDGET_MS,
           budgetElapsedMs: timeBudgetTracker.elapsedMs(),
           budgetRemainingMs: timeBudgetTracker.remainingMs(),
@@ -1712,6 +1727,8 @@ REESCRITA OBRIGATORIA:
         sourceTargetLabel: sourceTarget?.label ?? null,
         stageTimings,
         promptTelemetry,
+        queryEmbeddingModel,
+        searchMode,
         budgetTotalMs: REQUEST_TIME_BUDGET_MS,
         budgetElapsedMs: timeBudgetTracker.elapsedMs(),
         budgetRemainingMs: timeBudgetTracker.remainingMs(),
