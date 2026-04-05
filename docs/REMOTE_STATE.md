@@ -2,7 +2,7 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-05
-- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ dde134fe0c05548b363aba5acbd0de61c5e47881`
+- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 7fc5dddda891cd3ef638847973143e7809006122`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
@@ -11,7 +11,7 @@
 - `origin/main` atualmente alinhada ao commit local preparado para publicação: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 - Trabalho local em andamento fora de `main`:
   - branch ativa de sessão: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
-  - a branch de sessão foi publicada em `origin` até o commit `dde134fe0c05548b363aba5acbd0de61c5e47881`
+  - a branch de sessão foi publicada em `origin` até o commit `7fc5dddda891cd3ef638847973143e7809006122`
   - a linha principal continua íntegra em `main`, mas a produção foi manualmente atualizada a partir da branch de sessão
 - Observação de análise remota:
   - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral
@@ -24,19 +24,19 @@
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção agora reflete manualmente o fechamento `R6A-R6B` publicado a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET` no commit `dde134fe0c05548b363aba5acbd0de61c5e47881`
+  - a produção agora reflete manualmente o fechamento `R6A-R6B` publicado a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`, com runtime funcional no commit `dde134fe0c05548b363aba5acbd0de61c5e47881` e artefatos/documentação pública consolidados no commit `7fc5dddda891cd3ef638847973143e7809006122`
   - isso inclui budget real por request, telemetria por estágio em `chat_metrics.metadata_json`, follow-up contextualizado no retrieval, breakdown explícito de prompt/histórico, retorno de `request_id` na `chat`, `submit-chat-feedback`, dashboard admin de gaps, degradacao segura para `keyword_only`, targeted keyword rescue, grounded fallback recalibrado para o dominio SEI-Rio, cache de embeddings de consulta com `TTL` de `7` dias, relatório estático de frescor do corpus no painel administrativo, benchmark estrutural de chunking/dimensionalidade e telemetria de uso do provedor Gemini para decisão sobre context caching
   - `origin/main` continua sendo a fonte oficial integrada, então existe divergência intencional e documentada entre `main` e a produção até a próxima reconciliação
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `preview_promote_recovery`
   - status: `READY`
-  - deployment id: `dpl_hsq7NmMPznu5CniYa6ZFNKEsaTfT`
-  - commit publicado: `dde134fe0c05548b363aba5acbd0de61c5e47881`
-  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/hsq7NmMPznu5CniYa6ZFNKEsaTfT`
+  - deployment id: `dpl_Dhz8kF6XsyrhxjstR7rKiayT3kgE`
+  - commit publicado: `7fc5dddda891cd3ef638847973143e7809006122`
+  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/Dhz8kF6XsyrhxjstR7rKiayT3kgE`
   - aliases observados:
     - `https://clarainova02.vercel.app`
-    - `https://clarainova02-b9jh93jyz-wilson-m-peixotos-projects.vercel.app`
+    - `https://clarainova02-152xvalbh-wilson-m-peixotos-projects.vercel.app`
 
 ## Supabase
 - Projeto oficial: `jasqctuzeznwdtbcuixn`

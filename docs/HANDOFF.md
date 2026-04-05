@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T13:40:54.411311Z
+- Data/hora: 2026-04-05T13:45:54.2803328Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `dde134fe0c05548b363aba5acbd0de61c5e47881`
+- Head da sessão: `7fc5dddda891cd3ef638847973143e7809006122`
 - Último relatório: `docs/operational-reports/2026-04-05-r6a-r6b-finalization-publish-and-benchmark.md`
 
 ## Estado atual resumido
@@ -63,6 +63,7 @@
 - `R6A` foi fechado sem promoção de mudança de runtime: os perfis `current`, `balanced_1400` e `context_1800` ficaram todos com `408` chunks e `avgChunkChars = 1089.29`, confirmando que o gargalo atual continua sendo a segmentação por página.
 - A leitura complementar do `R6A` sobre prontidão semântica mostrou `200` linhas recentes de `search_metrics`, com apenas `36.5%` de tráfego recente usando embedding de consulta semântico real; por isso a trilha de `1536` dimensões não foi promovida nesta rodada.
 - O fechamento funcional do `R6A-R6B` saiu no commit `dde134f`, promoveu a Edge Function `chat` para a versão `33` e foi publicado na produção web pelo deploy `dpl_hsq7NmMPznu5CniYa6ZFNKEsaTfT`, após recuperação por `vercel promote` de um preview `READY`.
+- O fechamento documental/publico da rodada saiu no commit `7fc5ddd` e foi promovido na produção web pelo deploy `dpl_Dhz8kF6XsyrhxjstR7rKiayT3kgE`, que agora serve os artefatos `/data/latest-r6a-chunking-experiment.json` e `/data/latest-r6b-prompt-cache-readiness.json`.
 - `R6B` foi fechado com telemetria nova de uso do provedor Gemini em `chat_metrics.metadata_json` e com o auditor `scripts/corpus/evaluate_prompt_cache_readiness.py`.
 - A amostra recente do `R6B` ficou com `avgPromptTokens = 4508.62`, `p95PromptTokens = 5718`, `maxPromptTokens = 7072`, `prompt_over_10k = 0`, `grounded_fallback = 180/200` linhas (`90%`) e `providerUsageRows = 0`; a decisão foi não priorizar context caching explícito enquanto o caminho do provedor não voltar a dominar a operação.
 - O benchmark canônico remoto pós-publicação do fechamento `R6A-R6B` ficou green:
