@@ -8,7 +8,7 @@
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T07:24:32.3356732Z",
+  "last_update_utc": "2026-04-05T07:27:55.1598140Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -52,5 +52,5 @@
   ],
   "session_status": "session_in_progress",
   "last_report": "docs/operational-reports/2026-04-05-rag-regression-fix-production-deploy-and-benchmark.md",
-  "last_session_head_sha": "705cc3c"
+  "last_session_head_sha": "c65e07c"
 }

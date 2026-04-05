@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T07:24:32.3356732Z
+- Data/hora: 2026-04-05T07:27:55.1598140Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `705cc3cfc3a9383e1549cb10da521c01d1676985`
+- Head da sessão: `c65e07cf574669a66f7850dae99efbad0c88adae`
 - Último relatório: `docs/operational-reports/2026-04-05-rag-regression-fix-production-deploy-and-benchmark.md`
 
 ## Estado atual resumido
