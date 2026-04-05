@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 com R0-R6B fechados, 5B publicado em producao com retrieval governado por metadados reais e benchmark canônico remoto green",
+  "current_phase": "BLOCO 5 com 5B-5E publicados em producao, 5F operacionalizado por R5C e benchmark canônico remoto green",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T18:38:00.0000000Z",
+  "last_update_utc": "2026-04-05T19:10:00.0000000Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -63,18 +63,27 @@
     "O benchmark canonico remoto pós-publicacao do fechamento `R6A-R6B` ficou green: `Didatico` com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`; `Direto` com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`.",
     "O subbloco canonico `5B` foi publicado em producao a partir do commit `43ad740133f7e6fa96798dcf58f32bf0921a5659`, com a migration remota `20260406000500_add_metadata_filters_to_hybrid_search.sql`, deploy web observado em `dpl_EhukXtSyy6G7c493r5koYX4aMiS6` e Edge Function `chat` promovida para a versao `34`.",
     "A `chat` agora tenta primeiro uma busca hibrida governada por `topic_scope`, `source_name`, `document name` e `version_label`, voltando para a busca aberta apenas quando o subconjunto governado nao entrega resultado suficiente.",
-    "O benchmark canonico remoto pós-publicacao do `5B` permaneceu green: `Didatico` e `Direto` ficaram com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.98`."
+    "O benchmark canonico remoto pós-publicacao do `5B` permaneceu green: `Didatico` e `Direto` ficaram com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.98`.",
+    "O subbloco canônico `5C` foi publicado em producao a partir do commit `3bca20e5d68a1b5fe0f0ce343c0b4c90e054f37b`, com Edge Function `chat` promovida para a versao `35` e deploy web de producao observado em `dpl_2mLgBhTxWCkrF9LfJxLPVTBmBsNz`.",
+    "O `5C` endureceu a confirmacao de source-target: a rota nomeada agora distingue evidencia `confirmed` de `weak`, so aplica boost com piso semantico real e propaga `source_target_status` para a telemetria.",
+    "O subbloco canônico `5D` foi publicado em producao a partir do commit `859e606600f9353c18f700d5c1f0bf465ec1daa6`, com Edge Function `chat` promovida para a versao `36` e deploy web de producao observado em `dpl_8mQPTsQpidQN4VMdg7rM7tN2CxXP`.",
+    "O `5D` sharpenou os contratos entre `Direto` e `Didático`, com renderização textual mais distinta (`Checklist rapido` / `Conferencia final` versus `Orientacao inicial` / `Passo a passo guiado` / `Termos importantes`) sem reabrir a frente de layout.",
+    "O subbloco canônico `5E` foi publicado em producao a partir do commit `76334280b3525e2c1c8c5112f6d3f568f47f3959`, com Edge Function `chat` promovida para a versao `37` e deploy web de producao observado em `dpl_EwXNZwfygkrSL8EsN7LpqQeKcLGt`.",
+    "O `5E` adicionou transparencia editorial ao grounding: referencias agora carregam camada/autoridade no subtitulo e a resposta injeta `userNotice` ou `cautionNotice` conforme o mix entre nucleo, cobertura, apoio e uso interno.",
+    "O benchmark canonico remoto pós-publicacao do `5C`, do `5D` e do `5E` permaneceu green: `Didatico` e `Direto` ficaram com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.98`.",
+    "O `5F` fica operacionalizado por `R5C`: a verificacao manual de frescor do manifesto/corpus ja esta servida em producao e passa a ser rotina mensal, nao um novo pacote de runtime."
   ],
   "pending_items": [
-    "Retomar `5C-5F` agora que a trilha `R0-R6B` foi fechada e o `5B` foi publicado em producao.",
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",
+    "Manter `R5C` como rotina mensal de verificacao do manifesto/corpus.",
+    "Preparar a abertura do BLOCO 6 sem competir com as pendencias residuais do corpus.",
     "Manter multimodalidade em PDFs e Google Search grounding como roadmap posterior, sem competir com a trilha imediata."
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
   ],
-  "next_action": "Retomar o `5C` com source-target routing de alta precisao, preservando a frente paralela de layout e mantendo o R5C como rotina manual de verificacao do manifesto.",
+  "next_action": "Encerrar a reconciliacao documental/publica dos subblocos `5C-5F`, manter o `R5C` como rotina mensal do corpus e liberar a abertura do BLOCO 6.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
@@ -88,9 +97,10 @@
     "O R4A manteve a frente visual sob controle: o unico encaixe no chat foi um bloco discreto de feedback no rodape da resposta estruturada, sem reabrir a arquitetura do layout.",
     "O R4B tambem evitou conflito com a frente paralela de layout: a mudanca visual ficou restrita ao card administrativo de métricas/gaps.",
     "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação.",
-    "O `5B` tambem evitou conflito com a frente paralela de layout: a mudanca ficou concentrada em SQL, Edge Function `chat`, helper de governanca de retrieval e testes."
+    "O `5B` tambem evitou conflito com a frente paralela de layout: a mudanca ficou concentrada em SQL, Edge Function `chat`, helper de governanca de retrieval e testes.",
+    "A atualizacao de dependencias registrada no commit `48e82cf` permanece compatível com a trilha publicada; o `5E` foi validado com `npm run validate` e benchmark canônico green sobre essa base."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-05-5b-metadata-governed-retrieval-publish-and-benchmark.md",
+  "last_report": "docs/operational-reports/2026-04-05-5e-editorial-transparency-publish-and-benchmark.md",
   "last_session_head_sha": "b2cb1b0"
 }

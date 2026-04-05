@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T18:38:00.0000000Z
+- Data/hora: 2026-04-05T19:10:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `b2cb1b05c5b673936f61c36cde3c9e4ff1ba7388`
-- Último relatório: `docs/operational-reports/2026-04-05-5b-metadata-governed-retrieval-publish-and-benchmark.md`
+- Head da sessão: `76334280b3525e2c1c8c5112f6d3f568f47f3959`
+- Último relatório: `docs/operational-reports/2026-04-05-5e-editorial-transparency-publish-and-benchmark.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R6B` fechados, `5B` já publicado em produção e benchmark canônico remoto green
+- Fase atual: BLOCO 5 com `5B-5E` publicados em produção, `5F` operacionalizado via `R5C` e benchmark canônico remoto green
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: retomar `5C` com source-target routing de alta precisão.
+- Próxima ação recomendada: manter `R5C` como rotina mensal do corpus e liberar a abertura do BLOCO 6 após a reconciliação documental/publica desta rodada.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -75,6 +75,17 @@
   - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
   - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
 - O `5B` foi fechado sem tocar no layout paralelo do chat; a mudança ficou contida em SQL, Edge Function `chat` e testes.
+- O `5C` já foi publicado em produção a partir do commit `3bca20e`, com Edge Function `chat` promovida para a versão `35` e produção web observada no deploy `dpl_2mLgBhTxWCkrF9LfJxLPVTBmBsNz`.
+- O `5C` endureceu a confirmação de source-target: a rota nomeada agora só recebe boost quando a evidência é `confirmed`, preservando fallback explícito para casos `weak`.
+- O `5D` já foi publicado em produção a partir do commit `859e606`, com Edge Function `chat` promovida para a versão `36` e produção web observada no deploy `dpl_8mQPTsQpidQN4VMdg7rM7tN2CxXP`.
+- O `5D` tornou `Direto` e `Didático` mais distintos no contrato textual e na renderização em texto, sem tocar na frente paralela de layout.
+- O `5E` já foi publicado em produção a partir do commit `7633428`, com Edge Function `chat` promovida para a versão `37` e produção web observada no deploy `dpl_EwXNZwfygkrSL8EsN7LpqQeKcLGt`.
+- O `5E` adicionou transparência editorial ao grounding: referências agora mostram camada/autoridade no subtítulo e a resposta injeta avisos editoriais quando o grounding depende de cobertura, apoio ou uso interno.
+- O benchmark canônico remoto pós-publicação do `5C`, do `5D` e do `5E` permaneceu green:
+  - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+  - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+- O `5F` fica tratado operacionalmente por `R5C`: o relatório de frescor do manifesto/corpus já está publicado em produção e passa a ser rotina mensal, não um novo pacote de runtime.
+- A atualização de dependências registrada no commit `48e82cf` já faz parte desta branch; a validação do `5E` passou sobre essa base com `29` suites e `120` testes.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
 
@@ -166,11 +177,10 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Retomar `5C-5F` agora que `5B` foi publicado em produção
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C
-- Monitorar o source-target routing para evitar overboost quando a fonte nomeada tiver evidência semanticamente fraca
+- Manter o `R5C` como rotina mensal de verificação do manifesto/corpus
 - Manter multimodalidade em PDF e Google Search grounding como roadmap posterior, não como frente imediata
 
 ## Bloqueios externos

@@ -11,7 +11,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 
 ## Linha mestra atual
 - Fonte oficial integrada: `origin/main @ 6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Frente imediata mais importante: retomar os subblocos canônicos `5B-5F` dentro do BLOCO 5, agora já com `R0-R6B` fechados, publicados e benchmarkados em produção
+- Frente imediata mais importante: fechar a reconciliação documental dos subblocos canônicos `5B-5F`, já publicados em produção nesta branch, e então liberar a abertura controlada do BLOCO 6
 - Ordem de execução atualmente aceita:
   1. executar `R0` com benchmark canônico congelado, baseline reproduzível e gate local do RAG em `Direto` e `Didático`
   2. executar `R1` com ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e expansão de query com contexto curto
@@ -71,7 +71,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Estado: `in_progress`
 - Objetivo: transformar a CLARA de funcional e grounded em previsivelmente excelente na recuperação, geração e explicação da própria confiança
-- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0-R2` foram publicados, a regressão pós-publicação de `Q8`/`Q10` foi corrigida, o benchmark canônico remoto voltou a green, `R3A-R3C` foram publicados em produção, o `R4A` foi publicado com ciclo explícito de feedback do usuário, o `R4B` também já foi publicado com dashboard admin de gaps, o `R5A` acabou fechado em produção via recuperação do incidente de quota/embeddings com `keyword_only` dirigido, grounded fallback reescrito e benchmark remoto novamente green, o `R5B` já foi publicado com cache de embeddings de consulta protegido por RLS, o `R5C` também já foi publicado com checagem manual de frescor do corpus servida no painel administrativo, `R6A-R6B` foram concluídos sem promover mudança de runtime para chunking/dimensionalidade ou context caching explícito e o `5B` acabou de ser publicado com governança de retrieval por metadados já aplicada dentro do SQL da busca híbrida
+- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0-R2` foram publicados, a regressão pós-publicação de `Q8`/`Q10` foi corrigida, o benchmark canônico remoto voltou a green, `R3A-R3C` foram publicados em produção, o `R4A` foi publicado com ciclo explícito de feedback do usuário, o `R4B` também já foi publicado com dashboard admin de gaps, o `R5A` acabou fechado em produção via recuperação do incidente de quota/embeddings com `keyword_only` dirigido, grounded fallback reescrito e benchmark remoto novamente green, o `R5B` já foi publicado com cache de embeddings de consulta protegido por RLS, o `R5C` também já foi publicado com checagem manual de frescor do corpus servida no painel administrativo, `R6A-R6B` foram concluídos sem promover mudança de runtime para chunking/dimensionalidade ou context caching explícito, o `5B` foi publicado com governança de retrieval por metadados reais, o `5C` foi publicado com confirmação forte de source-target, o `5D` foi publicado com contratos mais distintos entre `Direto` e `Didático` e o `5E` foi publicado com transparência editorial no grounding sem tocar no layout
 - Subfrentes canônicas:
   - `5A` benchmark e gate de regressão
   - `5B` retrieval governado por metadados reais
@@ -94,7 +94,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
   - `R6A` experimento de chunking e dimensionalidade
   - `R6B` avaliação de context caching explícito
   - `R7` retorno aos subblocos `5B-5F` e roadmap alto esforço depois disso
-- Próxima ação: retomar `5C` com source-target routing de alta precisão, preservando o `R5C` como trilha operacional mensal de verificação do manifesto e mantendo `R6A-R6B` apenas como referência de benchmark/decisão
+- Próxima ação: tratar `5F` como rotina operacional mensal sustentada por `R5C`, manter as pendências residuais do Decreto `55.615` e do reupload admin sob monitoramento e abrir o BLOCO 6 quando a reconciliação com `main` estiver pronta
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
 - Estado: `planned`
