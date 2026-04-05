@@ -304,14 +304,20 @@ async function generateEmbeddingBatchWithRetry(
       }
 
       return valuesList.map((values, index) => {
-        if (!values || values.length !== EMBEDDING_DIM) {
+        if (!values || values.length < EMBEDDING_DIM) {
           console.warn(
-            `Embedding dimension mismatch at batch index ${index}: expected ${EMBEDDING_DIM}, got ${values?.length ?? 0}`,
+            `Embedding dimension mismatch at batch index ${index}: expected at least ${EMBEDDING_DIM}, got ${values?.length ?? 0}`,
           );
           return null;
         }
 
-        return normalizeL2(values);
+        if (values.length !== EMBEDDING_DIM) {
+          console.warn(
+            `Embedding dimension truncated at batch index ${index}: expected ${EMBEDDING_DIM}, got ${values.length}`,
+          );
+        }
+
+        return normalizeL2(values.slice(0, EMBEDDING_DIM));
       });
     } catch (err: unknown) {
       const msg = getErrorMessage(err);
