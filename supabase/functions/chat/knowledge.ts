@@ -30,6 +30,7 @@ export interface KnowledgeDecision {
   references: KnowledgeReference[];
   retrievalQuality: RetrievalQualityInfo;
   sourceTargetLabel: string | null;
+  sourceTargetStatus: "confirmed" | "weak" | null;
 }
 
 interface ParsedChunk {
@@ -51,6 +52,8 @@ const MIN_RRF_SCORE = 0.006;
 const STRONG_RRF_SCORE = 0.012;
 const MAX_SELECTED_CHUNKS = 6;
 const MIN_TOKEN_LENGTH = 3;
+const MIN_ROUTE_SUPPORT_OVERLAP = 2;
+const MIN_ROUTE_SUPPORT_SCORE = 0.01;
 
 const PROTECTED_TOKENS = new Set(["sei", "rio", "pdf", "rls", "tus"]);
 
@@ -159,6 +162,7 @@ interface ChunkScore {
   overlap: number;
   finalScore: number;
   technicalMatches: number;
+  versionOverlap: number;
 }
 
 interface CoverageRequirement {
@@ -173,6 +177,7 @@ interface ScoredChunkEntry {
   index: number;
   score: ChunkScore;
   routeMatch: boolean;
+  routeBoostEligible: boolean;
   coverageKeys: string[];
 }
 
@@ -522,7 +527,7 @@ function selectScoredChunks(
   };
 
   if (sourceTarget) {
-    const routed = allScored.filter((entry) => entry.routeMatch).slice(0, MIN_ROUTED_CHUNKS);
+    const routed = allScored.filter((entry) => entry.routeBoostEligible).slice(0, MIN_ROUTED_CHUNKS);
     for (const entry of routed) tryAddEntry(entry);
   }
 
@@ -612,7 +617,17 @@ function scoreChunk(question: string, tokens: string[], chunk: ParsedChunk, inde
     overlap,
     finalScore,
     technicalMatches,
+    versionOverlap,
   };
+}
+
+function isRouteBoostEligible(entry: ScoredChunkEntry) {
+  return entry.routeMatch &&
+    (
+      (entry.chunk.similarity >= STRONG_RRF_SCORE && entry.score.overlap >= 1) ||
+      (entry.chunk.similarity >= MIN_ROUTE_SUPPORT_SCORE && entry.score.overlap >= MIN_ROUTE_SUPPORT_OVERLAP) ||
+      (entry.chunk.similarity >= MIN_RRF_SCORE && entry.score.versionOverlap > 0)
+    );
 }
 
 function buildKnowledgeContext(chunks: Array<ParsedChunk & { referenceId: number }>): string {
@@ -685,7 +700,19 @@ export interface AdjacentChunkRequest {
   chunkIndex: number;
 }
 
-export function buildSourceTargetPrompt(route: SourceTargetRoute): string {
+export function buildSourceTargetPrompt(
+  route: SourceTargetRoute,
+  status: "confirmed" | "weak" = "confirmed",
+): string {
+  if (status === "weak") {
+    return `
+FONTE-ALVO NOMEADA PELO USUARIO:
+- O usuario citou explicitamente "${route.label.replace(/_/g, ' ')}", mas a recuperacao atual nao confirmou essa fonte com evidencia forte.
+- Nao force essa fonte como base primaria nem cite essa referencia sem suporte claro nos trechos recuperados.
+- Responda apenas com as fontes efetivamente sustentadas.
+- Se a fonte nomeada nao aparecer bem suportada, diga isso com transparencia ao usuario.`;
+  }
+
   return `
 FONTE-ALVO NOMEADA PELO USUARIO:
 - O usuario pediu explicitamente informacoes "${route.label.replace(/_/g, ' ')}".${route.versionConstraint ? `\n- Versao especifica solicitada: ${route.versionConstraint}.` : ''}
@@ -767,6 +794,7 @@ export function prepareKnowledgeDecision(
         index,
         score: coverageBoost > 0 ? { ...score, finalScore: score.finalScore + coverageBoost } : score,
         routeMatch: sourceTarget ? sourceTarget.matches(chunk) : false,
+        routeBoostEligible: false,
         coverageKeys: coverageMatches.map((requirement) => requirement.key),
       };
     })
@@ -774,7 +802,8 @@ export function prepareKnowledgeDecision(
 
   if (sourceTarget) {
     for (const entry of allScored) {
-      if (entry.routeMatch) {
+      entry.routeBoostEligible = isRouteBoostEligible(entry);
+      if (entry.routeBoostEligible) {
         entry.score = { ...entry.score, finalScore: entry.score.finalScore + ROUTE_SCORE_BOOST };
       }
     }
@@ -804,8 +833,13 @@ export function prepareKnowledgeDecision(
       references: [],
       retrievalQuality: emptyQuality,
       sourceTargetLabel: sourceTarget?.label ?? null,
+      sourceTargetStatus: sourceTarget ? "weak" : null,
     };
   }
+
+  const hasConfirmedRouteSupport = sourceTarget
+    ? allScored.some((entry) => entry.routeBoostEligible)
+    : false;
 
   const chunksWithReferences = parsedChunks.map((chunk, index) => ({
     ...chunk,
@@ -863,5 +897,8 @@ export function prepareKnowledgeDecision(
       chunkCount: parsedChunks.length,
     },
     sourceTargetLabel: sourceTarget?.label ?? null,
+    sourceTargetStatus: sourceTarget
+      ? hasConfirmedRouteSupport ? "confirmed" : "weak"
+      : null,
   };
 }

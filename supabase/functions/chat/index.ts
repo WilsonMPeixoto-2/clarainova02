@@ -951,6 +951,7 @@ interface TelemetryContext {
   ragQualityScore: number | null;
   expandedQuery: string | null;
   sourceTargetLabel: string | null;
+  sourceTargetStatus: 'confirmed' | 'weak' | null;
   stageTimings: ChatStageTimings;
   promptTelemetry: ChatPromptTelemetry;
   queryEmbeddingModel: string;
@@ -1035,6 +1036,7 @@ async function recordTelemetry(
           rag_quality_score: ctx.ragQualityScore,
           expanded_query: ctx.expandedQuery,
           source_target: ctx.sourceTargetLabel,
+          source_target_status: ctx.sourceTargetStatus,
         },
     })
     .select('id')
@@ -1468,6 +1470,7 @@ Deno.serve(async (req) => {
     let expandedQueryEmbeddingCacheStatus: QueryEmbeddingCacheStatus | null = null;
     let retrievalQuality: RetrievalQualityInfo | null = null;
     let keywordQueryText = lastUserMessage?.content ?? '';
+    let sourceTargetStatus: 'confirmed' | 'weak' | null = sourceTarget ? 'weak' : null;
 
     if (lastUserMessage) {
       try {
@@ -1664,6 +1667,7 @@ Deno.serve(async (req) => {
             retrievalSources = decision.sources;
             retrievalTopScore = decision.topScore;
             retrievalQuality = decision.retrievalQuality;
+            sourceTargetStatus = decision.sourceTargetStatus;
             groundedReferences = buildGroundedReferences(decision.references);
 
             if (decision.knowledgeContext) {
@@ -1751,7 +1755,9 @@ Deno.serve(async (req) => {
     const retrievalQualityPrompt = retrievalQuality
       ? buildRetrievalQualityPrompt(retrievalQuality, retrievalMode)
       : '';
-    const sourceTargetPrompt = sourceTarget ? buildSourceTargetPrompt(sourceTarget) : '';
+    const sourceTargetPrompt = sourceTarget
+      ? buildSourceTargetPrompt(sourceTarget, sourceTargetStatus ?? 'weak')
+      : '';
     const systemPromptWithContext = `${SYSTEM_PROMPT}${responseModePrompt}${retrievalQualityPrompt}${sourceTargetPrompt}${knowledgeContext}`;
     const promptTelemetry = buildPromptTelemetry({
       systemPrompt: SYSTEM_PROMPT,
@@ -1863,6 +1869,7 @@ REESCRITA OBRIGATORIA:
         searchMetricId, knowledgeContext, responseMode,
         ragQualityScore, expandedQuery: expandedQueryText,
         sourceTargetLabel: sourceTarget?.label ?? null,
+        sourceTargetStatus,
         stageTimings,
         promptTelemetry,
         providerUsage: resolvedStructuredResult.providerUsage,
@@ -1940,6 +1947,7 @@ REESCRITA OBRIGATORIA:
           ragQualityScore: computeRagQualityScore(retrievalQuality, fallbackResponse, fallbackResponse.referenciasFinais.length),
           expandedQuery: expandedQueryText,
           sourceTargetLabel: sourceTarget?.label ?? null,
+          sourceTargetStatus,
           stageTimings,
           promptTelemetry,
           providerUsage: null,
@@ -2059,6 +2067,7 @@ REESCRITA OBRIGATORIA:
         ragQualityScore: computeRagQualityScore(retrievalQuality, null, retrievalSources.length),
         expandedQuery: expandedQueryText,
         sourceTargetLabel: sourceTarget?.label ?? null,
+        sourceTargetStatus,
         stageTimings,
         promptTelemetry,
         providerUsage: null,

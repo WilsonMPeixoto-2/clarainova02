@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { prepareKnowledgeDecision } from "../../supabase/functions/chat/knowledge";
+import {
+  buildSourceTargetPrompt,
+  detectSourceTarget,
+  prepareKnowledgeDecision,
+} from "../../supabase/functions/chat/knowledge";
 
 describe("prepareKnowledgeDecision", () => {
   it("returns grounded context when retrieval is strong", () => {
@@ -339,5 +343,84 @@ describe("prepareKnowledgeDecision", () => {
     expect(documentNames).toContain("Termo de Uso e Aviso de Privacidade do SEI.Rio");
     expect(documentNames).toContain("Decreto Rio nº 57.250 de 19 de novembro de 2025");
     expect(decision.references).toHaveLength(6);
+  });
+
+  it("avoids overboosting a weak named source match", () => {
+    const sourceTarget = detectSourceTarget("Segundo a wiki do SEI-RJ, como incluir documento externo?");
+    const decision = prepareKnowledgeDecision(
+      "Segundo a wiki do SEI-RJ, como incluir documento externo?",
+      [
+        {
+          document_name: "Wiki SEI-RJ - atalhos visuais",
+          document_source_name: "Wiki SEI-RJ",
+          document_kind: "apoio",
+          document_authority_level: "supporting",
+          document_search_weight: 0.6,
+          document_topic_scope: "interface_update",
+          similarity: 0.0085,
+          content:
+            "[Fonte: Wiki SEI-RJ - atalhos visuais | Página: 2]\n\nA wiki registra ajustes de ícones e atalhos de navegação da interface.",
+        },
+        {
+          document_name: "Guia do usuário interno – SEI.Rio",
+          document_source_name: "SEI.Rio",
+          document_kind: "guia",
+          document_authority_level: "official",
+          document_search_weight: 1.12,
+          document_topic_scope: "sei_rio_guia",
+          similarity: 0.0175,
+          content:
+            "[Fonte: Guia do usuário interno – SEI.Rio | Página: 21]\n\nPara incluir documento externo, abra o processo, escolha Incluir Documento, selecione Documento Externo e preencha os campos obrigatórios.",
+        },
+      ],
+      sourceTarget,
+    );
+
+    expect(decision.sourceTargetStatus).toBe("weak");
+    expect(decision.references[0]?.documentName).toBe("Guia do usuário interno – SEI.Rio");
+  });
+
+  it("keeps a named source confirmed when the routed evidence is strong", () => {
+    const sourceTarget = detectSourceTarget("Segundo a wiki do SEI-RJ, onde fica o menu lateral?");
+    const decision = prepareKnowledgeDecision(
+      "Segundo a wiki do SEI-RJ, onde fica o menu lateral?",
+      [
+        {
+          document_name: "Wiki SEI-RJ - atualização de interface",
+          document_source_name: "Wiki SEI-RJ",
+          document_kind: "apoio",
+          document_authority_level: "supporting",
+          document_search_weight: 0.6,
+          document_topic_scope: "interface_update",
+          similarity: 0.015,
+          content:
+            "[Fonte: Wiki SEI-RJ - atualização de interface | Página: 1]\n\nO menu lateral permanece visível na faixa esquerda da tela e concentra os atalhos de navegação.",
+        },
+        {
+          document_name: "Guia do usuário interno – SEI.Rio",
+          document_source_name: "SEI.Rio",
+          document_kind: "guia",
+          document_authority_level: "official",
+          document_search_weight: 1.12,
+          document_topic_scope: "sei_rio_guia",
+          similarity: 0.013,
+          content:
+            "[Fonte: Guia do usuário interno – SEI.Rio | Página: 3]\n\nO acesso ao sistema começa pela página inicial com atalhos para processo e documento.",
+        },
+      ],
+      sourceTarget,
+    );
+
+    expect(decision.sourceTargetStatus).toBe("confirmed");
+    expect(decision.references[0]?.documentName).toBe("Wiki SEI-RJ - atualização de interface");
+  });
+});
+
+describe("buildSourceTargetPrompt", () => {
+  it("warns the model when the named source is weak", () => {
+    const sourceTarget = detectSourceTarget("Segundo a wiki do SEI-RJ, como incluir documento externo?");
+
+    expect(sourceTarget).not.toBeNull();
+    expect(buildSourceTargetPrompt(sourceTarget!, "weak")).toContain("nao confirmou essa fonte com evidencia forte");
   });
 });
