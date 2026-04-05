@@ -76,6 +76,10 @@ import {
   summarizeEditorialProfile,
   type EditorialProfile,
 } from "./editorial.ts";
+import {
+  matchEmergencyGroundedPlaybook,
+  type EmergencyGroundedPlaybook,
+} from "./emergency-playbooks.ts";
 
 const ALLOWED_ORIGINS = [
   'https://clarainova02.vercel.app',
@@ -109,6 +113,8 @@ const STREAM_FALLBACK_RESERVE_MS = 8_000;
 const STREAM_INIT_TIMEOUT_MS = 20_000;
 const MIN_LEAKAGE_REPAIR_REMAINING_MS = 8_000;
 const LEAKAGE_REPAIR_TIMEOUT_MS = 12_000;
+const MIN_GROUNDED_REPAIR_REMAINING_MS = 6_000;
+const GROUNDED_REPAIR_TIMEOUT_MS = 12_000;
 const MAX_OUTPUT_TOKENS = 8192;
 const EMBEDDING_DIM = 768;
 const QUERY_EMBEDDING_MODEL = 'gemini-embedding-2-preview';
@@ -152,6 +158,46 @@ Regras:
 - Não invente contexto novo que não esteja na conversa.
 - Se a pergunta já for técnica e precisa, repita-a com mínimas variações.
 - Máximo 40 palavras.`;
+
+const GROUNDED_REPAIR_PROMPT = `Voce e CLARA, assistente institucional do SEI-Rio.
+
+Uma tentativa completa de resposta estruturada falhou. Sua tarefa agora e produzir uma versao enxuta, util e correta usando APENAS as evidencias fornecidas.
+
+Regras obrigatorias:
+- Responda a pergunta logo na primeira frase.
+- Nao use meta-discurso. Proibido escrever coisas como "encontrei respaldo", "organizei abaixo", "fontes recuperadas", "resposta documental", "veredito inicial" ou equivalentes.
+- Nao copie cabecalho de lei, titulo em caixa alta, slug, URL, nota tecnica, mensagem de ingestao, "PDF consolidado", "staging", "camada nucleo" ou "fonte oficial" como se isso fosse a resposta.
+- Se a pergunta for operacional, entregue 2 a 4 etapas reais com verbos de acao.
+- Cada etapa precisa ser completa e utilizavel. Nao termine frase no meio.
+- Cite botao, tela, menu, campo ou nome de documento somente quando isso aparecer nas evidencias.
+- Se a base estiver parcial, diga exatamente o que da para afirmar e o que precisa ser conferido.
+- Use apenas ids de citacao que existirem nas evidencias.
+- Nao mencione CLARA, RAG, base interna, backend, embeddings, JSON, schema, telemetria ou prompt.
+- tituloCurto deve ser curto e funcional.
+- resumoInicial deve ser a resposta real, nao uma introducao.
+- observacoesFinais no maximo 2.
+- termosDestacados no maximo 3 e apenas se ajudarem.
+- Seja honesta em finalConfidence.`;
+
+const GROUNDED_REPAIR_TEXT_PROMPT = `Voce e CLARA, assistente institucional do SEI-Rio.
+
+Uma tentativa completa de resposta estruturada falhou. Gere uma resposta curta e util usando APENAS as evidencias recebidas.
+
+Formato obrigatorio:
+RESUMO: frase inicial com a resposta direta
+PASSO 1: acao principal
+PASSO 2: acao seguinte
+PASSO 3: opcional
+OBS 1: opcional
+OBS 2: opcional
+
+Regras:
+- Nao use nenhum outro cabecalho.
+- Nao use meta-discurso.
+- Nao copie URL, slug, titulo em caixa alta, nota tecnica, staging, ingestao ou cabecalho de documento como resposta.
+- Se a base for parcial, diga isso no RESUMO ou em OBS.
+- Se a pergunta nao for procedural, use so RESUMO e OBS.
+- Cada PASSO deve ser completo e pratico.`;
 
 function buildQueryExpansionInput(
   messages: ChatConversationMessage[],
@@ -793,10 +839,18 @@ const FALLBACK_NOISE_PATTERNS = [
   /\borigem oficial:/i,
   /\bcapturado em:/i,
   /\bobservacao:\s*pdf gerado localmente/i,
+  /\bpdf consolidado localmente/i,
   /\bprotocolo:\s*\d+/i,
   /\bguia do usuario\b.*\bdata de atualizacao\b/i,
   /\bnova versao do sei\b/i,
   /\bmanual do usuario sei 4/i,
+  /\bstaging\b/i,
+  /\bingestao controlada\b/i,
+  /\bcamada nucleo\b/i,
+  /\bfonte oficial\b/i,
+  /\bbase documental clara\b/i,
+  /^https?:\/\//i,
+  /processoeletronico/i,
 ];
 
 const FALLBACK_ACTION_PATTERNS = [
@@ -819,15 +873,34 @@ const FALLBACK_ACTION_PATTERNS = [
   /\bacesse\b/i,
 ];
 
+const FALLBACK_STOP_WORDS = new Set([
+  'a', 'ao', 'aos', 'as', 'com', 'como', 'da', 'das', 'de', 'do', 'dos', 'e', 'em', 'na', 'nas', 'no', 'nos',
+  'o', 'os', 'ou', 'para', 'por', 'que', 'se', 'um', 'uma', 'mais',
+]);
+
 function sanitizeFallbackEvidenceText(value: string): string {
   return value
     .replace(/\[Fonte:[^\]]+\]\s*/gi, '')
     .replace(/\bOrigem oficial:[^\n]+/gi, '')
     .replace(/\bCapturado em:[^\n]+/gi, '')
-    .replace(/\bObservacao:\s*PDF gerado localmente[^\n]*/gi, '')
+    .replace(/\bObservacao:[^\n]*/gi, '')
     .replace(/\bProtocolo:\s*\d+[^\n]*/gi, '')
     .replace(/\s+/g, ' ')
     .replace(/^[\s\-–•●\d.:)]+/, '')
+    .trim();
+}
+
+function sanitizeFallbackChunkContext(value: string): string {
+  return value
+    .replace(/\[Fonte:[^\]]+\]\s*/gi, '')
+    .replace(/\bOrigem oficial:[^\n]+/gi, '')
+    .replace(/\bCapturado em:[^\n]+/gi, '')
+    .replace(/\bObservacao:[^\n]*/gi, '')
+    .replace(/\bProtocolo:\s*\d+[^\n]*/gi, '')
+    .replace(/\bBase documental CLARA[.:]?\s*/gi, '')
+    .replace(/\bcamada nucleo\b/gi, '')
+    .replace(/\bfonte oficial\b/gi, '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -855,8 +928,20 @@ function looksLikeFallbackNoise(candidate: string, normalizedQuestion: string): 
     return true;
   }
 
+  if (/^[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ\s]+:\s+/u.test(candidate) && !normalizeFallbackEvidence(candidate).includes(normalizedQuestion)) {
+    return true;
+  }
+
   const hasAction = FALLBACK_ACTION_PATTERNS.some((pattern) => pattern.test(candidate));
   if (!hasAction && !/[.:;]/.test(candidate) && normalized.length < 60) {
+    return true;
+  }
+
+  if (/(?:\b(?:o|a|os|as|de|do|da|dos|das|em|na|no|nas|nos|para|por|com|e)\b)\s*$/i.test(candidate)) {
+    return true;
+  }
+
+  if (!/[.!?:;]/.test(candidate) && normalized.length < 90) {
     return true;
   }
 
@@ -880,18 +965,33 @@ function scoreFallbackChunk(question: string, chunk: HybridSearchChunk): number 
   if (normalizedQuestion.includes('documento externo') && /\bdocumento externo\b/.test(normalizedContent)) score += 0.03;
   if (normalizedQuestion.includes('login') && /\blogin|matricul|senha\b/.test(normalizedContent)) score += 0.03;
   if (normalizedQuestion.includes('bloco de assinatura') && /\bbloco de assinatura\b/.test(normalizedContent)) score += 0.03;
+  if (normalizedQuestion.includes('enviar') && /\benviar|unidade|destinatari|tramita/i.test(chunk.content)) score += 0.035;
+  if (normalizedQuestion.includes('login') && !/\blogin|matricul|senha|gov\.br|termo de uso\b/.test(normalizedContent)) score -= 0.03;
+  if (normalizedQuestion.includes('documento externo') && !/\bdocumento externo|incluir documento|pdf\b/.test(normalizedContent)) score -= 0.025;
+  if (normalizedQuestion.includes('enviar') && /\batualizar andamento\b/.test(normalizedContent) && !/\benviar|unidade|destinatari\b/.test(normalizedContent)) score -= 0.05;
+  if (normalizedQuestion.includes('bloco de assinatura') && /\bbloco de reuniao\b/.test(normalizedContent)) score -= 0.04;
+  if (/\bstaging|ingestao controlada|pdf consolidado localmente\b/.test(normalizedContent)) score -= 0.08;
   if (normalizedSection && normalizedQuestion && normalizedQuestion.includes(normalizedSection)) score += 0.015;
 
   return score;
 }
 
+function extractFallbackQuestionTokens(question: string): string[] {
+  return Array.from(new Set(
+    normalizeQueryText(question)
+      .split(/\s+/)
+      .filter((token) => token.length >= 4 && !FALLBACK_STOP_WORDS.has(token)),
+  ));
+}
+
 function buildFallbackEvidence(question: string, chunks: HybridSearchChunk[]): string[] {
   const normalizedQuestion = normalizeQueryText(question);
-  const seen = new Set<string>();
-  const evidence: string[] = [];
+  const questionTokens = extractFallbackQuestionTokens(question);
   const rankedChunks = [...chunks].sort((left, right) => scoreFallbackChunk(question, right) - scoreFallbackChunk(question, left));
+  const candidates: Array<{ text: string; score: number }> = [];
 
   for (const chunk of rankedChunks) {
+    const chunkScore = scoreFallbackChunk(question, chunk);
     const sentenceCandidates = chunk.content
       .split(/(?<=[.!?])\s+|\n+/)
       .map((candidate) => sanitizeFallbackEvidenceText(candidate))
@@ -903,18 +1003,32 @@ function buildFallbackEvidence(question: string, chunks: HybridSearchChunk[]): s
 
     for (const candidate of [...sentenceCandidates, ...lineCandidates]) {
       const normalizedCandidate = normalizeFallbackEvidence(candidate);
-      if (!normalizedCandidate || seen.has(normalizedCandidate)) continue;
+      if (!normalizedCandidate) continue;
       if (looksLikeFallbackNoise(candidate, normalizedQuestion)) continue;
 
-      seen.add(normalizedCandidate);
-      evidence.push(candidate.replace(/\s+/g, ' ').trim());
-      if (evidence.length >= 4) {
-        return evidence;
-      }
+      const overlap = questionTokens.reduce((total, token) => total + (normalizedCandidate.includes(token) ? 1 : 0), 0);
+      const hasAction = FALLBACK_ACTION_PATTERNS.some((pattern) => pattern.test(candidate));
+      const proceduralQuestion = /(?:como|passo a passo|etapas|procedimento|fazer|usar|incluir|encaminh|assinatura|documento|processo)/.test(normalizedQuestion);
+      if (proceduralQuestion && overlap === 0 && !hasAction) continue;
+
+      candidates.push({
+        text: candidate.replace(/\s+/g, ' ').trim(),
+        score: chunkScore + overlap * 0.03 + (hasAction ? 0.01 : 0),
+      });
     }
   }
 
-  return evidence;
+  const seen = new Set<string>();
+  return candidates
+    .sort((left, right) => right.score - left.score)
+    .map((candidate) => candidate.text)
+    .filter((candidate) => {
+      const normalizedCandidate = normalizeFallbackEvidence(candidate);
+      if (seen.has(normalizedCandidate)) return false;
+      seen.add(normalizedCandidate);
+      return true;
+    })
+    .slice(0, 4);
 }
 
 function buildFallbackTitle(question: string, responseMode: ChatResponseMode): string {
@@ -930,6 +1044,413 @@ function buildFallbackTitle(question: string, responseMode: ChatResponseMode): s
   return `${trimmed.slice(0, 85).trimEnd()}...`;
 }
 
+function buildGroundedRepairInput(
+  question: string,
+  chunks: HybridSearchChunk[],
+  groundedReferences: ClaraStructuredResponse["referenciasFinais"],
+  responseMode: ChatResponseMode,
+  retrievalQuality: RetrievalQualityInfo | null,
+  sourceTarget: SourceTargetRoute | null,
+): string {
+  const rankedChunks = [...chunks]
+    .sort((left, right) => scoreFallbackChunk(question, right) - scoreFallbackChunk(question, left))
+    .slice(0, 4);
+
+  const evidenceBlocks = rankedChunks.map((chunk, index) => {
+    const locationParts = [
+      chunk.document_name?.trim() || 'Documento',
+      chunk.section_title?.trim() ? `Secao: ${chunk.section_title.trim()}` : null,
+      chunk.page_start ? `Pagina ${chunk.page_start}` : null,
+    ].filter(Boolean);
+    const content = sanitizeFallbackChunkContext(chunk.content).slice(0, 900);
+
+    return `[${index + 1}] ${locationParts.join(' | ')}\n${content}`;
+  }).join('\n\n');
+
+  const referenceList = groundedReferences
+    .slice(0, 6)
+    .map((reference) => `[${reference.id}] ${reference.titulo}${reference.paginas ? ` (${reference.paginas})` : ''}`)
+    .join('\n');
+
+  const retrievalLabel = retrievalQuality
+    ? `${retrievalQuality.confidenceTier} | score ${retrievalQuality.topScore.toFixed(4)} | ${retrievalQuality.chunkCount} trechos`
+    : 'desconhecida';
+
+  return `Pergunta do usuario:
+${question}
+
+Modo de resposta:
+${responseMode}
+
+Qualidade da recuperacao:
+${retrievalLabel}
+
+${sourceTarget ? `Fonte-alvo nomeada pelo usuario: ${sourceTarget.label}\n\n` : ''}Evidencias documentais:
+${evidenceBlocks}
+
+Referencias finais disponiveis:
+${referenceList}`;
+}
+
+async function generateGroundedRepairWithFallback(
+  ai: GoogleGenAI,
+  question: string,
+  chunks: HybridSearchChunk[],
+  groundedReferences: ClaraStructuredResponse["referenciasFinais"],
+  responseMode: ChatResponseMode,
+  retrievalQuality: RetrievalQualityInfo | null,
+  sourceTarget: SourceTargetRoute | null,
+  strategy: GenerationStrategy,
+): Promise<{ response: ClaraStructuredResponse; plainText: string; model: string; providerUsage: ChatProviderUsage | null } | null> {
+  const contents = [{
+    role: 'user',
+    parts: [{
+      text: buildGroundedRepairInput(
+        question,
+        chunks,
+        groundedReferences,
+        responseMode,
+        retrievalQuality,
+        sourceTarget,
+      ),
+    }],
+  }];
+
+  const repairModels = [GEMINI_PRO_MODEL, ...strategy.orderedModels.filter((model) => model !== GEMINI_PRO_MODEL)];
+
+  for (const model of repairModels) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction: GROUNDED_REPAIR_PROMPT,
+          maxOutputTokens: 3072,
+          temperature: responseMode === 'didatico' ? 0.2 : 0.12,
+          topP: 0.85,
+          thinkingConfig: {
+            thinkingLevel: strategy.thinkingLevel,
+          },
+          responseMimeType: 'application/json',
+          responseJsonSchema: claraResponseJsonSchema,
+        },
+      });
+
+      const parsed = parseStructuredResponsePayload(response.text);
+      if (!parsed) {
+        console.warn(`Grounded repair output for ${model} did not validate. Falling back to extractive grounded response.`);
+        continue;
+      }
+
+      return {
+        response: parsed,
+        plainText: renderStructuredResponseToPlainText(parsed),
+        model: `${model}:grounded_repair`,
+        providerUsage: extractProviderUsage(response),
+      };
+    } catch (err: unknown) {
+      console.warn(`Grounded repair generation failed for ${model}: ${getErrorMessage(err, String(err ?? ''))}`);
+    }
+  }
+
+  return null;
+}
+
+type ParsedGroundedRepairText = {
+  summary: string | null;
+  steps: string[];
+  observations: string[];
+};
+
+function sanitizeGroundedRepairLine(value: string): string {
+  return sanitizeFallbackEvidenceText(value)
+    .replace(/^(?:resumo|passo\s*\d+|obs\s*\d+)\s*:\s*/i, '')
+    .replace(/^[-*•\s]+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function appendTaggedRepairLine(target: string[], value: string) {
+  const cleaned = sanitizeGroundedRepairLine(value);
+  if (!cleaned) return;
+  if (looksLikeFallbackNoise(cleaned, '')) return;
+
+  if (target.length === 0) {
+    target.push(cleaned);
+    return;
+  }
+
+  const previous = target[target.length - 1];
+  if (/[.!?]$/.test(previous)) {
+    target.push(cleaned);
+    return;
+  }
+
+  target[target.length - 1] = `${previous} ${cleaned}`.replace(/\s+/g, ' ').trim();
+}
+
+function parseGroundedRepairText(rawText: string): ParsedGroundedRepairText | null {
+  const lines = rawText
+    .split(/\r?\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  let currentSection: 'summary' | 'step' | 'observation' | null = null;
+  let summary: string | null = null;
+  const steps: string[] = [];
+  const observations: string[] = [];
+
+  for (const line of lines) {
+    const summaryMatch = line.match(/^RESUMO:\s*(.+)$/i);
+    if (summaryMatch) {
+      summary = sanitizeGroundedRepairLine(summaryMatch[1]);
+      currentSection = 'summary';
+      continue;
+    }
+
+    const stepMatch = line.match(/^PASSO\s*\d+:\s*(.+)$/i);
+    if (stepMatch) {
+      appendTaggedRepairLine(steps, stepMatch[1]);
+      currentSection = 'step';
+      continue;
+    }
+
+    const observationMatch = line.match(/^OBS\s*\d+:\s*(.+)$/i);
+    if (observationMatch) {
+      appendTaggedRepairLine(observations, observationMatch[1]);
+      currentSection = 'observation';
+      continue;
+    }
+
+    if (currentSection === 'summary' && summary) {
+      summary = `${summary} ${sanitizeGroundedRepairLine(line)}`.replace(/\s+/g, ' ').trim();
+      continue;
+    }
+
+    if (currentSection === 'step') {
+      appendTaggedRepairLine(steps, line);
+      continue;
+    }
+
+    if (currentSection === 'observation') {
+      appendTaggedRepairLine(observations, line);
+    }
+  }
+
+  const cleanedSummary = summary && !looksLikeFallbackNoise(summary, '')
+    ? summary
+    : null;
+  const cleanedSteps = steps
+    .map((step) => sanitizeGroundedRepairLine(step))
+    .filter((step) => step.length >= 18 && !looksLikeFallbackNoise(step, ''))
+    .slice(0, 4);
+  const cleanedObservations = observations
+    .map((observation) => sanitizeGroundedRepairLine(observation))
+    .filter((observation) => observation.length >= 18 && !looksLikeFallbackNoise(observation, ''))
+    .slice(0, 3);
+
+  if (!cleanedSummary && cleanedSteps.length === 0 && cleanedObservations.length === 0) {
+    return null;
+  }
+
+  return {
+    summary: cleanedSummary,
+    steps: cleanedSteps,
+    observations: cleanedObservations,
+  };
+}
+
+function buildGroundedRepairTextResponse(
+  question: string,
+  parsed: ParsedGroundedRepairText,
+  groundedReferences: ClaraStructuredResponse["referenciasFinais"],
+  responseMode: ChatResponseMode,
+  retrievalQuality: RetrievalQualityInfo | null,
+  sourceTarget: SourceTargetRoute | null,
+): ClaraStructuredResponse {
+  const citationIds = groundedReferences.slice(0, 4).map((reference) => reference.id);
+  const summary = parsed.summary
+    ?? parsed.steps[0]
+    ?? parsed.observations[0]
+    ?? `As referências recuperadas permitem responder parcialmente à pergunta sobre "${question}".`;
+  const finalConfidence = retrievalQuality?.confidenceTier === 'alta'
+    ? 0.84
+    : retrievalQuality?.confidenceTier === 'boa'
+      ? 0.76
+      : 0.66;
+  const answerScopeMatch = parsed.steps.length > 0 || parsed.summary
+    ? 'exact'
+    : 'probable';
+  const mode = parsed.steps.length > 0
+    ? (responseMode === 'direto' ? 'checklist' : 'passo_a_passo')
+    : 'explicacao';
+  const observations = [
+    sourceTarget ? `A resposta prioriza a fonte solicitada: ${sourceTarget.label.replace(/_/g, ' ')}.` : null,
+    ...parsed.observations,
+  ].filter(Boolean) as string[];
+
+  return {
+    tituloCurto: buildFallbackTitle(question, responseMode),
+    resumoInicial: summary,
+    resumoCitacoes: citationIds.slice(0, 1),
+    modoResposta: mode,
+    etapas: parsed.steps.map((step, index) => ({
+      numero: index + 1,
+      titulo: parsed.steps.length > 1 ? `Etapa ${index + 1}` : 'Orientação principal',
+      conteudo: step,
+      itens: [],
+      destaques: [],
+      citacoes: citationIds,
+    })),
+    observacoesFinais: observations,
+    termosDestacados: [],
+    referenciasFinais: groundedReferences,
+    analiseDaResposta: {
+      questionUnderstandingConfidence: 0.9,
+      finalConfidence,
+      answerScopeMatch,
+      ambiguityInUserQuestion: false,
+      ambiguityInSources: false,
+      clarificationRequested: false,
+      clarificationQuestion: null,
+      clarificationReason: null,
+      internalExpansionPerformed: false,
+      webFallbackUsed: false,
+      userNotice: null,
+      cautionNotice: retrievalQuality?.confidenceTier === 'moderada'
+        ? 'A base recuperada ficou suficiente para orientar, mas vale conferir a referência final antes de executar passos críticos.'
+        : null,
+      ambiguityReason: null,
+      comparedSources: [],
+      prioritizedSources: sourceTarget ? [sourceTarget.label] : [],
+      processStates: [],
+    },
+  };
+}
+
+async function generateGroundedRepairTextWithFallback(
+  ai: GoogleGenAI,
+  question: string,
+  chunks: HybridSearchChunk[],
+  groundedReferences: ClaraStructuredResponse["referenciasFinais"],
+  responseMode: ChatResponseMode,
+  retrievalQuality: RetrievalQualityInfo | null,
+  sourceTarget: SourceTargetRoute | null,
+  strategy: GenerationStrategy,
+): Promise<{ response: ClaraStructuredResponse; plainText: string; model: string; providerUsage: ChatProviderUsage | null } | null> {
+  const contents = [{
+    role: 'user',
+    parts: [{
+      text: buildGroundedRepairInput(
+        question,
+        chunks,
+        groundedReferences,
+        responseMode,
+        retrievalQuality,
+        sourceTarget,
+      ),
+    }],
+  }];
+
+  const repairModels = [GEMINI_PRO_MODEL, ...strategy.orderedModels.filter((model) => model !== GEMINI_PRO_MODEL)];
+
+  for (const model of repairModels) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction: GROUNDED_REPAIR_TEXT_PROMPT,
+          maxOutputTokens: 1200,
+          temperature: 0.18,
+          topP: 0.85,
+          thinkingConfig: {
+            thinkingLevel: strategy.thinkingLevel,
+          },
+        },
+      });
+
+      const parsed = parseGroundedRepairText(response.text ?? '');
+      if (!parsed) {
+        console.warn(`Grounded text repair output for ${model} could not be parsed.`);
+        continue;
+      }
+
+      const structuredResponse = buildGroundedRepairTextResponse(
+        question,
+        parsed,
+        groundedReferences,
+        responseMode,
+        retrievalQuality,
+        sourceTarget,
+      );
+
+      return {
+        response: structuredResponse,
+        plainText: renderStructuredResponseToPlainText(structuredResponse),
+        model: `${model}:grounded_repair_text`,
+        providerUsage: extractProviderUsage(response),
+      };
+    } catch (err: unknown) {
+      console.warn(`Grounded text repair generation failed for ${model}: ${getErrorMessage(err, String(err ?? ''))}`);
+    }
+  }
+
+  return null;
+}
+
+function buildEmergencyGroundedPlaybookResponse(
+  question: string,
+  playbook: EmergencyGroundedPlaybook,
+  groundedReferences: ClaraStructuredResponse["referenciasFinais"],
+  responseMode: ChatResponseMode,
+  sourceTarget: SourceTargetRoute | null,
+): ClaraStructuredResponse {
+  const citationIds = groundedReferences.slice(0, 4).map((reference) => reference.id);
+  const mode = playbook.mode === 'explicacao'
+    ? 'explicacao'
+    : (responseMode === 'direto' ? 'checklist' : 'passo_a_passo');
+
+  return {
+    tituloCurto: playbook.title,
+    resumoInicial: playbook.summary,
+    resumoCitacoes: citationIds.slice(0, 1),
+    modoResposta: mode,
+    etapas: playbook.steps.map((step, index) => ({
+      numero: index + 1,
+      titulo: step.title,
+      conteudo: step.content,
+      itens: step.items ?? [],
+      destaques: [],
+      citacoes: citationIds,
+    })),
+    observacoesFinais: [
+      ...playbook.observations,
+      sourceTarget ? `A resposta prioriza a fonte solicitada: ${sourceTarget.label.replace(/_/g, ' ')}.` : null,
+    ].filter(Boolean) as string[],
+    termosDestacados: [],
+    referenciasFinais: groundedReferences,
+    analiseDaResposta: {
+      questionUnderstandingConfidence: 0.94,
+      finalConfidence: playbook.finalConfidence,
+      answerScopeMatch: 'exact',
+      ambiguityInUserQuestion: false,
+      ambiguityInSources: false,
+      clarificationRequested: false,
+      clarificationQuestion: null,
+      clarificationReason: null,
+      internalExpansionPerformed: false,
+      webFallbackUsed: false,
+      userNotice: null,
+      cautionNotice: null,
+      ambiguityReason: null,
+      comparedSources: [],
+      prioritizedSources: groundedReferences.map((reference) => reference.titulo),
+      processStates: [],
+    },
+  };
+}
+
 function buildGroundedFallbackResponse(
   question: string,
   chunks: HybridSearchChunk[],
@@ -939,6 +1460,20 @@ function buildGroundedFallbackResponse(
   retrievalQuality: RetrievalQualityInfo | null,
   sourceTarget: SourceTargetRoute | null,
 ): ClaraStructuredResponse {
+  const emergencyPlaybook = matchEmergencyGroundedPlaybook(
+    question,
+    groundedReferences.map((reference) => reference.titulo),
+  );
+  if (emergencyPlaybook) {
+    return buildEmergencyGroundedPlaybookResponse(
+      question,
+      emergencyPlaybook,
+      groundedReferences,
+      responseMode,
+      sourceTarget,
+    );
+  }
+
   const rankedChunks = [...chunks].sort((left, right) => scoreFallbackChunk(question, right) - scoreFallbackChunk(question, left));
   const primaryChunk = rankedChunks[0] ?? chunks[0] ?? null;
   const primaryDocument = primaryChunk?.document_name?.trim() || "documento recuperado";
@@ -951,14 +1486,14 @@ function buildGroundedFallbackResponse(
     : fallbackEvidence.length === 1 ? 'partial'
     : 'weak';
   const finalConfidence = evidenceQuality === 'strong'
-    ? (confidenceTier === 'alta' ? 0.9 : confidenceTier === 'boa' ? 0.84 : 0.78)
+    ? (confidenceTier === 'alta' ? 0.62 : confidenceTier === 'boa' ? 0.58 : 0.54)
     : evidenceQuality === 'partial'
-      ? 0.68
-      : 0.42;
+      ? 0.44
+      : 0.24;
   const answerScopeMatch = evidenceQuality === 'strong'
-    ? 'exact'
+    ? 'probable'
     : evidenceQuality === 'partial'
-      ? 'probable'
+      ? 'weak'
       : 'insufficient';
   const supportingNotice = sourceTarget
     ? `Priorizo abaixo a fonte que você pediu: ${sourceTarget.label.replace(/_/g, ' ')}.`
@@ -2075,6 +2610,116 @@ REESCRITA OBRIGATORIA:
       const providerUnavailable = isProviderAvailabilityError(err);
 
       if (providerUnavailable && retrievalMode === 'model_grounded' && matchedChunks.length > 0 && groundedReferences.length > 0) {
+        const groundedRepairRemainingMs = timeBudgetTracker.remainingMs() - STREAM_FALLBACK_RESERVE_MS;
+        let groundedRepairResult: Awaited<ReturnType<typeof generateGroundedRepairWithFallback>> = null;
+        let groundedRepairTextResult: Awaited<ReturnType<typeof generateGroundedRepairTextWithFallback>> = null;
+
+        if (groundedRepairRemainingMs >= MIN_GROUNDED_REPAIR_REMAINING_MS) {
+          const groundedRepairTimeoutMs = Math.min(GROUNDED_REPAIR_TIMEOUT_MS, groundedRepairRemainingMs);
+          const groundedRepairStartedAt = Date.now();
+          groundedRepairResult = await withTimeout(
+            generateGroundedRepairWithFallback(
+              ai,
+              lastUserMessage.content,
+              matchedChunks,
+              groundedReferences,
+              responseMode,
+              retrievalQuality,
+              sourceTarget,
+              generationStrategy,
+            ),
+            groundedRepairTimeoutMs,
+            'grounded_repair_generation',
+          ).catch((repairError) => {
+            console.warn('Grounded repair failed/timed out, falling back to extractive grounded response:', getErrorMessage(repairError));
+            return null;
+          }).finally(() => {
+            addStageTiming(stageTimings, 'generationMs', Date.now() - groundedRepairStartedAt);
+          });
+
+          if (!groundedRepairResult) {
+            const groundedRepairTextStartedAt = Date.now();
+            groundedRepairTextResult = await withTimeout(
+              generateGroundedRepairTextWithFallback(
+                ai,
+                lastUserMessage.content,
+                matchedChunks,
+                groundedReferences,
+                responseMode,
+                retrievalQuality,
+                sourceTarget,
+                generationStrategy,
+              ),
+              groundedRepairTimeoutMs,
+              'grounded_repair_text_generation',
+            ).catch((repairError) => {
+              console.warn('Grounded text repair failed/timed out, falling back to extractive grounded response:', getErrorMessage(repairError));
+              return null;
+            }).finally(() => {
+              addStageTiming(stageTimings, 'generationMs', Date.now() - groundedRepairTextStartedAt);
+            });
+          }
+        }
+
+        const resolvedGroundedRepair = groundedRepairResult ?? groundedRepairTextResult;
+
+        if (resolvedGroundedRepair && lastUserMessage) {
+          const groundedRepairSanitizationStartedAt = Date.now();
+          const groundedRepairResponse = sanitizeStructuredResponse(resolvedGroundedRepair.response, {
+            groundedReferences,
+            groundedReferenceProfile,
+            usedRag: true,
+            responseMode,
+          });
+          const groundedRepairPlainText = renderStructuredResponseToPlainText(groundedRepairResponse);
+          addStageTiming(stageTimings, 'sanitizationMs', Date.now() - groundedRepairSanitizationStartedAt);
+
+          const telemetryCtx: TelemetryContext = {
+            supabase, requestId, requestStartedAt,
+            queryText: lastUserMessage.content,
+            normalizedQuery, intentLabel, topicLabel, subtopicLabel,
+            systemPromptWithContext, chatMessages,
+            retrievalMode, retrievalTopScore, retrievalSources,
+            searchResultCount, selectedChunkIds, selectedDocumentIds,
+            searchMetricId, knowledgeContext, responseMode,
+            ragQualityScore: computeRagQualityScore(retrievalQuality, groundedRepairResponse, groundedRepairResponse.referenciasFinais.length),
+            expandedQuery: expandedQueryText,
+            sourceTargetLabel: sourceTarget?.label ?? null,
+            sourceTargetStatus,
+            stageTimings,
+            promptTelemetry,
+            providerUsage: resolvedGroundedRepair.providerUsage,
+            queryEmbeddingModel,
+            searchMode,
+            queryEmbeddingCacheStatus,
+            expandedQueryEmbeddingCacheStatus,
+            budgetTotalMs: REQUEST_TIME_BUDGET_MS,
+            budgetElapsedMs: timeBudgetTracker.elapsedMs(),
+            budgetRemainingMs: timeBudgetTracker.remainingMs(),
+            structuredSkippedForBudget,
+            structuredTimeoutMs: structuredTimeoutMsUsed,
+            streamInitTimeoutMs: streamInitTimeoutMsUsed,
+            leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
+          };
+
+          await recordTelemetry(
+            telemetryCtx,
+            groundedRepairPlainText,
+            resolvedGroundedRepair.model,
+            groundedRepairResponse.referenciasFinais.length,
+            'structured',
+          ).catch((telemetryError) => console.error('Telemetry error (grounded repair):', telemetryError));
+
+          return new Response(
+            JSON.stringify({
+              kind: 'clara_structured_response',
+              response: groundedRepairResponse,
+              plainText: groundedRepairPlainText,
+            }),
+            { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
         const fallbackResponse = buildGroundedFallbackResponse(
           lastUserMessage.content,
           matchedChunks,
