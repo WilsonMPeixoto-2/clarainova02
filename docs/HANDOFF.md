@@ -3,22 +3,23 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T06:23:58Z
+- Data/hora: 2026-04-05T06:29:48Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `8f90b46cfdfdd9733f049a2800d21574a4bcc783`
-- Último relatório: `docs/operational-reports/2026-04-05-r2-embedding-contract-alignment.md`
+- Head da sessão: `921a29bfcdbc20295d265490b5694a5327f48832`
+- Último relatório: `docs/operational-reports/2026-04-05-production-deploy-r0-r2-session-branch.md`
 
 ## Estado atual resumido
 - Fase atual: BLOCO 5 com `R0`, `R1` e `R2` implementados localmente, abrindo agora a fase `R3` de batch embedding e re-embed controlado
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: abrir o `R3` com batch embedding nativo e preparar um re-embed controlado do corpus sob o contrato textual implementado em `R2`.
+- Próxima ação recomendada: executar a bateria remota pós-publicação do pacote `R1-R2` já publicado e, sem regressão, abrir o `R3`.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
 - O estado real do projeto continua estável em `origin/main`; o que precisou de reconciliação foi a trilha de continuidade e o plano canônico.
+- Em `2026-04-05`, a produção foi publicada manualmente a partir da branch de sessão `921a29b`, então a produção ficou temporariamente à frente de `origin/main`. Essa divergência já está registrada em `docs/REMOTE_STATE.md`.
 
 ## Prioridade imediata
 - A partir de `2026-04-05`, a ordem operacional imediata dentro do BLOCO 5 passa a ser `R0`, `R1`, `R2`, `R3`, `R4`, `R5` e só depois a retomada dos subblocos `5B-5F`.
@@ -26,6 +27,7 @@
 - `R1` cobre ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e query expansion com contexto curto. Esta etapa já foi implementada localmente e validada nesta branch.
 - `R2` foi concluído localmente com framing textual assimétrico no contrato de embedding, metadata versionada e separação entre semântica vetorial e metadado de citação.
 - `R3-R5` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
+- O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 
 ## Itens concluídos
 - A cadeia local de migrations foi reconciliada com as quatro versões canônicas registradas no Supabase oficial
@@ -116,7 +118,7 @@
 
 ## Itens pendentes
 - Executar `R3` com batch embedding nativo e preparar re-embed controlado do corpus
-- Publicar e reavaliar o `R1-R2` contra o benchmark canônico após a próxima integração/deploy desta branch
+- Executar uma bateria remota pós-publicação para reavaliar o `R1-R2` já publicado contra o benchmark canônico
 - Rodar `R4` e `R5` de forma experimental e controlada antes de retomar `5B-5F`
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
