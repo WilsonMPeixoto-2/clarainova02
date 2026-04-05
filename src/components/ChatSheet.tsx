@@ -21,10 +21,10 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from 'sonner';
 
 const STARTER_PROMPTS = [
-  'Como incluir um documento externo no SEI-Rio?',
-  'Como montar um bloco de assinatura para outra unidade?',
-  'Como enviar um processo para mais de uma unidade?',
-  'Quais etapas devo conferir antes de encaminhar um processo?',
+  { text: 'Como incluir um documento externo no SEI-Rio?', meta: 'Passo a passo · ~3 etapas' },
+  { text: 'Como montar um bloco de assinatura para outra unidade?', meta: 'Guia operacional · referências' },
+  { text: 'Como enviar um processo para mais de uma unidade?', meta: 'Procedimento · conferências' },
+  { text: 'Quais etapas devo conferir antes de encaminhar um processo?', meta: 'Checklist · validação' },
 ];
 
 type ChatPanelMode = 'compact' | 'medium' | 'wide' | 'fullscreen';
@@ -714,12 +714,13 @@ const ChatSheet = () => {
                     <div className="chat-starter-grid mt-5">
                       {STARTER_PROMPTS.map((prompt) => (
                         <button
-                          key={prompt}
+                          key={prompt.text}
                           type="button"
                           className="chat-starter-chip"
-                          onClick={() => sendMessage(prompt)}
+                          onClick={() => sendMessage(prompt.text)}
                         >
-                          {prompt}
+                          {prompt.text}
+                          <span className="chat-starter-chip-meta">{prompt.meta}</span>
                         </button>
                       ))}
                     </div>
@@ -824,7 +825,7 @@ const ChatSheet = () => {
                     const isActive = responseMode === modeOption;
 
                     return (
-                      <button
+                      <motion.button
                         key={modeOption}
                         type="button"
                         onClick={() => setResponseMode(modeOption)}
@@ -832,10 +833,12 @@ const ChatSheet = () => {
                         className={`chat-response-mode-option ${isActive ? 'is-active' : ''}`}
                         aria-pressed={isActive}
                         data-mode={modeOption}
+                        layout
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       >
                         <span className="chat-response-mode-option-title">{optionPresentation.label}</span>
                         <span className="chat-response-mode-option-copy">{optionPresentation.description}</span>
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>

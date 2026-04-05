@@ -14,6 +14,9 @@ const Footer = () => {
   return (
     <footer className="footer-premium-shell py-16 md:py-20 border-t border-[hsl(var(--border-subtle))]" role="contentinfo">
       <div className="container mx-auto px-6">
+        <div className="footer-watermark" aria-hidden="true">
+          <span className="footer-watermark-text">{SITE_NAME}</span>
+        </div>
         <div className="footer-premium-grid">
           <div className="footer-brand-card">
             <p className="footer-brand-kicker">{SITE_NAME} / apoio operacional ao SEI-Rio</p>

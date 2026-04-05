@@ -1438,3 +1438,1018 @@ body::before {
     gap: 0.75rem;
   }
 }
+
+/* ============================================
+   VISUAL IMPROVEMENTS — BEYOND THE OBVIOUS
+   ============================================ */
+
+/* --- Step progress indicator --- */
+.chat-step-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.25rem;
+}
+
+.chat-step-progress-label {
+  font-family: var(--font-editorial);
+  font-variation-settings: var(--fraunces-editorial-settings);
+  font-size: 0.72rem;
+  font-weight: 460;
+  color: hsl(var(--muted-foreground) / 0.7);
+}
+
+.chat-step-progress-dots {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.chat-step-progress-dot {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: hsl(var(--gold-1) / 0.25);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.chat-structured-response[data-response-mode='direto'] .chat-step-progress-dot {
+  background: hsl(var(--clara-cyan) / 0.25);
+  border-radius: 2px;
+}
+
+.chat-step-progress-dot.is-active {
+  background: hsl(var(--gold-1) / 0.7);
+  transform: scale(1.25);
+}
+
+.chat-structured-response[data-response-mode='direto'] .chat-step-progress-dot.is-active {
+  background: hsl(var(--clara-cyan) / 0.7);
+}
+
+/* --- Composer brand gradient on focus --- */
+.chat-composer-box {
+  position: relative;
+}
+
+.chat-composer-box::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, hsl(var(--clara-cyan) / 0), hsl(var(--gold-1) / 0));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.chat-composer-box:focus-within::before {
+  background: linear-gradient(135deg, hsl(var(--clara-cyan) / 0.6), hsl(var(--gold-1) / 0.5), hsl(var(--clara-cyan) / 0.4));
+  opacity: 1;
+}
+
+/* --- Empty state stagger animation --- */
+.chat-empty-state {
+  animation: chat-empty-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.chat-empty-avatar {
+  animation: chat-empty-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
+
+.chat-empty-title {
+  animation: chat-empty-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+.chat-empty-copy {
+  animation: chat-empty-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+.chat-starter-grid {
+  animation: chat-empty-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+.chat-starter-chip:nth-child(1) { animation: chat-chip-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both; }
+.chat-starter-chip:nth-child(2) { animation: chat-chip-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.42s both; }
+.chat-starter-chip:nth-child(3) { animation: chat-chip-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.49s both; }
+.chat-starter-chip:nth-child(4) { animation: chat-chip-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.56s both; }
+
+@keyframes chat-empty-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chat-chip-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- Avatar breathing pulse in empty state --- */
+.chat-empty-avatar {
+  position: relative;
+}
+
+.chat-empty-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: radial-gradient(circle, hsl(var(--gold-1) / 0.2), transparent 70%);
+  animation: avatar-breathe 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes avatar-breathe {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.08); }
+}
+
+/* --- Starter chip metadata line --- */
+.chat-starter-chip-meta {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
+  color: hsl(var(--muted-foreground) / 0.55);
+  font-weight: 500;
+}
+
+/* --- Reference bidirectional back-link --- */
+.chat-reference-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.45rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--stroke) / 0.4);
+  background: hsl(var(--surface-2) / 0.5);
+  color: hsl(var(--clara-cyan) / 0.8);
+  font-size: 0.58rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.15s ease;
+}
+
+.chat-reference-item:hover .chat-reference-back-link {
+  opacity: 1;
+}
+
+.chat-reference-back-link:hover {
+  background: hsl(var(--clara-cyan) / 0.1);
+  border-color: hsl(var(--clara-cyan) / 0.3);
+  color: hsl(var(--clara-cyan));
+}
+
+/* --- Footer watermark --- */
+.footer-watermark {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: -2rem;
+}
+
+.footer-watermark-text {
+  font-family: var(--font-display);
+  font-variation-settings: 'WONK' 1, 'SOFT' 0, 'opsz' 144;
+  font-size: clamp(6rem, 14vw, 11rem);
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  font-weight: 700;
+  color: transparent;
+  background: linear-gradient(
+    180deg,
+    hsl(var(--gold-1) / 0.07) 0%,
+    hsl(var(--gold-1) / 0.03) 60%,
+    transparent 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  pointer-events: none;
+  user-select: none;
+  text-align: center;
+}
+
+/* --- Avatar micro-expressions by confidence state --- */
+.chat-response-avatar-mark {
+  transition: filter 0.5s ease, transform 0.5s ease;
+}
+
+.chat-structured-response[data-response-mode='didatico'] .chat-response-avatar {
+  position: relative;
+}
+
+.chat-structured-response[data-response-mode='didatico'] .chat-response-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: radial-gradient(circle, hsl(var(--gold-1) / 0.25), transparent 65%);
+  animation: avatar-breathe 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.chat-structured-response[data-response-mode='direto'] .chat-response-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: radial-gradient(circle, hsl(var(--clara-cyan) / 0.2), transparent 65%);
+  animation: avatar-breathe 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Confidence-based avatar expression */
+.chat-confidence-high ~ .chat-response-avatar-mark,
+.chat-confidence-good ~ .chat-response-avatar-mark {
+  filter: drop-shadow(0 0 8px hsl(var(--clara-emerald) / 0.3));
+}
+
+/* Clarification tilt — "head tilt" micro-expression */
+.chat-clarification-card ~ .chat-response-avatar-mark {
+  transform: rotate(-3deg);
+}
+
+/* --- Section breathing spacers --- */
+.knowledge-section {
+  padding-top: clamp(3rem, 6vw, 5rem);
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.faq-section {
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* --- Cyan rhythm in Features section — protocol card accent --- */
+.knowledge-mode-card {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.knowledge-mode-card:hover {
+  border-color: hsl(var(--clara-cyan) / 0.3);
+  box-shadow: 0 16px 32px hsl(var(--shadow) / 0.18), 0 0 20px hsl(var(--clara-cyan) / 0.06);
+}
+
+/* Knowledge card index numbers in cyan for chromatic rhythm */
+.knowledge-index {
+  color: hsl(var(--clara-cyan) / 0.45) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bento card first item — tier 1 visual distinction */
+.bento-services-grid > :first-child {
+  border-color: hsl(var(--gold-1) / 0.22);
+  box-shadow:
+    0 24px 52px hsl(var(--shadow) / 0.28),
+    0 0 28px hsl(var(--gold-1) / 0.06),
+    inset 0 0 0 1px hsl(var(--gold-1) / 0.12);
+}
+
+/* Prompt bank chips — cyan accent on hover for chromatic alternation */
+.knowledge-prompt-bank-chip:hover {
+  border-color: hsl(var(--clara-cyan) / 0.35);
+  color: hsl(var(--text-primary));
+  box-shadow: 0 12px 24px hsl(var(--shadow) / 0.16), 0 0 16px hsl(var(--clara-cyan) / 0.06);
+}
+
+/* --- Wave divider replacement — ambient gradient transition --- */
+.section-ambient-transition {
+  height: clamp(4rem, 8vw, 7rem);
+  background:
+    radial-gradient(ellipse 60% 80% at 50% 0%, hsl(var(--gold-1) / 0.04), transparent 60%),
+    linear-gradient(180deg, transparent, hsl(var(--bg-base) / 0.3));
+  pointer-events: none;
+}
+
+/* ============================================================
+   VISUAL UPLIFT — Approved improvements from audit reports
+   ============================================================ */
+
+/* --- 1. STEP PROGRESS INDICATOR (Report 1, Item 8) --- */
+.chat-step-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.chat-step-progress-label {
+  font-family: var(--font-editorial);
+  font-variation-settings: var(--fraunces-editorial-settings);
+  font-size: 0.76rem;
+  font-weight: 450;
+  color: hsl(var(--muted-foreground) / 0.68);
+}
+
+.chat-step-progress-dots {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.chat-step-progress-dot {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: hsl(var(--gold-1) / 0.25);
+  transition: background 300ms ease, transform 300ms ease;
+}
+
+.chat-step-progress-dot.is-filled {
+  background: hsl(var(--gold-1) / 0.85);
+}
+
+.chat-structured-response[data-response-mode='direto'] .chat-step-progress-dot.is-filled {
+  background: hsl(var(--clara-cyan) / 0.85);
+}
+
+/* --- 2. DIDÁTICO BORDER-LEFT GUIDE (Report 2, Item 7) --- */
+.chat-structured-response[data-response-mode='didatico'] .chat-step-card {
+  border-left: 2.5px solid hsl(var(--gold-1) / 0.35);
+  padding-left: 1.15rem;
+}
+
+.chat-structured-response[data-response-mode='didatico'] .chat-step-card:hover {
+  border-left-color: hsl(var(--gold-1) / 0.6);
+}
+
+/* --- 3. DIRETO COMPACT DENSITY (Report 1, Item 7) --- */
+.chat-structured-response[data-response-mode='direto'] .chat-step-card {
+  padding: 0.82rem 0.9rem;
+  border-radius: 0.75rem;
+}
+
+.chat-structured-response[data-response-mode='direto'] .chat-step-body {
+  font-size: 0.82rem;
+}
+
+.chat-structured-response[data-response-mode='direto'] .chat-step-number {
+  border-radius: 0.25rem;
+  font-family: 'Manrope Variable', monospace;
+  letter-spacing: 0;
+}
+
+/* --- 4. STEP TITLE H4 IN FRAUNCES (Report 1, Item 1) --- */
+.chat-step-heading h4 {
+  font-family: var(--font-editorial);
+  font-variation-settings: var(--fraunces-editorial-settings);
+  font-weight: 480;
+  letter-spacing: -0.01em;
+}
+
+/* --- 5. AVATAR MICRO-EXPRESSIONS (Report 2, Item 12) --- */
+.chat-response-avatar {
+  transition: filter 400ms ease, transform 400ms ease;
+}
+
+.chat-structured-response[data-response-mode='didatico'] .chat-response-avatar {
+  filter: drop-shadow(0 0 6px hsl(var(--gold-1) / 0.35));
+}
+
+.chat-structured-response[data-response-mode='direto'] .chat-response-avatar {
+  filter: drop-shadow(0 0 4px hsl(var(--clara-cyan) / 0.3));
+}
+
+/* Confidence-based avatar glow via parent data attributes */
+.chat-structured-response[data-confidence='high'] .chat-response-avatar {
+  filter: drop-shadow(0 0 8px hsl(var(--clara-emerald) / 0.4));
+  animation: avatar-confident 3s ease-in-out infinite;
+}
+
+.chat-structured-response[data-confidence='good'] .chat-response-avatar {
+  filter: drop-shadow(0 0 6px hsl(var(--clara-cyan) / 0.35));
+  animation: avatar-confident 3.5s ease-in-out infinite;
+}
+
+.chat-structured-response[data-confidence='moderate'] .chat-response-avatar {
+  filter: drop-shadow(0 0 4px hsl(var(--gold-1) / 0.25));
+}
+
+.chat-structured-response[data-confidence='low'] .chat-response-avatar {
+  filter: drop-shadow(0 0 3px hsl(var(--muted-foreground) / 0.15));
+  opacity: 0.85;
+}
+
+/* Clarification tilt — Clara "inclines her head" */
+.chat-structured-response[data-needs-clarification='true'] .chat-response-avatar {
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 0 5px hsl(var(--gold-2) / 0.3));
+}
+
+@keyframes avatar-confident {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* --- 6. CTA PRIMARY DIFFERENTIATION (Report 2, Item 8) --- */
+.hero-cta-primary {
+  background:
+    linear-gradient(165deg, hsl(var(--gold-1)) 0%, hsl(var(--gold-2)) 100%) !important;
+  color: hsl(220 40% 8%) !important;
+  border: none !important;
+  box-shadow:
+    0 4px 16px hsl(var(--gold-2) / 0.3),
+    0 12px 40px hsl(var(--gold-1) / 0.15),
+    inset 0 1px 0 hsl(0 0% 100% / 0.2);
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-cta-primary::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(165deg, hsl(var(--gold-1) / 0.6), hsl(var(--gold-2) / 0.4));
+  z-index: -1;
+  animation: cta-glow-pulse 4s ease-in-out infinite;
+  filter: blur(12px);
+}
+
+@keyframes cta-glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.hero-cta-primary:hover {
+  box-shadow:
+    0 6px 24px hsl(var(--gold-2) / 0.4),
+    0 16px 52px hsl(var(--gold-1) / 0.2),
+    inset 0 1px 0 hsl(0 0% 100% / 0.25) !important;
+  transform: translateY(-2px) translate(var(--magnetic-x, 0), var(--magnetic-y, 0)) !important;
+}
+
+.hero-cta-secondary {
+  background: transparent !important;
+  border: 1px solid hsl(var(--border-subtle) / 0.6) !important;
+  box-shadow: none !important;
+}
+
+.hero-cta-secondary:hover {
+  border-color: hsl(var(--gold-1) / 0.3) !important;
+  background: hsl(var(--surface-2) / 0.4) !important;
+}
+
+/* --- 7. EMPTY STATE STAGGER ANIMATIONS (Report 1, Item 3) --- */
+.chat-empty-avatar {
+  animation: empty-avatar-breathe 3.5s ease-in-out infinite, empty-avatar-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes empty-avatar-breathe {
+  0%, 100% { opacity: 0.88; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+@keyframes empty-avatar-enter {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 0.88; transform: scale(1); }
+}
+
+.chat-empty-title {
+  animation: empty-text-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+.chat-empty-copy {
+  animation: empty-text-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+@keyframes empty-text-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-starter-grid {
+  animation: empty-text-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+
+.chat-starter-chip:nth-child(1) { animation: chip-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both; }
+.chat-starter-chip:nth-child(2) { animation: chip-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.52s both; }
+.chat-starter-chip:nth-child(3) { animation: chip-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.59s both; }
+.chat-starter-chip:nth-child(4) { animation: chip-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.66s both; }
+
+@keyframes chip-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- 8. STARTER CHIP METADATA LINE (Report 1, Item 4) --- */
+.chat-starter-chip-meta {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  color: hsl(var(--clara-cyan) / 0.7);
+  font-weight: 500;
+}
+
+/* --- 9. COMPOSER BRAND GRADIENT FOCUS (Report 1, Item 10) --- */
+.chat-composer-box {
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.chat-composer-box:focus-within {
+  border-color: transparent !important;
+  box-shadow:
+    0 0 0 1px hsl(var(--clara-cyan) / 0.4),
+    0 0 0 3px hsl(var(--gold-1) / 0.12),
+    0 4px 16px hsl(var(--shadow) / 0.2);
+}
+
+.chat-composer-submit {
+  transition: color 200ms ease, filter 200ms ease, transform 200ms ease;
+}
+
+.chat-composer-submit:not(:disabled) {
+  color: hsl(var(--gold-1));
+}
+
+.chat-composer-submit:hover:not(:disabled) {
+  filter: drop-shadow(0 0 6px hsl(var(--gold-1) / 0.4));
+  transform: scale(1.08);
+}
+
+/* --- 10. FOOTER WATERMARK (Report 2, Item 13) --- */
+.footer-watermark {
+  position: relative;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+  margin-bottom: -2rem;
+  padding-top: 1rem;
+  overflow: hidden;
+}
+
+.footer-watermark-text {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fraunces-display-settings);
+  font-size: clamp(6rem, 14vw, 10rem);
+  font-weight: 800;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  color: hsl(var(--foreground));
+  opacity: 0.04;
+  background: linear-gradient(
+    180deg,
+    hsl(var(--gold-1) / 0.12) 0%,
+    hsl(var(--foreground) / 0.06) 60%,
+    transparent 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- 11. SECTION SPACING INCREASE (Report 2, Item 11) --- */
+.section-spacer {
+  height: clamp(4rem, 8vw, 7rem);
+}
+
+/* --- 12. CYAN STRUCTURAL PRESENCE (Report 2, Item 2) --- */
+.knowledge-mode-card {
+  border-color: hsl(var(--clara-cyan) / 0.18);
+}
+
+.knowledge-mode-card:hover {
+  border-color: hsl(var(--clara-cyan) / 0.35);
+  box-shadow: 0 12px 28px hsl(var(--shadow) / 0.2), 0 0 16px hsl(var(--clara-cyan) / 0.06);
+}
+
+.knowledge-index {
+  color: hsl(var(--clara-cyan) / 0.65) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.faq-section {
+  border-top: 1px solid hsl(var(--clara-cyan) / 0.08);
+}
+
+/* Step numbers use cyan in direto mode */
+.chat-structured-response[data-response-mode='direto'] .chat-step-number {
+  color: hsl(var(--clara-cyan));
+  border-color: hsl(var(--clara-cyan) / 0.24);
+  background: hsl(var(--clara-cyan) / 0.08);
+}
+
+/* --- 13. CARD TIER SYSTEM (Report 2, Item 3) --- */
+/* Tier 1: Spotlight — used for primary bento card */
+.bento-services-grid > :first-child {
+  border-width: 1.5px;
+  border-color: hsl(var(--gold-1) / 0.28);
+  box-shadow:
+    0 28px 56px hsl(var(--shadow) / 0.3),
+    0 0 24px hsl(var(--gold-2) / 0.06),
+    inset 0 1px 0 hsl(0 0% 100% / 0.06);
+}
+
+/* Tier 3: Recessive — prompt bank and secondary panels */
+.knowledge-prompt-bank {
+  border-color: hsl(var(--border-subtle) / 0.45);
+  background:
+    linear-gradient(180deg, hsl(var(--surface-2) / 0.5), hsl(var(--surface-1) / 0.32));
+}
+
+.knowledge-prompt-bank-chip {
+  border-color: hsl(var(--border-subtle) / 0.45);
+  background:
+    linear-gradient(180deg, hsl(var(--surface-1) / 0.48), hsl(var(--surface-0) / 0.28));
+}
+
+/* --- 14. BORDER-RADIUS HIERARCHY (Report 2, Item 9) --- */
+/* Containers: generous */
+.hero-shell {
+  border-radius: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+/* Step numbers: sharp — coordinate markers */
+.chat-step-number {
+  border-radius: 0.35rem !important;
+  font-family: 'Manrope Variable', monospace;
+}
+
+/* --- 15. HERO IMAGE AS ATMOSPHERE (Report 2, Item 1) --- */
+.hero-clara-video,
+.hero-clara-video img {
+  opacity: 0.6 !important;
+}
+
+.hero-video-vignette {
+  background: linear-gradient(
+    to left,
+    transparent 0%,
+    hsl(var(--bg-base) / 0.15) 20%,
+    hsl(var(--bg-base) / 0.65) 50%,
+    hsl(var(--bg-base) / 0.95) 80%,
+    hsl(var(--bg-base)) 100%
+  ) !important;
+}
+
+/* --- 16. WAVE DIVIDER REPLACEMENT (Report 2, Item 7) --- */
+.wave-to-gradient-transition {
+  height: clamp(8rem, 16vw, 14rem);
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0%, hsl(var(--gold-1) / 0.04), transparent 50%),
+    radial-gradient(ellipse 60% 50% at 30% 20%, hsl(var(--clara-cyan) / 0.03), transparent 50%),
+    linear-gradient(180deg, hsl(var(--bg-base)), hsl(218 42% 7.5%));
+  pointer-events: none;
+}
+
+/* --- 17. BIDIRECTIONAL REFERENCE NAVIGATION (Report 1, Item 6) --- */
+.chat-reference-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: hsl(var(--clara-cyan) / 0.65);
+  background: hsl(var(--clara-cyan) / 0.06);
+  border: 1px solid hsl(var(--clara-cyan) / 0.12);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 200ms ease, color 200ms ease, background 200ms ease;
+}
+
+.chat-reference-item:hover .chat-reference-back-link {
+  opacity: 1;
+}
+
+.chat-reference-back-link:hover {
+  color: hsl(var(--clara-cyan));
+  background: hsl(var(--clara-cyan) / 0.12);
+  border-color: hsl(var(--clara-cyan) / 0.24);
+}
+
+/* Citation anchor highlight */
+.chat-citation-highlight {
+  background: hsl(var(--clara-cyan) / 0.15);
+  border-radius: 0.2rem;
+  outline: 2px solid hsl(var(--clara-cyan) / 0.3);
+  outline-offset: 1px;
+  transition: outline-color 300ms ease, background 300ms ease;
+}
+
+/* --- 18. RESPONSE MODE TOGGLE ANIMATION (Report 1, Item 2) --- */
+.chat-response-mode-option {
+  transition:
+    border-color var(--duration-fast) ease,
+    color var(--duration-fast) ease,
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    background var(--duration-fast) ease,
+    box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity var(--duration-fast) ease,
+    padding 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    max-height 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.chat-response-mode-option.is-active {
+  max-height: 200px;
+}
+
+.chat-response-mode-toggle:has(.chat-response-mode-option.is-active) .chat-response-mode-option:not(.is-active) {
+  max-height: 80px;
+}
+
+/* --- 19. SUMMARY LABEL IN FRAUNCES EDITORIAL (Report 2, Item 5) --- */
+.chat-response-summary-label {
+  font-family: var(--font-editorial) !important;
+  font-variation-settings: var(--fraunces-editorial-settings) !important;
+  font-weight: 480;
+}
+
+/* ============================================
+   VISUAL UPGRADES — Stagger, Progress, CTA, Footer
+   ============================================ */
+
+/* Empty state stagger entrance */
+.chat-empty-state .chat-empty-avatar {
+  animation: empty-avatar-entrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.chat-empty-state .chat-empty-title {
+  animation: empty-text-entrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.chat-empty-state .chat-empty-copy {
+  animation: empty-text-entrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
+}
+
+.chat-empty-state .chat-response-mode-shell {
+  animation: empty-text-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
+}
+
+.chat-empty-state .chat-starter-grid {
+  animation: empty-text-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
+}
+
+.chat-starter-chip {
+  animation: chip-entrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.chat-starter-chip:nth-child(1) { animation-delay: 0.36s; }
+.chat-starter-chip:nth-child(2) { animation-delay: 0.42s; }
+.chat-starter-chip:nth-child(3) { animation-delay: 0.48s; }
+.chat-starter-chip:nth-child(4) { animation-delay: 0.54s; }
+
+@keyframes empty-avatar-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes empty-text-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes chip-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Avatar breathing pulse when idle */
+.chat-empty-avatar {
+  position: relative;
+}
+
+.chat-empty-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 1px solid hsl(var(--gold-1) / 0.12);
+  animation: avatar-breathing 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes avatar-breathing {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.06); }
+}
+
+/* Step progress indicator */
+.chat-step-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.2rem;
+}
+
+.chat-step-progress-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: hsl(var(--muted-foreground) / 0.6);
+  white-space: nowrap;
+}
+
+.chat-step-progress-bar {
+  display: flex;
+  gap: 0.28rem;
+  flex: 1;
+}
+
+.chat-step-progress-dot {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: hsl(var(--gold-1) / 0.16);
+  max-width: 2.5rem;
+}
+
+.chat-structured-response[data-response-mode='direto'] .chat-step-progress-dot {
+  background: hsl(var(--clara-cyan) / 0.16);
+}
+
+/* Starter chip metadata line */
+.chat-starter-chip-meta {
+  display: block;
+  margin-top: 0.28rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  color: hsl(var(--muted-foreground) / 0.55);
+  font-weight: 450;
+}
+
+/* CTA primary — differentiated from secondary */
+.hero-cta-primary.btn-cinematic-glow {
+  background:
+    linear-gradient(180deg, hsl(var(--gold-1) / 0.28), hsl(var(--gold-2) / 0.14)) !important;
+  border-color: hsl(var(--gold-1) / 0.45) !important;
+  color: hsl(0 0% 100%) !important;
+  box-shadow:
+    0 16px 36px hsl(var(--shadow) / 0.3),
+    0 0 24px hsl(var(--gold-1) / 0.1),
+    inset 0 1px 0 hsl(0 0% 100% / 0.08) !important;
+}
+
+.hero-cta-primary.btn-cinematic-glow:hover {
+  box-shadow:
+    0 20px 44px hsl(var(--shadow) / 0.36),
+    0 0 32px hsl(var(--gold-1) / 0.16),
+    inset 0 1px 0 hsl(0 0% 100% / 0.1) !important;
+}
+
+/* CTA secondary — recedes visually */
+.hero-cta-secondary {
+  background: hsl(var(--surface-1) / 0.4) !important;
+  border-color: hsl(var(--border-subtle) / 0.6) !important;
+  color: hsl(var(--muted-foreground) / 0.9) !important;
+  box-shadow: none !important;
+}
+
+.hero-cta-secondary:hover {
+  background: hsl(var(--surface-2) / 0.6) !important;
+  border-color: hsl(var(--border-subtle) / 0.8) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Footer watermark wordmark */
+.footer-watermark {
+  font-family: var(--font-display);
+  font-variation-settings: var(--fraunces-display-settings);
+  font-size: clamp(6rem, 12vw, 10rem);
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  color: hsl(var(--foreground));
+  opacity: 0.04;
+  pointer-events: none;
+  user-select: none;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(
+    120deg,
+    hsl(0 0% 100%) 0%,
+    hsl(var(--gold-1)) 40%,
+    hsl(0 0% 100%) 70%,
+    hsl(var(--gold-2)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0.06;
+}
+
+/* Reference highlight — bidirectional flash */
+.chat-reference-highlight {
+  animation: reference-flash 1.5s ease-out;
+}
+
+@keyframes reference-flash {
+  0% {
+    background: hsl(var(--gold-1) / 0.18);
+    outline: 1px solid hsl(var(--gold-1) / 0.4);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+  100% {
+    background: transparent;
+    outline-color: transparent;
+  }
+}
+
+/* Citation source highlight — for back-navigation */
+.chat-citation-highlight {
+  animation: citation-flash 1.2s ease-out;
+}
+
+@keyframes citation-flash {
+  0% {
+    background: hsl(var(--clara-cyan) / 0.22);
+    border-radius: 4px;
+    box-shadow: 0 0 8px hsl(var(--clara-cyan) / 0.3);
+  }
+  100% {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+/* Reference back-link — enhanced styling */
+.chat-reference-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  margin-left: 0.4rem;
+  padding: 0.14rem 0.36rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--stroke) / 0.4);
+  background: transparent;
+  color: hsl(var(--clara-cyan) / 0.8);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease, background var(--duration-fast) ease;
+}
+
+.chat-reference-item:hover .chat-reference-back-link {
+  opacity: 1;
+}
+
+.chat-reference-back-link:hover {
+  background: hsl(var(--clara-cyan) / 0.08);
+  border-color: hsl(var(--clara-cyan) / 0.3);
+  color: hsl(var(--clara-cyan));
+}
+
+/* Cyan accent injection into Features section for chromatic rhythm */
+.knowledge-section .knowledge-index {
+  color: hsl(var(--clara-cyan) / 0.5) !important;
+}
+
+.knowledge-card-head {
+  border-bottom: 1px solid hsl(var(--clara-cyan) / 0.08);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Hero image atmospheric reduction */
+.hero-clara-video,
+.hero-clara-video img {
+  opacity: 0.55 !important;
+  filter: saturate(0.8) contrast(1.05);
+}
+
+.hero-video-vignette {
+  background: linear-gradient(to left, transparent 20%, hsl(var(--bg-base) / 0.35) 50%, hsl(var(--bg-base) / 0.95) 85%) !important;
+}
+
+/* Inter-section breathing spacers */
+.knowledge-section {
+  padding-top: clamp(5rem, 8vw, 7rem) !important;
+  padding-bottom: clamp(5rem, 8vw, 7rem) !important;
+}
+
+.faq-section {
+  padding-top: clamp(4.5rem, 7vw, 6.5rem) !important;
+  padding-bottom: clamp(4.5rem, 7vw, 6rem) !important;
+}

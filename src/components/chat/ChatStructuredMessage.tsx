@@ -169,6 +169,15 @@ function scrollToReference(citationId: number) {
   }
 }
 
+function scrollToCitation(citationId: number) {
+  const el = document.getElementById(`clara-cite-${citationId}`);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    el.classList.add('chat-citation-highlight');
+    setTimeout(() => el.classList.remove('chat-citation-highlight'), 1500);
+  }
+}
+
 function CitationList({ citations }: { citations: number[] }) {
   if (citations.length === 0) {
     return null;
@@ -176,9 +185,10 @@ function CitationList({ citations }: { citations: number[] }) {
 
   return (
     <span className="chat-citation-inline" aria-label={`Referencias ${citations.join(', ')}`}>
-      {citations.map((citation) => (
+      {citations.map((citation, index) => (
         <sup
           key={citation}
+          id={index === 0 ? `clara-cite-${citation}` : undefined}
           className="chat-citation-badge chat-citation-clickable"
           role="button"
           tabIndex={0}
@@ -197,6 +207,15 @@ function ReferenceItem({ reference }: { reference: ClaraReference }) {
     <li id={`clara-ref-${reference.id}`} className="chat-reference-item">
       <span className="chat-reference-index">{reference.id}</span>
       <span>{formatReferenceAbnt(reference)}</span>
+      <button
+        type="button"
+        className="chat-reference-back-link"
+        onClick={() => scrollToCitation(reference.id)}
+        onKeyDown={(e) => e.key === 'Enter' && scrollToCitation(reference.id)}
+        aria-label={`Voltar à citação ${reference.id}`}
+      >
+        ↑ Citação
+      </button>
     </li>
   );
 }
@@ -243,6 +262,9 @@ export function ChatStructuredMessage({
   }, [response]);
   const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
   const processStates = useMemo(() => analysis.processStates.slice(0, 4), [analysis.processStates]);
+  const confidenceTier = analysis.answerScopeMatch === 'exact' ? 'high'
+    : analysis.answerScopeMatch === 'probable' ? 'good'
+    : analysis.answerScopeMatch === 'weak' ? 'moderate' : 'low';
   const responseMeta = [
     modeMeta.modeBadge,
     response.etapas.length > 0 ? `${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''}` : null,
@@ -257,6 +279,8 @@ export function ChatStructuredMessage({
       className="chat-structured-response"
       data-response-mode={resolvedMode}
       data-response-layout={response.modoResposta}
+      data-confidence={confidenceTier}
+      data-needs-clarification={analysis.clarificationRequested ? 'true' : undefined}
     >
       <div className="chat-response-intro">
         <div className="chat-response-kicker">
@@ -395,6 +419,20 @@ export function ChatStructuredMessage({
             title={modeMeta.stepTitle}
             detail={modeMeta.stepDetail}
           />
+          {response.etapas.length > 1 && (
+            <div className="chat-step-progress" aria-label={`${response.etapas.length} etapas`}>
+              <span className="chat-step-progress-label">{response.etapas.length} etapas</span>
+              <div className="chat-step-progress-dots">
+                {response.etapas.map((step) => (
+                  <span
+                    key={step.numero}
+                    className="chat-step-progress-dot is-filled"
+                    aria-hidden="true"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
           <div className="chat-step-grid" role="list">
             {response.etapas.map((step) => (
               <article key={step.numero} className="chat-step-card" role="listitem">
