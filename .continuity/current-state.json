@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada, R3A-R4A publicados em producao, com budget real, telemetria por estagio, breakdown de prompt/historico e feedback do usuario",
+  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada, R3A-R4B publicados em producao, com budget real, telemetria por estagio, breakdown de prompt/historico, feedback do usuario e dashboard admin de gaps",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T11:25:00.0000000Z",
+  "last_update_utc": "2026-04-05T11:45:00.0000000Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -40,11 +40,14 @@
     "O R4A foi publicado em producao a partir do commit `79135d4bfd520b33767ffe9cfb1c0ac2682f6074`, com deploy web `dpl_9pD7XcrVYGbEkT6Lwa1BnY5P1Ug2`, alias mantido em `https://clarainova02.vercel.app`, Edge Function `chat` promovida para a versao `28` e nova Edge Function `submit-chat-feedback` publicada na versao `1`.",
     "A migration remota `20260405121500_add_query_feedback_fields.sql` foi aplicada com sucesso e o `query_analytics` agora aceita feedback explicito do usuario final vinculado a `request_id`.",
     "A prova de ponta a ponta do R4A foi concluida: o `chat` retornou `X-Clara-Request-Id`, a `submit-chat-feedback` respondeu `ok = true` e o `query_analytics` remoto recebeu `user_feedback_value`, `user_feedback_reason`, `user_feedback_comment` e `user_feedback_source`.",
-    "O benchmark canonico remoto pós-publicacao do R4A ficou green: `Didatico` com `16/16 expectedAllMet`, `15/16 scopeExact` e `avgFinalConfidence 0.9906`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact` e `avgFinalConfidence 1.0`."
+    "O benchmark canonico remoto pós-publicacao do R4A ficou green: `Didatico` com `16/16 expectedAllMet`, `15/16 scopeExact` e `avgFinalConfidence 0.9906`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact` e `avgFinalConfidence 1.0`.",
+    "O R4B foi publicado em producao a partir do commit `f95273f1c0cfd2be456602d559f4dcf6528f194c`, com deploy web `dpl_J37W4zYAhPYbK53B5aVvpaeqnTJX`, alias mantido em `https://clarainova02.vercel.app` e Edge Function `get-usage-stats` promovida para a versao `12`.",
+    "O painel admin agora exibe um dashboard de gaps com agrupamento por `topic_label`, lista recente de perguntas sem cobertura e sinais de baixa confiança/feedback negativo, sem reabrir a frente de layout paralela.",
+    "A validacao local do R4B passou com `23` suites e `95` testes; o deploy remoto ficou `READY`, mas o benchmark canonico pós-publicacao entrou em drift severo do pipeline de chat (`Didatico` e `Direto` caindo para `scopeExact 0/16` e `expectedAllMet 1/16`), o que foi classificado como incidente externo/concomitante ao escopo admin-only do R4B."
   ],
   "pending_items": [
-    "Executar R4B com dashboard admin de gaps e perguntas sem cobertura.",
-    "Executar R5A-R5C com batch embedding nativo, cache de embeddings e validacao de frescor do corpus.",
+    "Executar R5A com batch embedding nativo e re-embed controlado do corpus, usando o drift severo do benchmark remoto como gatilho prioritario.",
+    "Executar R5B-R5C com cache de embeddings e validacao de frescor do corpus.",
     "Executar R6A e R6B com benchmark controlado de chunking/dimensionalidade e avaliacao de context caching explicito antes de retomar `5B-5F`.",
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",
     "Manter multimodalidade em PDFs e Google Search grounding como roadmap posterior, sem competir com a trilha imediata."
@@ -53,7 +56,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
   ],
-  "next_action": "Abrir o R4B com dashboard admin das perguntas sem cobertura, reutilizando os novos campos de feedback gravados em query_analytics.",
+  "next_action": "Abrir o R5A com batch embedding nativo e re-embed controlado do corpus para atacar a degradacao remota recente do benchmark canonico.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
@@ -65,9 +68,10 @@
     "O R3A foi implementado sem tocar no layout do chat: a mudanca ficou concentrada em `chat-api`, helper puro de contexto, parser do backend e ajustes de retrieval para follow-ups curtos.",
     "O R3C tambem evitou tocar no layout do chat; a unica excecao foi um ajuste minimo em `SmoothScrollProvider` para remover um erro de lint introduzido no branch atual e restaurar a automacao de validacao.",
     "O R4A manteve a frente visual sob controle: o unico encaixe no chat foi um bloco discreto de feedback no rodape da resposta estruturada, sem reabrir a arquitetura do layout.",
+    "O R4B tambem evitou conflito com a frente paralela de layout: a mudanca visual ficou restrita ao card administrativo de métricas/gaps.",
     "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-05-r4a-production-feedback-loop.md",
-  "last_session_head_sha": "79135d4"
+  "last_report": "docs/operational-reports/2026-04-05-r4b-production-admin-gap-dashboard.md",
+  "last_session_head_sha": "f95273f"
 }

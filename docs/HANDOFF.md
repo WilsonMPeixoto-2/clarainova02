@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T11:25:00.0000000Z
+- Data/hora: 2026-04-05T11:45:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `79135d4bfd520b33767ffe9cfb1c0ac2682f6074`
-- Último relatório: `docs/operational-reports/2026-04-05-r4a-production-feedback-loop.md`
+- Head da sessão: `f95273f1c0cfd2be456602d559f4dcf6528f194c`
+- Último relatório: `docs/operational-reports/2026-04-05-r4b-production-admin-gap-dashboard.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A-R4A` já publicados em produção, com budget real, telemetria por estágio, breakdown de prompt/histórico e feedback do usuário
+- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A-R4B` já publicados em produção, com budget real, telemetria por estágio, breakdown de prompt/histórico, feedback do usuário e dashboard admin de gaps
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: abrir o `R4B` com dashboard admin das perguntas sem cobertura e dos gaps do corpus.
+- Próxima ação recomendada: abrir o `R5A` com batch embedding nativo e re-embed controlado do corpus.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -41,7 +41,11 @@
 - A publicação do `R4A` saiu do commit `79135d4`, foi para o deploy web `dpl_9pD7XcrVYGbEkT6Lwa1BnY5P1Ug2`, promoveu a Edge Function `chat` para a versão `28`, publicou a nova `submit-chat-feedback` na versão `1` e aplicou a migration `20260405121500_add_query_feedback_fields.sql`.
 - A prova de ponta a ponta do `R4A` foi concluída com `request_id` retornado pela `chat`, feedback salvo pela nova function e persistência confirmada em `query_analytics`.
 - O benchmark canônico remoto pós-publicação do `R4A` ficou green: `Didático` com `16/16 expectedAllMet`, `15/16 scopeExact`, `avgFinalConfidence 0.9906`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact`, `avgFinalConfidence 1.0`.
-- `R4B-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
+- `R4B` já foi publicado em produção: o card administrativo de métricas agora expõe grupos por `topic_label` e os casos recentes de lacuna documental, baixa confiança e feedback negativo.
+- A publicação do `R4B` saiu do commit `f95273f`, foi para o deploy web `dpl_J37W4zYAhPYbK53B5aVvpaeqnTJX` e promoveu a Edge Function `get-usage-stats` para a versão `12`.
+- A validação local do `R4B` ficou green com `23` suites e `95` testes, sem tocar na frente paralela de layout.
+- O benchmark canônico remoto executado logo após o `R4B` não ficou green: `Didático` e `Direto` colapsaram para `scopeExact 0/16` e `expectedAllMet 1/16`, com respostas desviando para `Guia documental localizado`. Como o escopo do `R4B` foi admin-only e não alterou `chat` nem corpus, isso foi classificado como incidente externo/concomitante e puxou `R5A` para a frente imediata.
+- `R5A-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
 
@@ -133,8 +137,8 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Executar `R4B` com dashboard admin de gaps e perguntas sem cobertura
-- Executar `R5A-R5C` com batch embedding nativo, cache de embeddings e validação de frescor do corpus
+- Executar `R5A` com batch embedding nativo e re-embed controlado do corpus
+- Executar `R5B-R5C` com cache de embeddings e validação de frescor do corpus
 - Executar `R6A-R6B` como experimentos benchmarkados antes de retomar `5B-5F`
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
@@ -160,6 +164,7 @@
 - O `R3B` também ficou fora do layout: a mudança está concentrada em `supabase/functions/chat/index.ts`, `supabase/functions/chat/timing-budget.ts` e testes dedicados de budget/telemetria.
 - O `R3C` também preservou a frente paralela de layout; a única exceção foi um ajuste mínimo em `SmoothScrollProvider` para remover um erro de lint real do branch atual e restaurar `npm run validate`.
 - O `R4A` também evitou conflito com a frente paralela de layout: a UI nova ficou restrita a um bloco discreto de feedback no rodapé da resposta estruturada, sem mexer na arquitetura visual do painel.
+- O `R4B` também evitou conflito com a frente paralela de layout: a única mudança visual ficou contida no card administrativo de métricas/gaps.
 - A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
 - O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.
