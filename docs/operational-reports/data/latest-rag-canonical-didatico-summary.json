@@ -8,7 +8,7 @@
     "scopeExact": 15,
     "expectedAllMet": 16,
     "clarificationRequested": 0,
-    "ambiguityInSources": 0,
+    "ambiguityInSources": 1,
     "avgFinalConfidence": 0.9906,
     "categories": {
       "norma_nucleo": {

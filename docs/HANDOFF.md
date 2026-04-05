@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T10:49:00.0000000Z
+- Data/hora: 2026-04-05T11:25:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `ac237c0c2473c9f3c0fb5e57c3cce939177b2933`
-- Último relatório: `docs/operational-reports/2026-04-05-r3c-production-publish-and-benchmark.md`
+- Head da sessão: `79135d4bfd520b33767ffe9cfb1c0ac2682f6074`
+- Último relatório: `docs/operational-reports/2026-04-05-r4a-production-feedback-loop.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A`, `R3B` e `R3C` já publicados em produção, com budget real, telemetria por estágio e breakdown de prompt/histórico
+- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A-R4A` já publicados em produção, com budget real, telemetria por estágio, breakdown de prompt/histórico e feedback do usuário
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: abrir o `R4A` com feedback explícito do usuário vinculado a `request_id`.
+- Próxima ação recomendada: abrir o `R4B` com dashboard admin das perguntas sem cobertura e dos gaps do corpus.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -37,7 +37,11 @@
 - `R3C` já foi publicado em produção: a `chat` agora registra breakdown explícito de tamanho de prompt e do histórico enviado em `chat_metrics.metadata_json`, incluindo tokens por segmento, contagem de mensagens e flag `prompt_over_10k`.
 - A publicação do `R3C` saiu do commit `ac237c0`, foi para o deploy web `dpl_EGa5TVJ7eKLAKNKZzRzskH96cxK9` e promoveu a Edge Function `chat` para a versão `27`.
 - O benchmark canônico remoto pós-publicação do `R3C` ficou green: `Didático` com `16/16 expectedAllMet`, `15/16 scopeExact`, `avgFinalConfidence 0.9906`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact`, `avgFinalConfidence 1.0`.
-- `R4A-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
+- `R4A` já foi publicado em produção: a UI estruturada agora permite feedback explícito do usuário final e o backend grava esse retorno em `query_analytics` por `request_id`.
+- A publicação do `R4A` saiu do commit `79135d4`, foi para o deploy web `dpl_9pD7XcrVYGbEkT6Lwa1BnY5P1Ug2`, promoveu a Edge Function `chat` para a versão `28`, publicou a nova `submit-chat-feedback` na versão `1` e aplicou a migration `20260405121500_add_query_feedback_fields.sql`.
+- A prova de ponta a ponta do `R4A` foi concluída com `request_id` retornado pela `chat`, feedback salvo pela nova function e persistência confirmada em `query_analytics`.
+- O benchmark canônico remoto pós-publicação do `R4A` ficou green: `Didático` com `16/16 expectedAllMet`, `15/16 scopeExact`, `avgFinalConfidence 0.9906`; `Direto` com `16/16 expectedAllMet`, `16/16 scopeExact`, `avgFinalConfidence 1.0`.
+- `R4B-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
 
@@ -129,7 +133,7 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Executar `R4A` e `R4B` com feedback explícito do usuário e dashboard de gaps no admin
+- Executar `R4B` com dashboard admin de gaps e perguntas sem cobertura
 - Executar `R5A-R5C` com batch embedding nativo, cache de embeddings e validação de frescor do corpus
 - Executar `R6A-R6B` como experimentos benchmarkados antes de retomar `5B-5F`
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
@@ -155,6 +159,7 @@
 - O `R3A` foi implementado e publicado sem tocar nos componentes de layout do chat; a mudança ficou concentrada em `src/lib/chat-api.ts`, `supabase/functions/chat/index.ts`, `supabase/functions/chat/conversation-context.ts` e testes dedicados.
 - O `R3B` também ficou fora do layout: a mudança está concentrada em `supabase/functions/chat/index.ts`, `supabase/functions/chat/timing-budget.ts` e testes dedicados de budget/telemetria.
 - O `R3C` também preservou a frente paralela de layout; a única exceção foi um ajuste mínimo em `SmoothScrollProvider` para remover um erro de lint real do branch atual e restaurar `npm run validate`.
+- O `R4A` também evitou conflito com a frente paralela de layout: a UI nova ficou restrita a um bloco discreto de feedback no rodapé da resposta estruturada, sem mexer na arquitetura visual do painel.
 - A branch `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` contém refinamentos úteis de chat/layout, mas não deve ser mergeada integralmente porque mistura deltas antigos de backend e mudanças fortes de comportamento do painel.
 - A branch `origin/copilot/analise-completa-codigos-e-layout` foi classificada como insegura para integração por reembaralhar migrations e continuidade.
 - O reupload do mesmo PDF em 2026-04-04 criou um segundo `document_id` porque o registro mais antigo do guia ainda não tinha `document_hash`; a correção desta branch cobre exatamente esse legado.
