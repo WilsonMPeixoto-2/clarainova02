@@ -37,14 +37,17 @@ export type ChatRequestResult =
       kind: 'structured';
       response: ClaraStructuredResponse;
       plainText: string;
+      requestId: string | null;
     }
   | {
       kind: 'stream';
       response: Response;
+      requestId: string | null;
     }
   | {
       kind: 'text';
       text: string;
+      requestId: string | null;
     };
 
 export interface ChatApiConfig {
@@ -112,6 +115,7 @@ export function getMockChatResult(
         kind: 'structured',
         response,
         plainText: renderStructuredResponseToPlainText(response),
+        requestId: null,
       });
     }, delayMs);
   });
@@ -129,9 +133,16 @@ export function getPreviewChatResult(
         kind: 'structured',
         response,
         plainText: renderStructuredResponseToPlainText(response),
+        requestId: null,
       });
     }, delayMs);
   });
+}
+
+function getChatRequestId(response: Response) {
+  const requestId = response.headers.get('x-clara-request-id') ?? response.headers.get('X-Clara-Request-Id');
+  const normalized = requestId?.trim() ?? '';
+  return normalized || null;
 }
 
 export async function requestChat(
@@ -192,6 +203,7 @@ export async function requestChat(
   }
 
   const contentType = res.headers.get('content-type') ?? '';
+  const requestId = getChatRequestId(res);
 
   if (contentType.includes('application/json')) {
     const body = await res.json().catch(() => null);
@@ -202,6 +214,7 @@ export async function requestChat(
         kind: 'structured',
         response: structured.response,
         plainText: structured.plainText ?? renderStructuredResponseToPlainText(structured.response),
+        requestId,
       };
     }
 
@@ -212,10 +225,11 @@ export async function requestChat(
           kind: 'structured',
           response: embedded.response,
           plainText: embedded.plainText ?? renderStructuredResponseToPlainText(embedded.response),
+          requestId,
         };
       }
 
-      return { kind: 'text', text: body.answer };
+      return { kind: 'text', text: body.answer, requestId };
     }
 
     if (typeof body?.response === 'string') {
@@ -225,17 +239,18 @@ export async function requestChat(
           kind: 'structured',
           response: embedded.response,
           plainText: embedded.plainText ?? renderStructuredResponseToPlainText(embedded.response),
+          requestId,
         };
       }
 
-      return { kind: 'text', text: body.response };
+      return { kind: 'text', text: body.response, requestId };
     }
 
     throw new Error('Recebi a resposta em um formato que não consegui aproveitar. Tente novamente em instantes.');
   }
 
   if (contentType.includes('text/event-stream')) {
-    return { kind: 'stream', response: res };
+    return { kind: 'stream', response: res, requestId };
   }
 
   const text = await res.text();
@@ -245,10 +260,11 @@ export async function requestChat(
       kind: 'structured',
       response: structured.response,
       plainText: structured.plainText ?? renderStructuredResponseToPlainText(structured.response),
+      requestId,
     };
   }
 
-  return { kind: 'text', text };
+  return { kind: 'text', text, requestId };
 }
 
 export async function streamChatResponse(

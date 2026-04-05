@@ -27,7 +27,10 @@ describe("chat api transport", () => {
           plainText: "Resposta estruturada pronta.",
         }),
         {
-          headers: { "content-type": "application/json" },
+          headers: {
+            "content-type": "application/json",
+            "x-clara-request-id": "req-123",
+          },
           status: 200,
         },
       ),
@@ -46,6 +49,7 @@ describe("chat api transport", () => {
     }
     expect(result.response.tituloCurto).toBe(response.tituloCurto);
     expect(result.plainText).toBe("Resposta estruturada pronta.");
+    expect(result.requestId).toBe("req-123");
     const fetchCall = fetchMock.mock.calls[0];
     const requestBody = JSON.parse(String(fetchCall?.[1]?.body));
     expect(requestBody.responseMode).toBe("didatico");

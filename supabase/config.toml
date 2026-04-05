@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.get-usage-stats]
 verify_jwt = false
+
+[functions.submit-chat-feedback]
+verify_jwt = false

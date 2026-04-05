@@ -23,6 +23,7 @@ export interface ChatMessage {
   content: string;
   structuredResponse?: ClaraStructuredResponse | null;
   responseMode?: ChatResponseMode;
+  requestId?: string | null;
 }
 
 interface ChatState {
@@ -213,7 +214,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setIsStreaming(false);
     try {
-      const handleStructuredResult = (response: ClaraStructuredResponse, plainText: string) => {
+      const handleStructuredResult = (
+        response: ClaraStructuredResponse,
+        plainText: string,
+        requestId: string | null,
+      ) => {
         startTransition(() => {
           setMessages((prev) =>
             replaceLastAssistantMessage(prev, {
@@ -221,12 +226,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               content: plainText,
               structuredResponse: response,
               responseMode,
+              requestId,
             }),
           );
         });
       };
 
-      const handlePlainTextResult = (textContent: string) => {
+      const handlePlainTextResult = (textContent: string, requestId: string | null) => {
         startTransition(() => {
           setMessages((prev) =>
             replaceLastAssistantMessage(prev, {
@@ -234,6 +240,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               content: textContent,
               structuredResponse: null,
               responseMode,
+              requestId,
             }),
           );
         });
@@ -269,13 +276,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       if (result.kind === 'structured') {
         setIsLoading(false);
-        handleStructuredResult(result.response, result.plainText);
+        handleStructuredResult(result.response, result.plainText, result.requestId);
         return;
       }
 
       if (result.kind === 'text') {
         setIsLoading(false);
-        handlePlainTextResult(result.text);
+        handlePlainTextResult(result.text, result.requestId);
         return;
       }
 

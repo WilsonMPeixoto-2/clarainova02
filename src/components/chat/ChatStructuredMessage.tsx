@@ -10,6 +10,7 @@ import {
   renderStructuredResponseToPlainText,
 } from '@/lib/clara-response';
 import type { ChatResponseMode } from '@/lib/chat-response-mode';
+import { ChatFeedbackControls } from '@/components/chat/ChatFeedbackControls';
 
 function highlightLabel(highlight: ClaraHighlight) {
   switch (highlight.tipo) {
@@ -243,9 +244,11 @@ function SectionHeading({
 export function ChatStructuredMessage({
   response,
   responseMode,
+  requestId,
 }: {
   response: ClaraStructuredResponse;
   responseMode?: ChatResponseMode;
+  requestId?: string | null;
 }) {
   const [showReferences, setShowReferences] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -520,6 +523,8 @@ export function ChatStructuredMessage({
           )}
         </section>
       )}
+
+      <ChatFeedbackControls requestId={requestId} />
     </div>
   );
 }

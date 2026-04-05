@@ -753,6 +753,7 @@ const ChatSheet = () => {
                           <ChatStructuredMessage
                             response={message.structuredResponse}
                             responseMode={resolveStructuredMessageMode(message.responseMode, message.structuredResponse.modoResposta)}
+                            requestId={message.requestId}
                           />
                         ) : (
                           <div className="clara-prose">

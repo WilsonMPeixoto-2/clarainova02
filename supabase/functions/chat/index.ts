@@ -1070,6 +1070,7 @@ Deno.serve(async (req) => {
 
     const requestStartedAt = Date.now();
     const requestId = crypto.randomUUID();
+    const requestHeaders = { ...buildCorsHeaders(req), 'X-Clara-Request-Id': requestId };
     const stageTimings = createChatStageTimings();
     const timeBudgetTracker = createTimeBudgetTracker(requestStartedAt, CHAT_TIME_BUDGET_CONFIG);
     let structuredSkippedForBudget = false;
@@ -1081,7 +1082,7 @@ Deno.serve(async (req) => {
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'A CLARA ainda não está disponível neste ambiente. Tente novamente mais tarde.' }),
-        { status: 503, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -1091,7 +1092,7 @@ Deno.serve(async (req) => {
     if (!supabaseUrl || !supabaseKey) {
       return new Response(
         JSON.stringify({ error: 'O atendimento da CLARA ainda não está pronto neste ambiente. Tente novamente mais tarde.' }),
-        { status: 503, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
       );
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -1114,7 +1115,7 @@ Deno.serve(async (req) => {
     } else if (!allowed) {
       return new Response(
         JSON.stringify({ error: 'Recebi muitas mensagens em sequência. Aguarde um instante e tente novamente.' }),
-        { status: 429, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        { status: 429, headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -1179,7 +1180,7 @@ Deno.serve(async (req) => {
         });
         const blockedResponse = `data: ${JSON.stringify({ choices: [{ delta: { content: GUARDRAIL_RESPONSE } }] })}\n\ndata: [DONE]\n\n`;
         return new Response(blockedResponse, {
-          headers: { ...buildCorsHeaders(req), 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+          headers: { ...requestHeaders, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
         });
       }
     }
@@ -1556,7 +1557,7 @@ REESCRITA OBRIGATORIA:
           response: structuredResponse,
           plainText: structuredPlainText,
         }),
-        { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -1621,7 +1622,7 @@ REESCRITA OBRIGATORIA:
             response: fallbackResponse,
             plainText: fallbackPlainText,
           }),
-          { headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+          { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -1686,7 +1687,7 @@ REESCRITA OBRIGATORIA:
         JSON.stringify({ error: errorMsg }),
         {
           status: providerUnavailable ? 503 : 500,
-          headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' },
+          headers: { ...requestHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -1731,7 +1732,7 @@ REESCRITA OBRIGATORIA:
 
     return new Response(responseStream, {
       headers: {
-        ...buildCorsHeaders(req),
+        ...requestHeaders,
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
