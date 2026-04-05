@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T13:12:18.5024981Z
+- Data/hora: 2026-04-05T13:40:54.411311Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `ec5e5ecb76a2237cf70c175b39778cf13e93a502`
-- Último relatório: `docs/operational-reports/2026-04-05-r5c-corpus-freshness-publish-and-benchmark.md`
+- Head da sessão: `dde134fe0c05548b363aba5acbd0de61c5e47881`
+- Último relatório: `docs/operational-reports/2026-04-05-r6a-r6b-finalization-publish-and-benchmark.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A-R4B` já publicados em produção, `R5A` recuperado em produção com fallback keyword-only direcionado, `R5B` já publicado com cache de embeddings de consulta protegido por RLS e `R5C` já publicado com verificação manual de frescor do manifesto
+- Fase atual: BLOCO 5 com `R0-R6B` fechados, publicados ou benchmarkados em produção, benchmark canônico remoto green e frente imediata pronta para voltar aos subblocos `5B-5F`
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: abrir o `R6A` com experimento benchmarkado de chunking e dimensionalidade.
+- Próxima ação recomendada: retomar `5B` com retrieval governado por metadados reais.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -60,7 +60,15 @@
 - O benchmark canônico remoto pós-publicação do `R5C` ficou green:
   - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
   - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
-- `R6A-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
+- `R6A` foi fechado sem promoção de mudança de runtime: os perfis `current`, `balanced_1400` e `context_1800` ficaram todos com `408` chunks e `avgChunkChars = 1089.29`, confirmando que o gargalo atual continua sendo a segmentação por página.
+- A leitura complementar do `R6A` sobre prontidão semântica mostrou `200` linhas recentes de `search_metrics`, com apenas `36.5%` de tráfego recente usando embedding de consulta semântico real; por isso a trilha de `1536` dimensões não foi promovida nesta rodada.
+- O fechamento funcional do `R6A-R6B` saiu no commit `dde134f`, promoveu a Edge Function `chat` para a versão `33` e foi publicado na produção web pelo deploy `dpl_hsq7NmMPznu5CniYa6ZFNKEsaTfT`, após recuperação por `vercel promote` de um preview `READY`.
+- `R6B` foi fechado com telemetria nova de uso do provedor Gemini em `chat_metrics.metadata_json` e com o auditor `scripts/corpus/evaluate_prompt_cache_readiness.py`.
+- A amostra recente do `R6B` ficou com `avgPromptTokens = 4508.62`, `p95PromptTokens = 5718`, `maxPromptTokens = 7072`, `prompt_over_10k = 0`, `grounded_fallback = 180/200` linhas (`90%`) e `providerUsageRows = 0`; a decisão foi não priorizar context caching explícito enquanto o caminho do provedor não voltar a dominar a operação.
+- O benchmark canônico remoto pós-publicação do fechamento `R6A-R6B` ficou green:
+  - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+  - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+- `R6A-R6B` deixam de ser a frente imediata; a próxima retomada recomendada volta para `5B-5F`.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
 
@@ -152,7 +160,7 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Executar `R6A-R6B` como experimentos benchmarkados antes de retomar `5B-5F`
+- Retomar `5B-5F` agora que `R6A-R6B` foram fechados em produção
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C

@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-04-05T13:40:54.411311Z",
+  "sample": {
+    "rows": 200,
+    "limit": 200
+  },
+  "pathMix": {
+    "groundedFallbackRows": 180,
+    "groundedFallbackPct": 90.0,
+    "providerModelRows": 20
+  },
+  "promptTelemetry": {
+    "avgPromptTokens": 4508.62,
+    "p95PromptTokens": 5718.0,
+    "maxPromptTokens": 7072.0,
+    "over10kCount": 0
+  },
+  "providerUsage": {
+    "rowsWithUsage": 0,
+    "rowsWithUsagePct": 0.0,
+    "cacheHitRows": 0,
+    "cacheHitPct": 0.0,
+    "avgCachedTokens": 0.0,
+    "maxCachedTokens": 0.0
+  },
+  "models": [
+    {
+      "model": "gemini-3.1-pro-preview",
+      "rows": 8,
+      "promptAvg": 5902.88,
+      "promptP95": 7072.0,
+      "providerUsageRows": 0,
+      "providerCacheHitRows": 0,
+      "providerCacheHitPct": 0.0,
+      "providerCachedTokensAvg": 0.0
+    },
+    {
+      "model": "grounded_fallback",
+      "rows": 180,
+      "promptAvg": 4631.73,
+      "promptP95": 5672.0,
+      "providerUsageRows": 0,
+      "providerCacheHitRows": 0,
+      "providerCacheHitPct": 0.0,
+      "providerCachedTokensAvg": 0.0
+    },
+    {
+      "model": "unknown",
+      "rows": 12,
+      "promptAvg": 1732.42,
+      "promptP95": 1797.0,
+      "providerUsageRows": 0,
+      "providerCacheHitRows": 0,
+      "providerCacheHitPct": 0.0,
+      "providerCachedTokensAvg": 0.0
+    }
+  ],
+  "recommendation": {
+    "shipRuntimeChange": false,
+    "decision": "defer_until_provider_path_recovers",
+    "reason": "A amostra recente esta dominada por `grounded_fallback`, entao o gargalo atual nao e context caching. A prioridade continua sendo manter o caminho do provedor saudavel antes de investir em cache explicito."
+  }
+}

@@ -2,7 +2,7 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-05
-- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ ec5e5ecb76a2237cf70c175b39778cf13e93a502`
+- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ dde134fe0c05548b363aba5acbd0de61c5e47881`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
@@ -11,7 +11,7 @@
 - `origin/main` atualmente alinhada ao commit local preparado para publicação: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 - Trabalho local em andamento fora de `main`:
   - branch ativa de sessão: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
-  - a branch de sessão foi publicada em `origin` até o commit `ec5e5ecb76a2237cf70c175b39778cf13e93a502`
+  - a branch de sessão foi publicada em `origin` até o commit `dde134fe0c05548b363aba5acbd0de61c5e47881`
   - a linha principal continua íntegra em `main`, mas a produção foi manualmente atualizada a partir da branch de sessão
 - Observação de análise remota:
   - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral
@@ -24,19 +24,19 @@
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção agora reflete manualmente o `R5C` publicado a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET` no commit `ec5e5ecb76a2237cf70c175b39778cf13e93a502`
-  - isso inclui budget real por request, telemetria por estágio em `chat_metrics.metadata_json`, follow-up contextualizado no retrieval, breakdown explícito de prompt/histórico, retorno de `request_id` na `chat`, `submit-chat-feedback`, dashboard admin de gaps, degradacao segura para `keyword_only`, targeted keyword rescue, grounded fallback recalibrado para o dominio SEI-Rio, cache de embeddings de consulta com `TTL` de `7` dias e relatório estático de frescor do corpus no painel administrativo
+  - a produção agora reflete manualmente o fechamento `R6A-R6B` publicado a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET` no commit `dde134fe0c05548b363aba5acbd0de61c5e47881`
+  - isso inclui budget real por request, telemetria por estágio em `chat_metrics.metadata_json`, follow-up contextualizado no retrieval, breakdown explícito de prompt/histórico, retorno de `request_id` na `chat`, `submit-chat-feedback`, dashboard admin de gaps, degradacao segura para `keyword_only`, targeted keyword rescue, grounded fallback recalibrado para o dominio SEI-Rio, cache de embeddings de consulta com `TTL` de `7` dias, relatório estático de frescor do corpus no painel administrativo, benchmark estrutural de chunking/dimensionalidade e telemetria de uso do provedor Gemini para decisão sobre context caching
   - `origin/main` continua sendo a fonte oficial integrada, então existe divergência intencional e documentada entre `main` e a produção até a próxima reconciliação
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
-  - source: `manual_cli`
+  - source: `preview_promote_recovery`
   - status: `READY`
-  - deployment id: `dpl_DFaFmyNSNUzJshS7R2oeGAK5n8mM`
-  - commit publicado: `ec5e5ecb76a2237cf70c175b39778cf13e93a502`
-  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/DFaFmyNSNUzJshS7R2oeGAK5n8mM`
+  - deployment id: `dpl_hsq7NmMPznu5CniYa6ZFNKEsaTfT`
+  - commit publicado: `dde134fe0c05548b363aba5acbd0de61c5e47881`
+  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/hsq7NmMPznu5CniYa6ZFNKEsaTfT`
   - aliases observados:
     - `https://clarainova02.vercel.app`
-    - `https://clarainova02-4vv6qesec-wilson-m-peixotos-projects.vercel.app`
+    - `https://clarainova02-b9jh93jyz-wilson-m-peixotos-projects.vercel.app`
 
 ## Supabase
 - Projeto oficial: `jasqctuzeznwdtbcuixn`
@@ -46,8 +46,8 @@
 ## Edge Functions verificadas
 - `chat`
   - status: `ACTIVE`
-  - versão observada: `32`
-  - última atualização observada: `2026-04-05 12:51:15 UTC`
+  - versão observada: `33`
+  - última atualização observada: `2026-04-05 13:32:33 UTC`
 - `submit-chat-feedback`
   - status: `ACTIVE`
   - versão observada: `1`
@@ -87,12 +87,12 @@
     - conferir `Client ID` e `Client Secret`
     - alinhar redirect URLs no Supabase e no Google Console
 - Gemini / embeddings:
-  - status: `pacote R0-R5C publicado, com recuperação operacional do incidente externo de quota/embeddings, cache de embeddings de consulta ativo no código e checagem manual de frescor do manifesto já servida na produção web`
+  - status: `pacote R0-R6B publicado, com recuperação operacional do incidente externo de quota/embeddings, cache de embeddings de consulta ativo no código, checagem manual de frescor do manifesto já servida na produção web e decisão explícita de não promover mudanças de runtime em chunking/dimensionalidade ou context caching nesta rodada`
   - situação conhecida:
-    - a Edge Function remota `chat` já foi republicada na versão `32` com follow-up contextualizado no retrieval, suporte a `contextSummary` vindo do chat web, budget real, métricas por estágio, breakdown explícito de prompt/histórico, retorno de `X-Clara-Request-Id`, `keyword_only` seguro, rescue lexical dirigido, grounded fallback recalibrado e cache de embeddings de consulta
+    - a Edge Function remota `chat` já foi republicada na versão `33` com follow-up contextualizado no retrieval, suporte a `contextSummary` vindo do chat web, budget real, métricas por estágio, breakdown explícito de prompt/histórico, retorno de `X-Clara-Request-Id`, `keyword_only` seguro, rescue lexical dirigido, grounded fallback recalibrado, cache de embeddings de consulta e telemetria `provider_usage_*` para decisão sobre caching
     - a nova Edge Function remota `submit-chat-feedback` já está ativa na versão `1`
     - a Edge Function remota `embed-chunks` já foi republicada na versão `17` com o contrato textual assimétrico de embeddings introduzido em `R2`
-    - a produção web foi atualizada manualmente por Vercel CLI com o pacote do repositório até o commit `2ff5ccc`
+    - a produção web foi atualizada por promoção de preview `READY` após erro interno da Vercel no deploy manual direto, chegando ao pacote do repositório até o commit `dde134f`
     - a migration remota `20260405121500_add_query_feedback_fields.sql` já foi aplicada e abriu o contrato de feedback em `query_analytics`
     - a migration remota `20260405235500_add_query_embedding_cache.sql` já foi aplicada e criou `public.embedding_cache`
     - a Edge Function remota `get-usage-stats` já foi republicada na versão `12`, com agrupamento por `topic_label`, lacunas recentes e sinais de baixa confiança / feedback negativo
@@ -147,7 +147,13 @@
     - nesta janela, `public.embedding_cache` permaneceu com `0` linhas porque as consultas recentes continuaram caindo em `keyword_only_no_embedding`, coerente com a indisponibilidade externa do Gemini para embeddings de consulta
     - a produção web agora também serve `https://clarainova02.vercel.app/data/latest-corpus-freshness.json`, gerado pelo script `scripts/corpus/validate_corpus_freshness.py`
     - a checagem atual do manifesto ficou em `17/17` entradas verificadas, `6` fontes `current`, `0` `changed`, `0` `request_failed` e `11` em `headers_missing`
-    - a próxima frente de corpus é substituir o Decreto `55.615` por texto íntegro oficial e ampliar a bateria manual
+    - o `R6A` concluiu que os perfis `current`, `balanced_1400` e `context_1800` ficaram idênticos (`408` chunks, `avgChunkChars = 1089.29`), então o chunking maior não foi promovido
+    - o `R6A` também registrou que apenas `36.5%` das `200` linhas mais recentes de `search_metrics` usaram embedding de consulta semântico real, o que bloqueia a promoção de um experimento de `1536` dimensões
+    - o `R6B` concluiu que a amostra recente de `chat_metrics` está dominada por `grounded_fallback` (`180/200` linhas, `90%`), com `avgPromptTokens = 4508.62`, `p95PromptTokens = 5718`, `prompt_over_10k = 0` e `providerUsageRows = 0`; por isso, context caching explícito não foi priorizado
+    - o benchmark canônico remoto pós-publicação do fechamento `R6A-R6B` ficou green:
+      - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+      - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+    - a próxima frente de corpus e retrieval volta agora para os subblocos `5B-5F`, além da substituição do Decreto `55.615` por texto íntegro oficial
 
 ## Divergências remotas que exigem cuidado
 - a produção web e as functions `chat` / `embed-chunks` / `submit-chat-feedback` / `get-usage-stats` estão à frente de `origin/main`, porque os deploys manuais de `2026-04-05` partiram da branch de sessão e o último deles publicou `ec5e5ec`

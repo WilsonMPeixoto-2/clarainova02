@@ -60,6 +60,17 @@ def build_recommendation(rows: list[dict[str, Any]]) -> dict[str, Any]:
     cache_values = [row["cached_tokens"] for row in rows if row["cached_tokens"] is not None]
     cache_hits = sum(1 for value in cache_values if value and value > 0)
     provider_usage_rows = sum(1 for row in rows if row["provider_usage_available"])
+    grounded_fallback_rows = sum(1 for row in rows if row["model_name"] == "grounded_fallback")
+
+    if grounded_fallback_rows >= max(10, int(len(rows) * 0.5)):
+        return {
+            "shipRuntimeChange": False,
+            "decision": "defer_until_provider_path_recovers",
+            "reason": (
+                "A amostra recente esta dominada por `grounded_fallback`, entao o gargalo atual nao e context caching. "
+                "A prioridade continua sendo manter o caminho do provedor saudavel antes de investir em cache explicito."
+            ),
+        }
 
     if provider_usage_rows == 0:
         return {
@@ -120,12 +131,18 @@ def main() -> int:
     cache_values = [float(value) for value in (row["cached_tokens"] for row in normalized_rows) if isinstance(value, (int, float))]
     provider_usage_rows = sum(1 for row in normalized_rows if row["provider_usage_available"])
     cache_hit_rows = sum(1 for value in cache_values if value > 0)
+    grounded_fallback_rows = sum(1 for row in normalized_rows if row["model_name"] == "grounded_fallback")
 
     payload = {
         "checkedAt": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "sample": {
             "rows": len(normalized_rows),
             "limit": args.limit,
+        },
+        "pathMix": {
+            "groundedFallbackRows": grounded_fallback_rows,
+            "groundedFallbackPct": round((grounded_fallback_rows / len(normalized_rows)) * 100, 2) if normalized_rows else 0.0,
+            "providerModelRows": sum(1 for row in normalized_rows if row["model_name"] not in {"grounded_fallback", "unknown"}),
         },
         "promptTelemetry": {
             "avgPromptTokens": round(statistics.mean(prompt_values), 2) if prompt_values else 0.0,

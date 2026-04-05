@@ -1,0 +1,648 @@
+{
+  "checkedAt": "2026-04-05T13:23:35.605585Z",
+  "corpus": {
+    "documents": 17,
+    "pageBoundaryLocked": true,
+    "note": "O chunking atual ainda respeita fronteiras de página, então ganhos de contexto seguem limitados por página."
+  },
+  "embeddingDimensionSmoke": {
+    "status": "blocked_missing_local_key",
+    "dimensions": [
+      768,
+      1536
+    ],
+    "recentSearchMetrics": {
+      "rows": 200,
+      "modelCounts": {
+        "keyword_only_no_embedding": 127,
+        "keyword_fallback_zero_vector": 33,
+        "gemini-embedding-2-preview:2026-04-05-r2-domain-instructions-v1": 40
+      },
+      "semanticTraffic": 73,
+      "keywordOnlyTraffic": 127,
+      "semanticTrafficPct": 36.5
+    },
+    "note": "GEMINI_API_KEY indisponível neste ambiente local; além disso, a telemetria recente mostra o estado operacional atual da recuperação semântica, que precisa estar estável antes de promover um teste de dimensionalidade."
+  },
+  "profileSummaries": [
+    {
+      "profileId": "current",
+      "config": {
+        "targetChunkSize": 1000,
+        "maxChunkSize": 1400,
+        "minChunkSize": 150,
+        "overlapSentences": 1
+      },
+      "documents": 17,
+      "totalChunks": 408,
+      "avgChunksPerDocument": 24.0,
+      "avgChunkChars": 1089.29,
+      "docLevelP95ChunkCount": 85.0,
+      "reductionVsCurrentPct": 0.0
+    },
+    {
+      "profileId": "balanced_1400",
+      "config": {
+        "targetChunkSize": 1400,
+        "maxChunkSize": 1800,
+        "minChunkSize": 200,
+        "overlapSentences": 1
+      },
+      "documents": 17,
+      "totalChunks": 408,
+      "avgChunksPerDocument": 24.0,
+      "avgChunkChars": 1089.29,
+      "docLevelP95ChunkCount": 85.0,
+      "reductionVsCurrentPct": 0.0
+    },
+    {
+      "profileId": "context_1800",
+      "config": {
+        "targetChunkSize": 1800,
+        "maxChunkSize": 2200,
+        "minChunkSize": 250,
+        "overlapSentences": 2
+      },
+      "documents": 17,
+      "totalChunks": 408,
+      "avgChunksPerDocument": 24.0,
+      "avgChunkChars": 1089.29,
+      "docLevelP95ChunkCount": 85.0,
+      "reductionVsCurrentPct": 0.0
+    }
+  ],
+  "documentsByProfile": {
+    "current": [
+      {
+        "documentId": "2ab139c7-5cf8-48ae-9ff8-d3ecc153e0ed",
+        "name": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "pageCount": 71,
+        "textCharCount": 55654,
+        "chunkCount": 121,
+        "avgChars": 458.37,
+        "medianChars": 424.0,
+        "p95Chars": 1217.0,
+        "maxChars": 1726
+      },
+      {
+        "documentId": "65388ff5-2708-4456-91fb-a582f4bc8a2b",
+        "name": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "pageCount": 12,
+        "textCharCount": 31421,
+        "chunkCount": 58,
+        "avgChars": 540.57,
+        "medianChars": 224.5,
+        "p95Chars": 2178.0,
+        "maxChars": 2772
+      },
+      {
+        "documentId": "8ce173dc-2d62-4518-8052-7bdf22d8860d",
+        "name": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "pageCount": 3,
+        "textCharCount": 4358,
+        "chunkCount": 75,
+        "avgChars": 57.09,
+        "medianChars": 50.0,
+        "p95Chars": 81.0,
+        "maxChars": 472
+      },
+      {
+        "documentId": "e6028b3a-a27e-46c3-8053-a286169e6384",
+        "name": "Guia de migracao – SEI.Rio",
+        "pageCount": 5,
+        "textCharCount": 11718,
+        "chunkCount": 9,
+        "avgChars": 1300.67,
+        "medianChars": 1119.0,
+        "p95Chars": 2527.0,
+        "maxChars": 2527
+      },
+      {
+        "documentId": "18de3ce3-0cf1-4d0a-b6d7-fe68ffe29d0d",
+        "name": "Guia do usuario externo – SEI.Rio",
+        "pageCount": 4,
+        "textCharCount": 13140,
+        "chunkCount": 4,
+        "avgChars": 3283.5,
+        "medianChars": 3171.0,
+        "p95Chars": 4212.0,
+        "maxChars": 4212
+      },
+      {
+        "documentId": "d9583127-10d7-42fa-bfd2-1767bc79c0de",
+        "name": "Perguntas frequentes do servidor – SEI.Rio",
+        "pageCount": 2,
+        "textCharCount": 4641,
+        "chunkCount": 6,
+        "avgChars": 772.5,
+        "medianChars": 539.0,
+        "p95Chars": 1589.0,
+        "maxChars": 1589
+      },
+      {
+        "documentId": "0bcd641f-4eb7-4b98-9920-e58ad757ca13",
+        "name": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+        "pageCount": 16,
+        "textCharCount": 32496,
+        "chunkCount": 85,
+        "avgChars": 381.14,
+        "medianChars": 228.0,
+        "p95Chars": 1585.0,
+        "maxChars": 2562
+      },
+      {
+        "documentId": "5ff36401-1f0e-4d1d-8ea1-1eaa927c35b3",
+        "name": "Perguntas frequentes do cidadao – SEI.Rio",
+        "pageCount": 1,
+        "textCharCount": 2696,
+        "chunkCount": 1,
+        "avgChars": 2696.0,
+        "medianChars": 2696.0,
+        "p95Chars": 2696.0,
+        "maxChars": 2696
+      },
+      {
+        "documentId": "62606bcc-2ccb-45bd-b388-eb69a358acc0",
+        "name": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "pageCount": 2,
+        "textCharCount": 4054,
+        "chunkCount": 4,
+        "avgChars": 1012.5,
+        "medianChars": 754.5,
+        "p95Chars": 2529.0,
+        "maxChars": 2529
+      },
+      {
+        "documentId": "0e2ccf22-c5b5-49c4-9012-5828c2627490",
+        "name": "Manual do Usuário SEI 4.0+",
+        "pageCount": 7,
+        "textCharCount": 16248,
+        "chunkCount": 8,
+        "avgChars": 2029.38,
+        "medianChars": 2374.5,
+        "p95Chars": 3401.0,
+        "maxChars": 3401
+      },
+      {
+        "documentId": "d988f50a-bcf4-433f-bea0-eddf926087c8",
+        "name": "Novidades da versão 4.1 – Wiki SEI-RJ",
+        "pageCount": 4,
+        "textCharCount": 8807,
+        "chunkCount": 13,
+        "avgChars": 676.31,
+        "medianChars": 661.0,
+        "p95Chars": 1181.0,
+        "maxChars": 1645
+      },
+      {
+        "documentId": "5cd86b37-fd21-47e9-8382-049ff15c6368",
+        "name": "Correspondência de Ícones SEI => SEI 4.0",
+        "pageCount": 1,
+        "textCharCount": 1139,
+        "chunkCount": 1,
+        "avgChars": 1139.0,
+        "medianChars": 1139.0,
+        "p95Chars": 1139.0,
+        "maxChars": 1139
+      },
+      {
+        "documentId": "85a46f4e-b36c-413c-8fc2-de0ec6566369",
+        "name": "Documentação de apoio do SEI/PEN",
+        "pageCount": 3,
+        "textCharCount": 1957,
+        "chunkCount": 7,
+        "avgChars": 278.43,
+        "medianChars": 160.0,
+        "p95Chars": 684.0,
+        "maxChars": 684
+      },
+      {
+        "documentId": "35aa4364-4c3a-418c-bcbb-f890a11e28a5",
+        "name": "Nota oficial MGI sobre a versão 4.1.5 do SEI",
+        "pageCount": 2,
+        "textCharCount": 3970,
+        "chunkCount": 6,
+        "avgChars": 660.67,
+        "medianChars": 448.5,
+        "p95Chars": 2376.0,
+        "maxChars": 2376
+      },
+      {
+        "documentId": "0c4e379f-f619-42b3-ace2-6270e52c06a0",
+        "name": "Painel de compatibilidade de versões do SEI com módulos do PEN",
+        "pageCount": 1,
+        "textCharCount": 2254,
+        "chunkCount": 2,
+        "avgChars": 1126.5,
+        "medianChars": 1126.5,
+        "p95Chars": 1807.0,
+        "maxChars": 1807
+      },
+      {
+        "documentId": "3d69e9b2-552a-4d0b-b623-3781af7a3b95",
+        "name": "Nota oficial MGI sobre o SEI 5.0",
+        "pageCount": 1,
+        "textCharCount": 2862,
+        "chunkCount": 2,
+        "avgChars": 1430.5,
+        "medianChars": 1430.5,
+        "p95Chars": 2408.0,
+        "maxChars": 2408
+      },
+      {
+        "documentId": "8dbb84a5-3878-4b4b-945b-f28ad104536a",
+        "name": "Nota oficial MGI sobre o SEI 5.0.3",
+        "pageCount": 2,
+        "textCharCount": 4055,
+        "chunkCount": 6,
+        "avgChars": 674.83,
+        "medianChars": 639.5,
+        "p95Chars": 1129.0,
+        "maxChars": 1129
+      }
+    ],
+    "balanced_1400": [
+      {
+        "documentId": "2ab139c7-5cf8-48ae-9ff8-d3ecc153e0ed",
+        "name": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "pageCount": 71,
+        "textCharCount": 55654,
+        "chunkCount": 121,
+        "avgChars": 458.37,
+        "medianChars": 424.0,
+        "p95Chars": 1217.0,
+        "maxChars": 1726
+      },
+      {
+        "documentId": "65388ff5-2708-4456-91fb-a582f4bc8a2b",
+        "name": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "pageCount": 12,
+        "textCharCount": 31421,
+        "chunkCount": 58,
+        "avgChars": 540.57,
+        "medianChars": 224.5,
+        "p95Chars": 2178.0,
+        "maxChars": 2772
+      },
+      {
+        "documentId": "8ce173dc-2d62-4518-8052-7bdf22d8860d",
+        "name": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "pageCount": 3,
+        "textCharCount": 4358,
+        "chunkCount": 75,
+        "avgChars": 57.09,
+        "medianChars": 50.0,
+        "p95Chars": 81.0,
+        "maxChars": 472
+      },
+      {
+        "documentId": "e6028b3a-a27e-46c3-8053-a286169e6384",
+        "name": "Guia de migracao – SEI.Rio",
+        "pageCount": 5,
+        "textCharCount": 11718,
+        "chunkCount": 9,
+        "avgChars": 1300.67,
+        "medianChars": 1119.0,
+        "p95Chars": 2527.0,
+        "maxChars": 2527
+      },
+      {
+        "documentId": "18de3ce3-0cf1-4d0a-b6d7-fe68ffe29d0d",
+        "name": "Guia do usuario externo – SEI.Rio",
+        "pageCount": 4,
+        "textCharCount": 13140,
+        "chunkCount": 4,
+        "avgChars": 3283.5,
+        "medianChars": 3171.0,
+        "p95Chars": 4212.0,
+        "maxChars": 4212
+      },
+      {
+        "documentId": "d9583127-10d7-42fa-bfd2-1767bc79c0de",
+        "name": "Perguntas frequentes do servidor – SEI.Rio",
+        "pageCount": 2,
+        "textCharCount": 4641,
+        "chunkCount": 6,
+        "avgChars": 772.5,
+        "medianChars": 539.0,
+        "p95Chars": 1589.0,
+        "maxChars": 1589
+      },
+      {
+        "documentId": "0bcd641f-4eb7-4b98-9920-e58ad757ca13",
+        "name": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+        "pageCount": 16,
+        "textCharCount": 32496,
+        "chunkCount": 85,
+        "avgChars": 381.14,
+        "medianChars": 228.0,
+        "p95Chars": 1585.0,
+        "maxChars": 2562
+      },
+      {
+        "documentId": "5ff36401-1f0e-4d1d-8ea1-1eaa927c35b3",
+        "name": "Perguntas frequentes do cidadao – SEI.Rio",
+        "pageCount": 1,
+        "textCharCount": 2696,
+        "chunkCount": 1,
+        "avgChars": 2696.0,
+        "medianChars": 2696.0,
+        "p95Chars": 2696.0,
+        "maxChars": 2696
+      },
+      {
+        "documentId": "62606bcc-2ccb-45bd-b388-eb69a358acc0",
+        "name": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "pageCount": 2,
+        "textCharCount": 4054,
+        "chunkCount": 4,
+        "avgChars": 1012.5,
+        "medianChars": 754.5,
+        "p95Chars": 2529.0,
+        "maxChars": 2529
+      },
+      {
+        "documentId": "0e2ccf22-c5b5-49c4-9012-5828c2627490",
+        "name": "Manual do Usuário SEI 4.0+",
+        "pageCount": 7,
+        "textCharCount": 16248,
+        "chunkCount": 8,
+        "avgChars": 2029.38,
+        "medianChars": 2374.5,
+        "p95Chars": 3401.0,
+        "maxChars": 3401
+      },
+      {
+        "documentId": "d988f50a-bcf4-433f-bea0-eddf926087c8",
+        "name": "Novidades da versão 4.1 – Wiki SEI-RJ",
+        "pageCount": 4,
+        "textCharCount": 8807,
+        "chunkCount": 13,
+        "avgChars": 676.31,
+        "medianChars": 661.0,
+        "p95Chars": 1181.0,
+        "maxChars": 1645
+      },
+      {
+        "documentId": "5cd86b37-fd21-47e9-8382-049ff15c6368",
+        "name": "Correspondência de Ícones SEI => SEI 4.0",
+        "pageCount": 1,
+        "textCharCount": 1139,
+        "chunkCount": 1,
+        "avgChars": 1139.0,
+        "medianChars": 1139.0,
+        "p95Chars": 1139.0,
+        "maxChars": 1139
+      },
+      {
+        "documentId": "85a46f4e-b36c-413c-8fc2-de0ec6566369",
+        "name": "Documentação de apoio do SEI/PEN",
+        "pageCount": 3,
+        "textCharCount": 1957,
+        "chunkCount": 7,
+        "avgChars": 278.43,
+        "medianChars": 160.0,
+        "p95Chars": 684.0,
+        "maxChars": 684
+      },
+      {
+        "documentId": "35aa4364-4c3a-418c-bcbb-f890a11e28a5",
+        "name": "Nota oficial MGI sobre a versão 4.1.5 do SEI",
+        "pageCount": 2,
+        "textCharCount": 3970,
+        "chunkCount": 6,
+        "avgChars": 660.67,
+        "medianChars": 448.5,
+        "p95Chars": 2376.0,
+        "maxChars": 2376
+      },
+      {
+        "documentId": "0c4e379f-f619-42b3-ace2-6270e52c06a0",
+        "name": "Painel de compatibilidade de versões do SEI com módulos do PEN",
+        "pageCount": 1,
+        "textCharCount": 2254,
+        "chunkCount": 2,
+        "avgChars": 1126.5,
+        "medianChars": 1126.5,
+        "p95Chars": 1807.0,
+        "maxChars": 1807
+      },
+      {
+        "documentId": "3d69e9b2-552a-4d0b-b623-3781af7a3b95",
+        "name": "Nota oficial MGI sobre o SEI 5.0",
+        "pageCount": 1,
+        "textCharCount": 2862,
+        "chunkCount": 2,
+        "avgChars": 1430.5,
+        "medianChars": 1430.5,
+        "p95Chars": 2408.0,
+        "maxChars": 2408
+      },
+      {
+        "documentId": "8dbb84a5-3878-4b4b-945b-f28ad104536a",
+        "name": "Nota oficial MGI sobre o SEI 5.0.3",
+        "pageCount": 2,
+        "textCharCount": 4055,
+        "chunkCount": 6,
+        "avgChars": 674.83,
+        "medianChars": 639.5,
+        "p95Chars": 1129.0,
+        "maxChars": 1129
+      }
+    ],
+    "context_1800": [
+      {
+        "documentId": "2ab139c7-5cf8-48ae-9ff8-d3ecc153e0ed",
+        "name": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "pageCount": 71,
+        "textCharCount": 55654,
+        "chunkCount": 121,
+        "avgChars": 458.37,
+        "medianChars": 424.0,
+        "p95Chars": 1217.0,
+        "maxChars": 1726
+      },
+      {
+        "documentId": "65388ff5-2708-4456-91fb-a582f4bc8a2b",
+        "name": "Decreto Rio nº 57.250 de 19 de novembro de 2025",
+        "pageCount": 12,
+        "textCharCount": 31421,
+        "chunkCount": 58,
+        "avgChars": 540.57,
+        "medianChars": 224.5,
+        "p95Chars": 2178.0,
+        "maxChars": 2772
+      },
+      {
+        "documentId": "8ce173dc-2d62-4518-8052-7bdf22d8860d",
+        "name": "Resolucao CVL nº 237 de 19 de novembro de 2025",
+        "pageCount": 3,
+        "textCharCount": 4358,
+        "chunkCount": 75,
+        "avgChars": 57.09,
+        "medianChars": 50.0,
+        "p95Chars": 81.0,
+        "maxChars": 472
+      },
+      {
+        "documentId": "e6028b3a-a27e-46c3-8053-a286169e6384",
+        "name": "Guia de migracao – SEI.Rio",
+        "pageCount": 5,
+        "textCharCount": 11718,
+        "chunkCount": 9,
+        "avgChars": 1300.67,
+        "medianChars": 1119.0,
+        "p95Chars": 2527.0,
+        "maxChars": 2527
+      },
+      {
+        "documentId": "18de3ce3-0cf1-4d0a-b6d7-fe68ffe29d0d",
+        "name": "Guia do usuario externo – SEI.Rio",
+        "pageCount": 4,
+        "textCharCount": 13140,
+        "chunkCount": 4,
+        "avgChars": 3283.5,
+        "medianChars": 3171.0,
+        "p95Chars": 4212.0,
+        "maxChars": 4212
+      },
+      {
+        "documentId": "d9583127-10d7-42fa-bfd2-1767bc79c0de",
+        "name": "Perguntas frequentes do servidor – SEI.Rio",
+        "pageCount": 2,
+        "textCharCount": 4641,
+        "chunkCount": 6,
+        "avgChars": 772.5,
+        "medianChars": 539.0,
+        "p95Chars": 1589.0,
+        "maxChars": 1589
+      },
+      {
+        "documentId": "0bcd641f-4eb7-4b98-9920-e58ad757ca13",
+        "name": "Termo de Uso e Aviso de Privacidade do SEI.Rio",
+        "pageCount": 16,
+        "textCharCount": 32496,
+        "chunkCount": 85,
+        "avgChars": 381.14,
+        "medianChars": 228.0,
+        "p95Chars": 1585.0,
+        "maxChars": 2562
+      },
+      {
+        "documentId": "5ff36401-1f0e-4d1d-8ea1-1eaa927c35b3",
+        "name": "Perguntas frequentes do cidadao – SEI.Rio",
+        "pageCount": 1,
+        "textCharCount": 2696,
+        "chunkCount": 1,
+        "avgChars": 2696.0,
+        "medianChars": 2696.0,
+        "p95Chars": 2696.0,
+        "maxChars": 2696
+      },
+      {
+        "documentId": "62606bcc-2ccb-45bd-b388-eb69a358acc0",
+        "name": "Decreto Rio nº 55.615 de 1º de janeiro de 2025",
+        "pageCount": 2,
+        "textCharCount": 4054,
+        "chunkCount": 4,
+        "avgChars": 1012.5,
+        "medianChars": 754.5,
+        "p95Chars": 2529.0,
+        "maxChars": 2529
+      },
+      {
+        "documentId": "0e2ccf22-c5b5-49c4-9012-5828c2627490",
+        "name": "Manual do Usuário SEI 4.0+",
+        "pageCount": 7,
+        "textCharCount": 16248,
+        "chunkCount": 8,
+        "avgChars": 2029.38,
+        "medianChars": 2374.5,
+        "p95Chars": 3401.0,
+        "maxChars": 3401
+      },
+      {
+        "documentId": "d988f50a-bcf4-433f-bea0-eddf926087c8",
+        "name": "Novidades da versão 4.1 – Wiki SEI-RJ",
+        "pageCount": 4,
+        "textCharCount": 8807,
+        "chunkCount": 13,
+        "avgChars": 676.31,
+        "medianChars": 661.0,
+        "p95Chars": 1181.0,
+        "maxChars": 1645
+      },
+      {
+        "documentId": "5cd86b37-fd21-47e9-8382-049ff15c6368",
+        "name": "Correspondência de Ícones SEI => SEI 4.0",
+        "pageCount": 1,
+        "textCharCount": 1139,
+        "chunkCount": 1,
+        "avgChars": 1139.0,
+        "medianChars": 1139.0,
+        "p95Chars": 1139.0,
+        "maxChars": 1139
+      },
+      {
+        "documentId": "85a46f4e-b36c-413c-8fc2-de0ec6566369",
+        "name": "Documentação de apoio do SEI/PEN",
+        "pageCount": 3,
+        "textCharCount": 1957,
+        "chunkCount": 7,
+        "avgChars": 278.43,
+        "medianChars": 160.0,
+        "p95Chars": 684.0,
+        "maxChars": 684
+      },
+      {
+        "documentId": "35aa4364-4c3a-418c-bcbb-f890a11e28a5",
+        "name": "Nota oficial MGI sobre a versão 4.1.5 do SEI",
+        "pageCount": 2,
+        "textCharCount": 3970,
+        "chunkCount": 6,
+        "avgChars": 660.67,
+        "medianChars": 448.5,
+        "p95Chars": 2376.0,
+        "maxChars": 2376
+      },
+      {
+        "documentId": "0c4e379f-f619-42b3-ace2-6270e52c06a0",
+        "name": "Painel de compatibilidade de versões do SEI com módulos do PEN",
+        "pageCount": 1,
+        "textCharCount": 2254,
+        "chunkCount": 2,
+        "avgChars": 1126.5,
+        "medianChars": 1126.5,
+        "p95Chars": 1807.0,
+        "maxChars": 1807
+      },
+      {
+        "documentId": "3d69e9b2-552a-4d0b-b623-3781af7a3b95",
+        "name": "Nota oficial MGI sobre o SEI 5.0",
+        "pageCount": 1,
+        "textCharCount": 2862,
+        "chunkCount": 2,
+        "avgChars": 1430.5,
+        "medianChars": 1430.5,
+        "p95Chars": 2408.0,
+        "maxChars": 2408
+      },
+      {
+        "documentId": "8dbb84a5-3878-4b4b-945b-f28ad104536a",
+        "name": "Nota oficial MGI sobre o SEI 5.0.3",
+        "pageCount": 2,
+        "textCharCount": 4055,
+        "chunkCount": 6,
+        "avgChars": 674.83,
+        "medianChars": 639.5,
+        "p95Chars": 1129.0,
+        "maxChars": 1129
+      }
+    ]
+  },
+  "recommendation": {
+    "shipRuntimeChange": false,
+    "recommendedProfile": "current",
+    "reason": "O experimento estrutural foi concluído, mas a trilha de dimensionalidade continua bloqueada e o chunking ainda opera por página; sem benchmark de retrieval com embeddings estáveis, a recomendação desta rodada é não alterar o runtime."
+  }
+}
