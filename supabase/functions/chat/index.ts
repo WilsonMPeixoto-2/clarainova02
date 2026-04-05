@@ -4,6 +4,12 @@ import {
   buildQueryEmbeddingText,
   EMBEDDING_CONTRACT_VERSION,
 } from "../_shared/embedding-contract.ts";
+import {
+  buildContextualizedEmbeddingQuery,
+  compactConversationSnippet,
+  type ChatContextSummary,
+  type ChatConversationMessage,
+} from "./conversation-context.ts";
 
 import {
   prepareKnowledgeDecision,
@@ -87,21 +93,8 @@ Regras:
 - Se a pergunta já for técnica e precisa, repita-a com mínimas variações.
 - Máximo 40 palavras.`;
 
-function compactConversationSnippet(messages: Array<{ role: string; content: string }>): string {
-  const recentContext = messages
-    .slice(-4, -1)
-    .map((message) => {
-      const label = message.role === 'assistant' ? 'CLARA' : 'Usuário';
-      const content = message.content.replace(/\s+/g, ' ').trim().slice(0, 280);
-      return `- ${label}: ${content}`;
-    })
-    .filter(Boolean);
-
-  return recentContext.join('\n');
-}
-
 function buildQueryExpansionInput(
-  messages: Array<{ role: string; content: string }>,
+  messages: ChatConversationMessage[],
   userMessage: string,
 ): string {
   const contextSnippet = compactConversationSnippet(messages);
@@ -117,7 +110,7 @@ Pergunta atual: ${userMessage}`;
 
 async function expandQuery(
   ai: GoogleGenAI,
-  messages: Array<{ role: string; content: string }>,
+  messages: ChatConversationMessage[],
   userMessage: string,
 ): Promise<string | null> {
   try {
@@ -166,6 +159,25 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 
 function isChatResponseMode(value: unknown): value is ChatResponseMode {
   return typeof value === 'string' && CHAT_RESPONSE_MODES.includes(value as ChatResponseMode);
+}
+
+function sanitizeContextSummary(value: unknown): ChatContextSummary | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const candidate = value as { title?: unknown; summary?: unknown };
+  if (typeof candidate.title !== 'string' || typeof candidate.summary !== 'string') {
+    return null;
+  }
+
+  const title = candidate.title.replace(/\s+/g, ' ').trim().slice(0, 120);
+  const summary = candidate.summary.replace(/\s+/g, ' ').trim().slice(0, 220);
+  if (!title || !summary) {
+    return null;
+  }
+
+  return { title, summary };
 }
 
 function buildResponseModePrompt(responseMode: ChatResponseMode) {
@@ -663,7 +675,7 @@ interface TelemetryContext {
   topicLabel: string;
   subtopicLabel: string | null;
   systemPromptWithContext: string;
-  chatMessages: Array<{ role: string; content: string }>;
+  chatMessages: ChatConversationMessage[];
   retrievalMode: string;
   retrievalTopScore: number;
   retrievalSources: string[];
@@ -874,7 +886,7 @@ async function streamWithGenAI(
   });
 }
 
-function buildModelContents(messages: Array<{ role: string; content: string }>) {
+function buildModelContents(messages: ChatConversationMessage[]) {
   return messages.map((message) => ({
     role: message.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: message.content }],
@@ -884,7 +896,7 @@ function buildModelContents(messages: Array<{ role: string; content: string }>) 
 async function generateStructuredWithFallback(
   ai: GoogleGenAI,
   systemPrompt: string,
-  messages: Array<{ role: string; content: string }>,
+  messages: ChatConversationMessage[],
   strategy: GenerationStrategy,
 ): Promise<{ response: ClaraStructuredResponse; plainText: string; model: string } | null> {
   const contents = buildModelContents(messages);
@@ -929,7 +941,7 @@ async function generateStructuredWithFallback(
 async function callGeminiWithFallback(
   ai: GoogleGenAI,
   systemPrompt: string,
-  messages: Array<{ role: string; content: string }>,
+  messages: ChatConversationMessage[],
   strategy: GenerationStrategy,
 ): Promise<{ stream: ReadableStream<Uint8Array>; model: string }> {
   const failures: string[] = [];
@@ -990,11 +1002,18 @@ Deno.serve(async (req) => {
           { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
         );
       }
+      if (msg.contextSummary !== undefined && msg.contextSummary !== null && sanitizeContextSummary(msg.contextSummary) === null) {
+        return new Response(
+          JSON.stringify({ error: 'Recebi um contexto de conversa em formato inválido. Tente enviar novamente.' }),
+          { status: 400, headers: { ...buildCorsHeaders(req), 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
-    const chatMessages = messages.map((m: { role: string; content: string }) => ({
+    const chatMessages = messages.map((m: { role: string; content: string; contextSummary?: unknown }) => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: m.content,
+      contextSummary: sanitizeContextSummary(m.contextSummary),
     }));
 
     const requestStartedAt = Date.now();
@@ -1042,7 +1061,7 @@ Deno.serve(async (req) => {
     }
 
     // --- GUARDRAILS ---
-    const lastUserMessage = [...chatMessages].reverse().find((m: { role: string }) => m.role === 'user');
+    const lastUserMessage = [...chatMessages].reverse().find((m) => m.role === 'user');
     const normalizedQuery = lastUserMessage ? normalizeQueryText(lastUserMessage.content) : '';
     const intentLabel = inferIntentLabel(normalizedQuery);
     const { topicLabel, subtopicLabel } = inferTopicLabels(normalizedQuery);
@@ -1110,18 +1129,21 @@ Deno.serve(async (req) => {
     let queryEmbeddingModel = 'keyword_fallback_zero_vector';
     let expandedQueryText: string | null = null;
     let retrievalQuality: RetrievalQualityInfo | null = null;
+    let keywordQueryText = lastUserMessage?.content ?? '';
 
     if (lastUserMessage) {
       try {
         const searchStartedAt = Date.now();
         let queryEmbeddingPayload = KEYWORD_FALLBACK_QUERY_EMBEDDING;
+        const contextualizedQuery = buildContextualizedEmbeddingQuery(chatMessages, lastUserMessage.content);
+        keywordQueryText = contextualizedQuery.queryText || lastUserMessage.content;
 
         try {
           const [embeddingResult, expanded] = await Promise.all([
             withTimeout(
               ai.models.embedContent({
                 model: QUERY_EMBEDDING_MODEL,
-                contents: buildQueryEmbeddingText(lastUserMessage.content),
+                contents: buildQueryEmbeddingText(keywordQueryText),
                 config: {
                   outputDimensionality: EMBEDDING_DIM,
                   taskType: 'RETRIEVAL_QUERY',
@@ -1164,7 +1186,7 @@ Deno.serve(async (req) => {
             }
 
             queryEmbeddingPayload = JSON.stringify(finalEmbedding);
-            queryEmbeddingModel = `${QUERY_EMBEDDING_MODEL}:${EMBEDDING_CONTRACT_VERSION}`;
+            queryEmbeddingModel = `${QUERY_EMBEDDING_MODEL}:${EMBEDDING_CONTRACT_VERSION}${contextualizedQuery.isContextualized ? ':followup_context_v1' : ''}`;
           }
         } catch (embeddingError) {
           console.warn('Query embedding fallback to keyword-only retrieval:', embeddingError);
@@ -1173,7 +1195,7 @@ Deno.serve(async (req) => {
         const { data: chunks, error: matchErr } = await withTimeout(
           supabase.rpc('hybrid_search_chunks', {
             query_embedding: queryEmbeddingPayload,
-            query_text: lastUserMessage.content,
+            query_text: keywordQueryText,
             match_count: 12,
           }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
           SEARCH_TIMEOUT_MS,
@@ -1291,7 +1313,7 @@ Deno.serve(async (req) => {
           query_text: lastUserMessage.content,
           normalized_query: normalizedQuery,
           query_embedding_model: queryEmbeddingModel,
-          keyword_query_text: lastUserMessage.content,
+          keyword_query_text: keywordQueryText,
           search_mode: 'hybrid',
           merged_hits_count: searchResultCount,
           top_score: retrievalTopScore || null,

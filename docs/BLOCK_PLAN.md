@@ -11,14 +11,19 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 
 ## Linha mestra atual
 - Fonte oficial integrada: `origin/main @ 6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Frente imediata mais importante: executar a trilha prioritária `R0-R6` dentro do BLOCO 5 antes de retomar os subblocos canônicos `5B-5F`, agora já com `R0-R2` publicados e a regressão pós-publicação corrigida
+- Frente imediata mais importante: executar a trilha prioritária refinada `R3A-R6B` dentro do BLOCO 5 antes de retomar os subblocos canônicos `5B-5F`, agora já com `R0-R2` publicados, a regressão pós-publicação corrigida e o `R3A` implementado localmente
 - Ordem de execução atualmente aceita:
   1. executar `R0` com benchmark canônico congelado, baseline reproduzível e gate local do RAG em `Direto` e `Didático`
   2. executar `R1` com ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e expansão de query com contexto curto
   3. executar `R2` com correção do contrato de `gemini-embedding-2-preview`, usando instruções textuais assimétricas por tarefa e prefixo de domínio institucional
-  4. executar `R3` com batch embedding nativo e re-embed controlado do corpus
-  5. executar `R4` e `R5` como experimentos controlados de chunking e dimensionalidade
-  6. só então retomar `5B`, `5C`, `5D`, `5E` e `5F` com a régua fixa já estabilizada
+  4. executar `R3A` com resiliência conversacional para follow-ups anafóricos, contextualizando retrieval com a última resposta estruturada da CLARA
+  5. executar `R3B` com observabilidade por estágio e budget real de timeout
+  6. executar `R3C` com telemetria do tamanho do prompt e do histórico enviado
+  7. executar `R4A` com feedback explícito do usuário vinculado ao `request_id`
+  8. executar `R4B` com dashboard admin de gaps de conteúdo e perguntas sem cobertura
+  9. executar `R5A`, `R5B` e `R5C` com batch embedding nativo, cache de embeddings e validação de frescor do corpus
+  10. executar `R6A` e `R6B` como experimentos benchmarkados de chunking, dimensionalidade e eventual context caching explícito
+  11. só então retomar `5B`, `5C`, `5D`, `5E` e `5F` com a régua fixa já estabilizada
 
 ## Blocos oficiais
 
@@ -66,7 +71,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Estado: `in_progress`
 - Objetivo: transformar a CLARA de funcional e grounded em previsivelmente excelente na recuperação, geração e explicação da própria confiança
-- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0-R2` foram publicados, a regressão pós-publicação de `Q8`/`Q10` foi corrigida e o benchmark canônico remoto voltou a green
+- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0-R2` foram publicados, a regressão pós-publicação de `Q8`/`Q10` foi corrigida, o benchmark canônico remoto voltou a green e o `R3A` foi implementado localmente para follow-ups contextualizados
 - Subfrentes canônicas:
   - `5A` benchmark e gate de regressão
   - `5B` retrieval governado por metadados reais
@@ -78,11 +83,18 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
   - `R0` baseline canônico e gate local do benchmark
   - `R1` ajustes imediatos de geração
   - `R2` contrato de embeddings alinhado ao Embeddings 2
-  - `R3` batch embedding e re-embed controlado
-  - `R4` experimento de chunking
-  - `R5` experimento de dimensionalidade
-  - `R6` retorno aos subblocos `5B-5F`
-- Próxima ação: abrir `R3` com batch embedding nativo e preparação de re-embed controlado do corpus sob o contrato textual implementado em `R2`, mantendo em backlog próximo as melhorias triadas de follow-up contextualizado, feedback do usuário, gap dashboard, telemetria por estágio, budget de timeout e frescor do corpus
+  - `R3A` follow-up contextualizado no retrieval
+  - `R3B` observabilidade por estágio e budget de timeout
+  - `R3C` telemetria de tamanho de prompt
+  - `R4A` feedback explícito do usuário
+  - `R4B` dashboard admin de gaps
+  - `R5A` batch embedding e re-embed controlado
+  - `R5B` cache de embeddings
+  - `R5C` validação de frescor do corpus
+  - `R6A` experimento de chunking e dimensionalidade
+  - `R6B` avaliação de context caching explícito
+  - `R7` retorno aos subblocos `5B-5F` e roadmap alto esforço depois disso
+- Próxima ação: publicar o `R3A` em produção, rodar benchmark remoto e, sem regressão, abrir o `R3B` com observabilidade por estágio e budget de timeout
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
 - Estado: `planned`

@@ -125,6 +125,49 @@ describe("chat api transport", () => {
     ]);
   });
 
+  it("sends the previous assistant summary to help contextual follow-ups", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          answer: "Resposta curta.",
+        }),
+        {
+          headers: { "content-type": "application/json" },
+          status: 200,
+        },
+      ),
+    );
+
+    vi.stubGlobal("fetch", fetchMock);
+    const previousResponse = buildMockStructuredResponse("Como montar bloco de assinatura?");
+
+    await requestChat(
+      [
+        {
+          role: "assistant",
+          content: "Resposta anterior renderizada.",
+          structuredResponse: previousResponse,
+        },
+        { role: "user", content: "E se for para outra unidade?" },
+      ],
+      baseConfig,
+    );
+
+    const requestBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(requestBody.messages[0]).toMatchObject({
+      role: "assistant",
+      content: "Resposta anterior renderizada.",
+      contextSummary: {
+        title: previousResponse.tituloCurto,
+        summary: previousResponse.resumoInicial,
+      },
+    });
+    expect(requestBody.messages[1]).toEqual({
+      role: "user",
+      content: "E se for para outra unidade?",
+    });
+  });
+
   it("returns the preview responder when backend is absent and mock mode is disabled", async () => {
     const result = await requestChat(
       [{ role: "user", content: "Como incluir anexo?" }],

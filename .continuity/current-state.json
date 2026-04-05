@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada e fase R3 pronta para abrir com batch embedding e re-embed controlado",
+  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada e R3A implementado localmente para follow-ups contextualizados antes da trilha de observabilidade",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T07:27:55.1598140Z",
+  "last_update_utc": "2026-04-05T08:07:12.7995418Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -27,19 +27,24 @@
     "A regressao pós-publicacao que afetava `Q8` e `Q10` foi corrigida com cobertura obrigatoria de evidencias em `knowledge.ts`, taxonomia oficial para `sei_rio_termo` e normalizacao remota do metadata do Termo de Uso.",
     "O Supabase oficial recebeu as migrations `20260404134500_add_targeted_chunk_retrieval.sql` e `20260405114000_normalize_term_document_metadata.sql`, e a Edge Function `chat` foi republicada para a versao `24`.",
     "A producao web foi republicada manualmente na Vercel pelo deployment `dpl_9AhU94T5UGSjjzKhF7ZtHUTLTy6o`, mantendo o alias `https://clarainova02.vercel.app` no ar.",
-    "O benchmark canonico remoto voltou a ficar green apos a correcao: `Didatico` com `16/16 expectedAllMet` e `Direto` com `16/16 expectedAllMet`."
+    "O benchmark canonico remoto voltou a ficar green apos a correcao: `Didatico` com `16/16 expectedAllMet` e `Direto` com `16/16 expectedAllMet`.",
+    "O R3A foi implementado localmente com contexto estruturado minimo no transporte do chat, heuristica de follow-up anaforico no retrieval e testes dedicados para garantir que perguntas novas e explicitas nao herdem contexto indevido."
   ],
   "pending_items": [
-    "Executar R3 com batch embedding nativo e re-embed controlado do corpus atual.",
-    "Executar R4 e R5 com benchmark controlado de chunking e dimensionalidade antes de retomar `5B-5F`.",
+    "Publicar o R3A em producao, rodar benchmark remoto e atualizar a continuidade com o resultado da rodada.",
+    "Executar R3B com observabilidade por estagio e budget real de timeout.",
+    "Executar R3C com telemetria de tamanho do prompt e historico enviado.",
+    "Executar R4A e R4B com feedback explicito do usuario e dashboard admin de gaps.",
+    "Executar R5A-R5C com batch embedding nativo, cache de embeddings e validacao de frescor do corpus.",
+    "Executar R6A e R6B com benchmark controlado de chunking/dimensionalidade e avaliacao de context caching explicito antes de retomar `5B-5F`.",
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",
-    "Transformar em backlog operacional as melhorias complementares triadas do usuario: follow-up contextualizado, feedback real do usuario, dashboard de gaps, telemetria por estagio, budget de timeout e validacao de frescor do corpus."
+    "Manter multimodalidade em PDFs e Google Search grounding como roadmap posterior, sem competir com a trilha imediata."
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
   ],
-  "next_action": "Abrir o R3 com batch embedding nativo e preparar o re-embed controlado do corpus, mantendo em backlog imediato as melhorias complementares triadas do usuario para follow-ups, feedback, gaps e observabilidade.",
+  "next_action": "Publicar o R3A em producao, verificar o benchmark remoto e, sem regressao, abrir o R3B com observabilidade por estagio e budget de timeout.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
@@ -47,10 +52,11 @@
     "O baseline do benchmark canônico ficou perfeito em `Didatico` e teve uma única oscilação de referência explícita em `Direto` (`Q10`), mas ainda dentro do gate mínimo adotado para o lote.",
     "No R2, `taskType` e `title` foram preservados como pistas de API, mas o contrato semântico passou a usar framing textual explícito e metadado versionado para reduzir dependência de prefixos artificiais no conteúdo vetorial.",
     "A producao ficou temporariamente à frente de `origin/main` porque os deploys de 2026-04-05 partiram manualmente da branch de sessao; essa divergencia está documentada e precisa ser preservada na proxima reconciliacao com `main`.",
-    "A nova leva de melhorias proposta pelo usuario foi triada: `thinkingLevel`, temperatura dinamica, `maxOutputTokens`, query expansion contextual, routing de modelos, framing textual de embeddings e `HNSW` ja estao resolvidos ou presentes; o backlog real agora e follow-up contextualizado, feedback do usuario, gap dashboard, telemetria por estagio, budget de timeout e frescor do corpus.",
+    "A nova leva de melhorias proposta pelo usuario foi triada: `thinkingLevel`, temperatura dinamica, `maxOutputTokens`, query expansion contextual, routing de modelos, framing textual de embeddings e `HNSW` ja estao resolvidos ou presentes; a trilha imediata agora segue `R3A`, `R3B`, `R3C`, `R4A`, `R4B`, `R5A`, `R5B`, `R5C`, `R6A` e `R6B`.",
+    "O R3A foi implementado sem tocar no layout do chat: a mudanca ficou concentrada em `chat-api`, helper puro de contexto, parser do backend e ajustes de retrieval para follow-ups curtos.",
     "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-05-rag-regression-fix-production-deploy-and-benchmark.md",
+  "last_report": "docs/operational-reports/2026-04-05-r3a-follow-up-contextualization-implementation.md",
   "last_session_head_sha": "c65e07c"
 }

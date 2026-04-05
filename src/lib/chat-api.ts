@@ -20,6 +20,12 @@ import {
 export interface ChatTransportMessage {
   role: 'user' | 'assistant';
   content: string;
+  structuredResponse?: Pick<ClaraStructuredResponse, 'tituloCurto' | 'resumoInicial'> | null;
+}
+
+interface ChatContextSummary {
+  title: string;
+  summary: string;
 }
 
 export interface ChatRequestOptions {
@@ -52,6 +58,20 @@ export interface ChatApiConfig {
 
 function sanitizeEnvValue(value: string | undefined) {
   return value?.replace(/\\n/g, '').trim() ?? '';
+}
+
+function buildTransportContextSummary(message: ChatTransportMessage): ChatContextSummary | null {
+  if (message.role !== 'assistant' || !message.structuredResponse) {
+    return null;
+  }
+
+  const title = message.structuredResponse.tituloCurto.replace(/\s+/g, ' ').trim();
+  const summary = message.structuredResponse.resumoInicial.replace(/\s+/g, ' ').trim();
+  if (!title || !summary) {
+    return null;
+  }
+
+  return { title, summary };
 }
 
 export function getDefaultChatApiConfig(): ChatApiConfig {
@@ -151,7 +171,14 @@ export async function requestChat(
         'apikey': config.supabasePublishableKey ?? '',
       },
       body: JSON.stringify({
-        messages: messages.map((message) => ({ role: message.role, content: message.content })),
+        messages: messages.map((message) => {
+          const contextSummary = buildTransportContextSummary(message);
+          return {
+            role: message.role,
+            content: message.content,
+            ...(contextSummary ? { contextSummary } : {}),
+          };
+        }),
         responseMode,
       }),
     });
