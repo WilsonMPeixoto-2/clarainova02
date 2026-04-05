@@ -2,7 +2,7 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-05
-- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 43ad740133f7e6fa96798dcf58f32bf0921a5659`
+- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ b2cb1b05c5b673936f61c36cde3c9e4ff1ba7388`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
@@ -11,7 +11,7 @@
 - `origin/main` atualmente alinhada ao commit local preparado para publicação: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 - Trabalho local em andamento fora de `main`:
   - branch ativa de sessão: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
-  - a branch de sessão foi publicada em `origin` até o commit `43ad740133f7e6fa96798dcf58f32bf0921a5659`
+  - a branch de sessão foi publicada em `origin` até o commit `b2cb1b05c5b673936f61c36cde3c9e4ff1ba7388`
   - a linha principal continua íntegra em `main`, mas a produção foi manualmente atualizada a partir da branch de sessão
 - Observação de análise remota:
   - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral

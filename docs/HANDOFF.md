@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T18:32:00.0000000Z
+- Data/hora: 2026-04-05T18:38:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `43ad740133f7e6fa96798dcf58f32bf0921a5659`
+- Head da sessão: `b2cb1b05c5b673936f61c36cde3c9e4ff1ba7388`
 - Último relatório: `docs/operational-reports/2026-04-05-5b-metadata-governed-retrieval-publish-and-benchmark.md`
 
 ## Estado atual resumido
