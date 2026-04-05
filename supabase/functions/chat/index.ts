@@ -11,6 +11,15 @@ import {
   type ChatConversationMessage,
 } from "./conversation-context.ts";
 import {
+  buildQueryEmbeddingCacheExpiryIso,
+  buildQueryEmbeddingCacheKey,
+  formatQueryEmbeddingModelLabel,
+  isQueryEmbeddingCacheExpired,
+  normalizeQueryEmbeddingCacheText,
+  parseCachedEmbedding,
+  type QueryEmbeddingCacheStatus,
+} from "./embedding-cache.ts";
+import {
   addStageTiming,
   createChatStageTimings,
   createTimeBudgetTracker,
@@ -182,6 +191,109 @@ function averageEmbeddings(a: number[], b: number[]): number[] {
   const norm = Math.sqrt(avg.reduce((sum, v) => sum + v * v, 0));
   if (!Number.isFinite(norm) || norm === 0) return avg;
   return avg.map((v) => v / norm);
+}
+
+async function fetchOrCreateQueryEmbedding(
+  supabase: ReturnType<typeof createClient>,
+  ai: GoogleGenAI,
+  queryText: string,
+): Promise<{
+  embedding: number[];
+  cacheStatus: QueryEmbeddingCacheStatus;
+}> {
+  const cacheKey = await buildQueryEmbeddingCacheKey({
+    text: queryText,
+    model: QUERY_EMBEDDING_MODEL,
+    contractVersion: EMBEDDING_CONTRACT_VERSION,
+    dimension: EMBEDDING_DIM,
+  });
+
+  try {
+    const { data: cachedRow, error: cacheLookupError } = await supabase
+      .from('embedding_cache')
+      .select('embedding, hits, expires_at')
+      .eq('query_hash', cacheKey.queryHash)
+      .maybeSingle<{ embedding: string | number[]; hits: number | null; expires_at: string | null }>();
+
+    if (cacheLookupError) {
+      console.warn('Query embedding cache lookup failed (non-fatal):', cacheLookupError.message);
+    } else if (cachedRow && !isQueryEmbeddingCacheExpired(cachedRow.expires_at)) {
+      const cachedEmbedding = parseCachedEmbedding(cachedRow.embedding, EMBEDDING_DIM);
+      if (cachedEmbedding) {
+        const { error: cacheHitUpdateError } = await supabase
+          .from('embedding_cache')
+          .update({
+            hits: (cachedRow.hits ?? 0) + 1,
+            last_hit_at: new Date().toISOString(),
+          })
+          .eq('query_hash', cacheKey.queryHash);
+
+        if (cacheHitUpdateError) {
+          console.warn('Query embedding cache hit update failed (non-fatal):', cacheHitUpdateError.message);
+        }
+
+        return {
+          embedding: normalizeL2(cachedEmbedding),
+          cacheStatus: 'hit',
+        };
+      }
+    }
+  } catch (cacheLookupError) {
+    console.warn('Query embedding cache unavailable (non-fatal):', cacheLookupError);
+  }
+
+  const embeddingResult = await withTimeout(
+    ai.models.embedContent({
+      model: QUERY_EMBEDDING_MODEL,
+      contents: buildQueryEmbeddingText(queryText),
+      config: {
+        outputDimensionality: EMBEDDING_DIM,
+        taskType: 'RETRIEVAL_QUERY',
+      },
+    }),
+    EMBEDDING_TIMEOUT_MS,
+    'embedding',
+  );
+
+  const rawEmbedding = embeddingResult.embeddings?.[0]?.values;
+  if (!rawEmbedding || rawEmbedding.length < EMBEDDING_DIM) {
+    throw new Error(`Embedding dimension mismatch: expected at least ${EMBEDDING_DIM}, got ${rawEmbedding?.length ?? 0}`);
+  }
+
+  const normalizedEmbedding = normalizeL2(rawEmbedding.slice(0, EMBEDDING_DIM));
+  let cacheStatus: QueryEmbeddingCacheStatus = 'miss';
+
+  try {
+    const { error: cacheStoreError } = await supabase
+      .from('embedding_cache')
+      .upsert(
+        {
+          query_hash: cacheKey.queryHash,
+          query_text: queryText,
+          normalized_query: cacheKey.normalizedQuery,
+          embedding: JSON.stringify(normalizedEmbedding),
+          embedding_model: QUERY_EMBEDDING_MODEL,
+          contract_version: EMBEDDING_CONTRACT_VERSION,
+          hits: 1,
+          last_hit_at: new Date().toISOString(),
+          expires_at: buildQueryEmbeddingCacheExpiryIso(),
+        },
+        { onConflict: 'query_hash' },
+      );
+
+    if (cacheStoreError) {
+      cacheStatus = 'store_failed';
+      console.warn('Query embedding cache store failed (non-fatal):', cacheStoreError.message);
+    }
+  } catch (cacheStoreError) {
+    cacheStatus = 'store_failed';
+    console.warn('Query embedding cache store failed (non-fatal):', cacheStoreError);
+  }
+
+  return {
+    embedding: normalizedEmbedding,
+    cacheStatus,
+  };
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -837,6 +949,8 @@ interface TelemetryContext {
   promptTelemetry: ChatPromptTelemetry;
   queryEmbeddingModel: string;
   searchMode: string;
+  queryEmbeddingCacheStatus: QueryEmbeddingCacheStatus | null;
+  expandedQueryEmbeddingCacheStatus: QueryEmbeddingCacheStatus | null;
   budgetTotalMs: number;
   budgetElapsedMs: number;
   budgetRemainingMs: number;
@@ -908,6 +1022,8 @@ async function recordTelemetry(
           response_mode: ctx.responseMode,
           query_embedding_model: ctx.queryEmbeddingModel,
           search_mode: ctx.searchMode,
+          query_embedding_cache_status: ctx.queryEmbeddingCacheStatus,
+          expanded_query_embedding_cache_status: ctx.expandedQueryEmbeddingCacheStatus,
           rag_quality_score: ctx.ragQualityScore,
           expanded_query: ctx.expandedQuery,
           source_target: ctx.sourceTargetLabel,
@@ -962,6 +1078,9 @@ async function recordTelemetry(
         request_id: ctx.requestId,
         retrieval_mode: ctx.retrievalMode,
         sources: ctx.retrievalSources,
+        query_embedding_model: ctx.queryEmbeddingModel,
+        query_embedding_cache_status: ctx.queryEmbeddingCacheStatus,
+        expanded_query_embedding_cache_status: ctx.expandedQueryEmbeddingCacheStatus,
       },
     });
   }
@@ -1325,6 +1444,8 @@ Deno.serve(async (req) => {
     let queryEmbeddingModel = KEYWORD_ONLY_QUERY_EMBEDDING_MODEL;
     let searchMode = 'keyword_only';
     let expandedQueryText: string | null = null;
+    let queryEmbeddingCacheStatus: QueryEmbeddingCacheStatus | null = null;
+    let expandedQueryEmbeddingCacheStatus: QueryEmbeddingCacheStatus | null = null;
     let retrievalQuality: RetrievalQualityInfo | null = null;
     let keywordQueryText = lastUserMessage?.content ?? '';
 
@@ -1338,17 +1459,10 @@ Deno.serve(async (req) => {
           const embeddingStartedAt = Date.now();
           const expansionStartedAt = Date.now();
           const [embeddingResult, expanded] = await Promise.all([
-            withTimeout(
-              ai.models.embedContent({
-                model: QUERY_EMBEDDING_MODEL,
-                contents: buildQueryEmbeddingText(keywordQueryText),
-                config: {
-                  outputDimensionality: EMBEDDING_DIM,
-                  taskType: 'RETRIEVAL_QUERY',
-                },
-              }),
-              EMBEDDING_TIMEOUT_MS,
-              'embedding',
+            fetchOrCreateQueryEmbedding(
+              supabase,
+              ai,
+              keywordQueryText,
             ).finally(() => {
               addStageTiming(stageTimings, 'embeddingMs', Date.now() - embeddingStartedAt);
             }),
@@ -1358,40 +1472,46 @@ Deno.serve(async (req) => {
           ]);
 
           expandedQueryText = expanded;
+          queryEmbeddingCacheStatus = embeddingResult.cacheStatus;
 
-          const originalEmbedding = embeddingResult.embeddings?.[0]?.values;
-          if (originalEmbedding && originalEmbedding.length === EMBEDDING_DIM) {
-            let finalEmbedding = normalizeL2(originalEmbedding);
+          if (embeddingResult.embedding && embeddingResult.embedding.length === EMBEDDING_DIM) {
+            let finalEmbedding = embeddingResult.embedding;
 
             if (expandedQueryText) {
-              const expandedEmbeddingStartedAt = Date.now();
-              try {
-                const expandedEmbeddingResult = await withTimeout(
-                  ai.models.embedContent({
-                    model: QUERY_EMBEDDING_MODEL,
-                    contents: buildQueryEmbeddingText(expandedQueryText),
-                    config: {
-                      outputDimensionality: EMBEDDING_DIM,
-                      taskType: 'RETRIEVAL_QUERY',
-                    },
-                  }),
-                  EMBEDDING_TIMEOUT_MS,
-                  'expanded_embedding',
-                );
+              if (
+                normalizeQueryEmbeddingCacheText(expandedQueryText) ===
+                normalizeQueryEmbeddingCacheText(keywordQueryText)
+              ) {
+                expandedQueryEmbeddingCacheStatus = queryEmbeddingCacheStatus;
+              } else {
+                const expandedEmbeddingStartedAt = Date.now();
+                try {
+                  const expandedEmbeddingResult = await fetchOrCreateQueryEmbedding(
+                    supabase,
+                    ai,
+                    expandedQueryText,
+                  );
 
-                const expandedEmbedding = expandedEmbeddingResult.embeddings?.[0]?.values;
-                if (expandedEmbedding && expandedEmbedding.length === EMBEDDING_DIM) {
-                  finalEmbedding = averageEmbeddings(finalEmbedding, normalizeL2(expandedEmbedding));
+                  expandedQueryEmbeddingCacheStatus = expandedEmbeddingResult.cacheStatus;
+                  if (expandedEmbeddingResult.embedding.length === EMBEDDING_DIM) {
+                    finalEmbedding = averageEmbeddings(finalEmbedding, expandedEmbeddingResult.embedding);
+                  }
+                } catch {
+                  console.warn('Expanded query embedding failed, using original only');
+                } finally {
+                  addStageTiming(stageTimings, 'embeddingMs', Date.now() - expandedEmbeddingStartedAt);
                 }
-              } catch {
-                console.warn('Expanded query embedding failed, using original only');
-              } finally {
-                addStageTiming(stageTimings, 'embeddingMs', Date.now() - expandedEmbeddingStartedAt);
               }
             }
 
             queryEmbeddingPayload = JSON.stringify(finalEmbedding);
-            queryEmbeddingModel = `${QUERY_EMBEDDING_MODEL}:${EMBEDDING_CONTRACT_VERSION}${contextualizedQuery.isContextualized ? ':followup_context_v1' : ''}`;
+            queryEmbeddingModel = formatQueryEmbeddingModelLabel({
+              model: QUERY_EMBEDDING_MODEL,
+              contractVersion: EMBEDDING_CONTRACT_VERSION,
+              isContextualized: contextualizedQuery.isContextualized,
+              originalCacheStatus: queryEmbeddingCacheStatus,
+              expandedCacheStatus: expandedQueryEmbeddingCacheStatus,
+            });
             searchMode = 'hybrid';
           }
         } catch (embeddingError) {
@@ -1706,6 +1826,8 @@ REESCRITA OBRIGATORIA:
         promptTelemetry,
         queryEmbeddingModel,
         searchMode,
+        queryEmbeddingCacheStatus,
+        expandedQueryEmbeddingCacheStatus,
         budgetTotalMs: REQUEST_TIME_BUDGET_MS,
         budgetElapsedMs: timeBudgetTracker.elapsedMs(),
         budgetRemainingMs: timeBudgetTracker.remainingMs(),
@@ -1780,6 +1902,8 @@ REESCRITA OBRIGATORIA:
           promptTelemetry,
           queryEmbeddingModel,
           searchMode,
+          queryEmbeddingCacheStatus,
+          expandedQueryEmbeddingCacheStatus,
           budgetTotalMs: REQUEST_TIME_BUDGET_MS,
           budgetElapsedMs: timeBudgetTracker.elapsedMs(),
           budgetRemainingMs: timeBudgetTracker.remainingMs(),
@@ -1895,6 +2019,8 @@ REESCRITA OBRIGATORIA:
         promptTelemetry,
         queryEmbeddingModel,
         searchMode,
+        queryEmbeddingCacheStatus,
+        expandedQueryEmbeddingCacheStatus,
         budgetTotalMs: REQUEST_TIME_BUDGET_MS,
         budgetElapsedMs: timeBudgetTracker.elapsedMs(),
         budgetRemainingMs: timeBudgetTracker.remainingMs(),
