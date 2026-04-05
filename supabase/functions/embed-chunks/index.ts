@@ -298,12 +298,26 @@ async function generateEmbeddingBatchWithRetry(
       };
 
       const valuesList = result.embeddings?.map((embedding) => embedding.values ?? null) ?? [];
+      const diagnosticBase = {
+        response_keys: Object.keys(result),
+        embeddings_count: valuesList.length,
+        first_embedding_keys: result.embeddings?.[0] ? Object.keys(result.embeddings[0]) : [],
+        first_value_length: Array.isArray(result.embeddings?.[0]?.values) ? result.embeddings?.[0]?.values.length : null,
+      };
+
       if (valuesList.length !== chunks.length) {
         console.warn(`Embedding batch size mismatch: expected ${chunks.length}, got ${valuesList.length}`);
-        return new Array(chunks.length).fill(null);
+        return {
+          embeddings: new Array(chunks.length).fill(null),
+          diagnostic: {
+            ...diagnosticBase,
+            reason: "batch_size_mismatch",
+          },
+        };
       }
 
-      return valuesList.map((values, index) => {
+      return {
+        embeddings: valuesList.map((values, index) => {
         if (!values || values.length < EMBEDDING_DIM) {
           console.warn(
             `Embedding dimension mismatch at batch index ${index}: expected at least ${EMBEDDING_DIM}, got ${values?.length ?? 0}`,
@@ -318,13 +332,20 @@ async function generateEmbeddingBatchWithRetry(
         }
 
         return normalizeL2(values.slice(0, EMBEDDING_DIM));
-      });
+      }),
+        diagnostic: diagnosticBase,
+      };
     } catch (err: unknown) {
       const msg = getErrorMessage(err);
       console.error("Embedding error:", msg);
 
       if (msg === "EMBED_TIMEOUT") {
-        return new Array(chunks.length).fill(null);
+        return {
+          embeddings: new Array(chunks.length).fill(null),
+          diagnostic: {
+            reason: "timeout",
+          },
+        };
       }
 
       const status = getErrorStatus(err);
@@ -335,11 +356,23 @@ async function generateEmbeddingBatchWithRetry(
         continue;
       }
 
-      return new Array(chunks.length).fill(null);
+      return {
+        embeddings: new Array(chunks.length).fill(null),
+        diagnostic: {
+          reason: "request_error",
+          status,
+          message: msg,
+        },
+      };
     }
   }
 
-  return new Array(chunks.length).fill(null);
+  return {
+    embeddings: new Array(chunks.length).fill(null),
+    diagnostic: {
+      reason: "retry_exhausted",
+    },
+  };
 }
 
 async function generateEmbeddingsWithNativeBatching(
@@ -349,17 +382,24 @@ async function generateEmbeddingsWithNativeBatching(
 ) {
   const embeddings: Array<number[] | null> = [];
   let apiCalls = 0;
+  const diagnostics: Record<string, unknown>[] = [];
 
   for (let index = 0; index < chunks.length; index += EMBED_API_BATCH_SIZE) {
     const batch = chunks.slice(index, index + EMBED_API_BATCH_SIZE);
-    const results = await generateEmbeddingBatchWithRetry(geminiKey, batch, title);
-    embeddings.push(...results);
+    const result = await generateEmbeddingBatchWithRetry(geminiKey, batch, title);
+    embeddings.push(...result.embeddings);
+    diagnostics.push({
+      batch_start_index: index,
+      batch_size: batch.length,
+      ...(result.diagnostic ?? {}),
+    });
     apiCalls += 1;
   }
 
   return {
     embeddings,
     apiCalls,
+    diagnostics,
   };
 }
 
@@ -468,7 +508,7 @@ Deno.serve(async (req) => {
     });
 
     const embeddingStart = Date.now();
-    const { embeddings, apiCalls } = await generateEmbeddingsWithNativeBatching(geminiKey, validChunks, normalizedTitle);
+    const { embeddings, apiCalls, diagnostics } = await generateEmbeddingsWithNativeBatching(geminiKey, validChunks, normalizedTitle);
     const embedding_ms = Date.now() - embeddingStart;
 
     // Build rows using ONLY columns that exist in document_chunks
@@ -538,6 +578,7 @@ Deno.serve(async (req) => {
         db_ms,
         embed_api_batch_size: EMBED_API_BATCH_SIZE,
         embed_api_calls: apiCalls,
+        embedding_diagnostics: embeddings.some((embedding) => embedding === null) ? diagnostics : undefined,
       },
     });
 
