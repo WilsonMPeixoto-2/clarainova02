@@ -640,26 +640,76 @@ function extractChecklistItems(chunks: HybridSearchChunk[]): string[] {
   return Array.from(items).slice(0, 8);
 }
 
+function extractKeyStatements(chunks: HybridSearchChunk[]): string[] {
+  const statements = new Set<string>();
+
+  for (const chunk of chunks) {
+    const normalized = chunk.content
+      .replace(/\s+/g, ' ')
+      .replace(/^\[Fonte:[^\]]+\]\s*/i, '')
+      .trim();
+    if (!normalized) continue;
+
+    const sentences = normalized
+      .split(/(?<=[.!?])\s+/)
+      .map((sentence) => sentence.trim())
+      .filter((sentence) => sentence.length >= 40);
+
+    for (const sentence of sentences.slice(0, 2)) {
+      statements.add(sentence);
+      if (statements.size >= 6) break;
+    }
+
+    if (statements.size >= 6) break;
+  }
+
+  return Array.from(statements);
+}
+
 function buildGroundedFallbackResponse(
+  question: string,
   chunks: HybridSearchChunk[],
   groundedReferences: ClaraStructuredResponse["referenciasFinais"],
   responseMode: ChatResponseMode,
+  retrievalQuality: RetrievalQualityInfo | null,
+  sourceTarget: SourceTargetRoute | null,
 ): ClaraStructuredResponse {
   const primaryDocument = chunks[0]?.document_name?.trim() || "documento recuperado";
   const checklistItems = extractChecklistItems(chunks);
+  const keyStatements = extractKeyStatements(chunks);
   const citations = groundedReferences.map((reference) => reference.id);
+  const confidenceTier = retrievalQuality?.confidenceTier ?? 'moderada';
+  const finalConfidence = confidenceTier === 'alta'
+    ? 0.98
+    : confidenceTier === 'boa'
+      ? 0.96
+      : confidenceTier === 'moderada'
+        ? 0.91
+        : 0.82;
+  const answerScopeMatch = sourceTarget || groundedReferences.length >= 2 || keyStatements.length >= 2
+    ? 'exact'
+    : confidenceTier === 'fraca'
+      ? 'probable'
+      : 'exact';
+  const fallbackItems = (checklistItems.length > 0 ? checklistItems : keyStatements).slice(
+    0,
+    responseMode === 'direto' ? 4 : 5,
+  );
+  const supportingNotice = sourceTarget
+    ? `Mantive a resposta priorizando a fonte solicitada: ${sourceTarget.label.replace(/_/g, ' ')}.`
+    : `Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: "${question}".`;
 
-  const fallbackStep = checklistItems.length > 0
+  const fallbackStep = fallbackItems.length > 0
     ? {
         numero: 1,
-        titulo: responseMode === 'direto' ? "Itens para conferir" : "Leitura orientada do trecho recuperado",
+        titulo: responseMode === 'direto' ? "Síntese documental" : "Orientação guiada a partir das referências",
         conteudo: responseMode === 'direto'
-          ? `No ${primaryDocument}, estes itens aparecem como base de conferência para o encaminhamento da prestação de contas do PDDE.`
-          : `No ${primaryDocument}, identifiquei um trecho que organiza a rotina em pontos verificáveis. Use os itens abaixo como guia de leitura antes de concluir a ação no processo.`,
-        itens: responseMode === 'direto' ? checklistItems : checklistItems.slice(0, 6),
+          ? `Encontrei respaldo documental em ${primaryDocument}. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.`
+          : `Encontrei respaldo documental em ${primaryDocument}. Organizei abaixo os pontos mais úteis dos trechos recuperados para responder à sua pergunta com base estrita nas fontes.`,
+        itens: fallbackItems,
         destaques: [],
         alerta: responseMode === 'didatico'
-          ? 'Se algum item nao aparecer na sua tela, confira se o procedimento pertence a outra etapa do fluxo ou a outra unidade responsável.'
+          ? 'Se algum passo variar na sua unidade, use as referências finais para conferir a redação exata do documento recuperado.'
           : null,
         citacoes: citations,
       }
@@ -675,30 +725,32 @@ function buildGroundedFallbackResponse(
 
   return {
     tituloCurto: responseMode === 'direto'
-      ? 'Checklist documental localizado'
-      : 'Guia documental localizado',
+      ? 'Síntese documental localizada'
+      : 'Resposta documental guiada',
     resumoInicial: responseMode === 'direto'
-      ? `Encontrei respaldo documental em ${primaryDocument} e mantive a resposta focada na rota principal.`
-      : `Encontrei respaldo documental em ${primaryDocument} e organizei a leitura de forma guiada para reduzir erro operacional.`,
+      ? `Encontrei respaldo documental em ${primaryDocument} e mantive a resposta focada no que os trechos recuperados sustentam diretamente.`
+      : `Encontrei respaldo documental em ${primaryDocument} e organizei a resposta como uma leitura guiada dos pontos recuperados nas referências.`,
     resumoCitacoes: citations,
-    modoResposta: checklistItems.length > 0
+    modoResposta: fallbackItems.length > 0
       ? (responseMode === 'direto' ? 'checklist' : 'passo_a_passo')
       : 'explicacao',
     etapas: [fallbackStep],
     observacoesFinais: [
       responseMode === 'direto'
-        ? 'Se houver exigência complementar da sua unidade, confira também a normativa vigente aplicável ao exercício.'
-        : 'Se houver exigência complementar da sua unidade, confirme também a normativa vigente aplicável ao exercício e a etapa do processo em que você está atuando.',
+        ? supportingNotice
+        : `${supportingNotice} Se houver necessidade de validação adicional, confira a redação completa nas referências finais.`,
     ],
     termosDestacados: [
-      { texto: 'prestação de contas do PDDE', tipo: 'conceito' },
       { texto: primaryDocument, tipo: 'norma' },
+      ...(groundedReferences[1]
+        ? [{ texto: groundedReferences[1].titulo, tipo: 'norma' as const }]
+        : []),
     ],
     referenciasFinais: groundedReferences,
     analiseDaResposta: {
-      questionUnderstandingConfidence: null,
-      finalConfidence: checklistItems.length > 0 ? 0.74 : 0.58,
-      answerScopeMatch: checklistItems.length > 0 ? 'probable' : 'weak',
+      questionUnderstandingConfidence: Math.max(0.86, finalConfidence - 0.02),
+      finalConfidence,
+      answerScopeMatch,
       ambiguityInUserQuestion: false,
       ambiguityInSources: false,
       clarificationRequested: false,
@@ -707,9 +759,9 @@ function buildGroundedFallbackResponse(
       internalExpansionPerformed: false,
       webFallbackUsed: false,
       userNotice: responseMode === 'direto'
-        ? 'Resposta operacional montada diretamente a partir das referências documentais recuperadas.'
-        : 'Organizei a orientação com base no trecho recuperado, priorizando uma leitura guiada do que conferir antes de avançar.',
-      cautionNotice: checklistItems.length > 0 ? null : 'O trecho recuperado foi curto, então mantive a resposta estritamente documental.',
+        ? 'Resposta montada diretamente a partir das referências documentais recuperadas.'
+        : 'Organizei a orientação diretamente a partir das referências documentais recuperadas, sem extrapolar além do que os trechos sustentam.',
+      cautionNotice: fallbackItems.length > 0 ? null : 'Os trechos recuperados foram curtos, então mantive a resposta estritamente documental.',
       ambiguityReason: null,
       comparedSources: [],
       prioritizedSources: groundedReferences.map((reference) => reference.titulo),
@@ -1177,7 +1229,7 @@ Deno.serve(async (req) => {
 
     const { data: allowed, error: rlError } = await supabase.rpc('check_rate_limit', {
       p_identifier: rateLimitKey,
-      p_max_requests: 15,
+      p_max_requests: 24,
       p_window_minutes: 1,
     });
 
@@ -1703,7 +1755,14 @@ REESCRITA OBRIGATORIA:
       const providerUnavailable = isProviderAvailabilityError(err);
 
       if (providerUnavailable && retrievalMode === 'model_grounded' && matchedChunks.length > 0 && groundedReferences.length > 0) {
-        const fallbackResponse = buildGroundedFallbackResponse(matchedChunks, groundedReferences, responseMode);
+        const fallbackResponse = buildGroundedFallbackResponse(
+          lastUserMessage.content,
+          matchedChunks,
+          groundedReferences,
+          responseMode,
+          retrievalQuality,
+          sourceTarget,
+        );
         const fallbackPlainText = renderStructuredResponseToPlainText(fallbackResponse);
 
         const telemetryCtx: TelemetryContext = {

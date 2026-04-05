@@ -52,6 +52,17 @@ describe("chat keyword rescue", () => {
     );
   });
 
+  it("rescues migration guide questions even without the transition keyword", () => {
+    const plan = buildDocumentRescuePlan(
+      "Quando a migração manual do Processo.rio para o SEI.Rio deve ser usada?",
+      null,
+    );
+
+    expect(plan?.namePatterns).toEqual(
+      expect.arrayContaining(["%Guia de migracao%", "%55.615%", "%57.250%"]),
+    );
+  });
+
   it("deduplicates keyword search candidates", () => {
     expect(buildKeywordSearchCandidates("como entrar no SEI", "como entrar no SEI")).toEqual([
       "como entrar no SEI",

@@ -73,7 +73,11 @@ export function buildDocumentRescuePlan(
   }
 
   if (
-    normalizedQuestion.includes("transic") &&
+    (
+      normalizedQuestion.includes("transic") ||
+      normalizedQuestion.includes("migracao manual") ||
+      normalizedQuestion.includes("migracao")
+    ) &&
     normalizedQuestion.includes("processo.rio")
   ) {
     namePatterns.push(
