@@ -31,6 +31,12 @@ import {
   type ChatPromptTelemetry,
 } from "./prompt-telemetry.ts";
 import {
+  buildProviderUsageMetadata,
+  extractProviderUsage,
+  mergeProviderUsage,
+  type ChatProviderUsage,
+} from "./provider-usage.ts";
+import {
   buildDocumentRescuePlan,
   buildKeywordSearchCandidates,
   type DocumentRescuePlan,
@@ -958,6 +964,7 @@ interface TelemetryContext {
   structuredTimeoutMs: number | null;
   streamInitTimeoutMs: number | null;
   leakageRepairTimeoutMs: number | null;
+  providerUsage: ChatProviderUsage | null;
 }
 
 function buildTimingBudgetMetadata(ctx: TelemetryContext) {
@@ -1018,6 +1025,7 @@ async function recordTelemetry(
           selected_chunk_ids: ctx.selectedChunkIds,
           ...buildTimingBudgetMetadata(ctx),
           ...buildPromptTelemetryMetadata(ctx.promptTelemetry),
+          ...buildProviderUsageMetadata(ctx.providerUsage),
           output_mode: outputMode,
           response_mode: ctx.responseMode,
           query_embedding_model: ctx.queryEmbeddingModel,
@@ -1139,7 +1147,7 @@ async function streamWithGenAI(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
   strategy: GenerationStrategy,
-): Promise<ReadableStream<Uint8Array>> {
+): Promise<{ stream: ReadableStream<Uint8Array>; usagePromise: Promise<ChatProviderUsage | null> }> {
   const contents = buildModelContents(messages);
 
   const response = await ai.models.generateContentStream({
@@ -1157,27 +1165,38 @@ async function streamWithGenAI(
   });
 
   const encoder = new TextEncoder();
-
-  return new ReadableStream({
-    async start(controller) {
-      try {
-        for await (const chunk of response) {
-          const text = chunk.text;
-          if (text) {
-            const ssePayload = JSON.stringify({
-              choices: [{ delta: { content: text } }],
-            });
-            controller.enqueue(encoder.encode(`data: ${ssePayload}\n\n`));
-          }
-        }
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-      } catch (err) {
-        console.error('Stream error:', err);
-        controller.error(err);
-      }
-    },
+  let resolveUsage: (usage: ChatProviderUsage | null) => void = () => undefined;
+  const usagePromise = new Promise<ChatProviderUsage | null>((resolve) => {
+    resolveUsage = resolve;
   });
+  let latestProviderUsage: ChatProviderUsage | null = null;
+
+  return {
+    stream: new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of response) {
+            latestProviderUsage = mergeProviderUsage(latestProviderUsage, extractProviderUsage(chunk));
+            const text = chunk.text;
+            if (text) {
+              const ssePayload = JSON.stringify({
+                choices: [{ delta: { content: text } }],
+              });
+              controller.enqueue(encoder.encode(`data: ${ssePayload}\n\n`));
+            }
+          }
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+          resolveUsage(latestProviderUsage);
+        } catch (err) {
+          console.error('Stream error:', err);
+          resolveUsage(latestProviderUsage);
+          controller.error(err);
+        }
+      },
+    }),
+    usagePromise,
+  };
 }
 
 function buildModelContents(messages: ChatConversationMessage[]) {
@@ -1192,7 +1211,7 @@ async function generateStructuredWithFallback(
   systemPrompt: string,
   messages: ChatConversationMessage[],
   strategy: GenerationStrategy,
-): Promise<{ response: ClaraStructuredResponse; plainText: string; model: string } | null> {
+): Promise<{ response: ClaraStructuredResponse; plainText: string; model: string; providerUsage: ChatProviderUsage | null } | null> {
   const contents = buildModelContents(messages);
 
   for (const model of strategy.orderedModels) {
@@ -1223,6 +1242,7 @@ async function generateStructuredWithFallback(
         response: parsed,
         plainText: renderStructuredResponseToPlainText(parsed),
         model,
+        providerUsage: extractProviderUsage(response),
       };
     } catch (err: unknown) {
       console.warn(`Structured generation failed for ${model}: ${getErrorMessage(err, String(err ?? ''))}`);
@@ -1237,13 +1257,13 @@ async function callGeminiWithFallback(
   systemPrompt: string,
   messages: ChatConversationMessage[],
   strategy: GenerationStrategy,
-): Promise<{ stream: ReadableStream<Uint8Array>; model: string }> {
+): Promise<{ stream: ReadableStream<Uint8Array>; model: string; usagePromise: Promise<ChatProviderUsage | null> }> {
   const failures: string[] = [];
 
   for (const model of strategy.orderedModels) {
     try {
-      const stream = await streamWithGenAI(ai, model, systemPrompt, messages, strategy);
-      return { stream, model };
+      const { stream, usagePromise } = await streamWithGenAI(ai, model, systemPrompt, messages, strategy);
+      return { stream, model, usagePromise };
     } catch (err: unknown) {
       const msg = getErrorMessage(err, String(err ?? ''));
       failures.push(`${model}: ${msg}`);
@@ -1824,6 +1844,7 @@ REESCRITA OBRIGATORIA:
         sourceTargetLabel: sourceTarget?.label ?? null,
         stageTimings,
         promptTelemetry,
+        providerUsage: resolvedStructuredResult.providerUsage,
         queryEmbeddingModel,
         searchMode,
         queryEmbeddingCacheStatus,
@@ -1856,7 +1877,7 @@ REESCRITA OBRIGATORIA:
     }
 
     // --- CALL GEMINI WITH FALLBACK ---
-    let result: { stream: ReadableStream<Uint8Array>; model: string };
+    let result: { stream: ReadableStream<Uint8Array>; model: string; usagePromise: Promise<ChatProviderUsage | null> };
     try {
       streamInitTimeoutMsUsed = timeBudgetTracker.streamInitTimeoutMs();
       if (streamInitTimeoutMsUsed == null) {
@@ -1900,6 +1921,7 @@ REESCRITA OBRIGATORIA:
           sourceTargetLabel: sourceTarget?.label ?? null,
           stageTimings,
           promptTelemetry,
+          providerUsage: null,
           queryEmbeddingModel,
           searchMode,
           queryEmbeddingCacheStatus,
@@ -1955,6 +1977,7 @@ REESCRITA OBRIGATORIA:
             sources: retrievalSources,
             attempted_models: generationStrategy.orderedModels,
             ...buildPromptTelemetryMetadata(promptTelemetry),
+            ...buildProviderUsageMetadata(null),
             embedding_ms: stageTimings.embeddingMs,
             expansion_ms: stageTimings.expansionMs,
             search_ms: stageTimings.searchMs,
@@ -2017,6 +2040,7 @@ REESCRITA OBRIGATORIA:
         sourceTargetLabel: sourceTarget?.label ?? null,
         stageTimings,
         promptTelemetry,
+        providerUsage: null,
         queryEmbeddingModel,
         searchMode,
         queryEmbeddingCacheStatus,
@@ -2031,9 +2055,10 @@ REESCRITA OBRIGATORIA:
       };
 
       void readSseText(telemetryStream)
-        .then((responseText) =>
-          recordTelemetry(telemetryCtx, responseText, result.model, retrievalSources.length, 'stream')
-        )
+        .then(async (responseText) => {
+          telemetryCtx.providerUsage = await result.usagePromise;
+          return recordTelemetry(telemetryCtx, responseText, result.model, retrievalSources.length, 'stream');
+        })
         .catch((telemetryError) => {
           console.error('Telemetry capture error:', telemetryError);
         });

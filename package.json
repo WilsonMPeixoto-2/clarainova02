@@ -23,6 +23,8 @@
     "rag:evaluate:canonical": "npm run rag:evaluate:canonical:didatico && npm run rag:evaluate:canonical:direto",
     "rag:reembed:active": "python scripts/corpus/reembed_active_corpus.py",
     "corpus:validate:freshness": "python scripts/corpus/validate_corpus_freshness.py",
+    "corpus:experiment:chunking": "python scripts/corpus/evaluate_chunk_profiles.py",
+    "corpus:analyze:prompt-cache": "python scripts/corpus/evaluate_prompt_cache_readiness.py",
     "validate": "npm run typecheck && npm run lint && npm test && npm run build"
   },
   "dependencies": {
