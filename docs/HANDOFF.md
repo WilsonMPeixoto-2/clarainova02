@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T12:40:00.0000000Z
+- Data/hora: 2026-04-05T12:55:26.8168552Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `1cf67a9701d12a6a378fd7f033966925d855a7fd`
-- Último relatório: `docs/operational-reports/2026-04-05-r5a-incident-recovery-keyword-rescue-and-benchmark.md`
+- Head da sessão: `2ff5ccc69ff3f81c68d48e50d4006ba12461be91`
+- Último relatório: `docs/operational-reports/2026-04-05-r5b-query-embedding-cache-publish-and-benchmark.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A-R4B` já publicados em produção e `R5A` recuperado em produção com fallback keyword-only direcionado, grounded fallback recalibrado e benchmark remoto novamente green
+- Fase atual: BLOCO 5 com `R0-R2` publicados, regressão pós-publicação fechada, `R3A-R4B` já publicados em produção, `R5A` recuperado em produção com fallback keyword-only direcionado e `R5B` já publicado com cache de embeddings de consulta protegido por RLS
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: abrir o `R5B` com cache de embeddings para perguntas recorrentes.
+- Próxima ação recomendada: abrir o `R5C` com validação de frescor do corpus.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.
@@ -50,7 +50,12 @@
 - O benchmark canônico remoto voltou a green após a recuperação do `R5A`:
   - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
   - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
-- `R5B-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
+- O `R5B` já foi publicado em produção a partir do commit `2ff5ccc`, com migration remota `20260405235500_add_query_embedding_cache.sql`, deploy web `dpl_2LsEeDWY5T8LVm1DdhQpYYGzLogF` e Edge Function `chat` promovida para a versão `32`.
+- O benchmark canônico remoto pós-publicação do `R5B` ficou green:
+  - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+  - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+- Nesta janela, o cache ainda não aqueceu linhas em `public.embedding_cache` porque as consultas recentes continuaram entrando por `keyword_only_no_embedding`, coerentes com a indisponibilidade externa do Gemini para embeddings de consulta.
+- `R5C-R6B` ficam logo na sequência, ainda antes de novas expansões fortes do retrieval ou do corpus.
 - O pacote `R0-R2` já foi commitado, enviado ao GitHub e publicado em produção na Vercel e nas Edge Functions críticas do Supabase.
 - A publicação corretiva posterior já colocou `chat` na versão `24`, normalizou o `Termo de Uso` no banco remoto e devolveu o benchmark canônico remoto a `16/16 expectedAllMet` em `Didático` e `Direto`.
 
@@ -142,7 +147,6 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
-- Executar `R5B` com cache de embeddings para perguntas recorrentes
 - Executar `R5C` com validação de frescor do corpus
 - Executar `R6A-R6B` como experimentos benchmarkados antes de retomar `5B-5F`
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus

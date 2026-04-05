@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada, R3A-R4B publicados em producao e R5A recuperado em producao com fallback keyword-only direcionado, benchmark remoto novamente green e resiliencia operacional restaurada mesmo sob indisponibilidade parcial do Gemini",
+  "current_phase": "BLOCO 5 com R0-R2 publicados, regressao pós-publicacao fechada, R3A-R4B publicados em producao, R5A recuperado em producao com fallback keyword-only direcionado e R5B publicado com cache de embeddings de consulta protegido por RLS, mantendo o benchmark remoto green mesmo sob indisponibilidade parcial do Gemini",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T12:40:00.0000000Z",
+  "last_update_utc": "2026-04-05T12:55:26.8168552Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -46,10 +46,13 @@
     "A validacao local do R4B passou com `23` suites e `95` testes; o deploy remoto ficou `READY`, mas o benchmark canonico pós-publicacao entrou em drift severo do pipeline de chat (`Didatico` e `Direto` caindo para `scopeExact 0/16` e `expectedAllMet 1/16`), o que foi classificado como incidente externo/concomitante ao escopo admin-only do R4B.",
     "O R5A foi recuperado em producao ao longo dos commits `d038269`, `4d4a8b4` e `1cf67a9`, com degradacao segura para `keyword_only`, targeted keyword rescue, grounded fallback reescrito para o dominio SEI-Rio e teto de rate limit ajustado para suportar a bateria canonica.",
     "A producao web foi republicada manualmente na Vercel pelo deployment `dpl_5SCxT5wjBWpGd84prMyqgibia416`, mantendo o alias `https://clarainova02.vercel.app` no ar, e a Edge Function `chat` foi promovida para a versao `31`.",
-    "O benchmark canonico remoto voltou a green apos a recuperacao do R5A: `Didatico` e `Direto` ficaram com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence = 0.98`."
+    "O benchmark canonico remoto voltou a green apos a recuperacao do R5A: `Didatico` e `Direto` ficaram com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence = 0.98`.",
+    "O R5B foi publicado em producao a partir do commit `2ff5ccc69ff3f81c68d48e50d4006ba12461be91`, com migration remota `20260405235500_add_query_embedding_cache.sql`, deploy web `dpl_2LsEeDWY5T8LVm1DdhQpYYGzLogF` e Edge Function `chat` promovida para a versao `32`.",
+    "A `chat` agora tenta reutilizar embeddings de consulta a partir de `public.embedding_cache`, com TTL de 7 dias, hash estavel por contrato/modelo/dimensao e telemetria explicita de `query_embedding_cache_status`.",
+    "O benchmark canonico remoto pós-publicacao do R5B ficou green: `Didatico` com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`; `Direto` com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`.",
+    "Nesta janela, `public.embedding_cache` permaneceu sem linhas porque as consultas recentes continuaram em `keyword_only_no_embedding`, coerentes com a indisponibilidade externa do Gemini para embeddings de consulta."
   ],
   "pending_items": [
-    "Executar R5B com cache de embeddings para perguntas recorrentes.",
     "Executar R5C com validacao de frescor do corpus.",
     "Executar R6A e R6B com benchmark controlado de chunking/dimensionalidade e avaliacao de context caching explicito antes de retomar `5B-5F`.",
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",
@@ -59,7 +62,7 @@
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
   ],
-  "next_action": "Abrir o R5B com cache de embeddings para perguntas recorrentes, preservando a frente paralela de layout e usando o benchmark canonico remoto agora restaurado como gate da rodada.",
+  "next_action": "Abrir o R5C com validacao de frescor do corpus, preservando a frente paralela de layout e registrando explicitamente o bloqueio externo de embeddings de consulta do Gemini.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
@@ -75,6 +78,6 @@
     "Os arquivos não rastreados `image1_chat_test.png`, `image2_chat_test.png`, `image3_chat_test.png`, `public/OPCOES_IDENTIDADE/` e `src/assets/clara-avatar.png` permanecem preservados fora desta reconciliação."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-05-r5a-incident-recovery-keyword-rescue-and-benchmark.md",
-  "last_session_head_sha": "1cf67a9"
+  "last_report": "docs/operational-reports/2026-04-05-r5b-query-embedding-cache-publish-and-benchmark.md",
+  "last_session_head_sha": "2ff5ccc"
 }

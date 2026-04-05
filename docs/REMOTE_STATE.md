@@ -2,7 +2,7 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-05
-- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 1cf67a9701d12a6a378fd7f033966925d855a7fd`
+- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 2ff5ccc69ff3f81c68d48e50d4006ba12461be91`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
@@ -11,7 +11,7 @@
 - `origin/main` atualmente alinhada ao commit local preparado para publicação: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 - Trabalho local em andamento fora de `main`:
   - branch ativa de sessão: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
-  - a branch de sessão foi publicada em `origin` até o commit `1cf67a9701d12a6a378fd7f033966925d855a7fd`
+  - a branch de sessão foi publicada em `origin` até o commit `2ff5ccc69ff3f81c68d48e50d4006ba12461be91`
   - a linha principal continua íntegra em `main`, mas a produção foi manualmente atualizada a partir da branch de sessão
 - Observação de análise remota:
   - a branch paralela `origin/session/2026-04-02/HOME/CODEX/BLOCO-3-SUPABASE-HARDENING` foi revisada e contém refinamentos úteis de chat/layout, mas não é candidata a merge integral
@@ -24,16 +24,16 @@
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção agora reflete manualmente a recuperação do `R5A` publicada a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET` no commit `1cf67a9701d12a6a378fd7f033966925d855a7fd`
-  - isso inclui budget real por request, telemetria por estágio em `chat_metrics.metadata_json`, follow-up contextualizado no retrieval, breakdown explícito de prompt/histórico, retorno de `request_id` na `chat`, `submit-chat-feedback`, dashboard admin de gaps, degradacao segura para `keyword_only`, targeted keyword rescue e grounded fallback recalibrado para o dominio SEI-Rio
+  - a produção agora reflete manualmente o `R5B` publicado a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET` no commit `2ff5ccc69ff3f81c68d48e50d4006ba12461be91`
+  - isso inclui budget real por request, telemetria por estágio em `chat_metrics.metadata_json`, follow-up contextualizado no retrieval, breakdown explícito de prompt/histórico, retorno de `request_id` na `chat`, `submit-chat-feedback`, dashboard admin de gaps, degradacao segura para `keyword_only`, targeted keyword rescue, grounded fallback recalibrado para o dominio SEI-Rio e cache de embeddings de consulta com `TTL` de `7` dias
   - `origin/main` continua sendo a fonte oficial integrada, então existe divergência intencional e documentada entre `main` e a produção até a próxima reconciliação
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Deploy canônico mais recente observado:
   - source: `manual_cli`
   - status: `READY`
-  - deployment id: `dpl_5SCxT5wjBWpGd84prMyqgibia416`
-  - commit publicado: `1cf67a9701d12a6a378fd7f033966925d855a7fd`
-  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/5SCxT5wjBWpGd84prMyqgibia416`
+  - deployment id: `dpl_2LsEeDWY5T8LVm1DdhQpYYGzLogF`
+  - commit publicado: `2ff5ccc69ff3f81c68d48e50d4006ba12461be91`
+  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/2LsEeDWY5T8LVm1DdhQpYYGzLogF`
   - aliases observados:
     - `https://clarainova02.vercel.app`
     - `https://clarainova02-4vv6qesec-wilson-m-peixotos-projects.vercel.app`
@@ -46,16 +46,16 @@
 ## Edge Functions verificadas
 - `chat`
   - status: `ACTIVE`
-  - versão observada: `31`
-  - última atualização observada: `2026-04-05 12:37:06 UTC`
+  - versão observada: `32`
+  - última atualização observada: `2026-04-05 12:51:15 UTC`
 - `submit-chat-feedback`
   - status: `ACTIVE`
   - versão observada: `1`
   - última atualização observada: `2026-04-05 11:14:19 UTC`
 - `embed-chunks`
   - status: `ACTIVE`
-  - versão observada: `17`
-  - última atualização observada: `2026-04-05 06:29:43 UTC`
+  - versão observada: `21`
+  - última atualização observada: `2026-04-05 12:10:36 UTC`
 - `get-usage-stats`
   - status: `ACTIVE`
   - versão observada: `12`
@@ -87,13 +87,14 @@
     - conferir `Client ID` e `Client Secret`
     - alinhar redirect URLs no Supabase e no Google Console
 - Gemini / embeddings:
-  - status: `pacote R0-R5A publicado, com recuperação operacional do incidente externo de quota/embeddings`
+  - status: `pacote R0-R5B publicado, com recuperação operacional do incidente externo de quota/embeddings e cache de embeddings de consulta já ativo no código`
   - situação conhecida:
-    - a Edge Function remota `chat` já foi republicada na versão `31` com follow-up contextualizado no retrieval, suporte a `contextSummary` vindo do chat web, budget real, métricas por estágio, breakdown explícito de prompt/histórico, retorno de `X-Clara-Request-Id`, `keyword_only` seguro, rescue lexical dirigido e grounded fallback recalibrado
+    - a Edge Function remota `chat` já foi republicada na versão `32` com follow-up contextualizado no retrieval, suporte a `contextSummary` vindo do chat web, budget real, métricas por estágio, breakdown explícito de prompt/histórico, retorno de `X-Clara-Request-Id`, `keyword_only` seguro, rescue lexical dirigido, grounded fallback recalibrado e cache de embeddings de consulta
     - a nova Edge Function remota `submit-chat-feedback` já está ativa na versão `1`
     - a Edge Function remota `embed-chunks` já foi republicada na versão `17` com o contrato textual assimétrico de embeddings introduzido em `R2`
-    - a produção web foi atualizada manualmente por Vercel CLI com o pacote do repositório até o commit `1cf67a9`
+    - a produção web foi atualizada manualmente por Vercel CLI com o pacote do repositório até o commit `2ff5ccc`
     - a migration remota `20260405121500_add_query_feedback_fields.sql` já foi aplicada e abriu o contrato de feedback em `query_analytics`
+    - a migration remota `20260405235500_add_query_embedding_cache.sql` já foi aplicada e criou `public.embedding_cache`
     - a Edge Function remota `get-usage-stats` já foi republicada na versão `12`, com agrupamento por `topic_label`, lacunas recentes e sinais de baixa confiança / feedback negativo
     - a migration remota `20260404084500_refine_hybrid_search_for_governed_corpus.sql` já foi aplicada e alinhou `hybrid_search_chunks` ao corpus governado por `título`, `origem`, `versão` e `section_title`
     - a migration remota `20260404134500_add_targeted_chunk_retrieval.sql` também já está aplicada no projeto oficial
@@ -105,7 +106,7 @@
     - secret requerido nas functions: `GEMINI_API_KEY`
     - expansão de query: `gemini-3.1-flash-lite-preview` com timeout de `3s`
     - recuperação híbrida: `match_count = 12`
-    - telemetria nova: `rag_quality_score`, `expanded_query`, breakdown explícito de `prompt_tokens_*` / `history_*` e feedback explícito do usuário em `query_analytics`
+    - telemetria nova: `rag_quality_score`, `expanded_query`, breakdown explícito de `prompt_tokens_*` / `history_*`, feedback explícito do usuário em `query_analytics` e status de cache de embeddings em `chat_metrics.metadata_json`
     - source-target routing: perguntas que nomeiam explicitamente nota oficial, wiki, UFSCar ou manual PEN agora passam por recuperação em dois estágios (`hybrid_search_chunks` + `fetch_targeted_chunks`) e, sob indisponibilidade de embeddings, por resgate lexical dirigido (`fetch_targeted_keyword_chunks`)
     - contrato atual de embedding: framing textual explícito para query/documento, com `taskType` e `title` preservados como pistas complementares de API
 - Corpus inicial:
@@ -140,10 +141,14 @@
       - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
       - a recuperação combinou `keyword_only` seguro, targeted keyword rescue, grounded fallback recalibrado e ajuste do teto de rate limit
     - a prova de ponta a ponta do feedback foi validada em produção com `request_id` retornado no header da `chat`, `submit-chat-feedback` respondendo `ok = true` e persistência confirmada em `query_analytics`
+    - o benchmark canônico remoto pós-publicação do `R5B` permaneceu green:
+      - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+      - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
+    - nesta janela, `public.embedding_cache` permaneceu com `0` linhas porque as consultas recentes continuaram caindo em `keyword_only_no_embedding`, coerente com a indisponibilidade externa do Gemini para embeddings de consulta
     - a próxima frente de corpus é substituir o Decreto `55.615` por texto íntegro oficial e ampliar a bateria manual
 
 ## Divergências remotas que exigem cuidado
-- a produção web e as functions `chat` / `embed-chunks` / `submit-chat-feedback` / `get-usage-stats` estão à frente de `origin/main`, porque os deploys manuais de `2026-04-05` partiram da branch de sessão e o último deles publicou `f95273f`
+- a produção web e as functions `chat` / `embed-chunks` / `submit-chat-feedback` / `get-usage-stats` estão à frente de `origin/main`, porque os deploys manuais de `2026-04-05` partiram da branch de sessão e o último deles publicou `2ff5ccc`
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
 - o corpus remoto atual não mostra mistura entre gerações de embedding, mas ainda há um documento legado sem embeddings e sem metadados novos
 - o histórico documental anterior ainda contém leituras que assumiam prefixo textual em `chunk.content`; sob `R2`, o fluxo novo voltou a separar conteúdo vetorial limpo e metadado de citação
