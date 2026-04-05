@@ -39,8 +39,14 @@ import {
 import {
   buildDocumentRescuePlan,
   buildKeywordSearchCandidates,
-  type DocumentRescuePlan,
 } from "./keyword-rescue.ts";
+import {
+  buildDocumentRescueOrFilter,
+  buildGovernedSearchMode,
+  buildRetrievalGovernanceFilters,
+  hasRetrievalGovernanceFilters,
+  type RetrievalGovernanceFilters,
+} from "./retrieval-governance.ts";
 import {
   KEYWORD_ONLY_QUERY_EMBEDDING_MODEL,
   shouldUseSemanticRetrieval,
@@ -389,28 +395,22 @@ function buildGenerationStrategy(options: {
   };
 }
 
-function buildDocumentRescueOrFilter(plan: DocumentRescuePlan): string | null {
-  const filters = [
-    ...plan.topicScopes.map((scope) => `topic_scope.eq.${scope}`),
-    ...plan.sourceNamePatterns.map((pattern) => `source_name.ilike.${pattern}`),
-    ...plan.namePatterns.map((pattern) => `name.ilike.${pattern}`),
-    ...plan.versionPatterns.map((pattern) => `version_label.ilike.${pattern}`),
-  ];
-
-  return filters.length > 0 ? filters.join(',') : null;
-}
-
 async function fetchKeywordSearchMatches(
   supabase: ReturnType<typeof createClient>,
   queryEmbeddingPayload: string | null,
   queryText: string,
   matchCount = 12,
+  governanceFilters: RetrievalGovernanceFilters | null = null,
 ): Promise<HybridSearchChunk[] | null> {
   const { data: chunks, error } = await withTimeout(
     supabase.rpc('hybrid_search_chunks', {
       query_embedding: queryEmbeddingPayload,
       query_text: queryText,
       match_count: matchCount,
+      filter_topic_scopes: governanceFilters?.topicScopes ?? null,
+      filter_source_name_patterns: governanceFilters?.sourceNamePatterns ?? null,
+      filter_document_name_patterns: governanceFilters?.documentNamePatterns ?? null,
+      filter_version_patterns: governanceFilters?.versionPatterns ?? null,
     }) as Promise<{ data: HybridSearchChunk[] | null; error: Error | null }>,
     SEARCH_TIMEOUT_MS,
     'hybrid_search',
@@ -1542,9 +1542,30 @@ Deno.serve(async (req) => {
         try {
           const keywordSearchCandidates = buildKeywordSearchCandidates(keywordQueryText, expandedQueryText);
           const rescuePlan = buildDocumentRescuePlan(lastUserMessage.content, sourceTarget);
+          const governanceFilters = buildRetrievalGovernanceFilters(rescuePlan);
           let chunks: HybridSearchChunk[] = [];
 
           for (const candidate of keywordSearchCandidates) {
+            if (hasRetrievalGovernanceFilters(governanceFilters)) {
+              const governed = await fetchKeywordSearchMatches(
+                supabase,
+                queryEmbeddingPayload,
+                candidate,
+                12,
+                governanceFilters,
+              );
+
+              if (governed && governed.length > 0) {
+                chunks = governed;
+                keywordQueryText = candidate;
+                searchMode = buildGovernedSearchMode(
+                  shouldUseSemanticRetrieval(queryEmbeddingPayload) ? 'hybrid' : 'keyword_only',
+                  governanceFilters,
+                );
+                break;
+              }
+            }
+
             const found = await fetchKeywordSearchMatches(
               supabase,
               queryEmbeddingPayload,
