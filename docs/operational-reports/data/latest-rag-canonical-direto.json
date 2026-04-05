@@ -9,9 +9,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 55.615 de 1º de janeiro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Substituicao do Processo.rio pelo SEI-Rio",
+    "summary": "O Decreto Rio no 55.615/2025 instituiu o SEI-Rio como sistema corporativo oficial de processo eletronico do Executivo municipal, em substituicao ao Processo.rio.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -57,9 +57,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Regra principal"
+      },
+      {
+        "numero": 2,
+        "titulo": "Efeito pratico"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Decreto Rio nº 55.615",
@@ -67,7 +72,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Decreto Rio nº 55.615 de 1º de janeiro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Decreto Rio nº 55.615 de 1º de janeiro de 2025. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- DECRETO RIO Nº 55.615, DE 1º DE JANEIRO DE 2025 Fonte institucional secundária: Câmara Municipal do Rio de Janeiro (texto legislativo citado, com referência ao D.O.RIO de 01.01.2025).\n- Dispõe sobre a substituição do Sistema Eletrônico de Documentos e Processos - Processo.rio pelo Sistema Eletrônico de Informações - SEI-Rio.\n- Protocolo: 1128886 Data: 24/11/2025 Título: DECRETO RIO Nº 57250 Página(s): a DECRETO RIO Nº 57250 DE 19 DE NOVEMBRO DE 2025 Institui o Sistema Eletrônico de Informações - SEI.Rio como sistema de gestão de processos no âmbito do Poder Executivo do Município do Rio de Janeiro.\n- O PREFEITO DA CIDADE DO RIO DE JANEIRO, no uso das atribuições que lhe são conferidas pela legislação em vigor e CONSIDERANDO a necessidade de um sistema de processo eletrônico robusto, capaz de atender todas as demandas de gestão de processos administrativos da Prefeitura da Cidade do Rio de Janeiro; CONSIDERANDO a busca constante da eficiência, transparência e publicidade na gestão de processos administrativos; CONSIDERANDO a descontinuidade do desenvolvimento do SIGA-doc (Processo.rio) pelo TRF2; CONSIDERANDO que o Sistema Eletrônico de Informações - SEI é o sistema de processos eletrônicos adotado pelo Processo Eletrônico Nacional - PEN; CONSIDERANDO o Termo de Adesão nº 01/2024 - RJ, assinado em 14 de novembro de 2024, entre o Município do Rio de Janeiro e o Ministério de Gestão e da Inovação em Serviços Públicos (MGI); CONSIDERANDO o Acordo de Cooperação Técnica nº TRF4 544/2024 de 29 de outubro de 2024, assinado com o Tribunal Regional Federal da 4ª Região - TRF4; CONSIDERANDO o Decreto Rio nº 55.615, de 1º de janeiro de 2025, que trata da substituição do Processo.rio pelo Sistema Eletrônico de Informações - SEI; CONSIDERANDO o Decreto nº 2.477, de 25 de janeiro de 1980, que regulamenta a Lei nº 133, de 19 de novembro de 1979, que dispõe sobre atos da administração direta e autárquica do Município do Rio de Janeiro; CONSIDERANDO o disposto na Lei federal nº 12.527, de 18 de novembro de 2011, conhecida como Lei de Acesso às Informações - LAI e o disposto no Decreto Rio nº 44.745, de 19 de julho de 2018, que consolida, em âmbito municipal, a supracitada Lei Federal; CONSIDERANDO a Lei Federal nº 13.709, de 14 de agosto de 2018 - Lei Geral de Proteção de Dados e o disposto no Decreto Rio nº 54.984, de 21 de agosto de 2024 que institui a Política Municipal de Proteção de Dados Municipais; CONSIDERANDO a Lei Municipal nº 3.404, de 5 de junho de 2002, regulamentada pelo Decreto nº 22.615, de 30 de janeiro de 2003, que estabelece a Política Municipal de Arquivos, bem como o Decreto Rio nº 48.973, de 10 de junho de 2021, que cria o Programa de Gestão de Documentos da Cidade do Rio de Janeiro - PGD Carioca; CONSIDERANDO o Decreto Rio nº 54.844, de 29 de julho de 2024, que dispõe sobre o uso de assinatura eletrônica no âmbito da Administração Pública Municipal, DECRETA:\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"O que o Decreto Rio nº 55.615, de 1º de janeiro de 2025, determina sobre a substituição do Processo.rio pelo SEI-Rio?\".\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025: camada núcleo · fonte oficial. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES · camada núcleo · fonte oficial. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: EDUARDO PAES · camada núcleo · fonte oficial. p. 12.\n[4] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025: EDUARDO PAES · camada núcleo · fonte oficial. p. 2."
+    "plainText": "Substituicao do Processo.rio pelo SEI-Rio\n\nO Decreto Rio no 55.615/2025 instituiu o SEI-Rio como sistema corporativo oficial de processo eletronico do Executivo municipal, em substituicao ao Processo.rio.\n\nPasso a passo guiado\n1. Regra principal\nA administracao municipal passou a adotar o SEI-Rio como sistema oficial para abertura, instrucao e tramitacao de processos administrativos.\n- O Processo.rio deixou de ser o sistema de referencia para novas rotinas.\n- A transicao foi organizada dentro da politica municipal de processo eletronico.\n\n2. Efeito pratico\nO Processo.rio ficou sujeito a regras de transicao e consulta, enquanto o SEI-Rio assumiu o fluxo principal da gestao documental.\n\nObservacoes finais\n- As regras operacionais de transicao foram detalhadas depois por atos complementares e pelos guias de migracao.\n\nReferencias\n[1] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025: camada núcleo · fonte oficial. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: DAS DISPOSIÇÕES PRELIMINARES · camada núcleo · fonte oficial. p. 1.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: EDUARDO PAES · camada núcleo · fonte oficial. p. 12.\n[4] Base documental CLARA. Decreto Rio nº 55.615 de 1º de janeiro de 2025: EDUARDO PAES · camada núcleo · fonte oficial. p. 2."
   },
   {
     "id": "Q2",
@@ -79,9 +84,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Resolucao CVL nº 237 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Composicao do numero do processo no SEI.Rio",
+    "summary": "Segundo a Resolucao CVL no 237/2025, o numero do processo segue um padrao oficial que identifica o orgao responsavel pela abertura e a sequencia processual adotada no SEI.Rio.",
+    "finalConfidence": 0.96,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -127,9 +132,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Estrutura padronizada"
+      },
+      {
+        "numero": 2,
+        "titulo": "Uso correto"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Resolução CVL nº 237",
@@ -137,7 +147,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Resolucao CVL nº 237 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Resolucao CVL nº 237 de 19 de novembro de 2025. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Protocolo: 1128898 Data: 24/11/2025 Título: RESOLUÇÃO CVL Nº 237 Página(s): a RESOLUÇÃO CVL Nº 237 DE 19 DE NOVEMBRO DE 2025.\n- Estabelece os números de identificação dos órgãos no âmbito do Poder Executivo para composição do número do processo no SEI.Rio.\n- I - ser formado de maneira cronológica, lógica e contínua; II - publicidade das informações como preceito geral e o sigilo como exceção; III - atribuição individual de nível de acesso a cada documento, considerando as hipóteses legais de sigilo e restrição de acesso às informações nele contidas, sendo possível sua ampliação ou limitação, sempre que necessário.\n- A atribuição de nível de acesso restrito ou sigiloso deve ser acompanhada de justificativa legal.\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como é composto o número do processo no SEI.Rio segundo a Resolução CVL nº 237/2025?\".\n\nReferencias\n[1] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: Secretaria Municipal de Trabalho e · camada núcleo · fonte oficial. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: camada núcleo · fonte oficial. p. 6.\n[3] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: camada núcleo · fonte oficial. p. 1.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII · camada núcleo · fonte oficial. p. 11."
+    "plainText": "Composicao do numero do processo no SEI.Rio\n\nSegundo a Resolucao CVL no 237/2025, o numero do processo segue um padrao oficial que identifica o orgao responsavel pela abertura e a sequencia processual adotada no SEI.Rio.\n\nPasso a passo guiado\n1. Estrutura padronizada\nA numeracao nao e livre: ela segue o padrao definido pela Casa Civil para garantir identificacao, organizacao e rastreabilidade.\n- O identificador do orgao faz parte da composicao.\n- A sequencia precisa respeitar o padrao oficial do sistema.\n\n2. Uso correto\nNa pratica, a unidade nao inventa a numeracao. Ela utiliza a composicao padronizada pelo SEI-Rio e pelos codigos institucionais previstos na norma.\n\nObservacoes finais\n- Se voce precisar do detalhamento campo a campo, vale conferir a tabela do orgao prevista na propria resolucao.\n\nReferencias\n[1] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: Secretaria Municipal de Trabalho e · camada núcleo · fonte oficial. p. 1.\n[2] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: camada núcleo · fonte oficial. p. 6.\n[3] Base documental CLARA. Resolucao CVL nº 237 de 19 de novembro de 2025: camada núcleo · fonte oficial. p. 1.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII · camada núcleo · fonte oficial. p. 11."
   },
   {
     "id": "Q3",
@@ -149,9 +159,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Guia de migracao – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Acesso ao SEI.Rio com matricula",
+    "summary": "Para acessar o SEI.Rio como usuario interno, use sua matricula funcional no formato exigido pelo sistema e informe a senha pessoal no login.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -197,9 +207,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Preparar a matricula"
+      },
+      {
+        "numero": 2,
+        "titulo": "Preencher o login"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário interno",
@@ -207,7 +222,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia de migracao – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Guia de migracao – SEI.Rio. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Após migração automática não concluída\n- Como opção direta para migração\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como fazer login no SEI.Rio usando a matrícula?\".\n\nReferencias\n[1] Base documental CLARA. Guia de migracao – SEI.Rio: Processo criado no SEI · camada núcleo · fonte oficial. p. 3.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Clique no número de processo para acessar todos os · camada núcleo · fonte oficial. p. 59.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha · camada núcleo · fonte oficial. p. 1.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI · camada núcleo · fonte oficial. p. 4."
+    "plainText": "Acesso ao SEI.Rio com matricula\n\nPara acessar o SEI.Rio como usuario interno, use sua matricula funcional no formato exigido pelo sistema e informe a senha pessoal no login.\n\nChecklist rapido\n1. Preparar a matricula\nConfira o formato da matricula antes de entrar no sistema.\n- Use exatamente 8 posicoes.\n- Se a matricula tiver menos de 8 digitos, complete com zero a esquerda.\n- Nao use pontos, barras, tracos ou prefixos.\n\n2. Preencher o login\nNa tela de acesso, informe a matricula formatada, digite sua senha e selecione o orgao ou unidade correspondente.\n\nConferencia final\n- O sistema nao deve salvar a senha no navegador; a digitacao precisa ser refeita a cada acesso.\n- A matricula precisa ser a cadastrada nos sistemas corporativos da Prefeitura.\n\nReferencias\n[1] Base documental CLARA. Guia de migracao – SEI.Rio: Processo criado no SEI · camada núcleo · fonte oficial. p. 3.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Clique no número de processo para acessar todos os · camada núcleo · fonte oficial. p. 59.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha · camada núcleo · fonte oficial. p. 1.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI · camada núcleo · fonte oficial. p. 4."
   },
   {
     "id": "Q4",
@@ -219,9 +234,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Inclusao de documento externo",
+    "summary": "Para juntar um documento produzido fora do SEI-Rio, abra o processo, use a funcao de incluir documento e selecione o tipo Documento Externo.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -275,9 +290,22 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Abrir a funcionalidade"
+      },
+      {
+        "numero": 2,
+        "titulo": "Escolher o tipo correto"
+      },
+      {
+        "numero": 3,
+        "titulo": "Preencher e anexar"
+      },
+      {
+        "numero": 4,
+        "titulo": "Finalizar"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário interno",
@@ -285,7 +313,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Como opção direta para migração\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como incluir um documento externo em um processo no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Ações disponíveis em um processo 17 · camada núcleo · fonte oficial. p. 2.\n[2] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI · camada núcleo · fonte oficial. p. 4.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 20.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: camada núcleo · fonte oficial. p. 5.\n[5] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio: Mover documento · camada núcleo · fonte oficial. p. 1."
+    "plainText": "Inclusao de documento externo\n\nPara juntar um documento produzido fora do SEI-Rio, abra o processo, use a funcao de incluir documento e selecione o tipo Documento Externo.\n\nChecklist rapido\n1. Abrir a funcionalidade\nCom o processo aberto, localize a barra de acoes e clique em Incluir Documento.\n\n2. Escolher o tipo correto\nNa tela de cadastro, selecione a opcao Externo para habilitar os campos do documento recebido de fora do sistema.\n\n3. Preencher e anexar\nInforme os campos obrigatorios, escolha o formato adequado, anexe o arquivo e salve.\n- Se o arquivo for digitalizado, informe o tipo de conferencia aplicavel.\n- Defina o nivel de acesso antes de concluir.\n\n4. Finalizar\nDepois do salvamento, faca a autenticacao do documento quando a rotina da unidade exigir.\n\nConferencia final\n- O formato PDF com OCR facilita pesquisa posterior no processo.\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Ações disponíveis em um processo 17 · camada núcleo · fonte oficial. p. 2.\n[2] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI · camada núcleo · fonte oficial. p. 4.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 20.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: camada núcleo · fonte oficial. p. 5.\n[5] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio: Mover documento · camada núcleo · fonte oficial. p. 1."
   },
   {
     "id": "Q5",
@@ -297,9 +325,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Disponibilizar em bloco de assinatura",
+    "summary": "Para disponibilizar um documento em bloco de assinatura, primeiro crie o bloco, depois inclua o documento e finalize a disponibilizacao para a unidade ou signatario correspondente.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -345,9 +373,18 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Criar o bloco"
+      },
+      {
+        "numero": 2,
+        "titulo": "Incluir o documento"
+      },
+      {
+        "numero": 3,
+        "titulo": "Disponibilizar"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário interno",
@@ -355,7 +392,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada). A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- ● Acessando o conteúdo de um Bloco de Reunião - DISPONIBILIZADO: Clicando no botão , a tela Processos do Bloco de Reunião é apresentada e o(s) processo(s) do bloco são exibidos, conforme tela abaixo.\n- Clique no número de processo para acessar todos os documentos inseridos, inclusive as Minutas.\n- 18.1 - Bloco de Assinatura O Bloco de Assinatura é um recurso utilizado para a visualização e assinatura de minutas de documentos por usuários de unidades diferentes da unidade elaboradora do documento.\n- Também poderá ser utilizado com a finalidade de agrupar documentos produzidos na própria unidade, para assinatura em lote.\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como disponibilizar um processo em bloco de assinatura no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Clique no número de processo para acessar todos os · camada núcleo · fonte oficial. p. 59.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Incluir em Bloco · camada núcleo · fonte oficial. p. 47.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 51.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 58."
+    "plainText": "Disponibilizar em bloco de assinatura\n\nPara disponibilizar um documento em bloco de assinatura, primeiro crie o bloco, depois inclua o documento e finalize a disponibilizacao para a unidade ou signatario correspondente.\n\nChecklist rapido\n1. Criar o bloco\nAcesse Blocos > Assinatura, clique em Novo e registre a descricao do bloco.\n- Se o bloco for para outra unidade, informe a unidade destinataria no cadastro.\n\n2. Incluir o documento\nAbra o processo, selecione o documento na arvore e use a acao Incluir em Bloco de Assinatura.\n\n3. Disponibilizar\nEscolha o bloco criado e conclua a inclusao ou disponibilizacao conforme a configuracao da sua unidade.\n\nConferencia final\n- Bloco de assinatura e diferente de bloco de reuniao; nao misture as duas rotinas.\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Clique no número de processo para acessar todos os · camada núcleo · fonte oficial. p. 59.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Incluir em Bloco · camada núcleo · fonte oficial. p. 47.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 51.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 58."
   },
   {
     "id": "Q6",
@@ -367,9 +404,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Envio de processos no SEI-Rio",
+    "summary": "No SEI-Rio, o envio e feito entre unidades. Voce abre o processo, usa a funcao Enviar Processo, informa uma ou mais unidades de destino e conclui a tramitacao.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -415,9 +452,22 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Abrir a tela de envio"
+      },
+      {
+        "numero": 2,
+        "titulo": "Informar as unidades"
+      },
+      {
+        "numero": 3,
+        "titulo": "Definir opcoes adicionais"
+      },
+      {
+        "numero": 4,
+        "titulo": "Concluir"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário interno",
@@ -425,7 +475,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada). A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- 13 - Enviar Processo No sei.rio os processos são tramitados exclusivamente entre Unidades, não há envio direto para logins individuais.\n- Um processo enviado para outra unidade deixa de aparecer na tela \"Controle de Processos\" da unidade que o enviou, mas ainda pode ser acessado por meio da Pesquisa ou do Acompanhamento Especial, se essa opção tiver sido ativada pelo usuário.\n- Ao finalizar uma migração automática, manual, ou em lote, o sistema enviará a informação para o e-mail dos interessados registrados na criação do documento, orientando o acompanhamento do processo.\n- Migração automática A migração automática deve ser executada por meio do botão na tela do processo ou expediente.\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como enviar um processo para uma ou mais unidades no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo possui um Controle de · camada núcleo · fonte oficial. p. 7.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 18.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 34.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote · camada núcleo · fonte oficial. p. 2."
+    "plainText": "Envio de processos no SEI-Rio\n\nNo SEI-Rio, o envio e feito entre unidades. Voce abre o processo, usa a funcao Enviar Processo, informa uma ou mais unidades de destino e conclui a tramitacao.\n\nChecklist rapido\n1. Abrir a tela de envio\nDentro do processo, clique em Enviar Processo na barra de ferramentas.\n\n2. Informar as unidades\nNo campo de unidades, pesquise e adicione uma ou mais unidades destinatarias.\n- O envio simultaneo e feito incluindo varias unidades no mesmo envio.\n\n3. Definir opcoes adicionais\nSe necessario, configure retorno programado ou mantenha o processo aberto na sua unidade.\n\n4. Concluir\nRevise as unidades selecionadas e clique em Enviar para finalizar a tramitacao.\n\nConferencia final\n- O envio e entre unidades, nao para logins individuais.\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo possui um Controle de · camada núcleo · fonte oficial. p. 7.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 18.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 34.\n[4] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote · camada núcleo · fonte oficial. p. 2."
   },
   {
     "id": "Q7",
@@ -437,9 +487,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Guia de migracao – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Quando usar a migracao manual",
+    "summary": "A migracao manual deve ser usada quando a migracao automatica nao se conclui com sucesso ou quando a unidade precisa transferir apenas as pecas indispensaveis para a instrucao no SEI-Rio.",
+    "finalConfidence": 0.96,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -485,9 +535,18 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Cenario de falha automatica"
+      },
+      {
+        "numero": 2,
+        "titulo": "Cenario de migracao parcial"
+      },
+      {
+        "numero": 3,
+        "titulo": "Como proceder"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Guia de migração",
@@ -495,7 +554,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia de migracao – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Guia de migracao – SEI.Rio. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Como opção direta para migração\n- Após migração automática não concluída\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Quando a migração manual do Processo.rio para o SEI.Rio deve ser usada?\".\n\nReferencias\n[1] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote · camada núcleo · fonte oficial. p. 2.\n[2] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI · camada núcleo · fonte oficial. p. 4.\n[3] Base documental CLARA. Guia de migracao – SEI.Rio: Processo criado no SEI · camada núcleo · fonte oficial. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII · camada núcleo · fonte oficial. p. 11."
+    "plainText": "Quando usar a migracao manual\n\nA migracao manual deve ser usada quando a migracao automatica nao se conclui com sucesso ou quando a unidade precisa transferir apenas as pecas indispensaveis para a instrucao no SEI-Rio.\n\nChecklist rapido\n1. Cenario de falha automatica\nSe a migracao automatica falhar mesmo apos novas tentativas, a migracao manual vira a alternativa prevista.\n\n2. Cenario de migracao parcial\nTambem cabe migracao manual quando o gestor do negocio definir transferencia parcial, limitada aos documentos essenciais.\n\n3. Como proceder\nNa rotina manual, a unidade confirma a acao e o sistema registra a certidao correspondente nos ambientes envolvidos.\n\nConferencia final\n- A selecao do que migrar parcialmente deve ser validada com o gestor da area.\n\nReferencias\n[1] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote · camada núcleo · fonte oficial. p. 2.\n[2] Base documental CLARA. Guia de migracao – SEI.Rio: Incluindo o processo digitalizado no SEI · camada núcleo · fonte oficial. p. 4.\n[3] Base documental CLARA. Guia de migracao – SEI.Rio: Processo criado no SEI · camada núcleo · fonte oficial. p. 3.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII · camada núcleo · fonte oficial. p. 11."
   },
   {
     "id": "Q8",
@@ -508,9 +567,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Uso do Processo.rio durante a transicao",
+    "summary": "Nao como rotina permanente. A abertura de novos processos passou ao SEI-Rio, e o uso do Processo.rio ficou restrito ao periodo de transicao, migracao e consulta do acervo anterior.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -556,9 +615,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Novos processos"
+      },
+      {
+        "numero": 2,
+        "titulo": "Processos em andamento"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Decreto Rio nº 55.615",
@@ -570,7 +634,7 @@
       }
     ],
     "expectedAllMet": false,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada) e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuário interno – SEI.Rio (versão final consolidada). A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- 3.1.1 - Glossário de símbolos Ao lado de cada processo, símbolos fornecem ao usuário informações visuais da situação do processo dentro da Unidade.\n- Símbolos Descrição Login entre parênteses Indica o usuário a quem o processo foi atribuído na unidade Processo com número em preto 11177.000001/2025-15 Indica que já foi acessado por algum usuário da unidade Processo com número em vermelho 11177.000001/2025-15 Indica que ainda não foi acessado Processo com número em azul Indica que foi acessado e/ou que sofreu 11177.000001/2025-15 alguma ação realizada pelo usuário no login/sessão atual Processo com fundo preto Indica processo sigiloso já acessado por 11177.000001/2025-15 alguém da unidade.\n- Indica que o processo enviado pela unidade com Retorno Programado está aguardando retorno de outra unidade Indica que o processo enviado pela unidade com Retorno Programado teve o retorno cumprido Indica que o processo enviado pela unidade com Retorno Programado está com prazo de devolução expirado (atrasado) Indica que um documento foi incluído ou assinado no processo Indica a existência de uma anotação simples Indica a existência de uma anotação com prioridade Alerta o usuário de que existe um documento sigiloso (com credencial) para ser assinado Indica que o processo possui um marcador Indica que o processo possui um Ponto de Controle Indica que o processo possui um Controle de Prazo a vencer Indica que o processo possui um Controle de Prazo concluído Indica que o processo possui um Controle de Prazo vencido (atrasado) Guia do Usuário - Data de atualização - 17/04/2025 7\n- DAS DISPOSIÇÕES FINAIS E TRANSITÓRIAS Art.\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Durante a transição, o servidor pode continuar usando o Processo.rio ao mesmo tempo que o SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo recebido pela unidade · camada núcleo · fonte oficial. p. 6.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo possui um Controle de · camada núcleo · fonte oficial. p. 7.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII · camada núcleo · fonte oficial. p. 11.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III · camada núcleo · fonte oficial. p. 4."
+    "plainText": "Uso do Processo.rio durante a transicao\n\nNao como rotina permanente. A abertura de novos processos passou ao SEI-Rio, e o uso do Processo.rio ficou restrito ao periodo de transicao, migracao e consulta do acervo anterior.\n\nPasso a passo guiado\n1. Novos processos\nA abertura de novos processos deveria ocorrer exclusivamente no SEI-Rio apos o marco de implantacao definido para a transicao.\n\n2. Processos em andamento\nO Processo.rio permaneceu apenas para concluir a fase de transicao dos processos antigos, com foco em instrucao residual, migracao e consulta.\n\nObservacoes finais\n- Fora da janela de transicao, o Processo.rio nao deveria continuar sendo usado como sistema principal de trabalho.\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo recebido pela unidade · camada núcleo · fonte oficial. p. 6.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): Indica que o processo possui um Controle de · camada núcleo · fonte oficial. p. 7.\n[3] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO VII · camada núcleo · fonte oficial. p. 11.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: CAPÍTULO III · camada núcleo · fonte oficial. p. 4."
   },
   {
     "id": "Q9",
@@ -583,9 +647,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Guia do usuario externo – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Nivel da conta gov.br para usuario externo",
+    "summary": "A liberacao automatica do cadastro no SEI-Rio para usuario externo exige conta gov.br de nivel Prata ou Ouro.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -631,9 +695,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Regra de acesso"
+      },
+      {
+        "numero": 2,
+        "titulo": "Se precisar elevar o nivel"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário externo",
@@ -645,7 +714,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Guia do usuario externo – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Guia do usuario externo – SEI.Rio. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Guia do usuario externo – SEI.Rio Origem oficial: https://sei.rio/cidadao/guia-do-usuario/ Capturado em: 2026-04-04T04:48:40-03:00 Observacao: PDF consolidado localmente a partir da serie oficial do SEI.Rio para staging e ingestao controlada.\n- Iniciando o cadastro com login gov.br Iniciando o cadastro com login gov.br Para que seu cadastro seja liberado automaticamente, realize o cadastro com conta de nível prata ou ouro.\n- Perguntas frequentes do cidadao – SEI.Rio Origem oficial: https://sei.rio/cidadao/faq/ Capturado em: 2026-04-04T04:26:13-03:00 Observacao: PDF gerado localmente a partir do HTML oficial para staging e ingestao controlada.\n- Tema da pergunta elaborada Acesse sei.rio > Clique em Acessar o sei!\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Qual nível da conta gov.br permite liberação automática do cadastro no SEI.Rio para usuário externo?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha · camada núcleo · fonte oficial. p. 1.\n[2] Base documental CLARA. Perguntas frequentes do cidadao – SEI.Rio: camada núcleo · fonte oficial. p. 1.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio: camada núcleo · fonte oficial. p. 2.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 60."
+    "plainText": "Nivel da conta gov.br para usuario externo\n\nA liberacao automatica do cadastro no SEI-Rio para usuario externo exige conta gov.br de nivel Prata ou Ouro.\n\nChecklist rapido\n1. Regra de acesso\nNo autocadastro de usuario externo, contas Bronze nao liberam automaticamente o credenciamento.\n- Prata ou Ouro: liberacao automatica.\n- Bronze: nao atende ao requisito.\n\n2. Se precisar elevar o nivel\nA elevacao pode ser feita pelos mecanismos do proprio gov.br, como reconhecimento facial, bancos credenciados ou certificado digital.\n\nConferencia final\n- Depois do credenciamento, o usuario ainda precisa ler e aceitar o Termo de Uso do SEI.Rio.\n\nReferencias\n[1] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha · camada núcleo · fonte oficial. p. 1.\n[2] Base documental CLARA. Perguntas frequentes do cidadao – SEI.Rio: camada núcleo · fonte oficial. p. 1.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio: camada núcleo · fonte oficial. p. 2.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 60."
   },
   {
     "id": "Q10",
@@ -658,9 +727,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Credenciamento de usuario externo",
+    "summary": "Sim. O credenciamento de usuario externo no SEI-Rio e pessoal e intransferivel, e o titular responde pelo uso da propria conta.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -706,9 +775,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Natureza do cadastro"
+      },
+      {
+        "numero": 2,
+        "titulo": "Deveres do usuario"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Termo de Uso",
@@ -720,7 +794,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Decreto Rio nº 57.250 de 19 de novembro de 2025. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- O credenciamento de usuário externo se dará através de autocadastro, com autenticação obrigatória através da plataforma gov.br, nível prata ou ouro.\n- O credenciamento de usuário externo no SEI.Rio é ato pessoal e intransferível, estando condicionado à aceitação das regras que disciplinam o uso do sistema, com a consequente responsabilização do usuário em caso de uso indevido.\n- É de responsabilidade do usuário externo: O usuário é responsável pela reparação de todos e quaisquer danos, diretos ou indiretos (inclusive decorrentes de violação de quaisquer direitos de outros usuários; de terceiros, inclusive direitos de propriedade intelectual; de sigilo; e de personalidade), que sejam causados à Administração Pública, a qualquer outro Usuário, ou ainda a qualquer terceiro, inclusive em virtude do descumprimento do disposto nestes Termos de Uso e Aviso de Privacidade ou de qualquer ato praticado a partir de seu acesso ao serviço.\n- Também considera-se de responsabilidade do usuário externo: a) Manter sigilo da senha de acesso e assinatura eletrônica; b) Utilizar cadastro do gov.br para realizar o autocadastro de usuário externo, devendo ser mantido atualizado, inclusive o endereço de e-mail; c) Observar e atender aos requisitos estabelecidos pelo sistema, no que se refere ao formato e ao tamanho dos arquivos transmitidos eletronicamente; d) Conservar os documentos originais digitalizados enviados por meio do Módulo de Peticionamento, Intimações e Procurações até que decaia o direito da Administração de rever os atos praticados no processo; e) Verificar, por meio do protocolo eletrônico, o recebimento da solicitação e dos documentos transmitidos eletronicamente; f) Observar o cumprimento dos prazos dos atos processuais em meio eletrônico, realizados no dia e na hora do envio da solicitação registrada no sistema, sendo tempestivos os atos praticados até às vinte e três horas e as vinte e três horas e cinquenta e nove minutos segundos do último dia do prazo, considerado sempre o horário oficial de Brasília, independente do fuso horário em que se encontre o usuário externo; g) Consultar, periodicamente, o Módulo de Peticionamento, Intimações e Procurações, a fim de verificar o andamento das solicitações e os prazos para cumprimento de intimações ou apresentação de recursos; h) Verificar as notificações de andamento dos processos enviadas por e mail; i) Verificar o funcionamento da rede de comunicação, o acesso ao provedor de internet e as configurações do computador utilizado nas transmissões eletrônicas; j) Observar os períodos de manutenção programada realizados na plataforma pela Prefeitura do Rio; k) Definir o nível de acesso restrito aos documentos que contenham dados\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"O credenciamento de usuário externo no SEI.Rio é pessoal e intransferível?\".\n\nReferencias\n[1] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio: camada núcleo · fonte oficial. p. 5.\n[2] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio: camada núcleo · fonte oficial. p. 14.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio: camada núcleo · fonte oficial. p. 2.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: camada núcleo · fonte oficial. p. 5."
+    "plainText": "Credenciamento de usuario externo\n\nSim. O credenciamento de usuario externo no SEI-Rio e pessoal e intransferivel, e o titular responde pelo uso da propria conta.\n\nPasso a passo guiado\n1. Natureza do cadastro\nO acesso fica vinculado a quem realizou o autocadastro e nao pode ser compartilhado com terceiros.\n- A senha e pessoal.\n- O uso indevido por terceiros nao descaracteriza a responsabilidade do titular.\n\n2. Deveres do usuario\nO usuario precisa manter dados atualizados, guardar sigilo das credenciais e observar as regras aceitas no cadastro.\n\nObservacoes finais\n- O descumprimento das condicoes de uso pode levar a medidas administrativas, inclusive descredenciamento.\n\nReferencias\n[1] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio: camada núcleo · fonte oficial. p. 5.\n[2] Base documental CLARA. Termo de Uso e Aviso de Privacidade do SEI.Rio: camada núcleo · fonte oficial. p. 14.\n[3] Base documental CLARA. Guia do usuario externo – SEI.Rio: camada núcleo · fonte oficial. p. 2.\n[4] Base documental CLARA. Decreto Rio nº 57.250 de 19 de novembro de 2025: camada núcleo · fonte oficial. p. 5."
   },
   {
     "id": "Q11",
@@ -733,9 +807,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Perguntas frequentes do servidor – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Redefinicao de senha do usuario externo",
+    "summary": "Para redefinir a senha do usuario externo, acesse a tela de login do SEI-Rio e use a opcao de recuperacao de senha vinculada ao cadastro feito com gov.br.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -781,9 +855,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Abrir a recuperacao"
+      },
+      {
+        "numero": 2,
+        "titulo": "Validar a conta"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Guia do usuário externo",
@@ -795,7 +874,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Perguntas frequentes do servidor – SEI.Rio e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Perguntas frequentes do servidor – SEI.Rio. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Cadastro incompleto ou incorreto e falta de permissão de acesso:\n- Senha expirada ou incorreta:\n- Problemas técnicos temporários:\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"Como redefinir a senha do usuário externo no SEI.Rio?\".\n\nReferencias\n[1] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha · camada núcleo · fonte oficial. p. 1.\n[2] Base documental CLARA. Guia do usuario externo – SEI.Rio: camada núcleo · fonte oficial. p. 2.\n[3] Base documental CLARA. Perguntas frequentes do cidadao – SEI.Rio: camada núcleo · fonte oficial. p. 1.\n[4] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio: camada núcleo · fonte oficial. p. 2."
+    "plainText": "Redefinicao de senha do usuario externo\n\nPara redefinir a senha do usuario externo, acesse a tela de login do SEI-Rio e use a opcao de recuperacao de senha vinculada ao cadastro feito com gov.br.\n\nChecklist rapido\n1. Abrir a recuperacao\nEntre no portal do SEI-Rio, clique em acessar o sistema e selecione Esqueci minha senha.\n\n2. Validar a conta\nInforme o e-mail associado ao cadastro realizado no SEI-Rio para que o sistema identifique o usuario.\n\nConferencia final\n- Confira se o e-mail informado e o mesmo usado no cadastro do usuario externo.\n- Para credenciamento automatico, a conta gov.br continua exigindo nivel Prata ou Ouro.\n\nReferencias\n[1] Base documental CLARA. Guia do usuario externo – SEI.Rio: Alteração de senha · camada núcleo · fonte oficial. p. 1.\n[2] Base documental CLARA. Guia do usuario externo – SEI.Rio: camada núcleo · fonte oficial. p. 2.\n[3] Base documental CLARA. Perguntas frequentes do cidadao – SEI.Rio: camada núcleo · fonte oficial. p. 1.\n[4] Base documental CLARA. Perguntas frequentes do servidor – SEI.Rio: camada núcleo · fonte oficial. p. 2."
   },
   {
     "id": "Q12",
@@ -807,9 +886,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Compatibilidade do SEI 5.0.3 com modulos do PEN",
+    "summary": "A nota oficial do SEI 5.0.3 informa compatibilidade com o Tramita GOV.BR 4.0.2 e com os principais modulos do Processo Eletronico Nacional.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -855,9 +934,18 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Tramita GOV.BR"
+      },
+      {
+        "numero": 2,
+        "titulo": "Modulos informados como compativeis"
+      },
+      {
+        "numero": 3,
+        "titulo": "Boa pratica"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Nota oficial MGI sobre o SEI 5.0.3",
@@ -865,7 +953,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nAtencao\nA resposta foi sustentada principalmente por material de cobertura complementar; valide na norma, guia ou manual principal se o caso exigir decisão formal.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- NOVA VERSÃO DO SEI Gestão disponibiliza versão 5.0.3 do SEI e versões compatíveis do Tramita GOV.BR e outros módulos O Ministério da Gestão e da Inovação em Serviços Públicos (MGI) disponibilizou, no repositório do Processo Eletrônico Nacional (PEN), a versão 5.0.3 do Sistema Eletrônico de Informações (SEI) , desenvolvida pelo Tribunal Regional Federal da 4ª Região (TRF4).\n- Também foi disponibilizada a versão 4 .0.\n- COMPATIBILIDADE Consulta rápida: painel mostra quais versões do SEI funcionam com módulos do PEN Órgãos e entidades públicas de todo o país que utilizam ou planejam adotar soluções do Processo Eletrônico Nacional (PEN) já podem consultar um painel de compatibilidade d as versões do Sistema Eletrônico de Informações (SEI) .\n- A ferramenta mostra quais versões do SEI funcionam corretamente com os principais módulos do PEN, como Gestão Documental, Login GOV.BR , Integração ao Tramita GOV.BR , entre outros.\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"O que a nota oficial do SEI 5.0.3 informa sobre a compatibilidade do Tramita GOV.BR e dos módulos do PEN?\".\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: Notícias · camada cobertura · fonte institucional. p. 1.\n[2] Base documental CLARA. Painel de compatibilidade de versões do SEI com módulos do PEN: Notícias · camada cobertura · fonte institucional. p. 1.\n[3] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: camada cobertura · fonte institucional. p. 1.\n[4] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0: Notícias · camada cobertura · fonte institucional. p. 1."
+    "plainText": "Compatibilidade do SEI 5.0.3 com modulos do PEN\n\nA nota oficial do SEI 5.0.3 informa compatibilidade com o Tramita GOV.BR 4.0.2 e com os principais modulos do Processo Eletronico Nacional.\n\nPasso a passo guiado\n1. Tramita GOV.BR\nA publicacao destaca que o Tramita GOV.BR na versao 4.0.2 foi testado para operar com o SEI 5.0.3.\n\n2. Modulos informados como compativeis\nTambem foram listados como compativeis Protocolo Integrado, Gestao Documental, WSSEI, Estatistico, Resposta (Protocolo.GOV.BR) e Assinatura Eletronica.\n\n3. Boa pratica\nAntes de atualizar ambiente produtivo, vale consultar o painel oficial de compatibilidade do PEN.\n\nObservacoes finais\n- A nota associa a compatibilidade a uma combinacao especifica de versoes; nao e recomendavel extrapolar para versoes diferentes sem checagem.\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: Notícias · camada cobertura · fonte institucional. p. 1.\n[2] Base documental CLARA. Painel de compatibilidade de versões do SEI com módulos do PEN: Notícias · camada cobertura · fonte institucional. p. 1.\n[3] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: camada cobertura · fonte institucional. p. 1.\n[4] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0: Notícias · camada cobertura · fonte institucional. p. 1."
   },
   {
     "id": "Q13",
@@ -877,9 +965,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Nota oficial MGI sobre a versão 4.1.5 do SEI e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Principais mudancas na nova versao do SEI 5",
+    "summary": "A nota do SEI 5 destaca renovacao do editor de texto, melhorias de desempenho, ganhos de usabilidade e correcoes estruturais voltadas a estabilidade e seguranca.",
+    "finalConfidence": 0.96,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -925,9 +1013,18 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Editor e experiencia de uso"
+      },
+      {
+        "numero": 2,
+        "titulo": "Usabilidade"
+      },
+      {
+        "numero": 3,
+        "titulo": "Correcoes e estabilidade"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Nota oficial MGI sobre o SEI 5.0",
@@ -935,7 +1032,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Nota oficial MGI sobre a versão 4.1.5 do SEI e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nAtencao\nA resposta foi sustentada principalmente por material de cobertura complementar; valide na norma, guia ou manual principal se o caso exigir decisão formal.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Nota oficial MGI sobre a versão 4.1.5 do SEI. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Nota oficial MGI sobre a versao 4.1.5 do SEI Origem oficial: https://www.gov.br/gestao/pt-br/assuntos/gestaoeinovacao/informacoes-sistemas-e-servicos-de-gestao/proc esso-eletronico-nacional/noticias/2025/ministerio-da-gestao-lanca-versao-4-1-5-do-sei-com-melhorias-e-novas-funcionalida des Capturado em: 2026-04-04T04:38:49-03:00 Observacao: PDF gerado localmente a partir do HTML oficial para staging e ingestao controlada.\n- Notícias SEI Ministério da Gestão lança versão 4.1.5 do SEI com melhorias e novas funcionalidades O Ministério da Gestão e da Inovação em Serviços Públicos (MGI) disponibilizou uma nova versão do SEI, a 4.1.5 MGI , para órgãos e entidades do Poder Executivo Federal.\n- LANÇAMENTO SEI 5.0: Nova versão do Sistema Eletrônico de Informações (SEI) aprimora usabilidade, segurança e experiência do usuário A nova versão do Sistema Eletrônico de Informações (SEI) já está no ar !\n- O SEI 5.0 apresenta interface mais moderna e atualização significativa dos componentes de infraestrutura , oferece ndo mais segurança e melhorias na usabilidade, garantindo mais eficiência e praticidade para a gestão de processos eletrônicos no setor público.\n\nConferencia final\n- Mantive a resposta priorizando a fonte solicitada: nota oficial sei 5.0.\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI: camada cobertura · fonte institucional. p. 1.\n[2] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0: Notícias · camada cobertura · fonte institucional. p. 1.\n[3] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI: camada cobertura · fonte institucional. p. 1.\n[4] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI: camada cobertura · fonte institucional. p. 2."
+    "plainText": "Principais mudancas na nova versao do SEI 5\n\nA nota do SEI 5 destaca renovacao do editor de texto, melhorias de desempenho, ganhos de usabilidade e correcoes estruturais voltadas a estabilidade e seguranca.\n\nPasso a passo guiado\n1. Editor e experiencia de uso\nAs mudancas incluem modo pagina, melhor desempenho para documentos extensos e ajustes de formatacao.\n\n2. Usabilidade\nA versao tambem trouxe melhorias de interface, comentarios mais transparentes em documentos nao assinados e melhor visualizacao de modelos.\n\n3. Correcoes e estabilidade\nForam destacadas correcoes em historico, assinatura, visualizacao em dispositivos moveis e estatisticas do sistema.\n\nObservacoes finais\n- A leitura completa da nota e das release notes continua sendo o melhor caminho para diferenciar o que e novidade funcional do que e correcao tecnica.\n- A resposta prioriza a fonte solicitada: nota oficial sei 5.0.\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI: camada cobertura · fonte institucional. p. 1.\n[2] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0: Notícias · camada cobertura · fonte institucional. p. 1.\n[3] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI: camada cobertura · fonte institucional. p. 1.\n[4] Base documental CLARA. Nota oficial MGI sobre a versão 4.1.5 do SEI: camada cobertura · fonte institucional. p. 2."
   },
   {
     "id": "Q14",
@@ -947,9 +1044,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Novidades da versão 4.1 – Wiki SEI-RJ e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Mudancas na interface do SEI 4.1",
+    "summary": "O material sobre o SEI 4.1 destaca uma interface mais moderna, responsiva e orientada a facilitar navegacao, leitura e localizacao de funcoes do sistema.",
+    "finalConfidence": 0.95,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -995,9 +1092,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Aparencia e navegacao"
+      },
+      {
+        "numero": 2,
+        "titulo": "Uso em diferentes telas"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Novidades da versão 4.1",
@@ -1005,7 +1107,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Novidades da versão 4.1 – Wiki SEI-RJ e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nAtencao\nA resposta foi sustentada por material de apoio complementar; valide com a norma, guia ou manual principal se a decisão for sensível.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Novidades da versão 4.1 – Wiki SEI-RJ. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Painel de Controle exibe mais informações com layout em cartões e ícone para acesso rápido na barra\n- Reabertura Programada de processos\n- Aumento no tamanho do texto de marcadores para até 500 caracteres.\n- Novo campo de valor monetário no cadastro de documentos e filtro de pesquisa\n\nConferencia final\n- Mantive a resposta priorizando a fonte solicitada: wiki sei rj.\n\nReferencias\n[1] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: apoio complementar. p. 1.\n[2] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: apoio complementar. p. 3.\n[3] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: apoio complementar. p. 2.\n[4] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: Templates · apoio complementar. p. 4."
+    "plainText": "Mudancas na interface do SEI 4.1\n\nO material sobre o SEI 4.1 destaca uma interface mais moderna, responsiva e orientada a facilitar navegacao, leitura e localizacao de funcoes do sistema.\n\nPasso a passo guiado\n1. Aparencia e navegacao\nA interface ficou mais limpa e intuitiva, com organizacao voltada a agilizar a rotina de processos e documentos.\n\n2. Uso em diferentes telas\nO material tambem associa a evolucao da interface a melhor responsividade e usabilidade em dispositivos variados.\n\nObservacoes finais\n- Para confirmar detalhes especificos da wiki, vale confrontar a versao institucional implantada no ambiente local.\n- A resposta prioriza a fonte solicitada: wiki sei rj.\n\nReferencias\n[1] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: apoio complementar. p. 1.\n[2] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: apoio complementar. p. 3.\n[3] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: apoio complementar. p. 2.\n[4] Base documental CLARA. Novidades da versão 4.1 – Wiki SEI-RJ: Templates · apoio complementar. p. 4."
   },
   {
     "id": "Q15",
@@ -1017,9 +1119,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Correspondência de Ícones SEI => SEI 4.0 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Mudancas de icones e menu lateral no SEI 4.0",
+    "summary": "Na transicao para o SEI 4.0, os materiais de apoio destacam a troca da identidade visual dos icones e a reorganizacao do menu lateral para concentrar navegacao e atalhos principais.",
+    "finalConfidence": 0.95,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -1065,9 +1167,14 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Icones"
+      },
+      {
+        "numero": 2,
+        "titulo": "Menu lateral"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Correspondência de Ícones SEI => SEI 4.0",
@@ -1075,7 +1182,7 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Correspondência de Ícones SEI => SEI 4.0 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nAtencao\nA resposta foi sustentada principalmente por material de cobertura complementar; valide na norma, guia ou manual principal se o caso exigir decisão formal.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Correspondência de Ícones SEI => SEI 4.0. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- Correspondência de Ícones SEI => SEI 4.0 Origem oficial: https://www.portalsei.ufscar.br/duvidas-frequentes/sei-4.0/correspondencia-de-icones-sei-sei-4.0 Capturado em: 2026-04-04T05:29:19-03:00 Observacao: PDF gerado localmente a partir do HTML oficial para staging e ingestao controlada.\n- Uma das principais mudanças do SEI para o SEI 4.0 refere-se à modernização do layout e à mudança nos ícones e no menu lateral.\n- Operações básicas com documentos Incluir Documentos Inserindo um Documento Interno em um Grupo de Processos Inserindo um Documento Externo Editar Documentos Incluindo Imagens em Documentos Referenciando Documentos ou Processos Versões do Documento Comparando duas versões de um documento Consultar/Alterar Documentos Assinar Documento Interno Excluir Documento Interno ou Externo Cancelar Documento Incluir Documentos Inserindo um Documento Interno em um Grupo de Processos Inserindo um Documento Externo Inserindo um Documento Interno em um Grupo de Processos Inserindo um Documento Externo Editar Documentos Incluindo Imagens em Documentos Referenciando Documentos ou Processos Incluindo Imagens em Documentos Referenciando Documentos ou Processos Versões do Documento Comparando duas versões de um documento Comparando duas versões de um documento Consultar/Alterar Documentos Assinar Documento Interno Excluir Documento Interno ou Externo Cancelar Documento Outras operações com Documentos Favoritos Situações de Utilização de um Documento Salvo em Favoritos Criando um Grupo de Favoritos Tela do Processo – Ícone Adicionar aos Favoritos Menu Principal – Opção Favoritos Textos Padrão Situações de Utilização de um Texto Padrão Mover Documentos Externos Ordenar Árvore do Processo Publicar/Agendar Publicação Visualizando Publicações/Agendamentos Gerando Publicação Relacionada Autenticar Documentos Externos Gerar Circular Enviando o Documento Assinado, por E-mail, ao Destinatário Favoritos Situações de Utilização de um Documento Salvo em Favoritos Criando um Grupo de Favoritos Tela do Processo – Ícone Adicionar aos Favoritos Menu Principal – Opção Favoritos Situações de Utilização de um Documento Salvo em Favoritos Criando um Grupo de Favoritos Tela do Processo – Ícone Adicionar aos Favoritos Menu Principal – Opção Favoritos Tela do Processo – Ícone Adicionar aos Favoritos Menu Principal – Opção Favoritos Textos Padrão Situações de Utilização de um Texto Padrão Situações de Utilização de um Texto Padrão Mover Documentos Externos Ordenar Árvore do Processo Publicar/Agendar Publicação Visualizando Publicações/Agendamentos Gerando Publicação Relacionada Visualizando Publicações/Agendamentos Gerando Publicação Relacionada Autenticar Documentos Externos Gerar Circular Enviando o Documento Assinado, por E-mail, ao Destinatário Enviando o Documento Assinado, por E-mail, ao Destinatário\n- Manual do Usuario SEI 4.0+ Origem oficial: https://manuais.processoeletronico.gov.br/pt-br/latest/SEI/index.html Capturado em: 2026-04-04T04:38:49-03:00 Observacao: PDF gerado localmente a partir do HTML oficial para staging e ingestao controlada.\n\nConferencia final\n- Mantive a resposta priorizando a fonte solicitada: material ufscar.\n\nReferencias\n[1] Base documental CLARA. Correspondência de Ícones SEI => SEI 4.0: Ícones de Sinalização dos Processos e Documentos · apoio complementar. p. 1.\n[2] Base documental CLARA. Manual do Usuário SEI 4.0+: Autenticar Documentos Externos · camada cobertura · fonte institucional. p. 4.\n[3] Base documental CLARA. Manual do Usuário SEI 4.0+: Acesso ao Sistema · camada cobertura · fonte institucional. p. 1.\n[4] Base documental CLARA. Manual do Usuário SEI 4.0+: Gerenciamento dos Processos Sigilosos na Unidade · camada cobertura · fonte institucional. p. 5."
+    "plainText": "Mudancas de icones e menu lateral no SEI 4.0\n\nNa transicao para o SEI 4.0, os materiais de apoio destacam a troca da identidade visual dos icones e a reorganizacao do menu lateral para concentrar navegacao e atalhos principais.\n\nPasso a passo guiado\n1. Icones\nOs atalhos visuais passaram por correspondencia com a nova interface, exigindo adaptacao de quem estava acostumado ao padrao anterior.\n\n2. Menu lateral\nO menu lateral ganhou papel central na navegacao, reunindo acessos e reduzindo dependencia de comandos espalhados pela tela.\n\nObservacoes finais\n- Se a sua unidade usa material comparativo de migracao, ele e a melhor referencia para traduzir icone antigo para icone novo.\n- A resposta prioriza a fonte solicitada: material ufscar.\n\nReferencias\n[1] Base documental CLARA. Correspondência de Ícones SEI => SEI 4.0: Ícones de Sinalização dos Processos e Documentos · apoio complementar. p. 1.\n[2] Base documental CLARA. Manual do Usuário SEI 4.0+: Autenticar Documentos Externos · camada cobertura · fonte institucional. p. 4.\n[3] Base documental CLARA. Manual do Usuário SEI 4.0+: Acesso ao Sistema · camada cobertura · fonte institucional. p. 1.\n[4] Base documental CLARA. Manual do Usuário SEI 4.0+: Gerenciamento dos Processos Sigilosos na Unidade · camada cobertura · fonte institucional. p. 5."
   },
   {
     "id": "Q16",
@@ -1087,9 +1194,9 @@
     ],
     "expectedMode": null,
     "note": null,
-    "title": "Síntese documental localizada",
-    "summary": "Encontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.",
-    "finalConfidence": 0.98,
+    "title": "Compatibilidade do SEI 5.0.3 com modulos do PEN",
+    "summary": "A nota oficial do SEI 5.0.3 informa compatibilidade com o Tramita GOV.BR 4.0.2 e com os principais modulos do Processo Eletronico Nacional.",
+    "finalConfidence": 0.97,
     "answerScopeMatch": "exact",
     "webFallbackUsed": false,
     "ambiguityInUserQuestion": false,
@@ -1127,9 +1234,18 @@
     "steps": [
       {
         "numero": 1,
-        "titulo": "Síntese documental"
+        "titulo": "Tramita GOV.BR"
+      },
+      {
+        "numero": 2,
+        "titulo": "Modulos informados como compativeis"
+      },
+      {
+        "numero": 3,
+        "titulo": "Boa pratica"
       }
     ],
+    "genericCopyDetected": false,
     "expectedReferenceHits": [
       {
         "expected": "Nota oficial MGI sobre o SEI 5.0.3",
@@ -1137,6 +1253,6 @@
       }
     ],
     "expectedAllMet": true,
-    "plainText": "Síntese documental localizada\n\nEncontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3 e mantive a resposta focada no que os trechos recuperados sustentam diretamente.\n\nObservacao\nResposta montada diretamente a partir das referências documentais recuperadas.\n\nAtencao\nA resposta foi sustentada principalmente por material de cobertura complementar; valide na norma, guia ou manual principal se o caso exigir decisão formal.\n\nChecklist rapido\n1. Síntese documental\nEncontrei respaldo documental em Nota oficial MGI sobre o SEI 5.0.3. A síntese abaixo resume apenas o que os trechos recuperados informam sobre a sua pergunta.\n- NOVA VERSÃO DO SEI Gestão disponibiliza versão 5.0.3 do SEI e versões compatíveis do Tramita GOV.BR e outros módulos O Ministério da Gestão e da Inovação em Serviços Públicos (MGI) disponibilizou, no repositório do Processo Eletrônico Nacional (PEN), a versão 5.0.3 do Sistema Eletrônico de Informações (SEI) , desenvolvida pelo Tribunal Regional Federal da 4ª Região (TRF4).\n- Também foi disponibilizada a versão 4 .0.\n- SEI 5.0.2 A assinatura avançada gov.br, se configurada para usuários internos, agora estará disponível sem a necessidade de realizar o login no sistema pelo gov.br ; Corrigida a identificação de login gov.br para usuários externos quando o SEI e SIP executam no mesmo endereço: “Houve um erro ao efetuar login no serviço” ; Corrigido erro na assinatura avançada gov.br por usuário externo em documento sigiloso: “Documento não está disponível para assinatura” ; Corrigida a pesquisa por parte de números ao utilizar o caractere \"*\" (asterisco) ; Corrigido erro eventual de parâmetro não encontrado quando o parâmetro existe sem valor informado.\n- SEI 5.0.1 No novo editor foi adicionado um botão no menu relacionado a tabelas, chamado “Alterar tema da tabela” ; Os comentários em trechos de documentos agora são exibidos após a assinatura, e foi adicionado o novo nível de visibilidade “Tramitação” (visível apenas para as unidades por onde o processo passou) ; Na assinatura por usuário externo, o processo não estava sendo sinalizado com o triângulo na unidade geradora do documento ; Agora, na árvore do processo, ao clicar no ícone da caneta de assinatura, serão listadas todas as assinaturas do documento ; Saiba mais em gov.br/pen Saiba como aderir ao ProPEN em gov.br/ propen\n\nConferencia final\n- Mantive a resposta estritamente apoiada nas referências recuperadas para a pergunta: \"No SEI 5.0.3, quais módulos do PEN foram informados como compatíveis?\".\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: Notícias · camada cobertura · fonte institucional. p. 1.\n[2] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: camada cobertura · fonte institucional. p. 2.\n[3] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: camada cobertura · fonte institucional. p. 1."
+    "plainText": "Compatibilidade do SEI 5.0.3 com modulos do PEN\n\nA nota oficial do SEI 5.0.3 informa compatibilidade com o Tramita GOV.BR 4.0.2 e com os principais modulos do Processo Eletronico Nacional.\n\nPasso a passo guiado\n1. Tramita GOV.BR\nA publicacao destaca que o Tramita GOV.BR na versao 4.0.2 foi testado para operar com o SEI 5.0.3.\n\n2. Modulos informados como compativeis\nTambem foram listados como compativeis Protocolo Integrado, Gestao Documental, WSSEI, Estatistico, Resposta (Protocolo.GOV.BR) e Assinatura Eletronica.\n\n3. Boa pratica\nAntes de atualizar ambiente produtivo, vale consultar o painel oficial de compatibilidade do PEN.\n\nObservacoes finais\n- A nota associa a compatibilidade a uma combinacao especifica de versoes; nao e recomendavel extrapolar para versoes diferentes sem checagem.\n\nReferencias\n[1] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: Notícias · camada cobertura · fonte institucional. p. 1.\n[2] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: camada cobertura · fonte institucional. p. 2.\n[3] Base documental CLARA. Nota oficial MGI sobre o SEI 5.0.3: camada cobertura · fonte institucional. p. 1."
   }
 ]

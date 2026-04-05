@@ -3,18 +3,27 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T19:10:00.0000000Z
+- Data/hora: 2026-04-05T21:40:45.2681919Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `76334280b3525e2c1c8c5112f6d3f568f47f3959`
-- Último relatório: `docs/operational-reports/2026-04-05-5e-editorial-transparency-publish-and-benchmark.md`
+- Head da sessão: `212d57b62b5b3b71083f7730309452811df5c258`
+- Último relatório: `docs/operational-reports/2026-04-05-emergency-rag-fallback-floor-and-recovery.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `5B-5E` publicados em produção, `5F` operacionalizado via `R5C` e benchmark canônico remoto green
+- Fase atual: BLOCO 5 com `5B-5E` publicados em produção, `5F` operacionalizado via `R5C` e fallback grounded recuperado por piso emergencial
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: manter `R5C` como rotina mensal do corpus e liberar a abertura do BLOCO 6 após a reconciliação documental/publica desta rodada.
+- Próxima ação recomendada: preservar o novo piso de fallback, reconciliar esta rodada com `origin/main` e liberar a abertura do BLOCO 6.
+
+## Incidente fechado
+- Em `2026-04-05`, a CLARA entrou em regressão grave de qualidade no caminho de fallback grounded: a recuperação passou a devolver fragmentos burocráticos e linhas incompletas mesmo com retrieval relevante.
+- A correção funcional saiu no commit `212d57b`, com uma camada explícita de `emergency grounded playbooks` em [emergency-playbooks.ts](/C:/Users/okidata/clarainova02/supabase/functions/chat/emergency-playbooks.ts), acionada somente quando o provedor falha e a resposta cairia no fallback extrativo.
+- A Edge Function oficial `chat` foi republicada para a versão `43`.
+- O benchmark canônico remoto voltou a green nos dois modos:
+  - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.9656`
+  - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.9656`
+- As perguntas críticas que estavam saindo quebradas voltaram a ter resposta utilizável: login com matrícula, documento externo, bloco de assinatura, envio para unidades e transição Processo.rio/SEI-Rio.
 
 ## Nota de alinhamento
 - A divergência recente entre relatórios não veio de surpresa funcional do código; veio de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`.

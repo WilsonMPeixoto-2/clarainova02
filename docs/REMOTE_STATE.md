@@ -2,7 +2,7 @@
 
 ## Última verificação consolidada
 - Data: 2026-04-05
-- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 76334280b3525e2c1c8c5112f6d3f568f47f3959`
+- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 212d57b62b5b3b71083f7730309452811df5c258`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
@@ -28,6 +28,10 @@
   - isso inclui budget real por request, telemetria por estágio em `chat_metrics.metadata_json`, follow-up contextualizado no retrieval, breakdown explícito de prompt/histórico, retorno de `request_id` na `chat`, `submit-chat-feedback`, dashboard admin de gaps, degradacao segura para `keyword_only`, targeted keyword rescue, grounded fallback recalibrado para o dominio SEI-Rio, cache de embeddings de consulta com `TTL` de `7` dias, relatório estático de frescor do corpus no painel administrativo, benchmark estrutural de chunking/dimensionalidade, telemetria de uso do provedor Gemini para decisão sobre context caching, governança de retrieval por metadados reais dentro do SQL da busca híbrida, confirmação forte de source-target, contratos mais distintos entre `Direto` e `Didático` e transparência editorial no grounding sem depender de mudança de layout
   - `origin/main` continua sendo a fonte oficial integrada, então existe divergência intencional e documentada entre `main` e a produção até a próxima reconciliação
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
+- Observação emergencial de 2026-04-05:
+  - o caminho de fallback grounded entrou em regressão severa de qualidade e foi recuperado por publicação direta da Edge Function `chat` a partir do commit `212d57b`
+  - a correção adicionou um piso editorial explícito para o fallback quando o provedor Gemini falha, sem tocar no layout web
+  - não houve necessidade de novo deploy Vercel nesta rodada porque o incidente era backend-only
 - Deploy canônico mais recente observado:
   - source: `preview_promote_recovery`
   - status: `READY`
@@ -46,8 +50,8 @@
 ## Edge Functions verificadas
 - `chat`
   - status: `ACTIVE`
-  - versão observada: `37`
-  - última atualização observada: `2026-04-05 19:03:22 UTC`
+  - versão observada: `43`
+  - última atualização observada: `2026-04-05 21:35:55 UTC`
 - `submit-chat-feedback`
   - status: `ACTIVE`
   - versão observada: `1`
@@ -158,6 +162,9 @@
       - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
       - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.98`
     - o `5F` fica operacionalizado por `R5C`, então a próxima frente recomendada deixa de ser `5C-5F` e passa a ser BLOCO 6 + pendências residuais de corpus
+    - a rodada emergencial de 2026-04-05 repôs um piso de qualidade no fallback grounded, com benchmark canônico remoto novamente green:
+      - `Didático`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.9656`
+      - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.9656`
 
 ## Divergências remotas que exigem cuidado
 - a produção web e as functions `chat` / `embed-chunks` / `submit-chat-feedback` / `get-usage-stats` estão à frente de `origin/main`, porque os deploys manuais de `2026-04-05` partiram da branch de sessão e o último runtime funcional publicado nesta trilha está no commit `7633428`
