@@ -4,6 +4,7 @@ import {
   DEFAULT_UPLOAD_GOVERNANCE_FORM,
   parseDocumentGovernanceMetadata,
   resolveDocumentOperationalState,
+  resolveDocumentRuntimeActivation,
   resolveUploadGovernance,
 } from "@/lib/admin-governance";
 
@@ -94,5 +95,22 @@ describe("admin governance resolver", () => {
     expect(state.groundingStatus).toBe("embeddings_pending");
     expect(state.groundingEnabled).toBe(false);
     expect(state.failureReason).toBe("embedding_incomplete");
+  });
+
+  it("keeps requested grounding inactive until the document is semantically ready", () => {
+    expect(resolveDocumentRuntimeActivation({
+      governanceActivationRequested: true,
+      operationalState: { groundingEnabled: false },
+    })).toBe(false);
+
+    expect(resolveDocumentRuntimeActivation({
+      governanceActivationRequested: true,
+      operationalState: { groundingEnabled: true },
+    })).toBe(true);
+
+    expect(resolveDocumentRuntimeActivation({
+      governanceActivationRequested: false,
+      operationalState: { groundingEnabled: true },
+    })).toBe(false);
   });
 });

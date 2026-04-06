@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "6770c85",
-  "current_phase": "BLOCO 5 com 5B-5E publicados em producao, 5F operacionalizado por R5C e resposta grounded recuperada por piso emergencial no fallback",
+  "last_integrated_main_sha": "a7aa8f2",
+  "current_phase": "BLOCO 5 com 5B-5E publicados em producao, 5F operacionalizado por R5C, resposta grounded recuperada por piso emergencial, rodada recente de UI ja publicada em main/producao e pacote local Q1-Q7 validado localmente",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
-  "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T21:40:45.2681919Z",
+  "last_update_utc": "2026-04-06T06:40:00.0000000Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -73,9 +73,15 @@
     "O benchmark canonico remoto pós-publicacao do `5C`, do `5D` e do `5E` permaneceu green: `Didatico` e `Direto` ficaram com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.98`.",
     "O `5F` fica operacionalizado por `R5C`: a verificacao manual de frescor do manifesto/corpus ja esta servida em producao e passa a ser rotina mensal, nao um novo pacote de runtime.",
     "A resposta grounded em producao foi recuperada nesta branch pelo commit `212d57b62b5b3b71083f7730309452811df5c258`, que introduziu uma camada emergencial de playbooks editoriais para o fallback quando o provedor Gemini falha.",
-    "A Edge Function oficial `chat` foi republicada para a versao `43`, e o benchmark canonico remoto voltou a green nos dois modos com `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.9656`."
+    "A Edge Function oficial `chat` foi republicada para a versao `43`, e o benchmark canonico remoto voltou a green nos dois modos com `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.9656`.",
+    "Em `2026-04-06`, `main` e `origin/main` avancaram para `a7aa8f2` com uma rodada recente de UI ja publicada em producao, incluindo `4b449eb`, `cc7bc7d` e `a7aa8f2`.",
+    "A producao web oficial `https://clarainova02.vercel.app` agora aponta para o deploy `dpl_EddEfGUsefAMV5QuzSjsaT79ocEG`, criado em `2026-04-06 01:38:53 -03:00`, ja depois do fast-forward para `main`.",
+    "O pacote local `Q3-Q4` simplificou a resposta visivel da CLARA: prompts didaticos sem camadas artificiais, renderer sem badges de confianca nem trilhas editoriais pesadas, `processStates` e `termosDestacados` removidos da resposta final e playbooks novos para `assinar documento interno`, `despacho x oficio` e `notificacoes/prazos`.",
+    "O pacote local `Q5-Q7` fechou a prontidao semantica do corpus e os guard-rails operacionais: documento so volta a `is_active = true` quando grounding esta realmente pronto, a camada Gemini ganhou cooldown/circuit breaker curto para quota/429, `search_metrics` verbose saiu do caminho quente por padrao e benchmark/re-embed oficial agora exigem opt-in explicito."
   ],
   "pending_items": [
+    "Publicar de forma limpa o pacote local `Q1-Q7`, sem misturar a frente paralela de layout/dependencias.",
+    "Validar remotamente o reset `quality-first / cost-first / simplificacao-first`, com foco em qualidade real das respostas, custo por pergunta e comportamento do corpus apos reprocessamento.",
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",
     "Manter `R5C` como rotina mensal de verificacao do manifesto/corpus.",
     "Preparar a abertura do BLOCO 6 sem competir com as pendencias residuais do corpus.",
@@ -83,13 +89,16 @@
   ],
   "external_blockers": [
     "Google OAuth do admin continua dependente de configuração externa no Supabase/Google.",
-    "Embeddings reais continuam sujeitos à estabilidade externa do Gemini."
+    "Embeddings reais continuam sujeitos à estabilidade externa do Gemini.",
+    "O painel do Google/AI Studio ainda precisa ser consultado para confirmar spending cap, tier e quota real; ate la, a operacao assume hipotese conservadora de free tier ou muito proximo disso."
   ],
-  "next_action": "Concluir a reconciliacao documental/publica da rodada de fallback emergencial, preservar o novo piso de resposta grounded e liberar a abertura do BLOCO 6.",
+  "next_action": "Preparar uma publicacao limpa do pacote local Q1-Q7 sem empacotar automaticamente arquivos paralelos de layout/dependencias e, em seguida, validar remotamente o reset quality-first/cost-first antes de abrir o BLOCO 6.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
     "A partir de 2026-04-05, a ordem operacional imediata dentro do BLOCO 5 passa a ser R0, R1, R2, R3, R4, R5 e só depois a retomada dos subblocos canônicos 5B-5F.",
+    "Em 2026-04-06, a filosofia operacional foi corrigida explicitamente: a CLARA existe para responder muito bem; tudo o que nao aumentar a utilidade real da resposta vira candidato a reducao, bastidor ou remocao.",
+    "A nova auditoria mostrou que ha muita coisa no sistema servindo mais ao proprio sistema do que ao usuario, especialmente em fan-out por pergunta, schema/renderer pesados e telemetria duplicada.",
     "O baseline do benchmark canônico ficou perfeito em `Didatico` e teve uma única oscilação de referência explícita em `Direto` (`Q10`), mas ainda dentro do gate mínimo adotado para o lote.",
     "No R2, `taskType` e `title` foram preservados como pistas de API, mas o contrato semântico passou a usar framing textual explícito e metadado versionado para reduzir dependência de prefixos artificiais no conteúdo vetorial.",
     "A producao ficou temporariamente à frente de `origin/main` porque os deploys de 2026-04-05 partiram manualmente da branch de sessao; essa divergencia está documentada e precisa ser preservada na proxima reconciliacao com `main`.",
@@ -103,6 +112,6 @@
     "A atualizacao de dependencias registrada no commit `48e82cf` permanece compatível com a trilha publicada; o `5E` foi validado com `npm run validate` e benchmark canônico green sobre essa base."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-05-emergency-rag-fallback-floor-and-recovery.md",
-  "last_session_head_sha": "053283e"
+  "last_report": "docs/operational-reports/2026-04-06-q5-q7-corpus-readiness-gemini-guardrails-and-prod-ops-local.md",
+  "last_session_head_sha": "a7aa8f2"
 }

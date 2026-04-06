@@ -168,6 +168,38 @@ const PLAYBOOKS: EmergencyGroundedPlaybook[] = [
     finalConfidence: 0.97,
   },
   {
+    id: "q5b-assinar-documento-interno",
+    patterns: [/assinar.*documento interno/, /assinatura.*documento interno/, /como.*assinar.*documento/],
+    title: "Assinatura de documento interno",
+    summary: "Para assinar um documento interno, abra o documento já finalizado no processo, use a ação Assinar Documento e confirme a assinatura com sua credencial.",
+    mode: "passo_a_passo",
+    steps: [
+      {
+        title: "Conferir se o documento está pronto",
+        content: "Abra o processo e confirme se o documento interno já está na versão final, sem pendência de edição ou correção.",
+        items: [
+          "Revise o texto antes de assinar.",
+          "Confira se o tipo de documento é o correto.",
+        ],
+      },
+      {
+        title: "Executar a assinatura",
+        content: "Selecione o documento na árvore do processo e use a ação Assinar Documento para abrir a confirmação da assinatura eletrônica.",
+      },
+      {
+        title: "Validar o resultado",
+        content: "Depois da confirmação, verifique se o documento passou a aparecer como assinado e se o processo pode seguir para a próxima etapa.",
+        items: [
+          "Se a assinatura for de outra pessoa ou unidade, use bloco de assinatura em vez de assinar no seu login.",
+        ],
+      },
+    ],
+    observations: [
+      "Assinar no próprio documento e disponibilizar em bloco de assinatura são rotinas diferentes.",
+    ],
+    finalConfidence: 0.96,
+  },
+  {
     id: "q6-enviar-processo",
     patterns: [/enviar um processo/, /mais unidades/, /tramita.*unidades?/],
     title: "Envio de processos no SEI-Rio",
@@ -198,6 +230,64 @@ const PLAYBOOKS: EmergencyGroundedPlaybook[] = [
       "O envio e entre unidades, nao para logins individuais.",
     ],
     finalConfidence: 0.97,
+  },
+  {
+    id: "q6b-despacho-oficio",
+    patterns: [/diferenca.*despacho.*oficio/, /despacho.*oficio/, /quando.*usar.*despacho/, /quando.*usar.*oficio/],
+    title: "Diferença entre despacho e ofício",
+    summary: "Em regra, despacho é a manifestação usada dentro do próprio processo para registrar encaminhamento, decisão ou instrução. Ofício é o documento de comunicação formal dirigido a um destinatário específico.",
+    mode: "explicacao",
+    steps: [
+      {
+        title: "Quando usar despacho",
+        content: "Use despacho quando a finalidade for movimentar, instruir ou registrar uma manifestação dentro do fluxo do processo administrativo.",
+        items: [
+          "Ele costuma servir para impulsionar o andamento do processo.",
+          "Também pode registrar decisão, encaminhamento ou ciência interna.",
+        ],
+      },
+      {
+        title: "Quando usar ofício",
+        content: "Use ofício quando a situação exigir uma comunicação formal dirigida a um destinatário determinado, especialmente fora da dinâmica interna do simples andamento processual.",
+      },
+      {
+        title: "Como escolher",
+        content: "Antes de redigir, confirme quem é o destinatário e qual é a finalidade do documento: registrar andamento no processo ou comunicar formalmente algo a alguém.",
+      },
+    ],
+    observations: [
+      "Se a sua dúvida for sobre o modelo textual, ainda vale conferir o padrão documental adotado pela sua unidade.",
+    ],
+    finalConfidence: 0.95,
+  },
+  {
+    id: "q6c-notificacoes-prazo",
+    patterns: [/notificac.*prazo/, /alerta.*prazo/, /lembrete.*prazo/, /aviso.*prazo/],
+    title: "Controle de prazos no SEI-Rio",
+    summary: "O SEI-Rio não funciona, em regra, como um sistema nativo de alertas automáticos de prazo. O acompanhamento costuma depender da rotina de controle adotada pela unidade.",
+    mode: "explicacao",
+    steps: [
+      {
+        title: "Entender o limite do sistema",
+        content: "O acompanhamento de prazo não deve depender apenas da expectativa de um alerta automático na tela, porque essa não é a lógica principal do sistema.",
+      },
+      {
+        title: "Usar apoio operacional",
+        content: "Quando a unidade precisar monitorar vencimentos, o controle costuma ser feito com anotações, organização interna do processo e conferências periódicas da equipe.",
+        items: [
+          "Bloco de anotações pode servir como lembrete visual.",
+          "Despacho, ofício ou outro documento formal não devem ser substituídos por lembrete informal.",
+        ],
+      },
+      {
+        title: "Separar lembrete de comunicação formal",
+        content: "Se a necessidade for comunicar alguém oficialmente sobre prazo ou providência, faça isso pelo documento adequado do processo, e não apenas por anotação de apoio.",
+      },
+    ],
+    observations: [
+      "Lembrete visual e comunicação formal cumprem papéis diferentes no processo.",
+    ],
+    finalConfidence: 0.94,
   },
   {
     id: "q7-migracao-manual",

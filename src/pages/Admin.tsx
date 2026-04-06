@@ -17,6 +17,7 @@ import {
   DEFAULT_UPLOAD_GOVERNANCE_FORM,
   getKnowledgeCorpusLane,
   resolveDocumentOperationalState,
+  resolveDocumentRuntimeActivation,
   resolveUploadGovernance,
   type UploadGovernanceFormState,
 } from "@/lib/admin-governance";
@@ -331,6 +332,28 @@ function buildOperationalMetadata(input: {
     readiness_summary: input.operationalState.readinessSummary,
     last_embedding_attempt_at: input.requestIds && input.requestIds.length > 0 ? new Date().toISOString() : input.metadata.last_embedding_attempt_at ?? null,
     last_embedding_request_ids: input.requestIds && input.requestIds.length > 0 ? input.requestIds : input.metadata.last_embedding_request_ids ?? [],
+  };
+}
+
+function buildDocumentOperationalUpdate(input: {
+  operationalState: ReturnType<typeof resolveDocumentOperationalState>;
+  metadata: Record<string, unknown>;
+  governanceActivationRequested: boolean;
+}) {
+  const runtimeIsActive = resolveDocumentRuntimeActivation({
+    governanceActivationRequested: input.governanceActivationRequested,
+    operationalState: input.operationalState,
+  });
+  const completed = input.operationalState.groundingEnabled;
+  const nowIso = new Date().toISOString();
+
+  return {
+    status: input.operationalState.status,
+    is_active: runtimeIsActive,
+    processed_at: completed ? nowIso : null,
+    failed_at: completed ? null : nowIso,
+    failure_reason: input.operationalState.failureReason,
+    metadata_json: input.metadata,
   };
 }
 
@@ -769,7 +792,7 @@ export default function Admin() {
           mime_type: file.type || "application/pdf",
           storage_path: filePath,
           status: "processing",
-          is_active: resolvedGovernance.isActive,
+          is_active: false,
           language_code: "pt-BR",
           jurisdiction_scope: "municipal_rj",
           topic_scope: resolvedGovernance.topicScope,
@@ -821,7 +844,7 @@ export default function Admin() {
       const documentId = (doc as { id: string }).id;
 
       if (abortController.signal.aborted) {
-        await supabase.from("documents").update({ status: "cancelled" }).eq("id", documentId);
+        await supabase.from("documents").update({ status: "cancelled", is_active: false }).eq("id", documentId);
         return;
       }
 
@@ -854,15 +877,14 @@ export default function Admin() {
         governanceActivationRequested: resolvedGovernance.isActive,
         requestIds: result.requestIds,
       });
+      const documentUpdate = buildDocumentOperationalUpdate({
+        operationalState,
+        metadata: finalMetadata,
+        governanceActivationRequested: resolvedGovernance.isActive,
+      });
 
       if (result.status === "done") {
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: new Date().toISOString(),
-          failed_at: null,
-          failure_reason: operationalState.failureReason,
-          metadata_json: finalMetadata,
-        }).eq("id", documentId);
+        await supabase.from("documents").update(documentUpdate).eq("id", documentId);
         await supabase.from("usage_logs").insert({
           event_type: "client_side_ingestion",
           metadata: {
@@ -888,13 +910,7 @@ export default function Admin() {
           description: `"${file.name}" — ${chunkHealth.embeddedCount}/${prepared.chunks.length} embeddings prontos com governança documental.`,
         });
       } else if (result.status === "embedding_pending") {
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: null,
-          failed_at: new Date().toISOString(),
-          failure_reason: operationalState.failureReason,
-          metadata_json: finalMetadata,
-        }).eq("id", documentId);
+        await supabase.from("documents").update(documentUpdate).eq("id", documentId);
         updateIngestion(file.name, {
           status: "embedding_pending",
           insertedChunks: chunkHealth.savedCount,
@@ -907,13 +923,7 @@ export default function Admin() {
           description: `"${file.name}" — ${chunkHealth.savedCount} chunks salvos, ${chunkHealth.embeddedCount}/${prepared.chunks.length} embeddings prontos. Use Retomar.`,
         });
       } else if (result.status === "partial") {
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: null,
-          failed_at: new Date().toISOString(),
-          failure_reason: operationalState.failureReason,
-          metadata_json: finalMetadata,
-        }).eq("id", documentId);
+        await supabase.from("documents").update(documentUpdate).eq("id", documentId);
         updateIngestion(file.name, {
           status: "partial",
           insertedChunks: chunkHealth.savedCount,
@@ -926,13 +936,7 @@ export default function Admin() {
           description: `"${file.name}" — ${chunkHealth.savedCount}/${prepared.chunks.length} chunks salvos. Use Retomar.`,
         });
       } else {
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: null,
-          failed_at: new Date().toISOString(),
-          failure_reason: operationalState.failureReason,
-          metadata_json: finalMetadata,
-        }).eq("id", documentId);
+        await supabase.from("documents").update(documentUpdate).eq("id", documentId);
         updateIngestion(file.name, {
           status: "failed",
           insertedChunks: chunkHealth.savedCount,
@@ -1008,7 +1012,7 @@ export default function Admin() {
     setRetryingId(doc.id);
 
     try {
-      await supabase.from("documents").update({ status: "processing" }).eq("id", doc.id);
+      await supabase.from("documents").update({ status: "processing", is_active: false }).eq("id", doc.id);
 
       const { data: fileData, error: downloadErr } = await supabase.storage
         .from("documents")
@@ -1050,7 +1054,9 @@ export default function Admin() {
       const topicScope = typeof doc.topic_scope === "string" ? doc.topic_scope : "material_apoio";
       const documentKind = typeof metadata.document_kind === "string" ? metadata.document_kind : "apoio";
       const authorityLevel = typeof metadata.authority_level === "string" ? metadata.authority_level : "supporting";
-      const governanceActive = doc.is_active !== false;
+      const governanceActivationRequested = typeof metadata.governance_activation_requested === "boolean"
+        ? metadata.governance_activation_requested
+        : doc.is_active !== false;
       const excludedFromGrounding = isExcludedFromGrounding({
         corpusCategory,
         topicScope,
@@ -1071,22 +1077,23 @@ export default function Admin() {
           expectedChunks: prepared.chunks.length,
           savedChunks: existingChunkHealth.savedCount,
           embeddedChunks: existingChunkHealth.embeddedCount,
-          governanceActive,
+          governanceActive: governanceActivationRequested,
           excludedFromGrounding,
         });
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: new Date().toISOString(),
-          failed_at: null,
-          failure_reason: operationalState.failureReason,
-          metadata_json: buildOperationalMetadata({
-            metadata,
-            expectedChunks: prepared.chunks.length,
-            chunkHealth: existingChunkHealth,
+        const nextMetadata = buildOperationalMetadata({
+          metadata,
+          expectedChunks: prepared.chunks.length,
+          chunkHealth: existingChunkHealth,
+          operationalState,
+          governanceActivationRequested,
+        });
+        await supabase.from("documents").update(
+          buildDocumentOperationalUpdate({
             operationalState,
-            governanceActivationRequested: governanceActive,
+            metadata: nextMetadata,
+            governanceActivationRequested,
           }),
-        }).eq("id", doc.id);
+        ).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "done",
           insertedChunks: existingChunkHealth.savedCount,
@@ -1118,7 +1125,7 @@ export default function Admin() {
         expectedChunks: prepared.chunks.length,
         savedChunks: finalChunkHealth.savedCount,
         embeddedChunks: finalChunkHealth.embeddedCount,
-        governanceActive,
+        governanceActive: governanceActivationRequested,
         excludedFromGrounding,
       });
       const nextMetadata = buildOperationalMetadata({
@@ -1126,18 +1133,17 @@ export default function Admin() {
         expectedChunks: prepared.chunks.length,
         chunkHealth: finalChunkHealth,
         operationalState,
-        governanceActivationRequested: governanceActive,
+        governanceActivationRequested,
         requestIds: result.requestIds,
+      });
+      const documentUpdate = buildDocumentOperationalUpdate({
+        operationalState,
+        metadata: nextMetadata,
+        governanceActivationRequested,
       });
 
       if (result.status === "done") {
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: new Date().toISOString(),
-          failed_at: null,
-          failure_reason: operationalState.failureReason,
-          metadata_json: nextMetadata,
-        }).eq("id", doc.id);
+        await supabase.from("documents").update(documentUpdate).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "done",
           insertedChunks: finalChunkHealth.savedCount,
@@ -1148,13 +1154,7 @@ export default function Admin() {
         });
         toast.success("Reprocessado", { description: `"${doc.name}" pronto.` });
       } else if (result.status === "embedding_pending") {
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: null,
-          failed_at: new Date().toISOString(),
-          failure_reason: operationalState.failureReason,
-          metadata_json: nextMetadata,
-        }).eq("id", doc.id);
+        await supabase.from("documents").update(documentUpdate).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "embedding_pending",
           insertedChunks: finalChunkHealth.savedCount,
@@ -1167,13 +1167,7 @@ export default function Admin() {
           description: `"${doc.name}" — ${finalChunkHealth.embeddedCount}/${prepared.chunks.length} embeddings prontos.`,
         });
       } else if (result.status === "partial") {
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: null,
-          failed_at: new Date().toISOString(),
-          failure_reason: operationalState.failureReason,
-          metadata_json: nextMetadata,
-        }).eq("id", doc.id);
+        await supabase.from("documents").update(documentUpdate).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "partial",
           insertedChunks: finalChunkHealth.savedCount,
@@ -1185,13 +1179,7 @@ export default function Admin() {
           description: `"${doc.name}" — ${finalChunkHealth.savedCount}/${prepared.chunks.length}. Retome.`,
         });
       } else {
-        await supabase.from("documents").update({
-          status: operationalState.status,
-          processed_at: null,
-          failed_at: new Date().toISOString(),
-          failure_reason: operationalState.failureReason,
-          metadata_json: nextMetadata,
-        }).eq("id", doc.id);
+        await supabase.from("documents").update(documentUpdate).eq("id", doc.id);
         updateIngestion(doc.name, {
           status: "failed",
           insertedChunks: finalChunkHealth.savedCount,
@@ -1211,7 +1199,7 @@ export default function Admin() {
       toast.error("Erro ao reprocessar", {
         description: err instanceof Error ? err.message : "Nao foi possivel retomar este documento agora.",
       });
-      await supabase.from("documents").update({ status: "error" }).eq("id", doc.id);
+      await supabase.from("documents").update({ status: "error", is_active: false }).eq("id", doc.id);
       fetchDocuments();
     } finally {
       setRetryingId(null);
@@ -1221,7 +1209,7 @@ export default function Admin() {
   const handleCancel = async (doc: Document) => {
     try {
       await supabase.from("document_chunks").delete().eq("document_id", doc.id);
-      await supabase.from("documents").update({ status: "cancelled" }).eq("id", doc.id);
+      await supabase.from("documents").update({ status: "cancelled", is_active: false }).eq("id", doc.id);
       fetchDocuments();
       toast.success("Processamento cancelado", { description: `"${doc.name}" saiu da fila administrativa.` });
     } catch {

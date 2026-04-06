@@ -110,6 +110,13 @@ export interface ResolvedDocumentOperationalState {
   readinessSummary: string;
 }
 
+export function resolveDocumentRuntimeActivation(input: {
+  governanceActivationRequested: boolean;
+  operationalState: Pick<ResolvedDocumentOperationalState, "groundingEnabled">;
+}) {
+  return input.governanceActivationRequested && input.operationalState.groundingEnabled;
+}
+
 function normalizeOptionalText(value: string) {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;

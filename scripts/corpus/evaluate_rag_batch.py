@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import subprocess
 import unicodedata
 from pathlib import Path
@@ -7,8 +8,8 @@ from pathlib import Path
 import requests
 
 
-PROJECT_REF = "jasqctuzeznwdtbcuixn"
-SUPABASE_URL = "https://jasqctuzeznwdtbcuixn.supabase.co"
+PRODUCTION_PROJECT_REF = "jasqctuzeznwdtbcuixn"
+PRODUCTION_SUPABASE_URL = "https://jasqctuzeznwdtbcuixn.supabase.co"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 GENERIC_COPY_MARKERS = [
@@ -34,8 +35,29 @@ def run_supabase_cli_json(*args: str):
     return json.loads(result.stdout)
 
 
-def get_anon_key() -> str:
-    keys = run_supabase_cli_json("projects", "api-keys", "--project-ref", PROJECT_REF)
+def is_truthy_env(value: str | None) -> bool:
+    return (value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def ensure_production_opt_in(*, allow_production: bool, supabase_url: str, project_ref: str) -> None:
+    is_production_target = (
+        supabase_url == PRODUCTION_SUPABASE_URL
+        or project_ref == PRODUCTION_PROJECT_REF
+    )
+    if not is_production_target:
+        return
+
+    if allow_production or is_truthy_env(os.getenv("CLARA_ALLOW_PRODUCTION_OPERATIONS")):
+        return
+
+    raise RuntimeError(
+        "Avaliação bloqueada: o lote canônico não pode atingir a produção oficial sem "
+        "--allow-production ou CLARA_ALLOW_PRODUCTION_OPERATIONS=1."
+    )
+
+
+def get_anon_key(project_ref: str) -> str:
+    keys = run_supabase_cli_json("projects", "api-keys", "--project-ref", project_ref)
     for key in keys:
         if key.get("name") == "anon" or key.get("id") == "anon":
             return key["api_key"]
@@ -174,6 +196,10 @@ def main() -> int:
     parser.add_argument("--output", required=True, help="Path to output JSON")
     parser.add_argument("--summary-output", help="Optional path to summary JSON")
     parser.add_argument("--response-mode", default="didatico", choices=["direto", "didatico"])
+    parser.add_argument("--supabase-url", default=os.getenv("CLARA_SUPABASE_URL", PRODUCTION_SUPABASE_URL))
+    parser.add_argument("--project-ref", default=os.getenv("CLARA_SUPABASE_PROJECT_REF", PRODUCTION_PROJECT_REF))
+    parser.add_argument("--anon-key", default=os.getenv("CLARA_SUPABASE_ANON_KEY"))
+    parser.add_argument("--allow-production", action="store_true")
     parser.add_argument("--min-http-ok", type=int)
     parser.add_argument("--min-no-web-fallback", type=int)
     parser.add_argument("--min-scope-exact", type=int)
@@ -185,7 +211,12 @@ def main() -> int:
     questions_path = Path(args.questions)
     output_path = Path(args.output)
     summary_output_path = Path(args.summary_output) if args.summary_output else None
-    anon_key = get_anon_key()
+    ensure_production_opt_in(
+        allow_production=args.allow_production,
+        supabase_url=args.supabase_url,
+        project_ref=args.project_ref,
+    )
+    anon_key = args.anon_key or get_anon_key(args.project_ref)
 
     questions = json.loads(questions_path.read_text(encoding="utf-8"))
     results: list[dict] = []
@@ -203,7 +234,7 @@ def main() -> int:
             "responseMode": args.response_mode,
         }
         response = session.post(
-            f"{SUPABASE_URL}/functions/v1/chat",
+            f"{args.supabase_url}/functions/v1/chat",
             headers=headers,
             json=payload,
             timeout=120,

@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +23,24 @@ from ingest_manifest_batch import (
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+PRODUCTION_SUPABASE_URL = "https://jasqctuzeznwdtbcuixn.supabase.co"
+
+
+def is_truthy_env(value: str | None) -> bool:
+    return (value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def ensure_production_opt_in(*, allow_production: bool, supabase_url: str) -> None:
+    if supabase_url != PRODUCTION_SUPABASE_URL:
+        return
+
+    if allow_production or is_truthy_env(os.getenv("CLARA_ALLOW_PRODUCTION_OPERATIONS")):
+        return
+
+    raise RuntimeError(
+        "Operação bloqueada: re-embed no ambiente oficial exige --allow-production "
+        "ou CLARA_ALLOW_PRODUCTION_OPERATIONS=1."
+    )
 
 
 def download_storage_object(service_role_key: str, storage_path: str, destination: Path) -> None:
@@ -46,7 +65,6 @@ def rest_delete(service_role_key: str, table: str, filter_query: str) -> None:
 def load_active_documents(service_role_key: str, limit: int | None, document_id: str | None):
     query = (
         "select=id,name,file_name,file_path,storage_path,status,is_active,metadata_json"
-        "&is_active=eq.true"
         "&order=created_at.asc"
     )
     if document_id:
@@ -54,7 +72,17 @@ def load_active_documents(service_role_key: str, limit: int | None, document_id:
     if limit:
         query += f"&limit={limit}"
 
-    return rest_select(service_role_key, "documents", query)
+    documents = rest_select(service_role_key, "documents", query)
+    filtered_documents = []
+
+    for document in documents:
+      metadata = document.get("metadata_json") if isinstance(document.get("metadata_json"), dict) else {}
+      governance_requested = metadata.get("governance_activation_requested")
+
+      if document.get("is_active") is True or governance_requested is True:
+        filtered_documents.append(document)
+
+    return filtered_documents
 
 
 def merge_metadata(existing_metadata: dict | None, *, chunk_count: int, embedded_chunks: int, request_ids: list[str]):
@@ -68,7 +96,7 @@ def merge_metadata(existing_metadata: dict | None, *, chunk_count: int, embedded
             "embedded_chunks": embedded_chunks,
             "missing_embeddings": max(chunk_count - embedded_chunks, 0),
             "grounding_status": "ready" if status_ready else "embeddings_pending",
-            "grounding_enabled": status_ready and bool(base.get("grounding_enabled", True)),
+            "grounding_enabled": status_ready and bool(base.get("governance_activation_requested", True)),
             "readiness_summary": f"{embedded_chunks}/{chunk_count} embeddings prontos",
             "last_embedding_attempt_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "last_embedding_request_ids": request_ids,
@@ -132,6 +160,9 @@ def reembed_document(service_role_key: str, document: dict):
         f"id=eq.{document_id}",
         {
             "status": final_status,
+            "is_active": final_status == "processed"
+            and bool(final_metadata.get("grounding_enabled"))
+            and bool(final_metadata.get("governance_activation_requested", document.get("is_active"))),
             "processed_at": datetime.now(timezone.utc).isoformat(timespec="seconds") if final_status == "processed" else None,
             "failed_at": None if final_status == "processed" else datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "failure_reason": None if final_status == "processed" else "embedding_incomplete",
@@ -153,9 +184,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Re-embed active CLARA corpus documents using the native batch embedding path.")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--document-id", default=None)
+    parser.add_argument("--allow-production", action="store_true")
     args = parser.parse_args()
 
     service_role_key = get_service_role_key()
+    ensure_production_opt_in(
+        allow_production=args.allow_production,
+        supabase_url=SUPABASE_URL,
+    )
     documents = load_active_documents(service_role_key, args.limit, args.document_id)
 
     results = []

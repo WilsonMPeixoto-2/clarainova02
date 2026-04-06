@@ -101,13 +101,17 @@ async function fetchCorpusFreshness(): Promise<CorpusFreshnessReport | null> {
 
 const GAP_REASON_LABELS: Record<string, string> = {
   baixa_confianca_rag: "Baixa confiança do RAG",
+  corpus_sem_embedding: "Corpus ativo sem embeddings",
+  falha_provedor: "Falha do provedor",
   falha_modelo: "Falha do modelo",
+  resposta_sem_citacoes: "Resposta sem citações",
   sem_cobertura_documental: "Sem cobertura documental",
 };
 
 const FEEDBACK_REASON_LABELS: Record<string, string> = {
   incorrect_info: "Informação errada",
   missing_detail: "Faltou detalhe",
+  not_about_this: "Não era sobre isso",
   off_target: "Não era sobre isso",
 };
 

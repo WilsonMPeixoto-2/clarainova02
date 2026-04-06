@@ -47,25 +47,27 @@ describe('clara-response helpers', () => {
     const response = buildMockStructuredResponse('Como encaminhar um processo para outra unidade?');
     const plainText = renderStructuredResponseToPlainText(response);
 
-    expect(plainText).toContain('Passo a passo guiado');
+    expect(plainText).toContain('Passos');
     expect(plainText).toContain('1. Abra a area correta do processo');
-    expect(plainText).toContain('Referências');
+    expect(plainText).toContain('Fontes');
     expect(plainText).toContain('[1]');
   });
 
-  it('renders direct mode as a compact checklist and didatico mode with reading aids', () => {
+  it('keeps both response modes concise and removes editorial scaffolding', () => {
     const direct = buildPreviewStructuredResponse('Como incluir documento externo?', 'direto');
     const didactic = buildPreviewStructuredResponse('Como incluir documento externo?', 'didatico');
 
     const directPlainText = renderStructuredResponseToPlainText(direct);
     const didacticPlainText = renderStructuredResponseToPlainText(didactic);
 
-    expect(directPlainText).toContain('Checklist rápido');
-    expect(directPlainText).toContain('Conferência final');
-    expect(directPlainText).not.toContain('Termos importantes');
-    expect(didacticPlainText).toContain('Orientação inicial');
-    expect(didacticPlainText).toContain('Passo a passo guiado');
-    expect(didacticPlainText).toContain('Termos importantes');
+    expect(directPlainText).toContain('Passos');
+    expect(directPlainText).toContain('Antes de concluir');
+    expect(didacticPlainText).toContain('Passos');
+    expect(didacticPlainText).toContain('Antes de concluir');
+    expect(direct.termosDestacados).toHaveLength(0);
+    expect(didactic.termosDestacados).toHaveLength(0);
+    expect(direct.analiseDaResposta.processStates).toHaveLength(0);
+    expect(didactic.analiseDaResposta.processStates).toHaveLength(0);
   });
 
   it('preserves clarification and caution metadata in the structured response', () => {

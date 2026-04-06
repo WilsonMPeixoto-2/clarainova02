@@ -10,9 +10,20 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ 6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Frente imediata mais importante: fechar a reconciliação documental dos subblocos canônicos `5B-5F`, já publicados em produção nesta branch, e então liberar a abertura controlada do BLOCO 6
+- Fonte oficial integrada: `origin/main @ a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
+- Frente imediata mais importante: executar um `quality-first reset` dentro do BLOCO 5, reduzindo fan-out por pergunta, simplificando o contrato de resposta, enxugando telemetria e recolocando a utilidade real da resposta acima do sistema servindo a si mesmo
+- Observação de continuidade: uma rodada recente de UI já foi commitada diretamente em `main` e publicada em produção em `2026-04-06`; toda rodada manual desse tipo precisa ser reconciliada no mesmo turno em `REMOTE_STATE`, `HANDOFF`, `.continuity/current-state.json` e relatório operacional
 - Ordem de execução atualmente aceita:
+  1. assumir operacionalmente, até confirmação contrária no painel do Google, que a CLARA roda sob cenário `free tier ou muito próximo disso`, com `Pro` escasso, embeddings sensíveis a volume e benchmark pesado proibido de competir com produção
+  2. executar `Q0` com baseline factual do reset: volume real de requests, fan-out por pergunta, peso do benchmark canônico, estado do corpus ativo e pontos exatos em que o sistema serve mais a si mesmo do que ao usuário
+  3. executar `Q1` com `truth telemetry`: parar autoavaliação enganosa, rebaixar confiança quando houver `keyword_only_no_embedding`, distinguir claramente `Gemini`, `grounded_fallback` e `provider_unavailable`, e mover métricas secundárias para bastidor
+  4. executar `Q2` com redução do custo por pergunta: limitar fan-out, separar benchmark da produção, impedir concorrência entre chat ao vivo e re-embedding, e revisar chamadas que hoje são opcionais mas estão no caminho quente
+  5. executar `Q3` com simplificação do contrato de resposta e do renderer: manter busca, fontes, `Direto`/`Didático`, pedido de esclarecimento e feedback; reduzir ou remover `analiseDaResposta`, `processStates`, `termosDestacados`, badges de confiança e molduras excessivas
+  6. executar `Q4` com fortalecimento do fallback e expansão de playbooks críticos para rotinas recorrentes (`assinar documento interno`, `despacho x ofício`, `notificações/prazos`) sem depender do modelo principal
+  7. executar `Q5` com correção do pipeline do corpus: documento não pode entrar ativo sem embedding válido, `embedding_pending` não pode equivaler a corpus pronto e tarefas de ingestão precisam parar de competir com a experiência principal
+  8. executar `Q6` com restauração controlada do cérebro Gemini: revisão de quota/billing assim que houver dados do usuário, reprocessamento semântico do corpus, redução de fan-out e revalidação do fluxo principal de geração
+  9. executar `Q7` com guard-rails operacionais de produção: benchmark e re-embed não podem atingir o ambiente oficial por padrão, `search_metrics` verboso sai do caminho quente e a operação passa a assumir explicitamente cenário de free tier apertado
+  10. só então liberar a abertura controlada do BLOCO 6
   1. executar `R0` com benchmark canônico congelado, baseline reproduzível e gate local do RAG em `Direto` e `Didático`
   2. executar `R1` com ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e expansão de query com contexto curto
   3. executar `R2` com correção do contrato de `gemini-embedding-2-preview`, usando instruções textuais assimétricas por tarefa e prefixo de domínio institucional
@@ -71,7 +82,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 ### Bloco 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Estado: `in_progress`
 - Objetivo: transformar a CLARA de funcional e grounded em previsivelmente excelente na recuperação, geração e explicação da própria confiança
-- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0-R2` foram publicados, a regressão pós-publicação de `Q8`/`Q10` foi corrigida, o benchmark canônico remoto voltou a green, `R3A-R3C` foram publicados em produção, o `R4A` foi publicado com ciclo explícito de feedback do usuário, o `R4B` também já foi publicado com dashboard admin de gaps, o `R5A` acabou fechado em produção via recuperação do incidente de quota/embeddings com `keyword_only` dirigido, grounded fallback reescrito e benchmark remoto novamente green, o `R5B` já foi publicado com cache de embeddings de consulta protegido por RLS, o `R5C` também já foi publicado com checagem manual de frescor do corpus servida no painel administrativo, `R6A-R6B` foram concluídos sem promover mudança de runtime para chunking/dimensionalidade ou context caching explícito, o `5B` foi publicado com governança de retrieval por metadados reais, o `5C` foi publicado com confirmação forte de source-target, o `5D` foi publicado com contratos mais distintos entre `Direto` e `Didático` e o `5E` foi publicado com transparência editorial no grounding sem tocar no layout
+- Estado atual: política canônica de curadoria, manifesto do corpus, núcleo local, `COBERTURA_P2`, `APOIO_P3`, source-target routing e a nova rodada de UX do chat já integrados em `main` e publicados em produção; em `2026-04-05`, a execução foi reordenada para abrir uma trilha imediata `R0-R6` antes da continuação dos subblocos canônicos. Nesta mesma rodada, `R0-R2` foram publicados, a regressão pós-publicação de `Q8`/`Q10` foi corrigida, o benchmark canônico remoto voltou a green, `R3A-R3C` foram publicados em produção, o `R4A` foi publicado com ciclo explícito de feedback do usuário, o `R4B` também já foi publicado com dashboard admin de gaps, o `R5A` acabou fechado em produção via recuperação do incidente de quota/embeddings com `keyword_only` dirigido, grounded fallback reescrito e benchmark remoto novamente green, o `R5B` já foi publicado com cache de embeddings de consulta protegido por RLS, o `R5C` também já foi publicado com checagem manual de frescor do corpus servida no painel administrativo, `R6A-R6B` foram concluídos sem promover mudança de runtime para chunking/dimensionalidade ou context caching explícito, o `5B` foi publicado com governança de retrieval por metadados reais, o `5C` foi publicado com confirmação forte de source-target, o `5D` foi publicado com contratos mais distintos entre `Direto` e `Didático` e o `5E` foi publicado com transparência editorial no grounding sem tocar no layout. Em `2026-04-06`, uma nova auditoria exaustiva confirmou que há complexidade demais servindo ao próprio sistema, então a frente imediata foi redefinida como `quality-first reset`, com simplificação, redução de fan-out e corte de telemetria/contratos que não elevam a utilidade real da resposta.
 - Subfrentes canônicas:
   - `5A` benchmark e gate de regressão
   - `5B` retrieval governado por metadados reais
@@ -80,6 +91,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
   - `5E` UX grounded e transparência editorial
   - `5F` operação contínua do corpus
 - Trilha imediata priorizada:
+  - `Q0-Q7` quality-first reset, custo-first reset e simplificação-first reset
   - `R0` baseline canônico e gate local do benchmark
   - `R1` ajustes imediatos de geração
   - `R2` contrato de embeddings alinhado ao Embeddings 2
@@ -95,6 +107,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
   - `R6B` avaliação de context caching explícito
   - `R7` retorno aos subblocos `5B-5F` e roadmap alto esforço depois disso
 - Próxima ação: tratar `5F` como rotina operacional mensal sustentada por `R5C`, manter as pendências residuais do Decreto `55.615` e do reupload admin sob monitoramento e abrir o BLOCO 6 quando a reconciliação com `main` estiver pronta
+- Próxima ação: publicar de forma limpa o pacote local `Q1-Q7`, sem misturar arquivos paralelos de layout/dependências, e então validar remotamente o reset `quality-first / cost-first / simplificação-first` antes de abrir o BLOCO 6
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
 - Estado: `planned`

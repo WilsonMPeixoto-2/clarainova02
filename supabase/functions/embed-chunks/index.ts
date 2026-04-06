@@ -7,6 +7,11 @@ import {
   EMBEDDING_CONTRACT_VERSION,
   EMBEDDING_DOMAIN_SCOPE,
 } from "../_shared/embedding-contract.ts";
+import {
+  clearProviderCircuit,
+  getProviderCircuitSnapshot,
+  openProviderCircuit,
+} from "../_shared/provider-circuit.ts";
 
 const ALLOWED_ORIGINS = [
   "https://clarainova02.vercel.app",
@@ -35,7 +40,9 @@ const DOCUMENT_EMBEDDING_TASK_TYPE = "RETRIEVAL_DOCUMENT";
 const DOCUMENT_EMBEDDING_INPUT_STYLE = "textual_task_instruction_plus_api_task_type";
 const EMBED_TIMEOUT_MS = 15_000;
 const EMBED_RETRY_DELAYS_MS = [1500, 3000, 6000];
-const EMBED_API_BATCH_SIZE = 5;
+const EMBED_API_BATCH_SIZE = 10;
+const EMBEDDING_PROVIDER_COOLDOWN_MS = 10 * 60_000;
+const EMBEDDING_PROVIDER_CIRCUIT_KEY = "embed_chunks_provider";
 
 function getErrorMessage(error: unknown, fallback = "Erro interno"): string {
   if (error instanceof Error && error.message.trim()) return error.message;
@@ -51,6 +58,26 @@ function getErrorStatus(error: unknown): number | undefined {
       ? error.httpStatusCode
       : undefined;
   return typeof statusCandidate === "number" ? statusCandidate : undefined;
+}
+
+function isEmbeddingProviderAvailabilityError(status: number | undefined, message: string) {
+  const normalized = message.toLowerCase();
+  if (status === 429 || (typeof status === "number" && status >= 500)) {
+    return true;
+  }
+
+  return [
+    "resource_exhausted",
+    "quota",
+    "spending cap",
+    "rate limit",
+    "429",
+    "500",
+    "502",
+    "503",
+    "504",
+    "provider_cooldown",
+  ].some((pattern) => normalized.includes(pattern));
 }
 
 interface ParsedChunkMetadata {
@@ -244,6 +271,18 @@ async function generateEmbeddingBatchWithRetry(
   chunks: StructuredChunkPayload[],
   title?: string | null,
 ) {
+  const openCooldown = getProviderCircuitSnapshot(EMBEDDING_PROVIDER_CIRCUIT_KEY);
+  if (openCooldown) {
+    return {
+      embeddings: new Array(chunks.length).fill(null),
+      diagnostic: {
+        reason: "provider_cooldown",
+        provider_blocked: true,
+        until: openCooldown.untilIso,
+      },
+    };
+  }
+
   const embeddingTexts = chunks.map((chunk) =>
     buildDocumentEmbeddingText({
       content: chunk.content,
@@ -296,6 +335,7 @@ async function generateEmbeddingBatchWithRetry(
       const result = await response.json() as {
         embeddings?: Array<{ values?: number[] | null }>;
       };
+      clearProviderCircuit(EMBEDDING_PROVIDER_CIRCUIT_KEY);
 
       const valuesList = result.embeddings?.map((embedding) => embedding.values ?? null) ?? [];
       const diagnosticBase = {
@@ -350,10 +390,29 @@ async function generateEmbeddingBatchWithRetry(
 
       const status = getErrorStatus(err);
       const retryable = status === 429 || (status !== undefined && status >= 500);
+      const providerBlocked = isEmbeddingProviderAvailabilityError(status, msg);
 
       if (retryable && attempt < EMBED_RETRY_DELAYS_MS.length) {
         await sleep(EMBED_RETRY_DELAYS_MS[attempt]);
         continue;
+      }
+
+      if (providerBlocked) {
+        const snapshot = openProviderCircuit(
+          EMBEDDING_PROVIDER_CIRCUIT_KEY,
+          msg,
+          EMBEDDING_PROVIDER_COOLDOWN_MS,
+        );
+        return {
+          embeddings: new Array(chunks.length).fill(null),
+          diagnostic: {
+            reason: "provider_unavailable",
+            provider_blocked: true,
+            status,
+            message: msg,
+            until: snapshot.untilIso,
+          },
+        };
       }
 
       return {
@@ -394,6 +453,14 @@ async function generateEmbeddingsWithNativeBatching(
       ...(result.diagnostic ?? {}),
     });
     apiCalls += 1;
+
+    if (result.diagnostic?.provider_blocked === true) {
+      const remainingChunks = Math.max(chunks.length - embeddings.length, 0);
+      if (remainingChunks > 0) {
+        embeddings.push(...new Array(remainingChunks).fill(null));
+      }
+      break;
+    }
   }
 
   return {

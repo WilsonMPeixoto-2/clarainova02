@@ -5,6 +5,11 @@ import {
   EMBEDDING_CONTRACT_VERSION,
 } from "../_shared/embedding-contract.ts";
 import {
+  clearProviderCircuit,
+  getProviderCircuitSnapshot,
+  openProviderCircuit,
+} from "../_shared/provider-circuit.ts";
+import {
   buildContextualizedEmbeddingQuery,
   compactConversationSnippet,
   type ChatContextSummary,
@@ -40,6 +45,13 @@ import {
   buildDocumentRescuePlan,
   buildKeywordSearchCandidates,
 } from "./keyword-rescue.ts";
+import {
+  buildGenerationStrategy,
+  GEMINI_FLASH_LITE_MODEL,
+  GEMINI_PRO_MODEL,
+  type GenerationStrategy,
+  type GeminiModelName,
+} from "./generation-strategy.ts";
 import {
   buildDocumentRescueOrFilter,
   buildGovernedSearchMode,
@@ -77,9 +89,14 @@ import {
   type EditorialProfile,
 } from "./editorial.ts";
 import {
+  assessFailedResponseQuality,
+  assessSuccessfulResponseQuality,
+} from "./telemetry-quality.ts";
+import {
   matchEmergencyGroundedPlaybook,
   type EmergencyGroundedPlaybook,
 } from "./emergency-playbooks.ts";
+import { extractVisibleStreamText } from "./stream-output.ts";
 
 const ALLOWED_ORIGINS = [
   'https://clarainova02.vercel.app',
@@ -118,22 +135,15 @@ const GROUNDED_REPAIR_TIMEOUT_MS = 12_000;
 const MAX_OUTPUT_TOKENS = 8192;
 const EMBEDDING_DIM = 768;
 const QUERY_EMBEDDING_MODEL = 'gemini-embedding-2-preview';
+const ENABLE_VERBOSE_SEARCH_METRICS = Deno.env.get('CLARA_ENABLE_VERBOSE_SEARCH_METRICS') === 'true';
+const QUERY_EMBEDDING_COOLDOWN_MS = 5 * 60_000;
+const GENERATION_COOLDOWN_MS = 2 * 60_000;
+const QUERY_EMBEDDING_CIRCUIT_KEY = 'chat_query_embedding_provider';
+const GENERATION_CIRCUIT_KEY = 'chat_generation_provider';
 const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
 type ChatResponseMode = (typeof CHAT_RESPONSE_MODES)[number];
 const DEFAULT_CHAT_RESPONSE_MODE: ChatResponseMode = 'didatico';
 const QUERY_EXPANSION_TIMEOUT_MS = 3_000;
-const GEMINI_FLASH_LITE_MODEL = 'gemini-3.1-flash-lite-preview';
-const GEMINI_PRO_MODEL = 'gemini-3.1-pro-preview';
-type GeminiModelName = typeof GEMINI_FLASH_LITE_MODEL | typeof GEMINI_PRO_MODEL;
-type GeminiThinkingLevel = 'low' | 'high';
-type GenerationStrategy = {
-  orderedModels: GeminiModelName[];
-  thinkingLevel: GeminiThinkingLevel;
-  structuredTemperature: number;
-  structuredTopP: number;
-  streamTemperature: number;
-  streamTopP: number;
-};
 const QUERY_EXPANSION_MODEL = GEMINI_FLASH_LITE_MODEL;
 const CHAT_TIME_BUDGET_CONFIG = {
   totalMs: REQUEST_TIME_BUDGET_MS,
@@ -308,18 +318,32 @@ async function fetchOrCreateQueryEmbedding(
     console.warn('Query embedding cache unavailable (non-fatal):', cacheLookupError);
   }
 
-  const embeddingResult = await withTimeout(
-    ai.models.embedContent({
-      model: QUERY_EMBEDDING_MODEL,
-      contents: buildQueryEmbeddingText(queryText),
-      config: {
-        outputDimensionality: EMBEDDING_DIM,
-        taskType: 'RETRIEVAL_QUERY',
-      },
-    }),
-    EMBEDDING_TIMEOUT_MS,
-    'embedding',
-  );
+  const openCooldown = getOpenProviderCooldown('query_embedding');
+  if (openCooldown) {
+    throw buildProviderCooldownError(openCooldown);
+  }
+
+  let embeddingResult;
+  try {
+    embeddingResult = await withTimeout(
+      ai.models.embedContent({
+        model: QUERY_EMBEDDING_MODEL,
+        contents: buildQueryEmbeddingText(queryText),
+        config: {
+          outputDimensionality: EMBEDDING_DIM,
+          taskType: 'RETRIEVAL_QUERY',
+        },
+      }),
+      EMBEDDING_TIMEOUT_MS,
+      'embedding',
+    );
+    clearProviderCooldown('query_embedding');
+  } catch (error) {
+    if (isProviderAvailabilityError(error)) {
+      openProviderCooldown('query_embedding', getErrorMessage(error, 'embedding_provider_unavailable'));
+    }
+    throw error;
+  }
 
   const rawEmbedding = embeddingResult.embeddings?.[0]?.values;
   if (!rawEmbedding || rawEmbedding.length < EMBEDDING_DIM) {
@@ -403,50 +427,22 @@ PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIRETO
 - Cada etapa deve explicar a acao principal em 1 frase clara e, se necessario, no maximo 2 itens de conferencia.
 - Prefira modoResposta="checklist" quando houver sequencia operacional e modoResposta="explicacao" quando a pergunta pedir esclarecimento conceitual.
 - Reduza contexto lateral, repeticoes e observacoes que nao mudem a acao pratica.
-- userNotice so deve aparecer quando realmente alterar a decisao do usuario.
+- Use userNotice apenas em casos raros; por padrao, a propria resposta principal deve bastar.
 - Mantenha cautelas, ambiguidade e pedidos de esclarecimento quando forem necessarios.`;
   }
 
   return `
 
 PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIDATICO
-- Organize a resposta como orientacao guiada, acolhedora e claramente sequenciada.
-- Estruture a resposta em camadas perceptiveis: veredito inicial, explicacao principal, detalhamento complementar e observacoes finais.
-- Quando houver procedimento, entregue de 3 a 5 etapas bem distintas, em ordem de execucao.
-- Cada etapa deve dizer o que fazer, por que isso importa e o que conferir antes de seguir.
-- Prefira modoResposta="passo_a_passo" ou modoResposta="combinado".
-- Use itens e destaques para transformar a resposta em um guia executavel, no estilo de um manual operacional.
-- Evite repetir a mesma ideia em varios blocos: reforce com novos detalhes, nao com reformulacoes redundantes.
+- Organize a resposta como uma explicacao guiada e utilizavel, sem camadas artificiais.
+- Responda a pergunta logo no começo e depois explique o caminho de forma sequenciada.
+- Quando houver procedimento, entregue de 3 a 4 etapas bem distintas, em ordem de execucao.
+- Cada etapa deve dizer o que fazer, por que isso importa e o que conferir antes de seguir, sem repetir a mesma ideia em varios blocos.
+- Prefira modoResposta="passo_a_passo" quando houver sequencia operacional e modoResposta="explicacao" quando a pergunta pedir entendimento conceitual.
 - Explique rapidamente termos tecnicos ou pontos que costumam gerar erro.
-- Use userNotice e cautionNotice quando ajudarem a orientar a leitura, nao apenas como comentario lateral.
+- Evite destaques laterais, badges editoriais e comentarios sobre a propria resposta.
+- Use cautionNotice apenas quando ele realmente mudar a seguranca da orientacao.
 - Mantenha cautelas, ambiguidade e pedidos de esclarecimento quando forem necessarios.`;
-}
-
-function buildGenerationStrategy(options: {
-  intentLabel: string;
-  responseMode: ChatResponseMode;
-  sourceTarget: SourceTargetRoute | null;
-  retrievalQuality: RetrievalQualityInfo | null;
-}): GenerationStrategy {
-  const retrievalTier = options.retrievalQuality?.confidenceTier ?? 'fraca';
-  const complexRequest =
-    options.responseMode === 'didatico' ||
-    options.sourceTarget !== null ||
-    options.intentLabel === 'conceito' ||
-    options.intentLabel === 'erro_sistema' ||
-    retrievalTier === 'moderada' ||
-    retrievalTier === 'fraca';
-
-  return {
-    orderedModels: complexRequest
-      ? [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL]
-      : [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL], // Priorizando PRO para o formato complexo
-    thinkingLevel: complexRequest ? 'high' : 'low',
-    structuredTemperature: options.responseMode === 'didatico' ? 0.15 : 0.1,
-    structuredTopP: options.responseMode === 'didatico' ? 0.9 : 0.8,
-    streamTemperature: options.responseMode === 'didatico' ? 0.45 : 0.2,
-    streamTopP: options.responseMode === 'didatico' ? 0.95 : 0.8,
-  };
 }
 
 async function fetchKeywordSearchMatches(
@@ -591,7 +587,7 @@ TRATAMENTO DE AMBIGUIDADE
 - Se a pergunta do usuario estiver ambigua, faca uma pergunta curta e gentil antes de tentar responder com certeza artificial.
 - Se as fontes internas tiverem pequenas variacoes, compare-as e priorize o que melhor se aplica ao SEI-Rio e ao material mais atual.
 - Se a base interna continuar ambigua, registre isso com transparencia e sinalize que uma validacao externa oficial pode ser necessaria.
-- Se precisar de validacao externa, use apenas fontes oficiais e deixe isso claro em processStates, userNotice ou cautionNotice.
+- Se precisar de validacao externa, use apenas fontes oficiais e deixe isso claro na propria resposta ou em cautionNotice.
 - Nunca force uma resposta assertiva quando o melhor caminho for pedir esclarecimento ou declarar cautela.
 
 POLÍTICA DE FONTES
@@ -607,13 +603,13 @@ POLÍTICA DE FONTES
 ESTRUTURA DA RESPOSTA
 - Organize a resposta em blocos curtos e altamente escaneáveis.
 - Quando a pergunta for operacional, a resposta deve nascer em passo a passo.
-- Pense a resposta para renderização em cards de etapas.
+- Pense a resposta para leitura humana simples e util, nao para impressionar o renderer.
 - Mantenha observações importantes separadas do corpo principal.
 - As fontes devem ficar sempre ao final, com marcações numéricas discretas no corpo da resposta.
 - Nunca invente nome de documento, página ou seção.
 - Quando houver ambiguidade, descreva isso em linguagem acolhedora e útil ao usuario.
 - Quando pedir esclarecimento, explique brevemente por que esta pedindo esse complemento.
-- Nos avisos, cautelas e processStates, use linguagem humana e institucional.
+- Nos avisos e cautelas, use linguagem humana e institucional.
 - Evite rotulos tecnicos visiveis ao usuario, como "base interna", "web fallback", "RAG", "backend" ou termos de infraestrutura.
 
 JSON E CAMPOS DE DECISAO
@@ -730,9 +726,11 @@ function isProviderAvailabilityError(error: unknown): boolean {
 
   return [
     'model_fallback_failed',
+    'provider_cooldown',
     'permission_denied',
     'resource_exhausted',
     'quota',
+    'spending cap',
     '429',
     '500',
     '502',
@@ -744,6 +742,32 @@ function isProviderAvailabilityError(error: unknown): boolean {
     'model not found',
     'models/',
   ].some((pattern) => message.includes(pattern));
+}
+
+function buildProviderCooldownError(snapshot: { untilIso: string; remainingMs: number }) {
+  return new Error(
+    `PROVIDER_COOLDOWN: Gemini em espera até ${snapshot.untilIso} (${snapshot.remainingMs}ms restantes).`,
+  );
+}
+
+function getOpenProviderCooldown(kind: 'generation' | 'query_embedding') {
+  return getProviderCircuitSnapshot(
+    kind === 'generation' ? GENERATION_CIRCUIT_KEY : QUERY_EMBEDDING_CIRCUIT_KEY,
+  );
+}
+
+function openProviderCooldown(kind: 'generation' | 'query_embedding', reason: string) {
+  return openProviderCircuit(
+    kind === 'generation' ? GENERATION_CIRCUIT_KEY : QUERY_EMBEDDING_CIRCUIT_KEY,
+    reason,
+    kind === 'generation' ? GENERATION_COOLDOWN_MS : QUERY_EMBEDDING_COOLDOWN_MS,
+  );
+}
+
+function clearProviderCooldown(kind: 'generation' | 'query_embedding') {
+  clearProviderCircuit(
+    kind === 'generation' ? GENERATION_CIRCUIT_KEY : QUERY_EMBEDDING_CIRCUIT_KEY,
+  );
 }
 
 function normalizeQueryText(value: string): string {
@@ -1675,8 +1699,15 @@ async function recordTelemetry(
   citationsCount: number,
   outputMode: 'structured' | 'stream',
 ): Promise<void> {
-  const responseStatus = ctx.retrievalMode === 'model_grounded' ? 'answered' : 'partial';
   const usedRag = ctx.retrievalMode === 'model_grounded';
+  const qualityAssessment = assessSuccessfulResponseQuality({
+    retrievalMode: ctx.retrievalMode,
+    modelName,
+    ragQualityScore: ctx.ragQualityScore,
+    citationsCount,
+    queryEmbeddingModel: ctx.queryEmbeddingModel,
+  });
+  const responseStatus = qualityAssessment.responseStatus;
   const totalLatency = Date.now() - ctx.requestStartedAt;
   const promptEstimate = ctx.promptTelemetry.totalPromptTokens;
   const responseEstimate = estimateTokenCount(responseText);
@@ -1692,7 +1723,7 @@ async function recordTelemetry(
       used_rag: usedRag,
       used_external_web: false,
       used_model_general_knowledge: !usedRag,
-      rag_confidence_score: ctx.retrievalTopScore || null,
+      rag_confidence_score: qualityAssessment.ragConfidenceScore,
       search_result_count: ctx.searchResultCount,
       chunks_selected_count: ctx.selectedChunkIds.length,
       citations_count: citationsCount,
@@ -1720,6 +1751,12 @@ async function recordTelemetry(
         expanded_query: ctx.expandedQuery,
         source_target: ctx.sourceTargetLabel,
         source_target_status: ctx.sourceTargetStatus,
+        telemetry_quality_assessment: {
+          response_status: qualityAssessment.responseStatus,
+          rag_confidence_score: qualityAssessment.ragConfidenceScore,
+          needs_content_gap_review: qualityAssessment.needsContentGapReview,
+          gap_reason: qualityAssessment.gapReason,
+        },
       },
     })
     .select('id')
@@ -1736,9 +1773,9 @@ async function recordTelemetry(
     intent_label: ctx.intentLabel,
     topic_label: ctx.topicLabel,
     subtopic_label: ctx.subtopicLabel,
-    is_answered_satisfactorily: usedRag ? true : null,
-    needs_content_gap_review: !usedRag,
-    gap_reason: usedRag ? null : 'sem_cobertura_documental',
+    is_answered_satisfactorily: qualityAssessment.isAnsweredSatisfactorily,
+    needs_content_gap_review: qualityAssessment.needsContentGapReview,
+    gap_reason: qualityAssessment.gapReason,
     used_rag: usedRag,
     used_external_web: false,
     chat_metric_id: chatMetricRow?.id ?? null,
@@ -1844,7 +1881,7 @@ async function streamWithGenAI(
       temperature: strategy.streamTemperature,
       topP: strategy.streamTopP,
       thinkingConfig: {
-        thinkingLevel: strategy.thinkingLevel,
+        thinkingLevel: strategy.thinkingLevel === 'high' ? 'low' : strategy.thinkingLevel,
       },
     },
   });
@@ -1862,7 +1899,7 @@ async function streamWithGenAI(
         try {
           for await (const chunk of response) {
             latestProviderUsage = mergeProviderUsage(latestProviderUsage, extractProviderUsage(chunk));
-            const text = chunk.text;
+            const text = extractVisibleStreamText(chunk);
             if (text) {
               const ssePayload = JSON.stringify({
                 choices: [{ delta: { content: text } }],
@@ -1898,6 +1935,10 @@ async function generateStructuredWithFallback(
   strategy: GenerationStrategy,
 ): Promise<{ response: ClaraStructuredResponse; plainText: string; model: string; providerUsage: ChatProviderUsage | null } | null> {
   const contents = buildModelContents(messages);
+  const openCooldown = getOpenProviderCooldown('generation');
+  if (openCooldown) {
+    throw buildProviderCooldownError(openCooldown);
+  }
 
   for (const model of strategy.orderedModels) {
     try {
@@ -1923,6 +1964,8 @@ async function generateStructuredWithFallback(
         continue;
       }
 
+      clearProviderCooldown('generation');
+
       return {
         response: parsed,
         plainText: renderStructuredResponseToPlainText(parsed),
@@ -1931,6 +1974,10 @@ async function generateStructuredWithFallback(
       };
     } catch (err: unknown) {
       console.warn(`Structured generation failed for ${model}: ${getErrorMessage(err, String(err ?? ''))}`);
+      if (isProviderAvailabilityError(err)) {
+        openProviderCooldown('generation', getErrorMessage(err, 'generation_provider_unavailable'));
+        break;
+      }
     }
   }
 
@@ -1944,15 +1991,24 @@ async function callGeminiWithFallback(
   strategy: GenerationStrategy,
 ): Promise<{ stream: ReadableStream<Uint8Array>; model: string; usagePromise: Promise<ChatProviderUsage | null> }> {
   const failures: string[] = [];
+  const openCooldown = getOpenProviderCooldown('generation');
+  if (openCooldown) {
+    throw buildProviderCooldownError(openCooldown);
+  }
 
   for (const model of strategy.orderedModels) {
     try {
       const { stream, usagePromise } = await streamWithGenAI(ai, model, systemPrompt, messages, strategy);
+      clearProviderCooldown('generation');
       return { stream, model, usagePromise };
     } catch (err: unknown) {
       const msg = getErrorMessage(err, String(err ?? ''));
       failures.push(`${model}: ${msg}`);
       console.warn(`Model ${model} failed: ${msg}`);
+      if (isProviderAvailabilityError(err)) {
+        openProviderCooldown('generation', msg);
+        break;
+      }
     }
   }
 
@@ -2408,7 +2464,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (lastUserMessage) {
+    if (lastUserMessage && ENABLE_VERBOSE_SEARCH_METRICS) {
       const { data: searchMetricRow, error: searchMetricError } = await supabase
         .from('search_metrics')
         .insert({
@@ -2613,116 +2669,6 @@ REESCRITA OBRIGATORIA:
       const providerUnavailable = isProviderAvailabilityError(err);
 
       if (providerUnavailable && retrievalMode === 'model_grounded' && matchedChunks.length > 0 && groundedReferences.length > 0) {
-        const groundedRepairRemainingMs = timeBudgetTracker.remainingMs() - STREAM_FALLBACK_RESERVE_MS;
-        let groundedRepairResult: Awaited<ReturnType<typeof generateGroundedRepairWithFallback>> = null;
-        let groundedRepairTextResult: Awaited<ReturnType<typeof generateGroundedRepairTextWithFallback>> = null;
-
-        if (groundedRepairRemainingMs >= MIN_GROUNDED_REPAIR_REMAINING_MS) {
-          const groundedRepairTimeoutMs = Math.min(GROUNDED_REPAIR_TIMEOUT_MS, groundedRepairRemainingMs);
-          const groundedRepairStartedAt = Date.now();
-          groundedRepairResult = await withTimeout(
-            generateGroundedRepairWithFallback(
-              ai,
-              lastUserMessage.content,
-              matchedChunks,
-              groundedReferences,
-              responseMode,
-              retrievalQuality,
-              sourceTarget,
-              generationStrategy,
-            ),
-            groundedRepairTimeoutMs,
-            'grounded_repair_generation',
-          ).catch((repairError) => {
-            console.warn('Grounded repair failed/timed out, falling back to extractive grounded response:', getErrorMessage(repairError));
-            return null;
-          }).finally(() => {
-            addStageTiming(stageTimings, 'generationMs', Date.now() - groundedRepairStartedAt);
-          });
-
-          if (!groundedRepairResult) {
-            const groundedRepairTextStartedAt = Date.now();
-            groundedRepairTextResult = await withTimeout(
-              generateGroundedRepairTextWithFallback(
-                ai,
-                lastUserMessage.content,
-                matchedChunks,
-                groundedReferences,
-                responseMode,
-                retrievalQuality,
-                sourceTarget,
-                generationStrategy,
-              ),
-              groundedRepairTimeoutMs,
-              'grounded_repair_text_generation',
-            ).catch((repairError) => {
-              console.warn('Grounded text repair failed/timed out, falling back to extractive grounded response:', getErrorMessage(repairError));
-              return null;
-            }).finally(() => {
-              addStageTiming(stageTimings, 'generationMs', Date.now() - groundedRepairTextStartedAt);
-            });
-          }
-        }
-
-        const resolvedGroundedRepair = groundedRepairResult ?? groundedRepairTextResult;
-
-        if (resolvedGroundedRepair && lastUserMessage) {
-          const groundedRepairSanitizationStartedAt = Date.now();
-          const groundedRepairResponse = sanitizeStructuredResponse(resolvedGroundedRepair.response, {
-            groundedReferences,
-            groundedReferenceProfile,
-            usedRag: true,
-            responseMode,
-          });
-          const groundedRepairPlainText = renderStructuredResponseToPlainText(groundedRepairResponse);
-          addStageTiming(stageTimings, 'sanitizationMs', Date.now() - groundedRepairSanitizationStartedAt);
-
-          const telemetryCtx: TelemetryContext = {
-            supabase, requestId, requestStartedAt,
-            queryText: lastUserMessage.content,
-            normalizedQuery, intentLabel, topicLabel, subtopicLabel,
-            systemPromptWithContext, chatMessages,
-            retrievalMode, retrievalTopScore, retrievalSources,
-            searchResultCount, selectedChunkIds, selectedDocumentIds,
-            searchMetricId, knowledgeContext, responseMode,
-            ragQualityScore: computeRagQualityScore(retrievalQuality, groundedRepairResponse, groundedRepairResponse.referenciasFinais.length),
-            expandedQuery: expandedQueryText,
-            sourceTargetLabel: sourceTarget?.label ?? null,
-            sourceTargetStatus,
-            stageTimings,
-            promptTelemetry,
-            providerUsage: resolvedGroundedRepair.providerUsage,
-            queryEmbeddingModel,
-            searchMode,
-            queryEmbeddingCacheStatus,
-            expandedQueryEmbeddingCacheStatus,
-            budgetTotalMs: REQUEST_TIME_BUDGET_MS,
-            budgetElapsedMs: timeBudgetTracker.elapsedMs(),
-            budgetRemainingMs: timeBudgetTracker.remainingMs(),
-            structuredSkippedForBudget,
-            structuredTimeoutMs: structuredTimeoutMsUsed,
-            streamInitTimeoutMs: streamInitTimeoutMsUsed,
-            leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
-          };
-
-          await recordTelemetry(
-            telemetryCtx,
-            groundedRepairPlainText,
-            resolvedGroundedRepair.model,
-            groundedRepairResponse.referenciasFinais.length,
-            'structured',
-          ).catch((telemetryError) => console.error('Telemetry error (grounded repair):', telemetryError));
-
-          return new Response(
-            JSON.stringify({
-              kind: 'clara_structured_response',
-              response: groundedRepairResponse,
-              plainText: groundedRepairPlainText,
-            }),
-            { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
         const fallbackResponse = buildGroundedFallbackResponse(
           lastUserMessage.content,
           matchedChunks,
@@ -2781,15 +2727,21 @@ REESCRITA OBRIGATORIA:
       }
 
       if (lastUserMessage) {
+        const failedQualityAssessment = assessFailedResponseQuality({
+          retrievalMode,
+          providerUnavailable,
+          queryEmbeddingModel,
+        });
+
         void supabase.from('chat_metrics').insert({
           request_id: requestId,
           query_text: lastUserMessage.content,
           normalized_query: normalizedQuery,
-          response_status: 'failed',
+          response_status: failedQualityAssessment.responseStatus,
           used_rag: retrievalMode === 'model_grounded',
           used_external_web: false,
           used_model_general_knowledge: retrievalMode !== 'model_grounded',
-          rag_confidence_score: retrievalTopScore || null,
+          rag_confidence_score: failedQualityAssessment.ragConfidenceScore,
           search_result_count: searchResultCount,
           chunks_selected_count: selectedChunkIds.length,
           citations_count: retrievalSources.length,
@@ -2817,6 +2769,12 @@ REESCRITA OBRIGATORIA:
             structured_timeout_ms: structuredTimeoutMsUsed,
             stream_init_timeout_ms: streamInitTimeoutMsUsed,
             leakage_repair_timeout_ms: leakageRepairTimeoutMsUsed,
+            telemetry_quality_assessment: {
+              response_status: failedQualityAssessment.responseStatus,
+              rag_confidence_score: failedQualityAssessment.ragConfidenceScore,
+              needs_content_gap_review: failedQualityAssessment.needsContentGapReview,
+              gap_reason: failedQualityAssessment.gapReason,
+            },
           },
         }).then(({ error }) => {
           if (error) console.error('chat_metrics failure insert error:', error);
@@ -2829,9 +2787,9 @@ REESCRITA OBRIGATORIA:
           intent_label: intentLabel,
           topic_label: topicLabel,
           subtopic_label: subtopicLabel,
-          is_answered_satisfactorily: false,
-          needs_content_gap_review: retrievalMode !== 'model_grounded',
-          gap_reason: retrievalMode === 'model_grounded' ? 'falha_modelo' : 'sem_cobertura_documental',
+          is_answered_satisfactorily: failedQualityAssessment.isAnsweredSatisfactorily,
+          needs_content_gap_review: failedQualityAssessment.needsContentGapReview,
+          gap_reason: failedQualityAssessment.gapReason,
           used_rag: retrievalMode === 'model_grounded',
           used_external_web: false,
         }).then(({ error }) => {

@@ -3,18 +3,68 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T21:40:45.2681919Z
+- Data/hora: 2026-04-06T06:40:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
-- Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `053283e8c9b2958179f3a0e8a6ce88a17fd70434`
-- Último relatório: `docs/operational-reports/2026-04-05-emergency-rag-fallback-floor-and-recovery.md`
+- Branch de referência: `main`
+- Commit de base oficial: `a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
+- Head da sessão: `a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
+- Último relatório: `docs/operational-reports/2026-04-06-q5-q7-corpus-readiness-gemini-guardrails-and-prod-ops-local.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `5B-5E` publicados em produção, `5F` operacionalizado via `R5C` e fallback grounded recuperado por piso emergencial
+- Fase atual: BLOCO 5 com `5B-5E` publicados em produção, `5F` operacionalizado via `R5C`, fallback grounded recuperado por piso emergencial, rodada recente de UI já publicada em `main`/produção e pacote local `Q1-Q7` validado localmente
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: preservar o novo piso de fallback, reconciliar esta rodada com `origin/main` e liberar a abertura do BLOCO 6.
+- Próxima ação recomendada: preparar uma publicação limpa de `Q1-Q7` sem misturar a frente paralela de layout/dependências e, em seguida, validar remotamente o reset `quality-first / cost-first / simplificação-first`.
+
+## Virada de direção
+- Em `2026-04-06`, uma segunda auditoria exaustiva com lente `quality-first / cost-first / simplificação-first` confirmou o problema central do produto: há muita coisa na CLARA que hoje serve mais ao próprio sistema do que ao usuário.
+- Em `2026-04-06`, também foi reconciliada uma rodada real de UI já publicada em `main` e já ativa em produção, que ainda não estava refletida nesta documentação.
+- O problema aparece em três dimensões ao mesmo tempo:
+  - fan-out excessivo por pergunta no caminho quente do chat
+  - telemetria/analytics redundantes e autoavaliativas
+  - contrato editorial e renderer pesados demais para o objetivo real da CLARA
+- A razão de existir da CLARA foi reafirmada explicitamente: produzir respostas da mais alta qualidade possível e realmente úteis para ensinar e ajudar usuários reais. Tudo o que não elevar essa utilidade passa a ser candidato a redução, bastidor ou remoção.
+- O cenário operacional passa a assumir, até confirmação contrária, `free tier ou muito próximo disso` no Google/Gemini. A partir dessa premissa, benchmark pesado, re-embedding e chat ao vivo não podem continuar competindo pelo mesmo orçamento.
+
+## Reconciliação recente de UI
+- `main` e `origin/main` estão hoje alinhados ao commit `a7aa8f2`.
+- Os últimos commits reais de UI já publicados são:
+  - `4b449eb` `fix(UI/Backend): protege o layout mobile contra quebras e aplica o endurecimento tatico da chat function`
+  - `cc7bc7d` `fix(UI): acelera scanline e isola scroll parallax mobile para conter o flicker`
+  - `a7aa8f2` `fix(UI): desabilita hijacking do scroll e efeitos 3D nocivos no mobile`
+- A produção web oficial `https://clarainova02.vercel.app` está servindo o deploy `dpl_EddEfGUsefAMV5QuzSjsaT79ocEG`, criado em `2026-04-06 01:38:53 -03:00`, já depois do fast-forward para `main`.
+- O descompasso estava na documentação de continuidade, não no código publicado.
+
+## Andamento local do quality-first reset
+- `Q0` foi consolidado na auditoria factual de `2026-04-06`.
+- `Q1` já foi implementado localmente:
+  - a CLARA deixou de se autoavaliar como “satisfatória” por default
+  - `grounded_fallback` passou a ser tratado como resposta parcial
+  - `falha_provedor` passou a ser separada de lacuna de conteúdo
+- O primeiro corte de `Q2` também já entrou localmente:
+  - perguntas simples voltam a priorizar `Flash-Lite`
+  - o sistema para de insistir em novas chamadas Gemini quando o provedor já caiu em indisponibilidade/quota
+- `Q3` já foi implementado localmente:
+  - o prompt didático deixou de impor camadas artificiais como `veredito inicial` e `detalhamento complementar`
+  - o contrato sanitizado agora zera `processStates`, remove `termosDestacados` da resposta final e reduz notices laterais ao mínimo útil
+  - o plain text e o renderer visível passaram a usar seções simples (`Resposta`, `Passos`, `Antes de concluir`, `Fontes`) sem badge visível de confiança
+- `Q4` já foi implementado localmente:
+  - o piso emergencial ganhou playbooks explícitos para `assinar documento interno`, `despacho x ofício` e `notificações/prazos`
+  - isso fecha as rotinas críticas que ainda escapavam para fallback frouxo quando o provedor falhava
+- `Q5` já foi implementado localmente:
+  - documento novo ou reprocessado só volta a `is_active = true` quando a governança deseja ativação e o estado operacional realmente ficou `groundingEnabled = true`
+  - `embedding_pending`, `partial`, `error` e `cancelled` agora forçam `is_active = false`, impedindo corpus ativo semanticamente morto
+  - o re-embed de corpus passou a considerar também `governance_activation_requested`, não apenas `is_active`, para permitir recuperação limpa após o bloqueio
+- `Q6` já foi implementado localmente:
+  - a camada Gemini ganhou cooldown/circuit breaker curto para geração e embedding de consulta quando a Google entra em `quota / spending cap / provider unavailable`
+  - a estratégia de geração ficou mais conservadora sob hipótese de free tier: perguntas simples diretas tentam só `Flash-Lite`; `Pro` fica reservado para casos realmente complexos ou fracos
+  - o stream agora filtra partes `thought` defensivamente em vez de confiar cegamente em `chunk.text`
+  - o pipeline de embeddings administrativos passou a abortar cedo batches restantes quando a Google já entrou em indisponibilidade/quota, em vez de insistir chamada após chamada
+- `Q7` já foi implementado localmente:
+  - `search_metrics` verboso saiu do caminho quente por padrão e só volta com `CLARA_ENABLE_VERBOSE_SEARCH_METRICS=true`
+  - `evaluate_rag_batch.py` e `reembed_active_corpus.py` agora bloqueiam produção oficial por padrão; benchmark e re-embed só atingem o ambiente canônico com `--allow-production` ou `CLARA_ALLOW_PRODUCTION_OPERATIONS=1`
+- `npm run validate` passou nesta árvore com `35` suites e `135` testes.
+- Esta rodada ainda não foi publicada como pacote próprio porque o workspace contém mudanças paralelas de layout/dependências que não devem ser empacotadas automaticamente junto com a frente RAG/backend.
 
 ## Incidente fechado
 - Em `2026-04-05`, a CLARA entrou em regressão grave de qualidade no caminho de fallback grounded: a recuperação passou a devolver fragmentos burocráticos e linhas incompletas mesmo com retrieval relevante.
@@ -31,6 +81,16 @@
 - Em `2026-04-05`, a produção foi publicada manualmente mais de uma vez a partir da branch de sessão (`921a29b` e depois `705cc3c`), então a produção ficou temporariamente à frente de `origin/main`. Essa divergência já está registrada em `docs/REMOTE_STATE.md`.
 
 ## Prioridade imediata
+- A frente prioritária do projeto deixa de ser “abrir o BLOCO 6” e passa a ser o `quality-first reset` dentro do BLOCO 5.
+- Nova ordem imediata:
+  - `Q0` baseline factual do reset
+  - `Q1` truth telemetry
+  - `Q2` redução do custo por pergunta
+  - `Q3` simplificação do contrato de resposta e do renderer
+  - `Q4` fortalecimento do fallback e ampliação de playbooks críticos
+- `Q5` correção do pipeline do corpus para impedir base ativa sem embeddings válidos
+- `Q6` restauração controlada do cérebro Gemini assim que a conta Google for esclarecida
+- `Q7` guard-rails operacionais de produção e custo para benchmark/re-embed/telemetria quente
 - A partir de `2026-04-05`, a ordem operacional imediata dentro do BLOCO 5 passa a ser `R0`, `R1`, `R2`, `R3A`, `R3B`, `R3C`, `R4A`, `R4B`, `R5A`, `R5B`, `R5C`, `R6A` e `R6B`, antes da retomada dos subblocos `5B-5F`.
 - `R0` cobre benchmark canônico, baseline reproduzível e gate local do RAG. Esta etapa já foi concluída nesta branch.
 - `R1` cobre ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e query expansion com contexto curto. Esta etapa já foi implementada localmente e validada nesta branch.
@@ -186,6 +246,9 @@
 - A rodada de UX do chat com scroll contido, loading/avatar revisado e distinção mais forte entre `Direto` e `Didático` já foi integrada em `main`, publicada inicialmente no deploy `dpl_A6oZ26Byyn8yFLjCzLgnEHrWYTNi` e consolidada documentalmente no deploy `dpl_7kWa5Y3zhKjiSLkxz3iGeNdxtrVM`
 
 ## Itens pendentes
+- Publicar de forma limpa o pacote local `Q1-Q4`, sem misturar a frente paralela de layout/dependências.
+- Abrir `Q5`, impedindo que documento entre ativo sem embedding válido e separando ingestão pesada da experiência principal do chat.
+- Continuar a redução estrutural de fan-out por pergunta e separar benchmark/re-embedding do tráfego de produção.
 - Encontrar uma captura oficial íntegra do Decreto Rio nº 55.615/2025 e substituir a versão parcial no staging e no corpus
 - Executar uma bateria manual de `15–20` perguntas reais com foco em ambiguidade de versão, interface e fonte-alvo
 - Repetir um reupload controlado do mesmo PDF na UI admin para fechar a evidência residual de deduplicação do BLOCO 4C
@@ -195,8 +258,14 @@
 ## Bloqueios externos
 - Google OAuth do admin continua dependente de configuração externa no Supabase/Google
 - Embeddings reais continuam sujeitos à estabilidade externa do Gemini
+- O painel do Google/AI Studio ainda precisa ser consultado pelo usuário para confirmar spending cap, quota real e tier ativo; até lá, a trilha opera por hipótese conservadora de orçamento apertado
 
 ## Notas operacionais
+- A partir desta reconciliação, fica reforçada a regra: qualquer commit/deploy manual feito por outra ferramenta diretamente em `main` ou na produção precisa ser registrado na mesma rodada em `REMOTE_STATE`, `HANDOFF`, `.continuity/current-state.json` e em um relatório operacional.
+- A segunda auditoria de 2026-04-06 mostrou que `848` requests em `24h` vieram quase totalmente de benchmark repetido, com assinatura clara de bateria canônica e não de adoção pública.
+- O Supabase remoto mostrou `search_metrics` espelhando `chat_metrics` em volume (`848` linhas/24h), `ingestion_jobs` com `0` linhas e `embedding_cache` com `0` linhas; isso reforça a leitura de complexidade/telemetria acima do necessário.
+- O corpus ativo remoto continua semanticamente quebrado: `17` documentos ativos, `289` chunks ativos e `0` embeddings ativos válidos.
+- O problema de quota do Google não inocenta o código local: a CLARA atual consome mais chamadas por pergunta do que um produto em free tier deveria consumir.
 - A trilha principal deixou de depender da PR #13 e passou a seguir um hardening incremental diretamente a partir de origin/main.
 - O banco remoto oficial já estava mais seguro do que a cadeia local de migrations indicava; a cadeia local agora foi alinhada ao baseline remoto canônico.
 - O preparo do BLOCO 4 foi registrado sem tocar em `ROADMAP_FUTURO.md` nem nas functions de chat e embeddings que já estavam modificadas fora deste escopo.

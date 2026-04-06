@@ -269,43 +269,48 @@ function adaptStructuredResponseForMode(
   response: ClaraStructuredResponse,
   responseMode: ChatResponseMode,
 ): ClaraStructuredResponse {
-  if (responseMode === "didatico") {
-    const didacticMode = response.etapas.length > 0 &&
-        (
-          response.observacoesFinais.length > 0 ||
-          response.analiseDaResposta.userNotice ||
-          response.termosDestacados.length > 0
-        )
-      ? "combinado"
-      : response.etapas.length > 0 ? "passo_a_passo" : "explicacao";
+  const normalizedObservations = dedupeStrings(response.observacoesFinais.map(takeFirstSentence), 2);
+  const normalizedCautionNotice = response.analiseDaResposta.cautionNotice
+    ? takeFirstSentence(response.analiseDaResposta.cautionNotice)
+    : null;
+  const shouldKeepCautionNotice = Boolean(
+    normalizedCautionNotice
+      && (
+        response.analiseDaResposta.answerScopeMatch !== "exact"
+        || response.analiseDaResposta.clarificationRequested
+        || response.analiseDaResposta.ambiguityInSources
+      ),
+  );
 
+  if (responseMode === "didatico") {
     return {
       ...response,
-      modoResposta: didacticMode,
+      modoResposta: response.etapas.length > 0 ? "passo_a_passo" : "explicacao",
       etapas: renumberSteps(
-        response.etapas.slice(0, 5).map((step) => ({
+        response.etapas.slice(0, 4).map((step) => ({
           ...step,
-          itens: dedupeStrings(step.itens, 4),
-          destaques: dedupeStrings(step.destaques, 3),
+          conteudo: takeFirstSentence(step.conteudo),
+          itens: dedupeStrings(step.itens, 3),
+          destaques: [],
+          alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
         })),
       ),
-      observacoesFinais: dedupeStrings(response.observacoesFinais, 4),
-      termosDestacados: response.termosDestacados
-        .filter((highlight, index, all) => {
-          const normalized = normalizeComparableText(highlight.texto);
-          return all.findIndex((candidate) => normalizeComparableText(candidate.texto) === normalized) === index;
-        })
-        .slice(0, 6),
+      observacoesFinais: normalizedObservations,
+      termosDestacados: [],
       analiseDaResposta: {
         ...response.analiseDaResposta,
-        processStates: response.analiseDaResposta.processStates.slice(0, 4),
+        userNotice: null,
+        clarificationReason: response.analiseDaResposta.clarificationReason
+          ? takeFirstSentence(response.analiseDaResposta.clarificationReason)
+          : null,
+        ambiguityReason: response.analiseDaResposta.ambiguityReason
+          ? takeFirstSentence(response.analiseDaResposta.ambiguityReason)
+          : null,
+        cautionNotice: shouldKeepCautionNotice ? normalizedCautionNotice : null,
+        processStates: [],
       },
     };
   }
-
-  const conciseProcessStates = response.analiseDaResposta.processStates
-    .filter((state) => state.status !== "concluido")
-    .slice(0, 2);
 
   return {
     ...response,
@@ -316,17 +321,12 @@ function adaptStructuredResponseForMode(
         ...step,
         conteudo: takeFirstSentence(step.conteudo),
         itens: dedupeStrings(step.itens, 2),
-        destaques: dedupeStrings(step.destaques, 2),
+        destaques: [],
         alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
       })),
     ),
-    observacoesFinais: dedupeStrings(response.observacoesFinais.map(takeFirstSentence), 1),
-    termosDestacados: response.termosDestacados
-      .filter((highlight, index, all) => {
-        const normalized = normalizeComparableText(highlight.texto);
-        return all.findIndex((candidate) => normalizeComparableText(candidate.texto) === normalized) === index;
-      })
-      .slice(0, 2),
+    observacoesFinais: normalizedObservations.slice(0, 2),
+    termosDestacados: [],
     analiseDaResposta: {
       ...response.analiseDaResposta,
       userNotice: null,
@@ -336,10 +336,8 @@ function adaptStructuredResponseForMode(
       ambiguityReason: response.analiseDaResposta.ambiguityReason
         ? takeFirstSentence(response.analiseDaResposta.ambiguityReason)
         : null,
-      cautionNotice: response.analiseDaResposta.cautionNotice
-        ? takeFirstSentence(response.analiseDaResposta.cautionNotice)
-        : null,
-      processStates: conciseProcessStates.slice(0, 1),
+      cautionNotice: shouldKeepCautionNotice ? normalizedCautionNotice : null,
+      processStates: [],
     },
   };
 }
@@ -369,10 +367,9 @@ export function formatReferenceAbnt(reference: ClaraStructuredResponse["referenc
 export function renderStructuredResponseToPlainText(response: ClaraStructuredResponse) {
   const lines: string[] = [response.tituloCurto, "", response.resumoInicial];
   const analysis = response.analiseDaResposta;
-  const isChecklist = response.modoResposta === "checklist";
 
   if (analysis.clarificationRequested && analysis.clarificationQuestion) {
-    lines.push("", "Antes de seguir");
+    lines.push("", "Para responder melhor");
     if (analysis.clarificationReason) {
       lines.push(analysis.clarificationReason);
     }
@@ -380,7 +377,7 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
   }
 
   if (analysis.userNotice) {
-    lines.push("", isChecklist ? "Observacao" : "Orientacao inicial");
+    lines.push("", "Importante");
     lines.push(analysis.userNotice);
   }
 
@@ -390,7 +387,7 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
   }
 
   if (response.etapas.length > 0) {
-    lines.push("", isChecklist ? "Checklist rapido" : "Passo a passo guiado");
+    lines.push("", response.etapas.length > 1 ? "Passos" : "Resposta principal");
     for (const step of response.etapas) {
       lines.push(`${step.numero}. ${step.titulo}`);
       lines.push(step.conteudo);
@@ -405,23 +402,15 @@ export function renderStructuredResponseToPlainText(response: ClaraStructuredRes
   }
 
   if (response.observacoesFinais.length > 0) {
-    lines.push(isChecklist ? "Conferencia final" : "Observacoes finais");
+    lines.push("Antes de concluir");
     for (const observation of response.observacoesFinais) {
       lines.push(`- ${observation}`);
     }
     lines.push("");
   }
 
-  if (!isChecklist && response.termosDestacados.length > 0) {
-    lines.push("Termos importantes");
-    for (const highlight of response.termosDestacados) {
-      lines.push(`- ${highlight.texto}`);
-    }
-    lines.push("");
-  }
-
   if (response.referenciasFinais.length > 0) {
-    lines.push("Referencias");
+    lines.push("Fontes");
     for (const reference of response.referenciasFinais) {
       lines.push(`[${reference.id}] ${formatReferenceAbnt(reference)}`);
     }

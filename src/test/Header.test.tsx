@@ -10,7 +10,7 @@ vi.mock('@/hooks/useScrollPosition', () => ({
 }));
 
 vi.mock('@/hooks/useChatStore', () => ({
-  useChat: () => ({ openChat: openChatMock }),
+  useChatActions: () => ({ openChat: openChatMock }),
 }));
 
 describe('Header', () => {

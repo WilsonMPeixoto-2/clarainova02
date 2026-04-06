@@ -1,9 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Warning, CheckCircle, CircleDashed, CaretDown, CaretUp, CopySimple, FileText, Globe, Info, Question, ShieldWarning } from "@phosphor-icons/react";
+import { useCallback, useState } from 'react';
+import { Warning, CheckCircle, CaretDown, CaretUp, CopySimple, FileText, Info, Question, ShieldWarning } from "@phosphor-icons/react";
 
 import {
-  type ClaraHighlight,
-  type ClaraProcessState,
   type ClaraReference,
   type ClaraStructuredResponse,
   formatReferenceAbnt,
@@ -11,56 +9,6 @@ import {
 } from '@/lib/clara-response';
 import type { ChatResponseMode } from '@/lib/chat-response-mode';
 import { ChatFeedbackControls } from '@/components/chat/ChatFeedbackControls';
-
-function highlightLabel(highlight: ClaraHighlight) {
-  switch (highlight.tipo) {
-    case 'botao':
-      return 'Botao';
-    case 'icone':
-      return 'Icone';
-    case 'atencao':
-      return 'Atencao';
-    case 'norma':
-      return 'Fonte';
-    case 'prazo':
-      return 'Prazo';
-    case 'menu':
-      return 'Menu';
-    case 'acao':
-      return 'Acao';
-    default:
-      return 'Conceito';
-  }
-}
-
-function getProcessStateMeta(state: ClaraProcessState) {
-  switch (state.status) {
-    case 'concluido':
-      return {
-        label: 'Concluído',
-        icon: CheckCircle,
-        className: 'chat-process-state is-complete',
-      };
-    case 'cautela':
-      return {
-        label: 'Atenção',
-        icon: Warning,
-        className: 'chat-process-state is-caution',
-      };
-    case 'web':
-      return {
-        label: 'Oficial',
-        icon: Globe,
-        className: 'chat-process-state is-web',
-      };
-    default:
-      return {
-        label: 'Informativo',
-        icon: CircleDashed,
-        className: 'chat-process-state is-info',
-      };
-  }
-}
 
 function resolveStructuredResponseMode(
   response: ClaraStructuredResponse,
@@ -81,53 +29,22 @@ function getResponseModeMeta(mode: ChatResponseMode) {
   if (mode === 'direto') {
     return {
       kicker: 'Resposta direta',
-      modeBadge: 'Síntese operacional',
-      summaryLabel: 'Rota imediata',
-      lensTitle: 'Foco desta leitura',
-      lensCopy: 'Siga primeiro a rota principal. Use os alertas e referências apenas para confirmar o que muda sua próxima ação.',
-      stepTitle: 'Rota principal',
-      stepDetail: 'Etapas curtas para agir sem perder o fio',
-      highlightsTitle: 'Pontos-chave',
-      highlightsDetail: 'Sinais rápidos para não perder o foco',
-      observationsTitle: 'Observações finais',
-      observationsDetail: 'Fechamento rápido do que ainda merece atenção',
+      summaryLabel: 'Resposta',
+      stepTitle: 'Passos',
+      stepDetail: 'O essencial para agir com segurança',
+      observationsTitle: 'Antes de concluir',
+      observationsDetail: 'Conferências rápidas antes de finalizar',
     };
   }
 
   return {
-    kicker: 'Guia didático',
-    modeBadge: 'Passo a passo guiado',
-    summaryLabel: 'Veredito inicial',
-    lensTitle: 'Antes de avançar',
-    lensCopy: 'Use este guia em quatro camadas: entenda o veredito inicial, siga a explicação principal, consulte o detalhamento complementar e só então feche pelas observações finais.',
-    stepTitle: 'Explicação principal',
-    stepDetail: 'Sequência guiada com contexto, conferências e ordem de execução',
-    highlightsTitle: 'Detalhamento complementar',
-    highlightsDetail: 'Elementos de interface, termos e sinais que ajudam a evitar erro',
-    observationsTitle: 'Observações finais',
-    observationsDetail: 'Fechamento, cautelas e verificações depois da execução',
+    kicker: 'Resposta explicada',
+    summaryLabel: 'Resposta',
+    stepTitle: 'Passos',
+    stepDetail: 'Explicação principal em ordem de execução',
+    observationsTitle: 'Antes de concluir',
+    observationsDetail: 'Cuidados e verificações finais',
   };
-}
-
-
-function ConfidenceBadge({ scopeMatch, confidence }: { scopeMatch: string; confidence: number | null }) {
-  const tier = scopeMatch === 'exact'
-    ? { label: 'Resposta fundamentada', className: 'chat-confidence-high' }
-    : scopeMatch === 'probable'
-    ? { label: 'Resposta provável', className: 'chat-confidence-good' }
-    : scopeMatch === 'weak'
-    ? { label: 'Cobertura parcial', className: 'chat-confidence-moderate' }
-    : { label: 'Base limitada', className: 'chat-confidence-low' };
-
-  return (
-    <span className={`chat-confidence-badge ${tier.className}`} aria-label={`Nível de confiança: ${tier.label}`}>
-      <span className="chat-confidence-dot" aria-hidden="true" />
-      <span>{tier.label}</span>
-      {confidence != null && confidence > 0 && (
-        <span className="chat-confidence-value">{Math.round(confidence * 100)}%</span>
-      )}
-    </span>
-  );
 }
 
 const COLLAPSED_ITEM_LIMIT = 3;
@@ -265,38 +182,18 @@ export function ChatStructuredMessage({
       setCopied(false);
     });
   }, [response]);
-  const groupedHighlights = useMemo(() => response.termosDestacados.slice(0, 8), [response.termosDestacados]);
-  const processStates = useMemo(() => analysis.processStates.slice(0, 4), [analysis.processStates]);
-  const isLeanDocumentResponse = !analysis.clarificationRequested
-    && !analysis.userNotice
-    && !analysis.cautionNotice
-    && processStates.length === 0
-    && groupedHighlights.length === 0
-    && response.referenciasFinais.length > 0;
-  const confidenceTier = analysis.answerScopeMatch === 'exact' ? 'high'
-    : analysis.answerScopeMatch === 'probable' ? 'good'
-    : analysis.answerScopeMatch === 'weak' ? 'moderate' : 'low';
   const responseMeta = [
-    isLeanDocumentResponse ? null : modeMeta.modeBadge,
     response.etapas.length > 0 ? `${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''}` : null,
     response.referenciasFinais.length > 0
-      ? `${response.referenciasFinais.length} referência${response.referenciasFinais.length > 1 ? 's' : ''}`
+      ? `${response.referenciasFinais.length} fonte${response.referenciasFinais.length > 1 ? 's' : ''}`
       : null,
-    analysis.cautionNotice ? 'Exige atenção' : null,
   ].filter(Boolean) as string[];
-  const kickerLabel = isLeanDocumentResponse && resolvedMode === 'didatico'
-    ? 'Resposta sustentada pelas fontes'
-    : modeMeta.kicker;
-  const summaryLabel = isLeanDocumentResponse ? 'Resposta' : modeMeta.summaryLabel;
-  const stepSectionTitle = isLeanDocumentResponse ? 'Trecho principal' : modeMeta.stepTitle;
-  const stepSectionDetail = isLeanDocumentResponse ? undefined : modeMeta.stepDetail;
 
   return (
     <div
       className="chat-structured-response"
       data-response-mode={resolvedMode}
       data-response-layout={response.modoResposta}
-      data-confidence={confidenceTier}
       data-needs-clarification={analysis.clarificationRequested ? 'true' : undefined}
     >
       <div className="chat-response-intro">
@@ -311,7 +208,7 @@ export function ChatStructuredMessage({
               draggable={false}
             />
           </span>
-          {kickerLabel}
+          {modeMeta.kicker}
           <button
             type="button"
             className="chat-copy-button"
@@ -330,27 +227,15 @@ export function ChatStructuredMessage({
                 {item}
               </span>
             ))}
-            <ConfidenceBadge
-              scopeMatch={analysis.answerScopeMatch}
-              confidence={analysis.finalConfidence}
-            />
           </div>
         )}
         <div className="chat-response-summary-block">
-          <p className="chat-response-summary-label">{summaryLabel}</p>
+          <p className="chat-response-summary-label">{modeMeta.summaryLabel}</p>
           <p className="chat-response-summary">
             {response.resumoInicial}
             <CitationList citations={response.resumoCitacoes} />
           </p>
         </div>
-
-        {!isLeanDocumentResponse && (
-          <section className="chat-response-lens" aria-label={modeMeta.lensTitle}>
-            <p className="chat-response-lens-label">{modeMeta.lensTitle}</p>
-            <p className="chat-response-lens-copy">{modeMeta.lensCopy}</p>
-          </section>
-        )}
-
 
         {analysis.clarificationRequested && analysis.clarificationQuestion && (
           <section className="chat-clarification-card" aria-label="Pedido de esclarecimento">
@@ -388,46 +273,6 @@ export function ChatStructuredMessage({
             )}
           </div>
         )}
-
-        {processStates.length > 0 && (
-          <section className="chat-process-rail" aria-label="Estados da resposta">
-            {processStates.map((state) => {
-              const meta = getProcessStateMeta(state);
-              const Icon = meta.icon;
-
-              return (
-                <article key={state.id} className={meta.className}>
-                  <div className="chat-process-state-head">
-                    <span className="chat-process-state-icon" aria-hidden="true">
-                      <Icon size={14} />
-                    </span>
-                    <span className="chat-process-state-label">{meta.label}</span>
-                  </div>
-                  <p className="chat-process-state-title">{state.titulo}</p>
-                  <p className="chat-process-state-copy">{state.descricao}</p>
-                </article>
-              );
-            })}
-          </section>
-        )}
-
-        {groupedHighlights.length > 0 && (
-          <section className="chat-section-shell" aria-label="Destaques da resposta">
-            <SectionHeading
-              icon={Info}
-              title={modeMeta.highlightsTitle}
-              detail={modeMeta.highlightsDetail}
-            />
-            <div className="chat-highlight-cloud">
-              {groupedHighlights.map((highlight) => (
-                <span key={`${highlight.tipo}-${highlight.texto}`} className={`chat-highlight-badge chat-highlight-${highlight.tipo}`}>
-                  <span className="chat-highlight-label">{highlightLabel(highlight)}</span>
-                  <span>{highlight.texto}</span>
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
 
 
@@ -435,8 +280,8 @@ export function ChatStructuredMessage({
         <section className="chat-section-shell" aria-label="Etapas sugeridas">
           <SectionHeading
             icon={CheckCircle}
-            title={stepSectionTitle}
-            detail={stepSectionDetail}
+            title={modeMeta.stepTitle}
+            detail={modeMeta.stepDetail}
           />
           {response.etapas.length > 1 && (
             <div className="chat-step-progress" aria-label={`${response.etapas.length} etapas`}>
@@ -517,10 +362,10 @@ export function ChatStructuredMessage({
             <span className="chat-references-toggle-copy">
               <span className="chat-section-title">
                 <FileText size={15} />
-                <span>Fontes consultadas</span>
+                <span>Fontes</span>
               </span>
               <span className="chat-section-detail">
-                {response.referenciasFinais.length} referência{response.referenciasFinais.length > 1 ? 's' : ''} de apoio
+                {response.referenciasFinais.length} fonte{response.referenciasFinais.length > 1 ? 's' : ''}
               </span>
             </span>
             {showReferences ? <CaretUp size={16} /> : <CaretDown size={16} />}
@@ -528,7 +373,7 @@ export function ChatStructuredMessage({
           {showReferences && (
             <>
               <p className="chat-reference-intro">
-                As fontes abaixo sustentam os trechos com respaldo documental apresentados nesta resposta.
+                Se quiser conferir o texto original, use as fontes abaixo.
               </p>
               <ol className="chat-reference-list">
                 {response.referenciasFinais.map((reference) => (

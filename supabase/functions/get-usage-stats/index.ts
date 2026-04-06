@@ -472,7 +472,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const groundedAnswers = chatHealthRows.filter((row) => row.used_rag).length;
+    const groundedAnswers = chatHealthRows.filter((row) =>
+      row.used_rag && row.response_status === "answered"
+    ).length;
     const degradedResponses = chatHealthRows.filter((row) =>
       ["failed", "out_of_scope", "partial"].includes(row.response_status ?? "")
     ).length;
