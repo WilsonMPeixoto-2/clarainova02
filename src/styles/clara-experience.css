@@ -191,7 +191,7 @@ body::before {
   display: grid;
   gap: clamp(1.5rem, 3vw, 2.6rem);
   align-items: end;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   padding: clamp(1.35rem, 2.2vw, 2rem);
 }
 
@@ -1359,6 +1359,7 @@ body::before {
   }
 
   .hero-content-layer {
+    grid-template-columns: minmax(0, 1fr);
     padding: 1rem;
     align-items: stretch;
   }

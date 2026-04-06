@@ -999,12 +999,12 @@
 
     .hero-shell {
       min-height: min(calc(100svh - 1.5rem), 980px);
-      
     }
 
     .hero-shell::before { display: none; }
 
     .hero-content-layer {
+      grid-template-columns: minmax(0, 1fr);
       align-items: flex-end;
       padding: min(43vh, 19rem) clamp(1rem, 4vw, 1.35rem) clamp(1.2rem, 5vw, 1.6rem);
     }
@@ -1016,11 +1016,10 @@
     .hero-copy-surface {
       min-height: auto;
       padding: 0;
-    
-    background: linear-gradient(180deg, hsl(var(--bg-base) / 0.94) 0%, hsl(var(--bg-base) / 0.60) 100%);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
+      background: linear-gradient(180deg, hsl(var(--bg-base) / 0.94) 0%, hsl(var(--bg-base) / 0.60) 100%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
 
     .hero-video-layer,
     .hero-clara-video {
@@ -1031,7 +1030,9 @@
       transform: scale(1.06);
     }
 
-    .hero-energy-glow {
+    .hero-energy-glow,
+    .scanline,
+    .hero-particles-layer {
       display: none !important;
     }
 
