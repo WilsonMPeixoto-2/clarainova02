@@ -258,75 +258,144 @@ const HeroSection = () => {
               </motion.div>
 
               <motion.div variants={itemVariants} className="mt-12 w-full max-w-2xl">
-                <Tilt3D depth={10} glare={true} className="w-full">
-                  <div className="hero-prompt-cluster glass-card p-6 md:p-8 relative overflow-hidden group">
-                    {/* Subtle contextual glow that matches Clara's cyan/gold */}
-                    <div className="absolute -inset-24 bg-gradient-to-r from-[hsl(var(--gold-1)/0.15)] to-[hsl(var(--teal-1)/0.15)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none" />
-                    
-                    <div className="hero-prompt-toolbar relative z-10">
-                    <div className="space-y-1.5">
-                      <p className="text-caption text-[hsl(var(--gold-1))] font-semibold uppercase tracking-wider">Perguntas frequentes</p>
-                      <p className="text-sm text-white/80 max-w-[40ch]">
+                {isHeroMobile ? (
+                  <div className="w-full">
+                    <div className="hero-prompt-cluster glass-card p-6 md:p-8 relative overflow-hidden group">
+                      <div className="absolute -inset-24 bg-gradient-to-r from-[hsl(var(--gold-1)/0.15)] to-[hsl(var(--teal-1)/0.15)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none" />
+                      <div className="hero-prompt-toolbar relative z-10">
+                        <div className="space-y-1.5">
+                          <p className="text-caption text-[hsl(var(--gold-1))] font-semibold uppercase tracking-wider">Perguntas frequentes</p>
+                          <p className="text-sm text-white/80 max-w-[40ch]">
+                            Exemplos de perguntas sobre tarefas comuns no SEI-Rio.
+                          </p>
+                        </div>
+                        <div className="hero-prompt-actions">
+                          <div className="hero-carousel-controls" aria-label="Navegação das perguntas rápidas">
+                            <button
+                              type="button"
+                              className="quick-carousel-nav"
+                              onClick={() => scrollQuickCarousel('prev')}
+                              aria-label="Ver pergunta anterior"
+                            >
+                              <CaretLeft weight="bold" size={16} aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              className="quick-carousel-nav"
+                              onClick={() => scrollQuickCarousel('next')}
+                              aria-label="Ver próxima pergunta"
+                            >
+                              <CaretRight weight="bold" size={16} aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
 
-                      Exemplos de perguntas sobre tarefas comuns no SEI-Rio.
-                    </p>
+                      <div className="quick-carousel-shell">
+                        <div
+                          ref={quickCarouselRef}
+                          className="quick-carousel"
+                          role="list"
+                          aria-label="Perguntas rápidas"
+                          tabIndex={0}
+                          onKeyDown={(event) => {
+                            if (event.key === 'ArrowRight') {
+                              event.preventDefault();
+                              scrollQuickCarousel('next');
+                            }
+                            if (event.key === 'ArrowLeft') {
+                              event.preventDefault();
+                              scrollQuickCarousel('prev');
+                            }
+                          }}
+                        >
+                          {QUICK_QUESTIONS.map((question, index) => (
+                            <div key={question} role="listitem" className="quick-chip-item">
+                              <button
+                                type="button"
+                                className="quick-chip"
+                                style={{ animationDelay: `${0.05 * index}s` }}
+                                onClick={() => openChat(question)}
+                              >
+                                {question}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="hero-prompt-actions">
-                    <div className="hero-carousel-controls" aria-label="Navegação das perguntas rápidas">
-                      <button
-                        type="button"
-                        className="quick-carousel-nav"
-                        onClick={() => scrollQuickCarousel('prev')}
-                        aria-label="Ver pergunta anterior"
-                      >
-                        <CaretLeft weight="bold" size={16} aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        className="quick-carousel-nav"
-                        onClick={() => scrollQuickCarousel('next')}
-                        aria-label="Ver próxima pergunta"
-                      >
-                        <CaretRight weight="bold" size={16} aria-hidden="true" />
-                      </button>
+                ) : (
+                  <Tilt3D depth={10} glare={true} className="w-full">
+                    <div className="hero-prompt-cluster glass-card p-6 md:p-8 relative overflow-hidden group">
+                      {/* Subtle contextual glow that matches Clara's cyan/gold */}
+                      <div className="absolute -inset-24 bg-gradient-to-r from-[hsl(var(--gold-1)/0.15)] to-[hsl(var(--teal-1)/0.15)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none" />
+                      
+                      <div className="hero-prompt-toolbar relative z-10">
+                      <div className="space-y-1.5">
+                        <p className="text-caption text-[hsl(var(--gold-1))] font-semibold uppercase tracking-wider">Perguntas frequentes</p>
+                        <p className="text-sm text-white/80 max-w-[40ch]">
+
+                        Exemplos de perguntas sobre tarefas comuns no SEI-Rio.
+                      </p>
+                    </div>
+                    <div className="hero-prompt-actions">
+                      <div className="hero-carousel-controls" aria-label="Navegação das perguntas rápidas">
+                        <button
+                          type="button"
+                          className="quick-carousel-nav"
+                          onClick={() => scrollQuickCarousel('prev')}
+                          aria-label="Ver pergunta anterior"
+                        >
+                          <CaretLeft weight="bold" size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="quick-carousel-nav"
+                          onClick={() => scrollQuickCarousel('next')}
+                          aria-label="Ver próxima pergunta"
+                        >
+                          <CaretRight weight="bold" size={16} aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="quick-carousel-shell">
+                    <div
+                      ref={quickCarouselRef}
+                      className="quick-carousel"
+                      role="list"
+                      aria-label="Perguntas rápidas"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === 'ArrowRight') {
+                          event.preventDefault();
+                          scrollQuickCarousel('next');
+                        }
+                        if (event.key === 'ArrowLeft') {
+                          event.preventDefault();
+                          scrollQuickCarousel('prev');
+                        }
+                      }}
+                    >
+                      {QUICK_QUESTIONS.map((question, index) => (
+                        <div key={question} role="listitem" className="quick-chip-item">
+                          <button
+                            type="button"
+                            className="quick-chip"
+                            style={{ animationDelay: `${0.05 * index}s` }}
+                            onClick={() => openChat(question)}
+                          >
+                            {question}
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-
-                <div className="quick-carousel-shell">
-                  <div
-                    ref={quickCarouselRef}
-                    className="quick-carousel"
-                    role="list"
-                    aria-label="Perguntas rápidas"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'ArrowRight') {
-                        event.preventDefault();
-                        scrollQuickCarousel('next');
-                      }
-                      if (event.key === 'ArrowLeft') {
-                        event.preventDefault();
-                        scrollQuickCarousel('prev');
-                      }
-                    }}
-                  >
-                    {QUICK_QUESTIONS.map((question, index) => (
-                      <div key={question} role="listitem" className="quick-chip-item">
-                        <button
-                          type="button"
-                          className="quick-chip"
-                          style={{ animationDelay: `${0.05 * index}s` }}
-                          onClick={() => openChat(question)}
-                        >
-                          {question}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-                </Tilt3D>
+                  </Tilt3D>
+                )}
               </motion.div>
             </motion.div>
           </div>

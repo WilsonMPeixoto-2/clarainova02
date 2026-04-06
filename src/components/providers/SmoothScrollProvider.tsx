@@ -13,6 +13,9 @@ const SmoothScrollProvider = ({ children }: { children: React.ReactNode }) => {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) return null;
 
+    const isTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    if (isTouch) return null;
+
     return new Lenis({
       lerp: 0.1,
       smoothWheel: true,
