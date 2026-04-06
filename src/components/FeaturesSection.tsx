@@ -3,7 +3,7 @@ import { FileText, MagnifyingGlass, ChatCircleText, CheckCircle, PenNib } from '
 import Balancer from 'react-wrap-balancer';
 import ScrollReveal from '@/components/animations/ScrollReveal';
 import BentoCard from '@/components/BentoCard';
-import { useChat } from '@/hooks/useChatStore';
+import { useChatActions } from '@/hooks/useChatStore';
 
 const features = [
   {
@@ -46,7 +46,7 @@ const promptBank = [
 ];
 
 const FeaturesSection = () => {
-  const { openChat } = useChat();
+  const { openChat } = useChatActions();
 
   return (
     <section id="conhecimento" className="knowledge-section aurora-bg py-20 md:py-28 relative overflow-hidden" aria-labelledby="features-heading">

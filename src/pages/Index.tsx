@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import { SoftWaveDivider } from "@/components/animations/SoftWaveDivider";
 import GlobalStars from "@/components/animations/GlobalStars";
-import { useChat } from "@/hooks/useChatStore";
+import { useChatActions } from "@/hooks/useChatStore";
 import { DocumentMeta } from "@/components/DocumentMeta";
 import { useLocation } from "react-router-dom";
 
@@ -20,7 +20,7 @@ const GenericSkeleton = () => (
 );
 
 const IndexContent = () => {
-  const { openChat } = useChat();
+  const { openChat } = useChatActions();
   const location = useLocation();
   const handledSearchRef = useRef<string | null>(null);
 

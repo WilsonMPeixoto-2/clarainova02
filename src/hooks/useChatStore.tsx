@@ -1,4 +1,4 @@
-import { createContext, startTransition, use, useCallback, useState, type ReactNode } from 'react';
+import { createContext, startTransition, use, useCallback, useState, useMemo, type ReactNode } from 'react';
 
 import type { ClaraStructuredResponse } from '@/lib/clara-response';
 import {
@@ -26,7 +26,15 @@ export interface ChatMessage {
   requestId?: string | null;
 }
 
-interface ChatState {
+interface ChatActions {
+  openChat: (question?: string) => void;
+  closeChat: () => void;
+  sendMessage: (text: string) => void;
+  clearMessages: () => void;
+  setResponseMode: (mode: ChatResponseMode) => void;
+}
+
+interface ChatStateData {
   isOpen: boolean;
   messages: ChatMessage[];
   pendingQuestion: string | null;
@@ -36,14 +44,12 @@ interface ChatState {
   runtimeMode: ChatRuntimeMode;
   runtimeLabel: string;
   runtimeDescription: string;
-  openChat: (question?: string) => void;
-  closeChat: () => void;
-  sendMessage: (text: string) => void;
-  clearMessages: () => void;
-  setResponseMode: (mode: ChatResponseMode) => void;
 }
 
+type ChatState = ChatStateData & ChatActions;
+
 const ChatContext = createContext<ChatState | null>(null);
+const ChatActionsContext = createContext<ChatActions | null>(null);
 const CHAT_API_CONFIG = getDefaultChatApiConfig();
 const CHAT_STORAGE_KEY = 'clara-chat-history';
 const CHAT_RESPONSE_MODE_STORAGE_KEY = 'clara-chat-response-mode';
@@ -314,32 +320,48 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     try { localStorage.removeItem(CHAT_STORAGE_KEY); } catch { /* ignore */ }
   }, [setMessages]);
 
+  const chatState = useMemo(() => ({
+    isOpen,
+    messages,
+    pendingQuestion,
+    isLoading,
+    isStreaming,
+    responseMode,
+    runtimeMode: CHAT_API_CONFIG.runtimeMode,
+    runtimeLabel,
+    runtimeDescription,
+    openChat,
+    closeChat,
+    sendMessage,
+    clearMessages,
+    setResponseMode,
+  }), [isOpen, messages, pendingQuestion, isLoading, isStreaming, responseMode, runtimeLabel, runtimeDescription, openChat, closeChat, sendMessage, clearMessages, setResponseMode]);
+
+  const chatActions = useMemo(() => ({
+    openChat,
+    closeChat,
+    sendMessage,
+    clearMessages,
+    setResponseMode,
+  }), [openChat, closeChat, sendMessage, clearMessages, setResponseMode]);
+
   return (
-    <ChatContext.Provider
-      value={{
-        isOpen,
-        messages,
-        pendingQuestion,
-        isLoading,
-        isStreaming,
-        responseMode,
-        runtimeMode: CHAT_API_CONFIG.runtimeMode,
-        runtimeLabel,
-        runtimeDescription,
-        openChat,
-        closeChat,
-        sendMessage,
-        clearMessages,
-        setResponseMode,
-      }}
-    >
-      {children}
-    </ChatContext.Provider>
+    <ChatActionsContext.Provider value={chatActions}>
+      <ChatContext.Provider value={chatState}>
+        {children}
+      </ChatContext.Provider>
+    </ChatActionsContext.Provider>
   );
 }
 
 export function useChat() {
   const ctx = use(ChatContext);
   if (!ctx) throw new Error('useChat must be used within ChatProvider');
+  return ctx;
+}
+
+export function useChatActions() {
+  const ctx = use(ChatActionsContext);
+  if (!ctx) throw new Error('useChatActions must be used within ChatProvider');
   return ctx;
 }

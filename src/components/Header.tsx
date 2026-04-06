@@ -3,7 +3,7 @@ import { List, X, ChatCircle } from '@phosphor-icons/react';
 import { createPortal } from 'react-dom';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { Link, useLocation } from 'react-router-dom';
-import { useChat } from '@/hooks/useChatStore';
+import { useChatActions } from '@/hooks/useChatStore';
 import { ClaraMonogram } from '@/components/ClaraMonogram';
 import { useModalAccessibility } from '@/hooks/useModalAccessibility';
 import { SITE_CONTACT_EMAIL, SITE_CONTACT_MAILTO, SITE_NAME } from '@/lib/site-identity';
@@ -19,7 +19,7 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isScrolled } = useScrollPosition(50);
   const location = useLocation();
-  const { openChat } = useChat();
+  const { openChat } = useChatActions();
   const menuDialogRef = useRef<HTMLDivElement>(null);
   const menuCloseButtonRef = useRef<HTMLButtonElement>(null);
 

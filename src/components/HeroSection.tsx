@@ -8,7 +8,7 @@ import { Tilt3D } from '@/components/animations/Tilt3D';
 import ClaraParticles3D from '@/components/animations/ClaraParticles3D';
 import NeuralParticleSystem from '@/components/animations/NeuralParticleSystem';
 
-import { useChat } from '@/hooks/useChatStore';
+import { useChatActions } from '@/hooks/useChatStore';
 import claraHeroFallback from '@/assets/clara-hero.jpg';
 import claraHeroFallback4k from '@/assets/clara-hero-4k.jpg';
 import claraHeroPremiumAvif from '@/assets/generated/clara-hero-premium.avif';
@@ -49,7 +49,7 @@ function getHeroViewportSnapshot() {
 }
 
 const HeroSection = () => {
-  const { openChat } = useChat();
+  const { openChat } = useChatActions();
   const prefersReducedMotion = useReducedMotion();
   const heroSectionRef = useRef<HTMLElement>(null);
   const quickCarouselRef = useRef<HTMLDivElement>(null);
