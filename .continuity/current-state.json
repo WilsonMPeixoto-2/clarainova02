@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 1,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "a7aa8f2",
-  "current_phase": "BLOCO 5 com 5B-5E publicados em producao, 5F operacionalizado por R5C, resposta grounded recuperada por piso emergencial, rodada recente de UI ja publicada em main/producao e pacote local Q1-Q7 validado localmente",
+  "last_integrated_main_sha": "91777c8",
+  "current_phase": "BLOCO 5 com 5B-5E publicados em producao, 5F operacionalizado por R5C, resposta grounded recuperada por piso emergencial, origin/main avancado para 91777c8 com nova rodada mobile/UI, branch paralela de dependencias aberta, hotfix mobile do Antigravity ja dominante na producao web e pacote local Q1-Q7 validado localmente, mas ainda pendente de reconciliacao com a base remota atual",
   "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
   "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-06T06:40:00.0000000Z",
+  "last_update_utc": "2026-04-06T06:51:00.0000000Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -74,12 +74,15 @@
     "O `5F` fica operacionalizado por `R5C`: a verificacao manual de frescor do manifesto/corpus ja esta servida em producao e passa a ser rotina mensal, nao um novo pacote de runtime.",
     "A resposta grounded em producao foi recuperada nesta branch pelo commit `212d57b62b5b3b71083f7730309452811df5c258`, que introduziu uma camada emergencial de playbooks editoriais para o fallback quando o provedor Gemini falha.",
     "A Edge Function oficial `chat` foi republicada para a versao `43`, e o benchmark canonico remoto voltou a green nos dois modos com `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.9656`.",
-    "Em `2026-04-06`, `main` e `origin/main` avancaram para `a7aa8f2` com uma rodada recente de UI ja publicada em producao, incluindo `4b449eb`, `cc7bc7d` e `a7aa8f2`.",
-    "A producao web oficial `https://clarainova02.vercel.app` agora aponta para o deploy `dpl_EddEfGUsefAMV5QuzSjsaT79ocEG`, criado em `2026-04-06 01:38:53 -03:00`, ja depois do fast-forward para `main`.",
+    "Em `2026-04-06`, a base oficial avancou novamente: `origin/main` chegou a `91777c8` apos novas correcoes de mobile/layout (`ea79c58`, `2331358`, `91777c8`).",
+    "Tambem em `2026-04-06`, foi aberta a branch paralela `codex/production-dependency-refresh`, com commit `125d22a` e `PR #14`, carregando a atualizacao segura de dependencias e `@google/genai 1.48.0` no `deno.json`.",
+    "A producao web oficial `https://clarainova02.vercel.app` ja mudou novamente depois dessas rodadas e, no momento desta reconciliacao, aponta para o deploy `dpl_8WiUENtTBP4EgDf3p931egRwhF5H`, `READY`, criado em `2026-04-06 03:44:11 -03:00`.",
+    "Esse deploy oficial atual serve um hotfix mobile paralelo com autoria `Antigravity <antigravity@gemini>`, commit `5439a5a`, que limitou o grid do hero por media query, desligou `.scanline` e `.hero-particles-layer` abaixo de `899px` e removeu o loop responsivo de `panelMode` no `ChatSheet`.",
     "O pacote local `Q3-Q4` simplificou a resposta visivel da CLARA: prompts didaticos sem camadas artificiais, renderer sem badges de confianca nem trilhas editoriais pesadas, `processStates` e `termosDestacados` removidos da resposta final e playbooks novos para `assinar documento interno`, `despacho x oficio` e `notificacoes/prazos`.",
     "O pacote local `Q5-Q7` fechou a prontidao semantica do corpus e os guard-rails operacionais: documento so volta a `is_active = true` quando grounding esta realmente pronto, a camada Gemini ganhou cooldown/circuit breaker curto para quota/429, `search_metrics` verbose saiu do caminho quente por padrao e benchmark/re-embed oficial agora exigem opt-in explicito."
   ],
   "pending_items": [
+    "Reconciliar explicitamente `origin/main @ 91777c8`, a branch paralela `codex/production-dependency-refresh` (`PR #14`) e o hotfix mobile do Antigravity (`5439a5a` / `dpl_8WiUENtTBP4EgDf3p931egRwhF5H`) antes de qualquer novo publish do pacote local `Q1-Q7`.",
     "Publicar de forma limpa o pacote local `Q1-Q7`, sem misturar a frente paralela de layout/dependencias.",
     "Validar remotamente o reset `quality-first / cost-first / simplificacao-first`, com foco em qualidade real das respostas, custo por pergunta e comportamento do corpus apos reprocessamento.",
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",
@@ -92,7 +95,7 @@
     "Embeddings reais continuam sujeitos à estabilidade externa do Gemini.",
     "O painel do Google/AI Studio ainda precisa ser consultado para confirmar spending cap, tier e quota real; ate la, a operacao assume hipotese conservadora de free tier ou muito proximo disso."
   ],
-  "next_action": "Preparar uma publicacao limpa do pacote local Q1-Q7 sem empacotar automaticamente arquivos paralelos de layout/dependencias e, em seguida, validar remotamente o reset quality-first/cost-first antes de abrir o BLOCO 6.",
+  "next_action": "Reconciliar primeiro origin/main@91777c8, a branch paralela codex/production-dependency-refresh (PR #14) e o hotfix mobile do Antigravity ja ativo na producao; so depois publicar de forma limpa o pacote local Q1-Q7 e validar remotamente o reset quality-first/cost-first antes de abrir o BLOCO 6.",
   "notes": [
     "A divergência observada nos relatórios decorre de drift documental após commits e merges paralelos feitos por mais de uma ferramenta diretamente em `main`, não de surpresa funcional no código.",
     "O macroplanejamento do projeto continua válido; o que mudou foi a granularidade do BLOCO 5, agora redefinido como trilha específica de excelência do RAG.",
@@ -112,6 +115,6 @@
     "A atualizacao de dependencias registrada no commit `48e82cf` permanece compatível com a trilha publicada; o `5E` foi validado com `npm run validate` e benchmark canônico green sobre essa base."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-06-q5-q7-corpus-readiness-gemini-guardrails-and-prod-ops-local.md",
-  "last_session_head_sha": "a7aa8f2"
+  "last_report": "docs/operational-reports/2026-04-06-antigravity-mobile-hotfix-and-production-reconciliation.md",
+  "last_session_head_sha": "91777c8"
 }

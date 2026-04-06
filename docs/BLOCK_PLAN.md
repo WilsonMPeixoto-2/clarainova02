@@ -10,9 +10,9 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
 - Se uma branch de bloco depender de outra PR ainda aberta, essa dependência precisa ficar documentada aqui antes de qualquer continuação.
 
 ## Linha mestra atual
-- Fonte oficial integrada: `origin/main @ a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
+- Fonte oficial integrada: `origin/main @ 91777c8`
 - Frente imediata mais importante: executar um `quality-first reset` dentro do BLOCO 5, reduzindo fan-out por pergunta, simplificando o contrato de resposta, enxugando telemetria e recolocando a utilidade real da resposta acima do sistema servindo a si mesmo
-- Observação de continuidade: uma rodada recente de UI já foi commitada diretamente em `main` e publicada em produção em `2026-04-06`; toda rodada manual desse tipo precisa ser reconciliada no mesmo turno em `REMOTE_STATE`, `HANDOFF`, `.continuity/current-state.json` e relatório operacional
+- Observação de continuidade: `origin/main` já avançou novamente em `2026-04-06` com nova rodada mobile/UI, existe uma trilha paralela de atualização segura de dependências na branch `codex/production-dependency-refresh` (`PR #14`, commit `125d22a`) e um hotfix mobile do Antigravity (`5439a5a`) já domina a produção web; toda rodada manual ou paralela desse tipo precisa ser reconciliada no mesmo turno em `REMOTE_STATE`, `HANDOFF`, `.continuity/current-state.json` e relatório operacional
 - Ordem de execução atualmente aceita:
   1. assumir operacionalmente, até confirmação contrária no painel do Google, que a CLARA roda sob cenário `free tier ou muito próximo disso`, com `Pro` escasso, embeddings sensíveis a volume e benchmark pesado proibido de competir com produção
   2. executar `Q0` com baseline factual do reset: volume real de requests, fan-out por pergunta, peso do benchmark canônico, estado do corpus ativo e pontos exatos em que o sistema serve mais a si mesmo do que ao usuário
@@ -107,7 +107,7 @@ Este arquivo define a ordem oficial de execução do trabalho, as dependências 
   - `R6B` avaliação de context caching explícito
   - `R7` retorno aos subblocos `5B-5F` e roadmap alto esforço depois disso
 - Próxima ação: tratar `5F` como rotina operacional mensal sustentada por `R5C`, manter as pendências residuais do Decreto `55.615` e do reupload admin sob monitoramento e abrir o BLOCO 6 quando a reconciliação com `main` estiver pronta
-- Próxima ação: publicar de forma limpa o pacote local `Q1-Q7`, sem misturar arquivos paralelos de layout/dependências, e então validar remotamente o reset `quality-first / cost-first / simplificação-first` antes de abrir o BLOCO 6
+- Próxima ação: reconciliar primeiro `origin/main @ 91777c8`, a branch paralela `codex/production-dependency-refresh` (`PR #14`) e o hotfix mobile do Antigravity (`5439a5a` / `dpl_8WiUENtTBP4EgDf3p931egRwhF5H`); só depois publicar de forma limpa o pacote local `Q1-Q7` e validar remotamente o reset `quality-first / cost-first / simplificação-first` antes de abrir o BLOCO 6
 
 ### Bloco 6 — Acessibilidade, hotspots e testes de sustentação
 - Estado: `planned`

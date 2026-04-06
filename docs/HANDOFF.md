@@ -3,18 +3,18 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-06T06:40:00.0000000Z
+- Data/hora: 2026-04-06T06:51:00.0000000Z
 - Atualizado por: CODEX @ WILSON-MP
 - Branch de referência: `main`
-- Commit de base oficial: `a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
-- Head da sessão: `a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
-- Último relatório: `docs/operational-reports/2026-04-06-q5-q7-corpus-readiness-gemini-guardrails-and-prod-ops-local.md`
+- Commit de base oficial: `91777c8c3a8af8b3f9089c6ac840c66e8d7fd8a5`
+- Head da sessão: `91777c8c3a8af8b3f9089c6ac840c66e8d7fd8a5`
+- Último relatório: `docs/operational-reports/2026-04-06-antigravity-mobile-hotfix-and-production-reconciliation.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `5B-5E` publicados em produção, `5F` operacionalizado via `R5C`, fallback grounded recuperado por piso emergencial, rodada recente de UI já publicada em `main`/produção e pacote local `Q1-Q7` validado localmente
+- Fase atual: BLOCO 5 com `5B-5E` publicados em produção, `5F` operacionalizado via `R5C`, fallback grounded recuperado por piso emergencial, `main` avançado por nova rodada mobile/UI, hotfix mobile paralelo do Antigravity já dominante na produção web e pacote local `Q1-Q7` validado localmente, mas ainda pendente de reconciliação com a base remota atual
 - Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: preparar uma publicação limpa de `Q1-Q7` sem misturar a frente paralela de layout/dependências e, em seguida, validar remotamente o reset `quality-first / cost-first / simplificação-first`.
+- Próxima ação recomendada: reconciliar primeiro `origin/main @ 91777c8`, a branch paralela `codex/production-dependency-refresh` (`PR #14`, commit `125d22a`) e o hotfix mobile do Antigravity já ativo em produção (`5439a5a` / `dpl_8WiUENtTBP4EgDf3p931egRwhF5H`) antes de republicar `Q1-Q7`; só depois publicar uma versão limpa do reset `quality-first / cost-first / simplificação-first`.
 
 ## Virada de direção
 - Em `2026-04-06`, uma segunda auditoria exaustiva com lente `quality-first / cost-first / simplificação-first` confirmou o problema central do produto: há muita coisa na CLARA que hoje serve mais ao próprio sistema do que ao usuário.
@@ -27,13 +27,35 @@
 - O cenário operacional passa a assumir, até confirmação contrária, `free tier ou muito próximo disso` no Google/Gemini. A partir dessa premissa, benchmark pesado, re-embedding e chat ao vivo não podem continuar competindo pelo mesmo orçamento.
 
 ## Reconciliação recente de UI
-- `main` e `origin/main` estão hoje alinhados ao commit `a7aa8f2`.
+- `main` local estava alinhado a `a7aa8f2`, mas `origin/main` avançou em `2026-04-06` até `91777c8`.
 - Os últimos commits reais de UI já publicados são:
   - `4b449eb` `fix(UI/Backend): protege o layout mobile contra quebras e aplica o endurecimento tatico da chat function`
   - `cc7bc7d` `fix(UI): acelera scanline e isola scroll parallax mobile para conter o flicker`
   - `a7aa8f2` `fix(UI): desabilita hijacking do scroll e efeitos 3D nocivos no mobile`
-- A produção web oficial `https://clarainova02.vercel.app` está servindo o deploy `dpl_EddEfGUsefAMV5QuzSjsaT79ocEG`, criado em `2026-04-06 01:38:53 -03:00`, já depois do fast-forward para `main`.
+- Em seguida, `origin/main` recebeu mais três commits focados em mobile/layout:
+  - `ea79c58` `Fix mobile hero flicker`
+  - `2331358` `Improve mobile hero stability`
+  - `91777c8` `Fix mobile hero flicker`
+- Também foi aberta a branch paralela `codex/production-dependency-refresh`, com commit `125d22a` (`chore: refresh safe dependencies for production`) e `PR #14`, mantendo a atualização segura de dependências fora da linha principal integrada.
+- Depois disso, um hotfix paralelo de mobile com autoria `Antigravity <antigravity@gemini>` foi publicado na branch de sessão `origin/session/2026-04-06/HOME/CODEX/Q1-Q7-QUALITY-RESET`, no commit `5439a5a` (`fix: aplica correcoes exatas do Lovable para estabilizar layout mobile`).
+- Esse hotfix aplicou exatamente:
+  - media query `@media (min-width: 1024px)` em `src/styles/clara-experience.css` para limitar as duas colunas do hero e eliminar o estouro de margem imposto por `minmax(320px, 0.7fr)`
+  - `display: none !important` para `.scanline` e `.hero-particles-layer` abaixo de `899px` em `src/index.css`
+  - correção do loop de `panelMode` em `src/components/ChatSheet.tsx`, prendendo o efeito responsivo à detecção de `isMobile`
+- A produção web oficial `https://clarainova02.vercel.app` já se moveu novamente após essas rodadas: no momento desta reconciliação, o alias oficial aponta para o deploy `dpl_8WiUENtTBP4EgDf3p931egRwhF5H` (`https://clarainova02-ltxer5q76-wilson-m-peixotos-projects.vercel.app`), `READY`, criado em `2026-04-06 03:44:11 -03:00`, servindo esse hotfix paralelo do Antigravity.
 - O descompasso estava na documentação de continuidade, não no código publicado.
+
+## Divergência remota adicional
+- O resumo operacional recebido do outro Codex confirmou uma trilha paralela de atualização segura de dependências:
+  - branch `codex/production-dependency-refresh`
+  - commit `125d22a`
+  - `PR #14`
+  - bumps seguros em `@langchain/core`, `@react-pdf/renderer`, `@tanstack/react-query`, `react-router-dom`, `@types/node` e `@google/genai 1.48.0` no `deno.json`
+- Esse pacote não está refletido em `origin/main` neste instante; portanto, a situação correta é:
+  - `origin/main` é a fonte oficial integrada (`91777c8`)
+  - a produção oficial já recebeu rodadas posteriores de Vercel
+  - a atualização de dependências permanece como frente paralela que precisa ser reconciliada explicitamente antes do próximo publish do pacote `Q1-Q7`
+  - o hotfix mobile do Antigravity também está fora de `origin/main` e precisa entrar na mesma reconciliação, porque já domina o alias oficial de produção
 
 ## Andamento local do quality-first reset
 - `Q0` foi consolidado na auditoria factual de `2026-04-06`.
@@ -64,7 +86,7 @@
   - `search_metrics` verboso saiu do caminho quente por padrão e só volta com `CLARA_ENABLE_VERBOSE_SEARCH_METRICS=true`
   - `evaluate_rag_batch.py` e `reembed_active_corpus.py` agora bloqueiam produção oficial por padrão; benchmark e re-embed só atingem o ambiente canônico com `--allow-production` ou `CLARA_ALLOW_PRODUCTION_OPERATIONS=1`
 - `npm run validate` passou nesta árvore com `35` suites e `135` testes.
-- Esta rodada ainda não foi publicada como pacote próprio porque o workspace contém mudanças paralelas de layout/dependências que não devem ser empacotadas automaticamente junto com a frente RAG/backend.
+- Esta rodada ainda não foi publicada como pacote próprio porque, além da frente paralela de layout/dependências, `origin/main` e a produção web já avançaram depois do baseline local do reset e precisam ser reconciliados antes do próximo publish RAG/backend.
 
 ## Incidente fechado
 - Em `2026-04-05`, a CLARA entrou em regressão grave de qualidade no caminho de fallback grounded: a recuperação passou a devolver fragmentos burocráticos e linhas incompletas mesmo com retrieval relevante.
@@ -91,6 +113,10 @@
 - `Q5` correção do pipeline do corpus para impedir base ativa sem embeddings válidos
 - `Q6` restauração controlada do cérebro Gemini assim que a conta Google for esclarecida
 - `Q7` guard-rails operacionais de produção e custo para benchmark/re-embed/telemetria quente
+- Antes de qualquer novo publish dessa trilha, reconciliar explicitamente:
+  - `origin/main @ 91777c8`
+  - a branch paralela `codex/production-dependency-refresh` (`PR #14`)
+  - o deploy oficial atual da Vercel
 - A partir de `2026-04-05`, a ordem operacional imediata dentro do BLOCO 5 passa a ser `R0`, `R1`, `R2`, `R3A`, `R3B`, `R3C`, `R4A`, `R4B`, `R5A`, `R5B`, `R5C`, `R6A` e `R6B`, antes da retomada dos subblocos `5B-5F`.
 - `R0` cobre benchmark canônico, baseline reproduzível e gate local do RAG. Esta etapa já foi concluída nesta branch.
 - `R1` cobre ajustes imediatos de geração sem reingestão: `thinkingLevel`, temperatura dinâmica, `maxOutputTokens` maior, roteamento de modelo e query expansion com contexto curto. Esta etapa já foi implementada localmente e validada nesta branch.
