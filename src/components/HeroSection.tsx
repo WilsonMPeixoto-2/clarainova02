@@ -210,7 +210,7 @@ const HeroSection = () => {
 
         <motion.div
           className="hero-content-layer"
-          style={shouldAnimate ? { y: textParallaxY } : undefined}
+          style={shouldAnimate && !isHeroMobile ? { y: textParallaxY } : undefined}
         >
           <div className="hero-copy-column">
             <motion.div
