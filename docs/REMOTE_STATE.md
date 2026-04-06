@@ -1,14 +1,14 @@
 # Estado Remoto Canônico — CLARAINOVA02
 
 ## Última verificação consolidada
-- Data: 2026-04-05
-- Base local usada na verificação: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET @ 053283e8c9b2958179f3a0e8a6ce88a17fd70434`
+- Data: 2026-04-06
+- Base local usada na verificação: `main @ a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
 - Objetivo desta fotografia: evitar que mudanças feitas em dashboards, outra máquina ou outra ferramenta virem contexto implícito não versionado
 
 ## GitHub
 - Repositório oficial: `https://github.com/WilsonMPeixoto-2/clarainova02.git`
 - Branch oficial integrada: `origin/main`
-- `origin/main` atualmente alinhada ao commit local preparado para publicação: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
+- `origin/main` atualmente alinhada ao commit local preparado para publicação: `a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
 - Trabalho local em andamento fora de `main`:
   - branch ativa de sessão: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
   - a branch de sessão foi publicada em `origin` até o commit `76334280b3525e2c1c8c5112f6d3f568f47f3959`
@@ -19,28 +19,35 @@
 - Observação de continuidade:
   - a trilha principal deixou de depender da PR `#13`; o hardening atual segue diretamente a partir de `main`
   - o BLOCO 4C já está publicado em produção, o uplift paralelo do RAG já entrou na linha principal e o batch 1 de corpus governado do SEI.Rio já foi integrado
+  - em `2026-04-06`, uma rodada adicional de UI foi commitada diretamente em `main` e publicada em produção antes da reconciliação documental; esta fotografia já incorpora esse estado
 
 ## Vercel
 - Projeto canônico: `clarainova02`
 - URL oficial de produção: `https://clarainova02.vercel.app`
 - Expectativa operacional atual:
-  - a produção agora reflete manualmente o fechamento `R6A-R6B`, o `5B`, o `5C`, o `5D` e o `5E`, tudo publicado a partir da branch `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`, com runtime funcional no commit `76334280b3525e2c1c8c5112f6d3f568f47f3959`
+  - a produção agora reflete o fechamento `R6A-R6B`, o `5B`, o `5C`, o `5D`, o `5E`, a recuperação emergencial do fallback grounded e a rodada de UI publicada diretamente em `main` em `2026-04-06`
+  - o estado integrado mais recente da linha principal está no commit `a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
   - isso inclui budget real por request, telemetria por estágio em `chat_metrics.metadata_json`, follow-up contextualizado no retrieval, breakdown explícito de prompt/histórico, retorno de `request_id` na `chat`, `submit-chat-feedback`, dashboard admin de gaps, degradacao segura para `keyword_only`, targeted keyword rescue, grounded fallback recalibrado para o dominio SEI-Rio, cache de embeddings de consulta com `TTL` de `7` dias, relatório estático de frescor do corpus no painel administrativo, benchmark estrutural de chunking/dimensionalidade, telemetria de uso do provedor Gemini para decisão sobre context caching, governança de retrieval por metadados reais dentro do SQL da busca híbrida, confirmação forte de source-target, contratos mais distintos entre `Direto` e `Didático` e transparência editorial no grounding sem depender de mudança de layout
-  - `origin/main` continua sendo a fonte oficial integrada, então existe divergência intencional e documentada entre `main` e a produção até a próxima reconciliação
+  - a UI publicada mais recentemente também já está refletida na produção:
+    - `4b449eb` `fix(UI/Backend): protege o layout mobile contra quebras e aplica o endurecimento tatico da chat function`
+    - `cc7bc7d` `fix(UI): acelera scanline e isola scroll parallax mobile para conter o flicker`
+    - `a7aa8f2` `fix(UI): desabilita hijacking do scroll e efeitos 3D nocivos no mobile`
+  - a divergência anterior entre `main` e a produção, que existia no pacote publicado a partir da branch de sessão em `2026-04-05`, fica encerrada para o frontend web a partir desta reconciliação
   - qualquer novo deploy manual precisa deixar rastro em relatório operacional e, se alterar o comportamento esperado, atualizar este arquivo
 - Observação emergencial de 2026-04-05:
   - o caminho de fallback grounded entrou em regressão severa de qualidade e foi recuperado por publicação direta da Edge Function `chat` a partir do commit `212d57b`
   - a correção adicionou um piso editorial explícito para o fallback quando o provedor Gemini falha, sem tocar no layout web
   - não houve necessidade de novo deploy Vercel nesta rodada porque o incidente era backend-only
 - Deploy canônico mais recente observado:
-  - source: `preview_promote_recovery`
+  - source: `main_fast_forward_publish`
   - status: `READY`
-  - deployment id: `dpl_EwXNZwfygkrSL8EsN7LpqQeKcLGt`
-  - commit publicado: `76334280b3525e2c1c8c5112f6d3f568f47f3959`
-  - inspector: `https://vercel.com/wilson-m-peixotos-projects/clarainova02/EwXNZwfygkrSL8EsN7LpqQeKcLGt`
+  - deployment id: `dpl_EddEfGUsefAMV5QuzSjsaT79ocEG`
+  - commit publicado: `a7aa8f209519db8dd5f8c7757fead5f6b92dbf7e`
+  - created at: `2026-04-06 01:38:53 -03:00`
   - aliases observados:
     - `https://clarainova02.vercel.app`
-    - `https://clarainova02-29o7qgz43-wilson-m-peixotos-projects.vercel.app`
+    - `https://clarainova02-wilson-m-peixotos-projects.vercel.app`
+    - `https://clarainova02-git-main-wilson-m-peixotos-projects.vercel.app`
 
 ## Supabase
 - Projeto oficial: `jasqctuzeznwdtbcuixn`
@@ -167,7 +174,7 @@
       - `Direto`: `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet`, `avgFinalConfidence 0.9656`
 
 ## Divergências remotas que exigem cuidado
-- a produção web e as functions `chat` / `embed-chunks` / `submit-chat-feedback` / `get-usage-stats` estão à frente de `origin/main`, porque os deploys manuais de `2026-04-05` partiram da branch de sessão e o último runtime funcional publicado nesta trilha está no commit `7633428`
+- as Edge Functions `chat` / `embed-chunks` / `submit-chat-feedback` / `get-usage-stats` continuam à frente do histórico documental antigo porque passaram por publicações manuais em `2026-04-05`, mas a produção web já está novamente alinhada ao `origin/main` no commit `a7aa8f2`
 - Google OAuth do admin continua fora do código e precisa ser confirmado diretamente no painel do Supabase/Google
 - o corpus remoto atual não mostra mistura entre gerações de embedding, mas ainda há um documento legado sem embeddings e sem metadados novos
 - o histórico documental anterior ainda contém leituras que assumiam prefixo textual em `chunk.content`; sob `R2`, o fluxo novo voltou a separar conteúdo vetorial limpo e metadado de citação

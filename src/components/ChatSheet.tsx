@@ -270,13 +270,12 @@ const ChatSheet = () => {
   }, [exportableMessages]);
 
   useEffect(() => {
-    if (isMobile && panelMode !== 'fullscreen') {
+    if (isMobile) {
       setPanelMode('fullscreen');
+    } else {
+      setPanelMode((currentMode) => (currentMode === 'fullscreen' ? 'wide' : currentMode));
     }
-    if (!isMobile && panelMode === 'fullscreen') {
-      setPanelMode('wide');
-    }
-  }, [isMobile, panelMode]);
+  }, [isMobile]);
 
   useEffect(() => {
     if (isMobile) {

@@ -4814,3 +4814,10 @@
     text-decoration: none !important;
   }
 }
+
+@media (max-width: 899px) {
+  .scanline,
+  .hero-particles-layer {
+    display: none !important;
+  }
+}
