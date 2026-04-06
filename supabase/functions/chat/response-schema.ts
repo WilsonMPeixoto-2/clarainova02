@@ -84,7 +84,7 @@ export const claraStructuredResponseSchema = z.object({
   tituloCurto: z.string().min(1),
   resumoInicial: z.string().min(1),
   resumoCitacoes: z.array(z.number().int().positive()).default([]),
-  modoResposta: z.enum(["passo_a_passo", "explicacao", "checklist", "combinado"]),
+  modoResposta: z.enum(["passo_a_passo", "explicacao", "checklist", "combinado", "insuficiente"]),
   etapas: z.array(claraStepSchema).default([]),
   observacoesFinais: z.array(z.string()).default([]),
   termosDestacados: z.array(claraHighlightSchema).default([]),
@@ -106,7 +106,7 @@ export const claraResponseJsonSchema = {
     },
     modoResposta: {
       type: "string",
-      enum: ["passo_a_passo", "explicacao", "checklist", "combinado"],
+      enum: ["passo_a_passo", "explicacao", "checklist", "combinado", "insuficiente"],
     },
     etapas: {
       type: "array",

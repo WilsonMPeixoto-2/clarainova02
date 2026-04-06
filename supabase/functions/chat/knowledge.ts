@@ -691,7 +691,7 @@ QUALIDADE DA RECUPERACAO:
 - Fontes: ${quality.chunkCount} trecho${quality.chunkCount > 1 ? 's' : ''} de ${quality.uniqueDocuments} documento${quality.uniqueDocuments > 1 ? 's' : ''}
 - Cobertura lexica media: ${quality.avgOverlap.toFixed(1)} tokens
 - ${quality.confidenceTier === 'alta' || quality.confidenceTier === 'boa'
-    ? 'A base documental sustenta bem a resposta. Seja assertivo nas orientacoes.'
+    ? 'A base documental sustenta e embasa a resposta. Formule a orientacao a partir dos trechos.'
     : quality.confidenceTier === 'moderada'
     ? 'A base tem cobertura parcial. Responda o que puder e sinalize limitacoes.'
     : 'A base e fraca. Seja cauteloso e sinalize que validacao oficial pode ser necessaria.'}`;

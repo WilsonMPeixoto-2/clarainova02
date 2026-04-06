@@ -58,12 +58,12 @@ const HeroSection = () => {
   const isHeroMobile = useSyncExternalStore(
     subscribeToHeroViewport,
     getHeroViewportSnapshot,
-    () => false,
+    getHeroViewportSnapshot // Corrigido para evitar double-render e flashing no CSR do Vite
   );
   const isUhdDisplay = useSyncExternalStore(
     subscribeToUhdDisplay,
     getUhdDisplaySnapshot,
-    () => false,
+    getUhdDisplaySnapshot
   );
 
   const [heroMode, setHeroMode] = useState<'video' | 'image'>(() => {
@@ -163,7 +163,7 @@ const HeroSection = () => {
         <div className="hero-energy-glow" />
         <div className="cinematic-noise" />
         <div className="scanline" />
-        <NeuralParticleSystem />
+        {!isHeroMobile && <NeuralParticleSystem />}
       </div>
 
       <div className="hero-shell" data-hero-mode={heroMode}>
@@ -171,12 +171,12 @@ const HeroSection = () => {
           <div className="hero-media-backplate" />
           <motion.div
             className="hero-media-motion"
-            initial={shouldAnimate ? { opacity: 0 } : false}
+            initial={shouldAnimate && !isHeroMobile ? { opacity: 0 } : false}
             animate={{ opacity: 1 }}
             transition={shouldAnimate ? { duration: 1.08, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
-            style={shouldAnimate ? { y: mediaParallaxY } : undefined}
+            style={shouldAnimate && !isHeroMobile ? { y: mediaParallaxY } : undefined}
           >
-            <HeroBackgroundOGL />
+            {!isHeroMobile && <HeroBackgroundOGL />}
             <div className="hero-video-shell absolute inset-0 z-10">
               {useVideoHero ? (
                 <video
@@ -205,7 +205,7 @@ const HeroSection = () => {
               <div className="hero-video-frame absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]" aria-hidden="true" />
             </div>
           </motion.div>
-          <ClaraParticles3D />
+          {!isHeroMobile && <ClaraParticles3D />}
         </div>
 
         <motion.div

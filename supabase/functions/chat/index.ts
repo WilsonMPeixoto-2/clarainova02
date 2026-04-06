@@ -219,6 +219,9 @@ async function expandQuery(
   messages: ChatConversationMessage[],
   userMessage: string,
 ): Promise<string | null> {
+  // DESLIGADO TEMPORARIAMENTE: Evitar deriva semântica (recomendação do relatório)
+  return null;
+
   try {
     const result = await withTimeout(
       ai.models.generateContent({
@@ -437,7 +440,7 @@ function buildGenerationStrategy(options: {
   return {
     orderedModels: complexRequest
       ? [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL]
-      : [GEMINI_FLASH_LITE_MODEL, GEMINI_PRO_MODEL],
+      : [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL], // Priorizando PRO para o formato complexo
     thinkingLevel: complexRequest ? 'high' : 'low',
     structuredTemperature: options.responseMode === 'didatico' ? 0.15 : 0.1,
     structuredTopP: options.responseMode === 'didatico' ? 0.9 : 0.8,
@@ -1484,7 +1487,7 @@ function buildGroundedFallbackResponse(
   const confidenceTier = retrievalQuality?.confidenceTier ?? 'moderada';
   const evidenceQuality = fallbackEvidence.length >= 2 ? 'strong'
     : fallbackEvidence.length === 1 ? 'partial'
-    : 'weak';
+      : 'weak';
   const finalConfidence = evidenceQuality === 'strong'
     ? (confidenceTier === 'alta' ? 0.62 : confidenceTier === 'boa' ? 0.58 : 0.54)
     : evidenceQuality === 'partial'
@@ -1515,14 +1518,14 @@ function buildGroundedFallbackResponse(
   const fallbackStep = evidenceQuality === 'weak'
     ? null
     : {
-        numero: 1,
-        titulo: responseMode === 'direto' ? 'Resposta sustentada pelas fontes' : 'O que as referências indicam',
-        conteudo: fallbackEvidence[0],
-        itens: detailItems,
-        destaques: [],
-        alerta: editorialNotices.cautionNotice,
-        citacoes: citations,
-      };
+      numero: 1,
+      titulo: responseMode === 'direto' ? 'Resposta sustentada pelas fontes' : 'O que as referências indicam',
+      conteudo: fallbackEvidence[0],
+      itens: detailItems,
+      destaques: [],
+      alerta: editorialNotices.cautionNotice,
+      citacoes: citations,
+    };
   const fallbackObservations = [
     supportingNotice,
     evidenceQuality === 'partial'
@@ -1585,8 +1588,8 @@ function computeRagQualityScore(
 
   const tierScore = quality.confidenceTier === 'alta' ? 1.0
     : quality.confidenceTier === 'boa' ? 0.75
-    : quality.confidenceTier === 'moderada' ? 0.5
-    : 0.25;
+      : quality.confidenceTier === 'moderada' ? 0.5
+        : 0.25;
 
   const diversityScore = Math.min(quality.uniqueDocuments / 3, 1.0);
   const overlapScore = Math.min(quality.avgOverlap / 4, 1.0);
@@ -1698,26 +1701,26 @@ async function recordTelemetry(
       response_tokens_estimate: responseEstimate,
       latency_ms: totalLatency,
       search_metric_id: ctx.searchMetricId,
-        metadata_json: {
-          request_id: ctx.requestId,
-          retrieval_mode: ctx.retrievalMode,
-          sources: ctx.retrievalSources,
-          selected_document_ids: ctx.selectedDocumentIds,
-          selected_chunk_ids: ctx.selectedChunkIds,
-          ...buildTimingBudgetMetadata(ctx),
-          ...buildPromptTelemetryMetadata(ctx.promptTelemetry),
-          ...buildProviderUsageMetadata(ctx.providerUsage),
-          output_mode: outputMode,
-          response_mode: ctx.responseMode,
-          query_embedding_model: ctx.queryEmbeddingModel,
-          search_mode: ctx.searchMode,
-          query_embedding_cache_status: ctx.queryEmbeddingCacheStatus,
-          expanded_query_embedding_cache_status: ctx.expandedQueryEmbeddingCacheStatus,
-          rag_quality_score: ctx.ragQualityScore,
-          expanded_query: ctx.expandedQuery,
-          source_target: ctx.sourceTargetLabel,
-          source_target_status: ctx.sourceTargetStatus,
-        },
+      metadata_json: {
+        request_id: ctx.requestId,
+        retrieval_mode: ctx.retrievalMode,
+        sources: ctx.retrievalSources,
+        selected_document_ids: ctx.selectedDocumentIds,
+        selected_chunk_ids: ctx.selectedChunkIds,
+        ...buildTimingBudgetMetadata(ctx),
+        ...buildPromptTelemetryMetadata(ctx.promptTelemetry),
+        ...buildProviderUsageMetadata(ctx.providerUsage),
+        output_mode: outputMode,
+        response_mode: ctx.responseMode,
+        query_embedding_model: ctx.queryEmbeddingModel,
+        search_mode: ctx.searchMode,
+        query_embedding_cache_status: ctx.queryEmbeddingCacheStatus,
+        expanded_query_embedding_cache_status: ctx.expandedQueryEmbeddingCacheStatus,
+        rag_quality_score: ctx.ragQualityScore,
+        expanded_query: ctx.expandedQuery,
+        source_target: ctx.sourceTargetLabel,
+        source_target_status: ctx.sourceTargetStatus,
+      },
     })
     .select('id')
     .single();
