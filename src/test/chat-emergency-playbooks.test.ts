@@ -32,4 +32,21 @@ describe('chat emergency grounded playbooks', () => {
     expect(playbook?.id).toBe('q6c-notificacoes-prazo');
     expect(playbook?.title).toContain('prazos');
   });
+
+  it('still matches critical operational playbooks when no references are available', () => {
+    const despacho = matchEmergencyGroundedPlaybook(
+      'Qual é a diferença entre despacho e ofício no SEI-Rio?',
+      [],
+      { allowMissingReferences: true },
+    );
+
+    const prazo = matchEmergencyGroundedPlaybook(
+      'Como gerar notificações de prazos no SEI-Rio?',
+      [],
+      { allowMissingReferences: true },
+    );
+
+    expect(despacho?.id).toBe('q6b-despacho-oficio');
+    expect(prazo?.id).toBe('q6c-notificacoes-prazo');
+  });
 });

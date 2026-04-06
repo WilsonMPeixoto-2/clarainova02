@@ -16,6 +16,10 @@ export type EmergencyGroundedPlaybook = {
   finalConfidence: number;
 };
 
+type MatchEmergencyGroundedPlaybookOptions = {
+  allowMissingReferences?: boolean;
+};
+
 function normalizeComparableText(value: string): string {
   return value
     .normalize("NFD")
@@ -506,6 +510,7 @@ const PLAYBOOKS: EmergencyGroundedPlaybook[] = [
 export function matchEmergencyGroundedPlaybook(
   question: string,
   referenceTitles: string[],
+  options: MatchEmergencyGroundedPlaybookOptions = {},
 ): EmergencyGroundedPlaybook | null {
   const normalizedQuestion = normalizeComparableText(question);
   const normalizedReferences = referenceTitles.map((title) => normalizeComparableText(title));
@@ -515,6 +520,10 @@ export function matchEmergencyGroundedPlaybook(
     if (!questionMatched) continue;
 
     if (playbook.requiredReferenceTerms && playbook.requiredReferenceTerms.length > 0) {
+      if (options.allowMissingReferences && normalizedReferences.length === 0) {
+        return playbook;
+      }
+
       const hasRequiredReference = playbook.requiredReferenceTerms.every((term) =>
         normalizedReferences.some((referenceTitle) => referenceTitle.includes(term)),
       );

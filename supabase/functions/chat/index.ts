@@ -2667,6 +2667,13 @@ REESCRITA OBRIGATORIA:
       const rawErrorMsg = getErrorMessage(err);
       const errorMsg = getPublicErrorMessage(err);
       const providerUnavailable = isProviderAvailabilityError(err);
+      const emergencyPlaybook = lastUserMessage
+        ? matchEmergencyGroundedPlaybook(
+            lastUserMessage.content,
+            groundedReferences.map((reference) => reference.titulo),
+            { allowMissingReferences: providerUnavailable },
+          )
+        : null;
 
       if (providerUnavailable && retrievalMode === 'model_grounded' && matchedChunks.length > 0 && groundedReferences.length > 0) {
         const fallbackResponse = buildGroundedFallbackResponse(
@@ -2721,6 +2728,62 @@ REESCRITA OBRIGATORIA:
             kind: 'clara_structured_response',
             response: fallbackResponse,
             plainText: fallbackPlainText,
+          }),
+          { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (providerUnavailable && lastUserMessage && emergencyPlaybook) {
+        const playbookResponse = buildEmergencyGroundedPlaybookResponse(
+          lastUserMessage.content,
+          emergencyPlaybook,
+          groundedReferences,
+          responseMode,
+          sourceTarget,
+        );
+        const playbookPlainText = renderStructuredResponseToPlainText(playbookResponse);
+
+        const telemetryCtx: TelemetryContext = {
+          supabase, requestId, requestStartedAt,
+          queryText: lastUserMessage.content,
+          normalizedQuery, intentLabel, topicLabel, subtopicLabel,
+          systemPromptWithContext, chatMessages,
+          retrievalMode, retrievalTopScore, retrievalSources,
+          searchResultCount, selectedChunkIds, selectedDocumentIds,
+          searchMetricId, knowledgeContext, responseMode,
+          ragQualityScore: computeRagQualityScore(retrievalQuality, playbookResponse, playbookResponse.referenciasFinais.length),
+          expandedQuery: expandedQueryText,
+          sourceTargetLabel: sourceTarget?.label ?? null,
+          sourceTargetStatus,
+          stageTimings,
+          promptTelemetry,
+          providerUsage: null,
+          queryEmbeddingModel,
+          searchMode,
+          queryEmbeddingCacheStatus,
+          expandedQueryEmbeddingCacheStatus,
+          budgetTotalMs: REQUEST_TIME_BUDGET_MS,
+          budgetElapsedMs: timeBudgetTracker.elapsedMs(),
+          budgetRemainingMs: timeBudgetTracker.remainingMs(),
+          structuredSkippedForBudget,
+          structuredTimeoutMs: structuredTimeoutMsUsed,
+          streamInitTimeoutMs: streamInitTimeoutMsUsed,
+          leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
+        };
+
+        await recordTelemetry(
+          telemetryCtx,
+          playbookPlainText,
+          'emergency_playbook',
+          playbookResponse.referenciasFinais.length,
+          'structured',
+        ).catch((telemetryError) => console.error('Telemetry error (emergency playbook):', telemetryError));
+
+        return new Response(
+          JSON.stringify({
+            kind: 'clara_structured_response',
+            response: playbookResponse,
+            plainText: playbookPlainText,
           }),
           { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
         );
