@@ -270,13 +270,13 @@ const ChatSheet = () => {
   }, [exportableMessages]);
 
   useEffect(() => {
-    if (isMobile && panelMode !== 'fullscreen') {
-      setPanelMode('fullscreen');
+    if (isMobile) {
+      if (panelMode !== 'fullscreen') setPanelMode('fullscreen');
+    } else {
+      if (panelMode === 'fullscreen') setPanelMode('wide');
     }
-    if (!isMobile && panelMode === 'fullscreen') {
-      setPanelMode('wide');
-    }
-  }, [isMobile, panelMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]);
 
   useEffect(() => {
     if (isMobile) {
