@@ -9,10 +9,10 @@
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 1 a 3 (Plano de Recuperação) implementados localmente (Dieta de Tokens, Infra Google Free/Paid, Corpus Rescue).
-- Bloco ativo: BLOCO 1 a 3 — Planos de Recuperação Sprint 1
+- Fase atual: BLOCOS 1 a 4 concluídos localmente com roteamento inteligente separando contas FREE e PAID baseado em complexidade de requisição.
+- Bloco ativo: BLOCO 5 — Web Search dentro do escopo
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: Focar no BLOCO 4 (Roteamento Dinâmico Inteligente).
+- Próxima ação recomendada: Implementar política restrita de Web Grounding.
 
 ## Incidente fechado
 - Em `2026-04-05`, a CLARA entrou em regressão grave de qualidade no caminho de fallback grounded: a recuperação passou a devolver fragmentos burocráticos e linhas incompletas mesmo com retrieval relevante.

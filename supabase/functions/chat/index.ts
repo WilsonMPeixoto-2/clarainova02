@@ -128,6 +128,7 @@ type GeminiModelName = typeof GEMINI_FLASH_LITE_MODEL | typeof GEMINI_PRO_MODEL;
 type GeminiThinkingLevel = 'low' | 'high';
 type GenerationStrategy = {
   orderedModels: GeminiModelName[];
+  targetBilling: 'free' | 'paid' | 'legacy';
   thinkingLevel: GeminiThinkingLevel;
   structuredTemperature: number;
   structuredTopP: number;
@@ -427,6 +428,9 @@ function buildGenerationStrategy(options: {
   responseMode: ChatResponseMode;
   sourceTarget: SourceTargetRoute | null;
   retrievalQuality: RetrievalQualityInfo | null;
+  geminiFreeKey?: string;
+  geminiPaidKey?: string;
+  legacyKey?: string;
 }): GenerationStrategy {
   const retrievalTier = options.retrievalQuality?.confidenceTier ?? 'fraca';
   const complexRequest =
@@ -437,10 +441,18 @@ function buildGenerationStrategy(options: {
     retrievalTier === 'moderada' ||
     retrievalTier === 'fraca';
 
+  let targetBilling: 'free' | 'paid' | 'legacy' = 'legacy';
+  if (complexRequest) {
+    targetBilling = options.geminiPaidKey ? 'paid' : (options.geminiFreeKey ? 'free' : 'legacy');
+  } else {
+    targetBilling = options.geminiFreeKey ? 'free' : (options.geminiPaidKey ? 'paid' : 'legacy');
+  }
+
   return {
     orderedModels: complexRequest
       ? [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL]
-      : [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL], // Priorizando PRO para o formato complexo
+      : [GEMINI_FLASH_LITE_MODEL, GEMINI_PRO_MODEL], // Priorizando FLASH para o formato simples
+    targetBilling,
     thinkingLevel: complexRequest ? 'high' : 'low',
     structuredTemperature: options.responseMode === 'didatico' ? 0.15 : 0.1,
     structuredTopP: options.responseMode === 'didatico' ? 0.9 : 0.8,
@@ -2032,7 +2044,7 @@ Deno.serve(async (req) => {
     const legacyKey = Deno.env.get('GEMINI_API_KEY');
 
     const apiKey = geminiFreeKey || geminiPaidKey || legacyKey;
-    const activeProjectBilling = (geminiFreeKey && apiKey === geminiFreeKey) ? 'free' : ((geminiPaidKey && apiKey === geminiPaidKey) ? 'paid' : 'legacy');
+    let activeProjectBilling = (geminiFreeKey && apiKey === geminiFreeKey) ? 'free' : ((geminiPaidKey && apiKey === geminiPaidKey) ? 'paid' : 'legacy');
 
     if (!apiKey) {
       return new Response(
@@ -2466,7 +2478,15 @@ Deno.serve(async (req) => {
       responseMode,
       sourceTarget,
       retrievalQuality,
+      geminiFreeKey,
+      geminiPaidKey,
+      legacyKey,
     });
+
+    let generationAiKey = generationStrategy.targetBilling === 'paid' ? geminiPaidKey : (generationStrategy.targetBilling === 'free' ? geminiFreeKey : legacyKey);
+    if (!generationAiKey) generationAiKey = apiKey;
+    const generationAi = new GoogleGenAI({ apiKey: generationAiKey! });
+    activeProjectBilling = generationStrategy.targetBilling;
     structuredTimeoutMsUsed = timeBudgetTracker.structuredTimeoutMs();
     structuredSkippedForBudget = structuredTimeoutMsUsed === null;
 
@@ -2480,7 +2500,7 @@ Deno.serve(async (req) => {
     if (structuredTimeoutMsUsed != null) {
       const structuredGenerationStartedAt = Date.now();
       structuredResult = await withTimeout(
-        generateStructuredWithFallback(ai, systemPromptWithContext, chatMessages, generationStrategy),
+        generateStructuredWithFallback(generationAi, systemPromptWithContext, chatMessages, generationStrategy),
         structuredTimeoutMsUsed,
         'structured_generation',
       ).catch((err) => {
@@ -2511,7 +2531,7 @@ Deno.serve(async (req) => {
           const leakageRepairStartedAt = Date.now();
           repairedStructuredResult = await withTimeout(
             generateStructuredWithFallback(
-              ai,
+              generationAi,
               `${systemPromptWithContext}
 
 REESCRITA OBRIGATORIA:
@@ -2611,7 +2631,7 @@ REESCRITA OBRIGATORIA:
 
       const streamGenerationStartedAt = Date.now();
       result = await withTimeout(
-        callGeminiWithFallback(ai, systemPromptWithContext, chatMessages, generationStrategy),
+        callGeminiWithFallback(generationAi, systemPromptWithContext, chatMessages, generationStrategy),
         streamInitTimeoutMsUsed,
         'stream_generation',
       ).finally(() => {
@@ -2632,7 +2652,7 @@ REESCRITA OBRIGATORIA:
           const groundedRepairStartedAt = Date.now();
           groundedRepairResult = await withTimeout(
             generateGroundedRepairWithFallback(
-              ai,
+              generationAi,
               lastUserMessage.content,
               matchedChunks,
               groundedReferences,
@@ -2654,7 +2674,7 @@ REESCRITA OBRIGATORIA:
             const groundedRepairTextStartedAt = Date.now();
             groundedRepairTextResult = await withTimeout(
               generateGroundedRepairTextWithFallback(
-                ai,
+                generationAi,
                 lastUserMessage.content,
                 matchedChunks,
                 groundedReferences,
