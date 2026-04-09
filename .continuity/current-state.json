@@ -4,11 +4,11 @@
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
   "current_phase": "BLOCO 5 com 5B-5E publicados em producao, 5F operacionalizado por R5C e resposta grounded recuperada por piso emergencial no fallback",
-  "active_block": "BLOCO 5 — Excelencia do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas",
-  "active_branch": "session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET",
+  "active_block": "BLOCO 1 a 3 — Recuperacao e Dieta de Tokens",
+  "active_branch": "session/2026-04-09/HOME/CODEX/RECOVERY-SPRINT-1",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-05T21:40:45.2681919Z",
+  "last_update_utc": "2026-04-09T18:23:46.547Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -73,7 +73,10 @@
     "O benchmark canonico remoto pós-publicacao do `5C`, do `5D` e do `5E` permaneceu green: `Didatico` e `Direto` ficaram com `16/16 HTTP 200`, `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.98`.",
     "O `5F` fica operacionalizado por `R5C`: a verificacao manual de frescor do manifesto/corpus ja esta servida em producao e passa a ser rotina mensal, nao um novo pacote de runtime.",
     "A resposta grounded em producao foi recuperada nesta branch pelo commit `212d57b62b5b3b71083f7730309452811df5c258`, que introduziu uma camada emergencial de playbooks editoriais para o fallback quando o provedor Gemini falha.",
-    "A Edge Function oficial `chat` foi republicada para a versao `43`, e o benchmark canonico remoto voltou a green nos dois modos com `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.9656`."
+    "A Edge Function oficial `chat` foi republicada para a versao `43`, e o benchmark canonico remoto voltou a green nos dois modos com `16/16 scopeExact`, `15/16 expectedAllMet` e `avgFinalConfidence 0.9656`.",
+    "O Bloco 1 foi finalizado: chat e embed-chunks suportam GEMINI_FREE_API_KEY e GEMINI_PAID_API_KEY, registrando active_project_billing em TelemetryContext e chat_metrics.",
+    "O Bloco 2 (Dieta de Tokens) foi finalizado: MAX_CONVERSATION_MESSAGES cai para 10, MAX_OUTPUT_TOKENS cai para 2048, matchCount cai para 6. FLAG FEATURE_ADJACENT_CHUNKS=false foi aplicada.",
+    "O Bloco 3 foi validado como concluido, ja que reembed_active_corpus.py aproveita a seguranca do edge-function embed-chunks travado em plano Free."
   ],
   "pending_items": [
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",

@@ -3,18 +3,16 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: 2026-04-05T21:40:45.2681919Z
+- Data/hora: 2026-04-09
 - Atualizado por: CODEX @ WILSON-MP
-- Branch de referência: `session/2026-04-04/HOME/CODEX/RAG-PLAN-RESET`
+- Branch de referência: `session/2026-04-09/HOME/CODEX/RECOVERY-SPRINT-1`
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
-- Head da sessão: `053283e8c9b2958179f3a0e8a6ce88a17fd70434`
-- Último relatório: `docs/operational-reports/2026-04-05-emergency-rag-fallback-floor-and-recovery.md`
 
 ## Estado atual resumido
-- Fase atual: BLOCO 5 com `5B-5E` publicados em produção, `5F` operacionalizado via `R5C` e fallback grounded recuperado por piso emergencial
-- Bloco ativo: BLOCO 5 — Excelência do RAG, retrieval governado e fidelidade do sistema de perguntas e respostas
+- Fase atual: BLOCO 1 a 3 (Plano de Recuperação) implementados localmente (Dieta de Tokens, Infra Google Free/Paid, Corpus Rescue).
+- Bloco ativo: BLOCO 1 a 3 — Planos de Recuperação Sprint 1
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: preservar o novo piso de fallback, reconciliar esta rodada com `origin/main` e liberar a abertura do BLOCO 6.
+- Próxima ação recomendada: Focar no BLOCO 4 (Roteamento Dinâmico Inteligente).
 
 ## Incidente fechado
 - Em `2026-04-05`, a CLARA entrou em regressão grave de qualidade no caminho de fallback grounded: a recuperação passou a devolver fragmentos burocráticos e linhas incompletas mesmo com retrieval relevante.

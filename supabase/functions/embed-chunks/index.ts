@@ -479,10 +479,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY");
+    const geminiKey = Deno.env.get("GEMINI_FREE_API_KEY") || Deno.env.get("GEMINI_API_KEY");
     if (!geminiKey) {
       return new Response(
-        JSON.stringify({ ok: false, error: "CONFIG:GEMINI_API_KEY_MISSING", request_id }),
+        JSON.stringify({ ok: false, error: "CONFIG:GEMINI_FREE_API_KEY_MISSING", request_id }),
         { status: 500, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }

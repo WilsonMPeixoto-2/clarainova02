@@ -103,7 +103,7 @@ function buildCorsHeaders(req: Request) {
 }
 
 const MAX_MESSAGE_LENGTH = 2000;
-const MAX_CONVERSATION_MESSAGES = 20;
+const MAX_CONVERSATION_MESSAGES = 10;
 const EMBEDDING_TIMEOUT_MS = 10_000;
 const SEARCH_TIMEOUT_MS = 8_000;
 const GENERATION_TIMEOUT_MS = 45_000;
@@ -115,7 +115,7 @@ const MIN_LEAKAGE_REPAIR_REMAINING_MS = 8_000;
 const LEAKAGE_REPAIR_TIMEOUT_MS = 12_000;
 const MIN_GROUNDED_REPAIR_REMAINING_MS = 6_000;
 const GROUNDED_REPAIR_TIMEOUT_MS = 12_000;
-const MAX_OUTPUT_TOKENS = 8192;
+const MAX_OUTPUT_TOKENS = 2048;
 const EMBEDDING_DIM = 768;
 const QUERY_EMBEDDING_MODEL = 'gemini-embedding-2-preview';
 const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
@@ -453,7 +453,7 @@ async function fetchKeywordSearchMatches(
   supabase: ReturnType<typeof createClient>,
   queryEmbeddingPayload: string | null,
   queryText: string,
-  matchCount = 12,
+  matchCount = 6,
   governanceFilters: RetrievalGovernanceFilters | null = null,
 ): Promise<HybridSearchChunk[] | null> {
   const { data: chunks, error } = await withTimeout(
@@ -1649,6 +1649,7 @@ interface TelemetryContext {
   streamInitTimeoutMs: number | null;
   leakageRepairTimeoutMs: number | null;
   providerUsage: ChatProviderUsage | null;
+  activeProjectBilling: string;
 }
 
 function buildTimingBudgetMetadata(ctx: TelemetryContext) {
@@ -1720,6 +1721,7 @@ async function recordTelemetry(
         expanded_query: ctx.expandedQuery,
         source_target: ctx.sourceTargetLabel,
         source_target_status: ctx.sourceTargetStatus,
+        active_project_billing: ctx.activeProjectBilling,
       },
     })
     .select('id')
@@ -2025,7 +2027,13 @@ Deno.serve(async (req) => {
     let streamInitTimeoutMsUsed: number | null = null;
     let leakageRepairTimeoutMsUsed: number | null = null;
 
-    const apiKey = Deno.env.get('GEMINI_API_KEY');
+    const geminiFreeKey = Deno.env.get('GEMINI_FREE_API_KEY');
+    const geminiPaidKey = Deno.env.get('GEMINI_PAID_API_KEY');
+    const legacyKey = Deno.env.get('GEMINI_API_KEY');
+
+    const apiKey = geminiFreeKey || geminiPaidKey || legacyKey;
+    const activeProjectBilling = (geminiFreeKey && apiKey === geminiFreeKey) ? 'free' : ((geminiPaidKey && apiKey === geminiPaidKey) ? 'paid' : 'legacy');
+
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'A CLARA ainda não está disponível neste ambiente. Tente novamente mais tarde.' }),
@@ -2371,8 +2379,9 @@ Deno.serve(async (req) => {
                     const adjacentIndexes = [topChunk.chunk_index - 1, topChunk.chunk_index + 1].filter((i: number) => i >= 0);
                     const existingIndexes = new Set(chunkMeta.map((c: { chunk_index: number }) => c.chunk_index));
                     const needed = adjacentIndexes.filter((i: number) => !existingIndexes.has(i));
+                    const FEATURE_ADJACENT_CHUNKS = false; // DESLIGADO TEMPORARIAMENTE (Dieta de Tokens)
 
-                    if (needed.length > 0) {
+                    if (FEATURE_ADJACENT_CHUNKS && needed.length > 0) {
                       const { data: adjacentChunks } = await supabase
                         .from('document_chunks')
                         .select('content, page_start, section_title, document_id')
@@ -2571,6 +2580,7 @@ REESCRITA OBRIGATORIA:
         structuredTimeoutMs: structuredTimeoutMsUsed,
         streamInitTimeoutMs: streamInitTimeoutMsUsed,
         leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
+        activeProjectBilling: activeProjectBilling,
       };
 
       await recordTelemetry(
@@ -2817,6 +2827,7 @@ REESCRITA OBRIGATORIA:
             structured_timeout_ms: structuredTimeoutMsUsed,
             stream_init_timeout_ms: streamInitTimeoutMsUsed,
             leakage_repair_timeout_ms: leakageRepairTimeoutMsUsed,
+            active_project_billing: activeProjectBilling,
           },
         }).then(({ error }) => {
           if (error) console.error('chat_metrics failure insert error:', error);
