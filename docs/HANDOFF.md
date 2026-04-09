@@ -9,10 +9,10 @@
 - Commit de base oficial: `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`
 
 ## Estado atual resumido
-- Fase atual: BLOCOS 1 a 4 concluídos localmente com roteamento inteligente separando contas FREE e PAID baseado em complexidade de requisição.
-- Bloco ativo: BLOCO 5 — Web Search dentro do escopo
+- Fase atual: BLOCOS 1 a 5 concluídos (Web Search restrito a domínios oficiais adicionado ao motor RAG).
+- Bloco ativo: BLOCO 6 — Observabilidade custo x qualidade
 - Status da sessão: `session_in_progress`
-- Próxima ação recomendada: Implementar política restrita de Web Grounding.
+- Próxima ação recomendada: Tratar a observabilidade (telemetria mínima cruzando tokens, provedores e modo de resposta).
 
 ## Incidente fechado
 - Em `2026-04-05`, a CLARA entrou em regressão grave de qualidade no caminho de fallback grounded: a recuperação passou a devolver fragmentos burocráticos e linhas incompletas mesmo com retrieval relevante.

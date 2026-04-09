@@ -4,11 +4,11 @@
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6770c85",
   "current_phase": "BLOCO 5 com 5B-5E publicados em producao, 5F operacionalizado por R5C e resposta grounded recuperada por piso emergencial no fallback",
-  "active_block": "BLOCO 5 — Web Search dentro do escopo",
+  "active_block": "BLOCO 6 — Observabilidade custo x qualidade",
   "active_branch": "session/2026-04-09/HOME/CODEX/RECOVERY-SPRINT-1",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-09T18:30:00.979Z",
+  "last_update_utc": "2026-04-09T18:37:16.395Z",
   "completed_items": [
     "A linha principal `main` publicada em produção está alinhada ao commit `6770c85d62dd8d01fa1b7324fac03a88bdb6d099`.",
     "O corpus governado do SEI-Rio está ativo com camadas `NUCLEO`, `COBERTURA` e `APOIO`, manifesto editorial e deduplicação legada já publicada.",
@@ -77,7 +77,8 @@
     "O Bloco 1 foi finalizado: chat e embed-chunks suportam GEMINI_FREE_API_KEY e GEMINI_PAID_API_KEY, registrando active_project_billing em TelemetryContext e chat_metrics.",
     "O Bloco 2 (Dieta de Tokens) foi finalizado: MAX_CONVERSATION_MESSAGES cai para 10, MAX_OUTPUT_TOKENS cai para 2048, matchCount cai para 6. FLAG FEATURE_ADJACENT_CHUNKS=false foi aplicada.",
     "O Bloco 3 foi validado como concluido, ja que reembed_active_corpus.py aproveita a seguranca do edge-function embed-chunks travado em plano Free.",
-    "O Bloco 4 foi finalizado: roteamento dinamico por classe de tarefa implantado em buildGenerationStrategy, separando operacoes leves para Flash-Lite + Free API e complexas para Pro + Paid API."
+    "O Bloco 4 foi finalizado: roteamento dinamico por classe de tarefa implantado em buildGenerationStrategy, separando operacoes leves para Flash-Lite + Free API e complexas para Pro + Paid API.",
+    "O Bloco 5 foi concluido: politica de Web Search configurada na GenerationStrategy para limitar pesquisas a rio.rj.gov.br e prefeitura.rio e usar pesquisa web apenas em perguntas dificeis onde a base de vetores reteve score Fraco/Nulo (retrievalTier fallback)."
   ],
   "pending_items": [
     "Substituir o Decreto Rio nº 55.615/2025 por captura oficial íntegra e manter a prova residual de deduplicação da UI admin como validação paralela.",

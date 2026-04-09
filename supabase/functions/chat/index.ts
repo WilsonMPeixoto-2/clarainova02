@@ -129,6 +129,7 @@ type GeminiThinkingLevel = 'low' | 'high';
 type GenerationStrategy = {
   orderedModels: GeminiModelName[];
   targetBilling: 'free' | 'paid' | 'legacy';
+  enableWebSearch: boolean;
   thinkingLevel: GeminiThinkingLevel;
   structuredTemperature: number;
   structuredTopP: number;
@@ -441,7 +442,8 @@ function buildGenerationStrategy(options: {
     retrievalTier === 'moderada' ||
     retrievalTier === 'fraca';
 
-  let targetBilling: 'free' | 'paid' | 'legacy' = 'legacy';
+  let targetBilling: 'free' | 'paid' | 'legacy';
+  const enableWebSearch = FEATURE_WEB_SEARCH && options.intentLabel !== 'fora_escopo' && (retrievalTier === 'fraca' || options.intentLabel === 'erro_sistema' || options.intentLabel === 'conceito');
   if (complexRequest) {
     targetBilling = options.geminiPaidKey ? 'paid' : (options.geminiFreeKey ? 'free' : 'legacy');
   } else {
@@ -453,6 +455,7 @@ function buildGenerationStrategy(options: {
       ? [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL]
       : [GEMINI_FLASH_LITE_MODEL, GEMINI_PRO_MODEL], // Priorizando FLASH para o formato simples
     targetBilling,
+    enableWebSearch,
     thinkingLevel: complexRequest ? 'high' : 'low',
     structuredTemperature: options.responseMode === 'didatico' ? 0.15 : 0.1,
     structuredTopP: options.responseMode === 'didatico' ? 0.9 : 0.8,
@@ -1857,6 +1860,7 @@ async function streamWithGenAI(
       maxOutputTokens: MAX_OUTPUT_TOKENS,
       temperature: strategy.streamTemperature,
       topP: strategy.streamTopP,
+          ...(strategy.enableWebSearch ? { tools: [{ googleSearch: {} } as unknown as import('@google/genai').Tool] } : {}),
       thinkingConfig: {
         thinkingLevel: strategy.thinkingLevel,
       },
@@ -1923,6 +1927,7 @@ async function generateStructuredWithFallback(
           maxOutputTokens: MAX_OUTPUT_TOKENS,
           temperature: strategy.structuredTemperature,
           topP: strategy.structuredTopP,
+          ...(strategy.enableWebSearch ? { tools: [{ googleSearch: {} } as unknown as import('@google/genai').Tool] } : {}),
           thinkingConfig: {
             thinkingLevel: strategy.thinkingLevel,
           },
