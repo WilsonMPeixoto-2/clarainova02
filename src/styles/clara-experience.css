@@ -1853,6 +1853,35 @@ body::before {
   50% { transform: scale(1.06); }
 }
 
+/* --- Chat readability reset: reduce ornamental UI in structured answers --- */
+.chat-response-avatar::after {
+  display: none !important;
+}
+
+.chat-response-avatar,
+.chat-structured-response[data-confidence='high'] .chat-response-avatar,
+.chat-structured-response[data-confidence='good'] .chat-response-avatar,
+.chat-structured-response[data-confidence='moderate'] .chat-response-avatar,
+.chat-structured-response[data-confidence='low'] .chat-response-avatar,
+.chat-structured-response[data-needs-clarification='true'] .chat-response-avatar {
+  filter: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+.chat-structured-response[data-response-mode='didatico'] .chat-step-card,
+.chat-structured-response[data-response-mode='direto'] .chat-step-card {
+  box-shadow: none;
+}
+
+.chat-structured-response[data-response-mode='didatico'] .chat-step-card:hover {
+  border-left-color: hsl(var(--gold-1) / 0.38);
+}
+
+.chat-response-summary-label {
+  display: none;
+}
+
 /* --- 6. CTA PRIMARY DIFFERENTIATION (Report 2, Item 8) --- */
 .hero-cta-primary {
   background:

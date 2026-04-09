@@ -410,15 +410,15 @@ PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIRETO
   return `
 
 PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIDATICO
-- Organize a resposta como orientacao guiada, acolhedora e claramente sequenciada.
-- Estruture a resposta em camadas perceptiveis: veredito inicial, explicacao principal, detalhamento complementar e observacoes finais.
-- Quando houver procedimento, entregue de 3 a 5 etapas bem distintas, em ordem de execucao.
-- Cada etapa deve dizer o que fazer, por que isso importa e o que conferir antes de seguir.
-- Prefira modoResposta="passo_a_passo" ou modoResposta="combinado".
-- Use itens e destaques para transformar a resposta em um guia executavel, no estilo de um manual operacional.
-- Evite repetir a mesma ideia em varios blocos: reforce com novos detalhes, nao com reformulacoes redundantes.
-- Explique rapidamente termos tecnicos ou pontos que costumam gerar erro.
-- Use userNotice e cautionNotice quando ajudarem a orientar a leitura, nao apenas como comentario lateral.
+- Organize a resposta como orientacao guiada, acolhedora e claramente sequenciada, mas com leitura natural.
+- Nao escreva como relatorio, dashboard ou ficha tecnica. Evite cabecalhos editoriais como "veredito inicial", "explicacao principal", "detalhamento complementar", "contexto util" ou equivalentes.
+- resumoInicial deve funcionar como abertura didatica real: 2 a 4 frases completas, vocabulario simples, explicando o caminho principal antes dos detalhes.
+- Quando houver procedimento, entregue de 2 a 4 etapas bem distintas, em ordem de execucao.
+- Cada etapa deve dizer o que fazer e o que conferir antes de seguir, sem repetir o resumo com outras palavras.
+- Prefira modoResposta="passo_a_passo" quando houver sequencia real e modoResposta="explicacao" quando a pergunta pedir entendimento conceitual. Evite modoResposta="combinado" salvo quando houver necessidade concreta de separar um alerta final.
+- Use itens e destaques com parcimonia. So inclua quando realmente ajudarem a executar ou evitar erro.
+- Explique rapidamente termos tecnicos ou pontos que costumam gerar erro, mas dentro do fluxo da resposta, sem criar blocos decorativos.
+- userNotice e cautionNotice so devem aparecer quando mudarem a decisao do usuario ou houver cautela real.
 - Mantenha cautelas, ambiguidade e pedidos de esclarecimento quando forem necessarios.`;
 }
 

@@ -270,35 +270,46 @@ function adaptStructuredResponseForMode(
   responseMode: ChatResponseMode,
 ): ClaraStructuredResponse {
   if (responseMode === "didatico") {
-    const didacticMode = response.etapas.length > 0 &&
-        (
-          response.observacoesFinais.length > 0 ||
-          response.analiseDaResposta.userNotice ||
-          response.termosDestacados.length > 0
-        )
-      ? "combinado"
-      : response.etapas.length > 0 ? "passo_a_passo" : "explicacao";
+    const keepContextNotice = response.analiseDaResposta.clarificationRequested ||
+      response.analiseDaResposta.answerScopeMatch === "weak" ||
+      response.analiseDaResposta.answerScopeMatch === "insufficient" ||
+      response.analiseDaResposta.webFallbackUsed;
+    const didacticMode = response.etapas.length > 0 ? "passo_a_passo" : "explicacao";
 
     return {
       ...response,
       modoResposta: didacticMode,
       etapas: renumberSteps(
-        response.etapas.slice(0, 5).map((step) => ({
+        response.etapas.slice(0, 4).map((step) => ({
           ...step,
-          itens: dedupeStrings(step.itens, 4),
-          destaques: dedupeStrings(step.destaques, 3),
+          conteudo: step.conteudo.trim(),
+          itens: dedupeStrings(step.itens, 3),
+          destaques: dedupeStrings(step.destaques, 2),
+          alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
         })),
       ),
-      observacoesFinais: dedupeStrings(response.observacoesFinais, 4),
+      observacoesFinais: dedupeStrings(response.observacoesFinais, 2),
       termosDestacados: response.termosDestacados
         .filter((highlight, index, all) => {
           const normalized = normalizeComparableText(highlight.texto);
           return all.findIndex((candidate) => normalizeComparableText(candidate.texto) === normalized) === index;
         })
-        .slice(0, 6),
+        .slice(0, 3),
       analiseDaResposta: {
         ...response.analiseDaResposta,
-        processStates: response.analiseDaResposta.processStates.slice(0, 4),
+        userNotice: keepContextNotice ? response.analiseDaResposta.userNotice : null,
+        clarificationReason: response.analiseDaResposta.clarificationReason
+          ? takeFirstSentence(response.analiseDaResposta.clarificationReason)
+          : null,
+        ambiguityReason: response.analiseDaResposta.ambiguityReason
+          ? takeFirstSentence(response.analiseDaResposta.ambiguityReason)
+          : null,
+        cautionNotice: response.analiseDaResposta.cautionNotice
+          ? takeFirstSentence(response.analiseDaResposta.cautionNotice)
+          : null,
+        processStates: response.analiseDaResposta.processStates
+          .filter((state) => state.status !== "concluido" && state.status !== "informativo")
+          .slice(0, 1),
       },
     };
   }

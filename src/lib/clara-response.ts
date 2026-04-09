@@ -162,35 +162,46 @@ function adaptStructuredResponseForMode(
   responseMode: ChatResponseMode,
 ): ClaraStructuredResponse {
   if (responseMode === 'didatico') {
-    const didacticMode = response.etapas.length > 0
-      && (
-        response.observacoesFinais.length > 0
-        || response.analiseDaResposta.userNotice
-        || response.termosDestacados.length > 0
-      )
-      ? 'combinado'
-      : response.etapas.length > 0 ? 'passo_a_passo' : 'explicacao';
+    const keepContextNotice = response.analiseDaResposta.clarificationRequested
+      || response.analiseDaResposta.answerScopeMatch === 'weak'
+      || response.analiseDaResposta.answerScopeMatch === 'insufficient'
+      || response.analiseDaResposta.webFallbackUsed;
+    const didacticMode = response.etapas.length > 0 ? 'passo_a_passo' : 'explicacao';
 
     return {
       ...response,
       modoResposta: didacticMode,
       etapas: renumberSteps(
-        response.etapas.slice(0, 5).map((step) => ({
+        response.etapas.slice(0, 4).map((step) => ({
           ...step,
-          itens: dedupeStrings(step.itens, 4),
-          destaques: dedupeStrings(step.destaques, 3),
+          conteudo: step.conteudo.trim(),
+          itens: dedupeStrings(step.itens, 3),
+          destaques: dedupeStrings(step.destaques, 2),
+          alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
         })),
       ),
-      observacoesFinais: dedupeStrings(response.observacoesFinais, 4),
+      observacoesFinais: dedupeStrings(response.observacoesFinais, 2),
       termosDestacados: response.termosDestacados
         .filter((highlight, index, all) => {
           const normalized = normalizeComparableText(highlight.texto);
           return all.findIndex((candidate) => normalizeComparableText(candidate.texto) === normalized) === index;
         })
-        .slice(0, 6),
+        .slice(0, 3),
       analiseDaResposta: {
         ...response.analiseDaResposta,
-        processStates: response.analiseDaResposta.processStates.slice(0, 4),
+        userNotice: keepContextNotice ? response.analiseDaResposta.userNotice : null,
+        clarificationReason: response.analiseDaResposta.clarificationReason
+          ? takeFirstSentence(response.analiseDaResposta.clarificationReason)
+          : null,
+        ambiguityReason: response.analiseDaResposta.ambiguityReason
+          ? takeFirstSentence(response.analiseDaResposta.ambiguityReason)
+          : null,
+        cautionNotice: response.analiseDaResposta.cautionNotice
+          ? takeFirstSentence(response.analiseDaResposta.cautionNotice)
+          : null,
+        processStates: response.analiseDaResposta.processStates
+          .filter((state) => state.status !== 'concluido' && state.status !== 'informativo')
+          .slice(0, 1),
       },
     };
   }
@@ -760,19 +771,19 @@ export function buildPreviewStructuredResponse(
         alerta: null,
         citacoes: [],
       },
-      {
-        numero: 2,
-        titulo: 'Como a orientação aparece no chat',
-        conteudo: 'Mesmo em modo demonstrativo, a resposta já aparece organizada em blocos, etapas, destaques e observações para facilitar a leitura.',
-        itens: [
-          'Resumo inicial para leitura rápida.',
-          'Etapas separadas por ação e verificação.',
-          'Espaço para pontos de atenção, referências e notas finais.',
-        ],
-        destaques: ['Orientação estruturada', 'Etapas', 'Leitura guiada'],
-        alerta: 'Quando a base oficial estiver ativa, esse mesmo formato passa a refletir orientações e referências documentais reais.',
-        citacoes: [],
-      },
+    {
+      numero: 2,
+      titulo: 'Como a orientação aparece no chat',
+      conteudo: 'Mesmo em modo demonstrativo, a resposta já prioriza leitura contínua, sequência curta e explicação clara do que fazer primeiro.',
+      itens: [
+        'Resumo inicial para leitura rápida.',
+        'Etapas curtas com ação e conferência.',
+        'Referências e alertas só quando realmente ajudam a decidir o próximo passo.',
+      ],
+      destaques: ['Leitura clara', 'Etapas curtas'],
+      alerta: 'Quando a base oficial estiver ativa, esse mesmo formato passa a refletir orientações e referências documentais reais.',
+      citacoes: [],
+    },
       {
         numero: 3,
         titulo: 'O que muda na próxima etapa',
@@ -789,15 +800,14 @@ export function buildPreviewStructuredResponse(
     ],
     observacoesFinais: [
       'Esta resposta ainda é demonstrativa e não substitui uma consulta final baseada na base oficial.',
-      'Quando o ambiente principal estiver ativo, a CLARA volta a priorizar documentos reais e referências aderentes ao contexto.',
+      'Quando o ambiente principal estiver ativo, a CLARA passa a responder com base documental real sem mudar a forma de uso do chat.',
       ...base.observacoesFinais,
     ],
     termosDestacados: [
       { texto: 'Ambiente demonstrativo', tipo: 'atencao' },
-      { texto: 'Orientação estruturada', tipo: 'conceito' },
       { texto: 'Base oficial', tipo: 'acao' },
       ...base.termosDestacados,
-    ].slice(0, 8),
+    ].slice(0, 4),
     referenciasFinais: [
       {
         id: 1,
@@ -821,24 +831,12 @@ export function buildPreviewStructuredResponse(
         ambiguityInSources: false,
         internalExpansionPerformed: false,
         webFallbackUsed: false,
-      userNotice: 'Esta resposta foi montada em ambiente demonstrativo para validar clareza, tom e organização do atendimento.',
-      cautionNotice: 'Use este retorno como demonstração da experiência. As orientações finais voltam a refletir a base oficial assim que a conexão principal for concluída.',
+      userNotice: null,
+      cautionNotice: 'Use este retorno como demonstração da experiência. As orientações finais passam a refletir a base oficial assim que a conexão principal for concluída.',
       ambiguityReason: null,
         comparedSources: ['Preview local do chat'],
         prioritizedSources: ['Preview local do chat'],
         processStates: [
-          {
-            id: 'preview-mode',
-          titulo: 'Ambiente demonstrativo ativo',
-          descricao: 'A experiência do chat já está disponível para validar como a orientação chega até você.',
-          status: 'informativo',
-        },
-        {
-          id: 'chat-ready',
-          titulo: 'Leitura guiada já disponível',
-          descricao: 'Painel lateral, envio de pergunta e resposta estruturada já funcionam nesta fase.',
-          status: 'concluido',
-        },
         {
           id: 'backend-next',
           titulo: 'Base oficial na próxima etapa',

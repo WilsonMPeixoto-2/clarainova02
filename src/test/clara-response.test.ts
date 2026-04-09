@@ -63,7 +63,8 @@ describe('clara-response helpers', () => {
     expect(directPlainText).toContain('Checklist rápido');
     expect(directPlainText).toContain('Conferência final');
     expect(directPlainText).not.toContain('Termos importantes');
-    expect(didacticPlainText).toContain('Orientação inicial');
+    expect(didacticPlainText).not.toContain('Orientação inicial');
+    expect(didacticPlainText).toContain('Atenção');
     expect(didacticPlainText).toContain('Passo a passo guiado');
     expect(didacticPlainText).toContain('Termos importantes');
   });
