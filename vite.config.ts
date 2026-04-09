@@ -75,14 +75,19 @@ export default defineConfig(() => ({
               priority: 33,
             },
             {
-              name: "admin-ingestion",
-              test: /node_modules[\\/]@langchain[\\/]textsplitters[\\/]|src[\\/]lib[\\/]admin-ingestion/,
+              name: "admin-textsplitters",
+              test: /node_modules[\\/]@langchain[\\/]textsplitters[\\/]/,
               priority: 32,
+            },
+            {
+              name: "admin-ingestion",
+              test: /src[\\/]lib[\\/]admin-ingestion/,
+              priority: 31,
             },
             {
               name: "admin-panels",
               test: /src[\\/]components[\\/]admin[\\/]AdminDocumentsCard|src[\\/]components[\\/]UsageStatsCard/,
-              priority: 31,
+              priority: 30,
             },
           ],
         },

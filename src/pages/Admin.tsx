@@ -27,6 +27,7 @@ import {
   KNOWLEDGE_TOPIC_SCOPE_LABELS,
 } from "@/lib/knowledge-document-classifier";
 import { computeBlobHash, type PreparedChunk, type PreparedPdfIngestion } from "@/lib/admin-ingestion";
+import { sanitizeFileName } from "@/lib/file-utils";
 
 const AdminDocumentsCard = lazy(() => import("@/components/admin/AdminDocumentsCard"));
 const UsageStatsCard = lazy(() => import("@/components/UsageStatsCard"));
@@ -696,7 +697,6 @@ export default function Admin() {
 
       if (abortController.signal.aborted) return;
 
-      const { sanitizeFileName } = await loadAdminIngestionModule();
       const sanitizedName = sanitizeFileName(file.name);
       const filePath = `${crypto.randomUUID()}_${sanitizedName}`;
       const corpusLane = getKnowledgeCorpusLane(resolvedGovernance.corpusCategory);

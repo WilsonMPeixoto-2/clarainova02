@@ -1,4 +1,4 @@
-import { extractText, getDocumentProxy } from "unpdf";
+let pdfRuntimePromise: Promise<Pick<typeof import("unpdf"), "extractText" | "getDocumentProxy">> | null = null;
 
 const TARGET_CHUNK_SIZE = 1000;
 const MAX_CHUNK_SIZE = 1400;
@@ -91,7 +91,6 @@ function mergeSegmentsIntoChunks(paragraphs: string[]): string[] {
 
   return chunks;
 }
-
 function semanticSplit(rawText: string): string[] {
   // eslint-disable-next-line no-control-regex
   const normalized = rawText.replace(/\u0000/g, "").trim();
@@ -129,12 +128,15 @@ export interface PreparedPdfIngestion {
   documentHash: string;
 }
 
-export function sanitizeFileName(name: string) {
-  return name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9._-]/g, "_")
-    .replace(/_+/g, "_");
+function loadPdfRuntime() {
+  if (!pdfRuntimePromise) {
+    pdfRuntimePromise = import("unpdf").then(({ extractText, getDocumentProxy }) => ({
+      extractText,
+      getDocumentProxy,
+    }));
+  }
+
+  return pdfRuntimePromise;
 }
 
 async function sha256HexFromArrayBuffer(arrayBuffer: ArrayBuffer): Promise<string> {
@@ -209,6 +211,7 @@ export async function extractTextFromPDF(
   onProgress?: (pagesRead: number, totalPages: number) => void,
 ): Promise<PageText[]> {
   const arrayBuffer = await file.arrayBuffer();
+  const { extractText, getDocumentProxy } = await loadPdfRuntime();
   const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
   const totalPages = pdf.numPages;
 
