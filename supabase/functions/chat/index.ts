@@ -428,24 +428,13 @@ function buildGenerationStrategy(options: {
   sourceTarget: SourceTargetRoute | null;
   retrievalQuality: RetrievalQualityInfo | null;
 }): GenerationStrategy {
-  const retrievalTier = options.retrievalQuality?.confidenceTier ?? 'fraca';
-  const complexRequest =
-    options.responseMode === 'didatico' ||
-    options.sourceTarget !== null ||
-    options.intentLabel === 'conceito' ||
-    options.intentLabel === 'erro_sistema' ||
-    retrievalTier === 'moderada' ||
-    retrievalTier === 'fraca';
-
   return {
-    orderedModels: complexRequest
-      ? [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL]
-      : [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL], // Priorizando PRO para o formato complexo
-    thinkingLevel: complexRequest ? 'high' : 'low',
-    structuredTemperature: options.responseMode === 'didatico' ? 0.15 : 0.1,
-    structuredTopP: options.responseMode === 'didatico' ? 0.9 : 0.8,
-    streamTemperature: options.responseMode === 'didatico' ? 0.45 : 0.2,
-    streamTopP: options.responseMode === 'didatico' ? 0.95 : 0.8,
+    orderedModels: [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL],
+    thinkingLevel: 'high' as GeminiThinkingLevel,
+    structuredTemperature: options.responseMode === 'didatico' ? 0.35 : 0.3,
+    structuredTopP: options.responseMode === 'didatico' ? 0.92 : 0.88,
+    streamTemperature: options.responseMode === 'didatico' ? 0.45 : 0.3,
+    streamTopP: options.responseMode === 'didatico' ? 0.95 : 0.88,
   };
 }
 
@@ -607,7 +596,6 @@ POLÍTICA DE FONTES
 ESTRUTURA DA RESPOSTA
 - Organize a resposta em blocos curtos e altamente escaneáveis.
 - Quando a pergunta for operacional, a resposta deve nascer em passo a passo.
-- Pense a resposta para renderização em cards de etapas.
 - Mantenha observações importantes separadas do corpo principal.
 - As fontes devem ficar sempre ao final, com marcações numéricas discretas no corpo da resposta.
 - Nunca invente nome de documento, página ou seção.
@@ -615,6 +603,15 @@ ESTRUTURA DA RESPOSTA
 - Quando pedir esclarecimento, explique brevemente por que esta pedindo esse complemento.
 - Nos avisos, cautelas e processStates, use linguagem humana e institucional.
 - Evite rotulos tecnicos visiveis ao usuario, como "base interna", "web fallback", "RAG", "backend" ou termos de infraestrutura.
+
+QUALIDADE OBRIGATÓRIA DO CONTEÚDO
+- NUNCA copie trechos da base documental literalmente. Sempre reformule com suas palavras, mantendo a precisao.
+- O campo resumoInicial deve ser uma resposta curta e completa à pergunta do usuario, com 2 a 4 frases claras. Nunca um fragmento solto.
+- Cada etapa deve ter um titulo descritivo da acao (ex: "Incluir documento externo") e um conteudo com pelo menos 2 frases explicando O QUE fazer e COMO fazer no sistema.
+- Se a pergunta pedir passo a passo, cada etapa deve corresponder a uma acao concreta na interface do SEI-Rio, com nome de botao, menu ou tela quando disponivel.
+- Prefira menos etapas com conteudo substancial a muitas etapas com uma unica frase cada.
+- O campo itens dentro de cada etapa deve conter detalhes complementares, nao repetir o conteudo principal.
+- Se a base documental fornecer informacoes sobre telas, botoes ou menus específicos do SEI, inclua esses detalhes na resposta.
 
 JSON E CAMPOS DE DECISAO
 - Preencha sempre o objeto analiseDaResposta.
