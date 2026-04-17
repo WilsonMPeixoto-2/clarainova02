@@ -271,9 +271,9 @@ const ChatSheet = () => {
 
   useEffect(() => {
     if (isMobile) {
-      if (panelMode !== 'fullscreen') setPanelMode('fullscreen');
+      if (panelMode !== 'fullscreen') queueMicrotask(() => setPanelMode('fullscreen'));
     } else {
-      if (panelMode === 'fullscreen') setPanelMode('wide');
+      if (panelMode === 'fullscreen') queueMicrotask(() => setPanelMode('wide'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile]);
@@ -319,7 +319,7 @@ const ChatSheet = () => {
 
   useEffect(() => {
     if (!isLoading || isStreaming) {
-      setLoadingPhaseIndex(0);
+      queueMicrotask(() => setLoadingPhaseIndex(0));
       return;
     }
 

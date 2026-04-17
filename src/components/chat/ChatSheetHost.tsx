@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 
 import { useChat } from "@/hooks/useChatStore";
 
@@ -10,7 +10,7 @@ export function ChatSheetHost() {
 
   useEffect(() => {
     if (isOpen) {
-      setShouldRender(true);
+      queueMicrotask(() => setShouldRender(true));
     }
   }, [isOpen]);
 

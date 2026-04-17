@@ -360,8 +360,9 @@ export default function Admin() {
   useEffect(() => {
     if (!hasSupabaseConfig) return;
 
-    fetchDocuments();
-    const interval = setInterval(fetchDocuments, 5000);
+    const run = () => { fetchDocuments(); };
+    run();
+    const interval = setInterval(run, 5000);
     return () => clearInterval(interval);
   }, [fetchDocuments]);
 
@@ -387,7 +388,7 @@ export default function Admin() {
   useEffect(() => {
     const processingDocs = documents.filter((doc) => doc.status === "processing" || doc.status === "pending");
     if (processingDocs.length === 0) {
-      setProcessingTimers({});
+      queueMicrotask(() => setProcessingTimers({}));
       return;
     }
 

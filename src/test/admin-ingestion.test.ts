@@ -4,9 +4,9 @@ import {
   buildPreparedChunksFromPages,
   computeBlobHash,
   computeFileHash,
-  sanitizeFileName,
   type PageText,
 } from "@/lib/admin-ingestion";
+import { sanitizeFileName } from "@/lib/file-utils";
 
 describe("admin ingestion helpers", () => {
   it("sanitizes file names for storage paths", () => {
