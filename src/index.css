@@ -2727,15 +2727,15 @@
 
   .chat-step-grid {
     display: grid;
-    gap: 0.88rem;
+    gap: 0.6rem;
   }
 
 .chat-structured-response[data-response-mode='didatico'] .chat-step-grid {
-  gap: 0.92rem;
+  gap: 0.7rem;
 }
 
 .chat-structured-response[data-response-mode='direto'] .chat-step-grid {
-  gap: 0.8rem;
+  gap: 0.52rem;
 }
 
   .chat-process-card {
@@ -2799,8 +2799,8 @@
 
   .chat-step-card {
     display: grid;
-    gap: 0.78rem;
-    padding: 0.95rem 1rem;
+    gap: 0.5rem;
+    padding: 0.75rem 0.9rem;
     border-radius: 0.9rem;
     border: 1px solid hsl(var(--stroke) / 0.78);
     background: hsl(var(--surface-1) / 0.5);
@@ -2808,8 +2808,8 @@
   }
 
 .chat-structured-response[data-response-mode='direto'] .chat-step-card {
-  gap: 0.72rem;
-  padding: 0.9rem 0.92rem;
+  gap: 0.42rem;
+  padding: 0.7rem 0.82rem;
   border-color: hsl(var(--clara-cyan) / 0.22);
   background:
     radial-gradient(circle at top right, hsl(var(--clara-cyan) / 0.08), transparent 34%),
@@ -2875,6 +2875,10 @@
   }
 
   .chat-step-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.3rem;
     min-width: 0;
   }
 

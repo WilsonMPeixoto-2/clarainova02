@@ -1787,7 +1787,7 @@ body::before {
 
 /* --- 3. DIRETO COMPACT DENSITY (Report 1, Item 7) --- */
 .chat-structured-response[data-response-mode='direto'] .chat-step-card {
-  padding: 0.82rem 0.9rem;
+  padding: 0.62rem 0.78rem;
   border-radius: 0.75rem;
 }
 
