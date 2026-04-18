@@ -230,6 +230,38 @@ function takeFirstSentence(value: string) {
   return (match?.[0] ?? trimmed).trim();
 }
 
+function takeSentences(value: string, maxSentences: number, maxChars?: number) {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+
+  const sentences: string[] = [];
+  const boundary = /[.!?](?:\s+(?=[A-ZÁÉÍÓÚÂÊÔÀÇÃÕ"«(])|\s*$)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = boundary.exec(trimmed)) !== null && sentences.length < maxSentences) {
+    sentences.push(trimmed.slice(lastIndex, match.index + 1).trim());
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < trimmed.length && sentences.length < maxSentences) {
+    sentences.push(trimmed.slice(lastIndex).trim());
+  }
+  if (sentences.length === 0) sentences.push(trimmed);
+
+  let result = sentences.join(" ").trim();
+  if (maxChars && result.length > maxChars) {
+    const clipped = result.slice(0, maxChars);
+    const lastBoundaryIdx = Math.max(
+      clipped.lastIndexOf(". "),
+      clipped.lastIndexOf("! "),
+      clipped.lastIndexOf("? "),
+    );
+    result = lastBoundaryIdx > maxChars * 0.6
+      ? clipped.slice(0, lastBoundaryIdx + 1).trim()
+      : clipped.trimEnd() + "…";
+  }
+  return result;
+}
+
 function renumberSteps(steps: ClaraStructuredResponse["etapas"]) {
   return steps.map((step, index) => ({
     ...step,
@@ -320,18 +352,21 @@ function adaptStructuredResponseForMode(
 
   return {
     ...response,
-    resumoInicial: takeFirstSentence(response.resumoInicial),
+    resumoInicial: takeSentences(response.resumoInicial, 2, 280),
     modoResposta: response.etapas.length > 0 ? "checklist" : "explicacao",
     etapas: renumberSteps(
       response.etapas.slice(0, 3).map((step) => ({
         ...step,
-        conteudo: takeFirstSentence(step.conteudo),
+        conteudo: takeSentences(step.conteudo, 2, 240),
         itens: dedupeStrings(step.itens, 2),
         destaques: dedupeStrings(step.destaques, 2),
         alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
       })),
     ),
-    observacoesFinais: dedupeStrings(response.observacoesFinais.map(takeFirstSentence), 1),
+    observacoesFinais: dedupeStrings(
+      response.observacoesFinais.map((obs) => takeSentences(obs, 1, 160)),
+      1,
+    ),
     termosDestacados: response.termosDestacados
       .filter((highlight, index, all) => {
         const normalized = normalizeComparableText(highlight.texto);
