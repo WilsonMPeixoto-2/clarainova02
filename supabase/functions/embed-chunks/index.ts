@@ -564,29 +564,91 @@ Deno.serve(async (req) => {
       );
     }
 
+    const failedCount = embeddings.filter((e) => e === null).length;
+    const totalCount = rows.length;
+    const allFailed = totalCount > 0 && failedCount === totalCount;
+
+    const providerExhausted = allFailed && diagnostics.some((d) => {
+      const status = typeof d.status === "number" ? d.status : undefined;
+      const reason = typeof d.reason === "string" ? d.reason : undefined;
+      return status === 429
+        || (status !== undefined && status >= 500)
+        || reason === "retry_exhausted"
+        || reason === "timeout";
+    });
+
+    if (allFailed) {
+      const errorCode = providerExhausted ? "EMBEDDING:PROVIDER_EXHAUSTED" : "EMBEDDING:ALL_FAILED";
+      const httpStatus = providerExhausted ? 503 : 500;
+
+      await safeLogEvent(supabase, {
+        document_id,
+        ingestion_job_id,
+        event_type: "embedding_batch_failed_all",
+        event_level: "error",
+        message: providerExhausted
+          ? "Todos os embeddings do lote falharam por exaustão do provedor."
+          : "Todos os embeddings do lote falharam.",
+        details_json: {
+          start_index,
+          batch_size: totalCount,
+          failed_embeddings: failedCount,
+          error_code: errorCode,
+          provider_exhausted: providerExhausted,
+          request_id,
+          embedding_ms,
+          db_ms,
+          embed_api_batch_size: EMBED_API_BATCH_SIZE,
+          embed_api_calls: apiCalls,
+          embedding_diagnostics: diagnostics,
+        },
+      });
+
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: errorCode,
+          saved: totalCount,
+          failed_embeddings: failedCount,
+          provider_exhausted: providerExhausted,
+          request_id,
+          embedding_ms,
+          db_ms,
+          embed_api_batch_size: EMBED_API_BATCH_SIZE,
+          embed_api_calls: apiCalls,
+          diagnostics,
+        }),
+        { status: httpStatus, headers: { ...buildCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    const hasPartialFailure = failedCount > 0;
     await safeLogEvent(supabase, {
       document_id,
       ingestion_job_id,
-      event_type: "embedding_batch_saved",
-      message: "Lote de embeddings persistido com sucesso.",
+      event_type: hasPartialFailure ? "embedding_batch_saved_partial" : "embedding_batch_saved",
+      event_level: hasPartialFailure ? "warning" : "info",
+      message: hasPartialFailure
+        ? `Lote persistido com ${failedCount}/${totalCount} embeddings faltando.`
+        : "Lote de embeddings persistido com sucesso.",
       details_json: {
         start_index,
-        batch_size: rows.length,
-        failed_embeddings: embeddings.filter((e) => e === null).length,
+        batch_size: totalCount,
+        failed_embeddings: failedCount,
         request_id,
         embedding_ms,
         db_ms,
         embed_api_batch_size: EMBED_API_BATCH_SIZE,
         embed_api_calls: apiCalls,
-        embedding_diagnostics: embeddings.some((embedding) => embedding === null) ? diagnostics : undefined,
+        embedding_diagnostics: hasPartialFailure ? diagnostics : undefined,
       },
     });
 
     return new Response(
       JSON.stringify({
         ok: true,
-        saved: rows.length,
-        failed_embeddings: embeddings.filter((e) => e === null).length,
+        saved: totalCount,
+        failed_embeddings: failedCount,
         request_id,
         embedding_ms,
         db_ms,
