@@ -418,6 +418,14 @@ def inspect_chunk_health(service_role_key: str, document_id: str) -> tuple[int, 
 
 
 def invoke_embed_chunks(service_role_key: str, document_id: str, title: str, batch: list[dict], start_index: int):
+    """Invoke the embed-chunks Edge Function.
+
+    The function may return HTTP 500/503 with a structured `ok: false` payload
+    when all embeddings in the batch failed (e.g. provider exhaustion).
+    Those are expected outcomes the caller must react to (by short-circuiting
+    the document loop and letting reconciliation mark the document as
+    embedding_pending), so we do NOT raise on them — we return the payload.
+    """
     response = requests.post(
         f"{SUPABASE_URL}/functions/v1/embed-chunks",
         headers=api_headers(service_role_key, {"Content-Type": "application/json"}),
@@ -429,10 +437,18 @@ def invoke_embed_chunks(service_role_key: str, document_id: str, title: str, bat
         },
         timeout=120,
     )
-    response.raise_for_status()
-    payload = response.json()
-    if payload.get("ok") is False:
-        raise RuntimeError(f"embed-chunks returned app error: {payload}")
+    if response.status_code not in (200, 500, 503):
+        response.raise_for_status()
+    try:
+        payload = response.json()
+    except ValueError as err:
+        raise RuntimeError(
+            f"embed-chunks returned non-JSON (status={response.status_code}): {response.text[:300]}"
+        ) from err
+    if response.status_code in (500, 503) and payload.get("ok") is not False:
+        raise RuntimeError(
+            f"embed-chunks returned HTTP {response.status_code} without ok:false contract: {payload}"
+        )
     return payload
 
 
@@ -485,12 +501,16 @@ def ingest_row(service_role_key: str, row: dict[str, str]):
 
     request_ids: list[str] = []
     failed_embeddings = 0
+    abort_reason: str | None = None
     for start_index, batch in iter_batches(chunks, EMBED_BATCH_SIZE):
         payload = invoke_embed_chunks(service_role_key, document_id, row["titulo_oficial"], batch, start_index)
         failed_embeddings += int(payload.get("failed_embeddings") or 0)
         request_id = payload.get("request_id")
         if request_id:
             request_ids.append(request_id)
+        if payload.get("ok") is False:
+            abort_reason = payload.get("error") or "embed_chunks_failed"
+            break
 
     saved_chunks, embedded_chunks = inspect_chunk_health(service_role_key, document_id)
     missing_embeddings = max(len(chunks) - embedded_chunks, 0)
@@ -519,7 +539,7 @@ def ingest_row(service_role_key: str, row: dict[str, str]):
             "status": final_status,
             "processed_at": datetime.now(timezone.utc).isoformat(timespec="seconds") if final_status == "processed" else None,
             "failed_at": None if final_status == "processed" else datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "failure_reason": None if final_status == "processed" else "embedding_incomplete",
+            "failure_reason": None if final_status == "processed" else (abort_reason or "embedding_incomplete"),
             "metadata_json": final_metadata,
         },
     )
@@ -531,6 +551,7 @@ def ingest_row(service_role_key: str, row: dict[str, str]):
         "chunks": len(chunks),
         "embedded_chunks": embedded_chunks,
         "failed_embeddings": failed_embeddings,
+        "abort_reason": abort_reason,
     }
 
 

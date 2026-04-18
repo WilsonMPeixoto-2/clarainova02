@@ -110,12 +110,16 @@ def reembed_document(service_role_key: str, document: dict):
 
     request_ids: list[str] = []
     failed_embeddings = 0
+    abort_reason: str | None = None
     for start_index, batch in iter_batches(chunks, EMBED_BATCH_SIZE):
         payload = invoke_embed_chunks(service_role_key, document_id, document.get("name") or storage_path, batch, start_index)
         failed_embeddings += int(payload.get("failed_embeddings") or 0)
         request_id = payload.get("request_id")
         if request_id:
             request_ids.append(request_id)
+        if payload.get("ok") is False:
+            abort_reason = payload.get("error") or "embed_chunks_failed"
+            break
 
     saved_chunks, embedded_chunks = inspect_chunk_health(service_role_key, document_id)
     final_status = "processed" if embedded_chunks == len(chunks) else "embedding_pending"
@@ -134,7 +138,7 @@ def reembed_document(service_role_key: str, document: dict):
             "status": final_status,
             "processed_at": datetime.now(timezone.utc).isoformat(timespec="seconds") if final_status == "processed" else None,
             "failed_at": None if final_status == "processed" else datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "failure_reason": None if final_status == "processed" else "embedding_incomplete",
+            "failure_reason": None if final_status == "processed" else (abort_reason or "embedding_incomplete"),
             "metadata_json": final_metadata,
         },
     )
@@ -146,6 +150,7 @@ def reembed_document(service_role_key: str, document: dict):
         "embedded_chunks": embedded_chunks,
         "failed_embeddings": failed_embeddings,
         "result": final_status,
+        "abort_reason": abort_reason,
     }
 
 
