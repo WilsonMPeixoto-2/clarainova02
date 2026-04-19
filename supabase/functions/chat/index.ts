@@ -20,6 +20,11 @@ import {
   type QueryEmbeddingCacheStatus,
 } from "./embedding-cache.ts";
 import {
+  buildChatResponseCacheKey,
+  buildChatResponseCacheExpiryIso,
+  isChatResponseCacheExpired,
+} from "./response-cache.ts";
+import {
   addStageTiming,
   createChatStageTimings,
   createTimeBudgetTracker,
@@ -115,7 +120,6 @@ const MIN_LEAKAGE_REPAIR_REMAINING_MS = 8_000;
 const LEAKAGE_REPAIR_TIMEOUT_MS = 12_000;
 const MIN_GROUNDED_REPAIR_REMAINING_MS = 6_000;
 const GROUNDED_REPAIR_TIMEOUT_MS = 12_000;
-const MAX_OUTPUT_TOKENS = 8192;
 const EMBEDDING_DIM = 768;
 const QUERY_EMBEDDING_MODEL = 'gemini-embedding-2-preview';
 const CHAT_RESPONSE_MODES = ['direto', 'didatico'] as const;
@@ -129,6 +133,7 @@ type GeminiThinkingLevel = 'low' | 'high';
 type GenerationStrategy = {
   orderedModels: GeminiModelName[];
   thinkingLevel: GeminiThinkingLevel;
+  maxOutputTokens: number;
   structuredTemperature: number;
   structuredTopP: number;
   streamTemperature: number;
@@ -432,6 +437,7 @@ function buildGenerationStrategy(options: {
   return {
     orderedModels: [GEMINI_PRO_MODEL, GEMINI_FLASH_LITE_MODEL],
     thinkingLevel: 'high' as GeminiThinkingLevel,
+    maxOutputTokens: options.responseMode === 'direto' ? 4096 : 8192,
     structuredTemperature: options.responseMode === 'didatico' ? 0.35 : 0.3,
     structuredTopP: options.responseMode === 'didatico' ? 0.92 : 0.88,
     streamTemperature: options.responseMode === 'didatico' ? 0.45 : 0.3,
@@ -1840,7 +1846,7 @@ async function streamWithGenAI(
     contents,
     config: {
       systemInstruction: systemPrompt,
-      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      maxOutputTokens: strategy.maxOutputTokens,
       temperature: strategy.streamTemperature,
       topP: strategy.streamTopP,
       thinkingConfig: {
@@ -1906,7 +1912,7 @@ async function generateStructuredWithFallback(
         contents,
         config: {
           systemInstruction: systemPrompt,
-          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          maxOutputTokens: strategy.maxOutputTokens,
           temperature: strategy.structuredTemperature,
           topP: strategy.structuredTopP,
           thinkingConfig: {
@@ -2064,6 +2070,34 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Recebi muitas mensagens em sequência. Aguarde um instante e tente novamente.' }),
         { status: 429, headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // --- CACHE DE RESPOSTAS (M2) ---
+    const { queryHash, normalizedQuery: cacheNormalizedQuery } = await buildChatResponseCacheKey(chatMessages, responseMode);
+    try {
+      const { data: cachedResponse, error: cacheLookupError } = await supabase
+        .from('chat_response_cache')
+        .select('response_payload, hits, expires_at')
+        .eq('query_hash', queryHash)
+        .maybeSingle<{ response_payload: any; hits: number; expires_at: string }>();
+
+      if (!cacheLookupError && cachedResponse && !isChatResponseCacheExpired(cachedResponse.expires_at)) {
+        void supabase.from('chat_response_cache').update({
+          hits: cachedResponse.hits + 1,
+          last_hit_at: new Date().toISOString()
+        }).eq('query_hash', queryHash);
+
+        return new Response(
+          JSON.stringify({
+            kind: 'clara_structured_response',
+            response: cachedResponse.response_payload,
+            plainText: renderStructuredResponseToPlainText(cachedResponse.response_payload),
+          }),
+          { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } catch (err) {
+      console.warn('Response cache lookup failed (non-fatal):', err);
     }
 
     // --- GUARDRAILS ---
@@ -2580,6 +2614,20 @@ REESCRITA OBRIGATORIA:
         structuredResponse.referenciasFinais.length,
         'structured',
       ).catch((err) => console.error('Telemetry error (structured):', err));
+
+      const expiresAt = buildChatResponseCacheExpiryIso();
+      void supabase.from('chat_response_cache').upsert({
+        query_hash: queryHash,
+        query_text: lastUserMessage.content,
+        normalized_query: normalizedQuery,
+        response_mode: responseMode,
+        response_payload: structuredResponse,
+        expires_at: expiresAt,
+        hits: 1,
+        last_hit_at: new Date().toISOString()
+      }, { onConflict: 'query_hash' }).then(({ error }) => {
+        if (error) console.warn('Response cache store error:', error);
+      });
 
       return new Response(
         JSON.stringify({
