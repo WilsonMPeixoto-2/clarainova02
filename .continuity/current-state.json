@@ -20,7 +20,10 @@
     "O ambiente remoto do Supabase mostrou corpus ativo saudavel: `23` documentos totais, `17` ativos, `23` processados e `289/289` chunks ativos com embedding.",
     "A telemetria remota recente confirmou operacao real: `12` chats respondidos nos ultimos `14` dias, `0` falhas e latencia media de `26435 ms`.",
     "O response cache e o embedding cache estao ativos no ambiente remoto, com `3` linhas em `chat_response_cache` e `9` em `embedding_cache`.",
-    "A documentacao principal foi reconciliada em `2026-04-19`: `README.md` e `docs/MIGRATION_STATUS.md` passaram a refletir o estado real do codigo auditado."
+    "A documentacao principal foi reconciliada em `2026-04-19`: `README.md` e `docs/MIGRATION_STATUS.md` passaram a refletir o estado real do codigo auditado.",
+    "A auditoria remota final confirmou `23` documentos totais, `17` ativos, `23` processados e `289/289` chunks ativos com embedding.",
+    "A auditoria remota final tambem confirmou `12` chats respondidos nos ultimos `14` dias, `0` nao respondidos, `0` linhas recentes com `grounded_fallback` e distribuicao de busca recente com predominio lexical moderado (`42.9% keyword_only`, `25.0% hybrid_governed`, `17.9% hybrid`, `14.3% keyword_only_targeted`).",
+    "O corpus pode ser tratado como operacionalmente fechado; a pendencia remota deslocou-se de corpus para limpeza estrutural do Supabase e governanca dos caches."
   ],
   "pending_items": [
     "Corrigir o erro de lint em `supabase/functions/chat/index.ts` e recuperar `npm run validate` como gate verde.",
@@ -32,18 +35,19 @@
     "Google OAuth administrativo continua dependente de configuracao externa no Supabase/Google.",
     "Os modelos Gemini de geracao ainda estao em `preview`, portanto ha risco externo de disponibilidade e mudanca de identificadores."
   ],
-  "next_action": "Executar a auditoria final remota do corpus e do Supabase, decidir o destino dos leftovers e preparar o fechamento operacional do ambiente remoto.",
+  "next_action": "Formalizar a governanca do `chat_response_cache`, fechar a lacuna de telemetria em cache hit e documentar criterios de invalidacao/versionamento.",
   "notes": [
     "A continuidade oficial anterior estava materialmente defasada: ainda fixava `main` em `6770c85`, descrevia branch antiga e preservava narrativas que ja nao batiam com o codigo real.",
     "O README publico foi reconciliado nesta rodada e agora reflete `pro` como primario e `flash-lite` como fallback.",
     "A auditoria remota reduziu a incerteza sobre o corpus: os documentos ativos estao processados e os chunks ativos estao completamente embedados.",
-    "Ao mesmo tempo, a telemetria recente ainda nao permite declarar dominio inequivoco da camada semantica, porque os modos lexicais seguem representando fatia relevante do trafego.",
+    "A telemetria recente ainda nao permite declarar dominio inequivoco da camada semantica, porque os modos lexicais seguem representando fatia relevante do trafego, mas isso ja nao impede considerar o corpus operacionalmente fechado.",
     "Os caches usam modelo de acesso via `service_role`; isso esta mais explicitado na migration do `embedding_cache` do que na do `chat_response_cache`.",
     "O caminho de cache hit do `chat_response_cache` retorna antes de `recordTelemetry`, o que deixa a observabilidade de cache incompleta.",
+    "As tabelas `public.users`, `public.posts` e `public.comments` foram confirmadas como leftovers de template no ambiente remoto: carregam dados de exemplo e nao possuem uso real no codigo do produto.",
     "O site publicado esta operacional e sem erros de console na navegacao auditada; os warnings observados foram de preload de fontes nao aproveitadas rapidamente.",
     "O build atual fecha, mas ainda emite warnings de chunks grandes, especialmente nos bundles de PDF/admin."
   ],
   "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-19-documentation-reconciliation.md",
+  "last_report": "docs/operational-reports/2026-04-19-remote-corpus-and-supabase-audit.md",
   "last_session_head_sha": "6426b33ceaa0d08336a23daad03c0fcba2f2514a"
 }

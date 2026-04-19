@@ -7,14 +7,14 @@
 - Atualizado por: `CODEX @ WILSON-MP`
 - Branch de trabalho: `session/2026-04-19/HOME/CODEX/V1-AUDIT-CLOSURE`
 - Commit oficial auditado: `6426b33ceaa0d08336a23daad03c0fcba2f2514a`
-- Último relatório: `docs/operational-reports/2026-04-19-documentation-reconciliation.md`
+- Último relatório: `docs/operational-reports/2026-04-19-remote-corpus-and-supabase-audit.md`
 
 ## Estado atual resumido
 - O projeto está tecnicamente forte e operacionalmente utilizável, mas ainda em fase final de consolidação pré-`v1.0`.
 - O frontend público e o chat estão maduros: home forte, posicionamento público claro, chat com resposta estruturada, exportação em PDF, impressão, feedback, persistência local e boa responsividade.
 - O backend RAG continua robusto: `gemini-3.1-pro-preview` como primário, `gemini-3.1-flash-lite-preview` como fallback, structured generation, retrieval governado, leakage repair, emergency playbooks, cache de embeddings e cache de respostas.
 - A expansão de query está desligada intencionalmente no código atual para evitar deriva semântica.
-- O corpus remoto ativo está mais saudável do que a continuidade antiga sugeria: `23` documentos totais, `17` ativos, `23` processados, `289/289` chunks ativos com embedding.
+- A auditoria remota final confirmou corpus operacionalmente fechado: `23` documentos totais, `17` ativos, `23` processados e `289/289` chunks ativos com embedding.
 - O tráfego recente ainda usa bastante caminhos lexicais: nos últimos `14` dias, `search_metrics` registrou `12 keyword_only`, `7 hybrid_governed`, `5 hybrid` e `4 keyword_only_targeted`.
 - O Supabase remoto ainda tem leftovers de template (`public.users`, `public.posts`, `public.comments`) e esse ponto continua aberto.
 - A documentação oficial do repositório estava materialmente defasada antes desta atualização: `current-state`, `HANDOFF`, `MIGRATION_STATUS` e `README` não representavam mais o comportamento real de `origin/main`.
@@ -55,11 +55,11 @@
 - Os modelos Gemini de geração ainda estão em `preview`, com risco operacional externo de mudança futura.
 
 ## Próxima ação recomendada
-- Iniciar a auditoria final remota do corpus e do Supabase:
-  1. confirmar quantitativos atuais do corpus;
-  2. decidir o destino das tabelas leftover;
-  3. registrar o modelo de acesso e os riscos dos caches;
-  4. preparar o fechamento operacional do ambiente remoto.
+- Iniciar o fechamento da governança do `chat_response_cache`:
+  1. documentar chave, TTL e critérios de validade;
+  2. explicitar quando o cache deve ser invalidado;
+  3. fechar a lacuna de telemetria em `cache hit`;
+  4. consolidar esse contrato no repositório.
 
 ## Nota crítica de continuidade
 - O drift documental identificado nesta rodada não é detalhe cosmético. Ele já estava suficientemente grande para induzir diagnósticos errados por outras ferramentas.
