@@ -57,7 +57,14 @@ def load_active_documents(service_role_key: str, limit: int | None, document_id:
     return rest_select(service_role_key, "documents", query)
 
 
-def merge_metadata(existing_metadata: dict | None, *, chunk_count: int, embedded_chunks: int, request_ids: list[str]):
+def merge_metadata(
+    existing_metadata: dict | None,
+    *,
+    chunk_count: int,
+    embedded_chunks: int,
+    request_ids: list[str],
+    is_active: bool,
+):
     base = dict(existing_metadata or {})
     status_ready = embedded_chunks == chunk_count
 
@@ -68,7 +75,7 @@ def merge_metadata(existing_metadata: dict | None, *, chunk_count: int, embedded
             "embedded_chunks": embedded_chunks,
             "missing_embeddings": max(chunk_count - embedded_chunks, 0),
             "grounding_status": "ready" if status_ready else "embeddings_pending",
-            "grounding_enabled": status_ready and bool(base.get("grounding_enabled", True)),
+            "grounding_enabled": status_ready and is_active,
             "readiness_summary": f"{embedded_chunks}/{chunk_count} embeddings prontos",
             "last_embedding_attempt_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "last_embedding_request_ids": request_ids,
@@ -128,6 +135,7 @@ def reembed_document(service_role_key: str, document: dict):
         chunk_count=len(chunks),
         embedded_chunks=embedded_chunks,
         request_ids=request_ids,
+        is_active=bool(document.get("is_active")),
     )
 
     rest_update(
