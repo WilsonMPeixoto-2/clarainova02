@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { CircleNotch, DownloadSimple, Printer, PaperPlaneRight, Trash, X } from "@phosphor-icons/react";
+import { CircleNotch, DownloadSimple, Printer, PaperPlaneRight, Trash, X, Warning } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
@@ -258,6 +258,7 @@ const ChatSheet = () => {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isPrintingPdf, setIsPrintingPdf] = useState(false);
   const [loadingPhaseIndex, setLoadingPhaseIndex] = useState(0);
+  const [isPulsing, setIsPulsing] = useState(false);
 
   const exportableMessages = useMemo(
     () => messages.filter((message) => message.content.trim().length > 0 || message.structuredResponse),
@@ -341,8 +342,10 @@ const ChatSheet = () => {
     event.preventDefault();
     if (!input.trim()) return;
 
+    setIsPulsing(true);
     sendMessage(input);
     setInput('');
+    setTimeout(() => setIsPulsing(false), 400);
   };
 
   const handleResizeKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -385,8 +388,10 @@ const ChatSheet = () => {
         return;
       }
 
+      setIsPulsing(true);
       sendMessage(input);
       setInput('');
+      setTimeout(() => setIsPulsing(false), 400);
     }
   };
 
@@ -806,8 +811,9 @@ const ChatSheet = () => {
             </ScrollArea>
 
             {!isOnline && (
-              <div className="px-4 py-2 bg-yellow-900/30 border-t border-yellow-600/30 text-center" role="alert">
-                <p className="text-xs text-yellow-400 font-medium">Você está sem conexão. Assim que a internet voltar, eu continuo com você.</p>
+              <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-950/80 border-t border-yellow-600/50 text-center shadow-[0_-4px_12px_rgba(0,0,0,0.1)]" role="alert">
+                <Warning size={16} className="text-yellow-500" />
+                <p className="text-xs text-yellow-500 font-medium tracking-wide">Sem conexão. Aguardando internet para continuar.</p>
               </div>
             )}
             <form
@@ -862,24 +868,29 @@ const ChatSheet = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!input.trim() || isLoading || !isOnline}
-                  className="chat-composer-submit mb-1 p-2 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                  disabled={(!input.trim() && !isPulsing) || isLoading || !isOnline}
+                  className={`chat-composer-submit mb-1 p-2 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed ${isPulsing ? 'animate-pulse scale-90 opacity-80' : ''} transition-all duration-300`}
                   aria-label="Enviar mensagem"
                 >
                   <PaperPlaneRight size={18} />
                 </button>
               </div>
               <div className="chat-composer-meta flex flex-wrap items-center justify-between gap-2 mt-2">
-                {(!hasMessages || isPreviewMode) && (
+                {(!hasMessages || isPreviewMode) ? (
                   <p className="chat-composer-footnote text-[10px] text-muted-foreground/60">
                     {isPreviewMode
                       ? 'Ambiente demonstrativo: respostas e referencias servem para validar a experiencia da CLARA.'
                       : composerSupportCopy}
                   </p>
-                )}
-                <span className="chat-composer-shortcut text-[10px] text-muted-foreground/50">
-                  Enter envia. Shift + Enter cria nova linha.
-                </span>
+                ) : <span />}
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50 ml-auto">
+                  <span className="font-mono">
+                    {input.length} / 2000
+                  </span>
+                  <span className="chat-composer-shortcut hidden sm:inline">
+                    Enter envia. Shift + Enter cria nova linha.
+                  </span>
+                </div>
               </div>
             </form>
           </motion.aside>

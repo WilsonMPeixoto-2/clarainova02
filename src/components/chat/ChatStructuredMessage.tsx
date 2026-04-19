@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Warning, CheckCircle, CircleDashed, CaretDown, CaretUp, CopySimple, FileText, Globe, Question, ShieldWarning } from "@phosphor-icons/react";
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Warning, CheckCircle, CircleDashed, CaretDown, CaretUp, CopySimple, FileText, Globe, Question, ShieldWarning, ArrowUp } from "@phosphor-icons/react";
 
 import {
   type ClaraHighlight,
@@ -188,6 +188,65 @@ function ReferenceItem({ reference }: { reference: ClaraReference }) {
   );
 }
 
+function CollapsibleStepCard({
+  step,
+  isCollapsible,
+  defaultExpanded,
+}: {
+  step: ClaraStructuredResponse['etapas'][0];
+  isCollapsible: boolean;
+  defaultExpanded: boolean;
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+
+  return (
+    <article className="chat-step-card" role="listitem">
+      <div 
+        className={`chat-step-header ${isCollapsible ? 'cursor-pointer select-none' : ''}`}
+        onClick={isCollapsible ? () => setExpanded(v => !v) : undefined}
+      >
+        <span className="chat-step-number">{String(step.numero).padStart(2, '0')}</span>
+        <div className="chat-step-heading" style={{ flex: 1 }}>
+          <h4>{step.titulo}</h4>
+          {step.citacoes.length > 0 && <CitationList citations={step.citacoes} />}
+        </div>
+        {isCollapsible && (
+          <button type="button" className="chat-expand-toggle-icon ml-auto p-1 rounded-full hover:bg-[hsl(var(--surface-3))] transition-colors text-[hsl(var(--muted-foreground))]">
+            {expanded ? <CaretUp size={16} /> : <CaretDown size={16} />}
+          </button>
+        )}
+      </div>
+
+      {(expanded || !isCollapsible) && (
+        <div className="chat-step-collapsible-content pt-3 flex flex-col gap-3">
+          <p className="chat-step-body">{step.conteudo}</p>
+
+          {step.destaques.length > 0 && (
+            <div className="chat-step-highlights">
+              {step.destaques.map((highlight) => (
+                <span key={`${step.numero}-${highlight}`} className="chat-step-chip">
+                  {highlight}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {step.itens.length > 0 && (
+            <ExpandableItemList items={step.itens} stepNumber={step.numero} />
+          )}
+
+          {step.alerta && (
+            <div className="chat-step-alert" role="note">
+              <ShieldWarning size={15} />
+              <span>{step.alerta}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
+
 export function ChatStructuredMessage({
   response,
   responseMode,
@@ -199,8 +258,15 @@ export function ChatStructuredMessage({
 }) {
   const [showReferences, setShowReferences] = useState(true);
   const [copied, setCopied] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const analysis = response.analiseDaResposta;
   const resolvedMode = resolveStructuredResponseMode(response, responseMode);
+
+  const scrollToTop = useCallback(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
 
   const handleCopy = useCallback(() => {
     const plainText = renderStructuredResponseToPlainText(response);
@@ -233,6 +299,7 @@ export function ChatStructuredMessage({
 
   return (
     <div
+      ref={containerRef}
       className="chat-structured-response"
       data-response-mode={resolvedMode}
       data-response-layout={response.modoResposta}
@@ -362,38 +429,12 @@ export function ChatStructuredMessage({
           )}
           <div className="chat-step-grid" role="list">
             {response.etapas.map((step) => (
-              <article key={step.numero} className="chat-step-card" role="listitem">
-                <div className="chat-step-header">
-                  <span className="chat-step-number">{String(step.numero).padStart(2, '0')}</span>
-                  <div className="chat-step-heading">
-                    <h4>{step.titulo}</h4>
-                    {step.citacoes.length > 0 && <CitationList citations={step.citacoes} />}
-                  </div>
-                </div>
-
-                <p className="chat-step-body">{step.conteudo}</p>
-
-                {step.destaques.length > 0 && (
-                  <div className="chat-step-highlights">
-                    {step.destaques.map((highlight) => (
-                      <span key={`${step.numero}-${highlight}`} className="chat-step-chip">
-                        {highlight}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {step.itens.length > 0 && (
-                  <ExpandableItemList items={step.itens} stepNumber={step.numero} />
-                )}
-
-                {step.alerta && (
-                  <div className="chat-step-alert" role="note">
-                    <ShieldWarning size={15} />
-                    <span>{step.alerta}</span>
-                  </div>
-                )}
-              </article>
+              <CollapsibleStepCard 
+                key={step.numero} 
+                step={step} 
+                isCollapsible={response.etapas.length >= 4}
+                defaultExpanded={response.etapas.length < 4 || step.numero === 1}
+              />
             ))}
           </div>
         </section>
@@ -442,6 +483,20 @@ export function ChatStructuredMessage({
       )}
 
       <ChatFeedbackControls requestId={requestId} />
+
+      {(response.etapas.length > 0 || response.referenciasFinais.length > 0) && (
+        <div className="flex justify-start mt-1">
+          <button
+            type="button"
+            onClick={scrollToTop}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.7rem] font-medium text-muted-foreground/80 hover:text-primary hover:bg-[hsl(var(--surface-3))] transition-colors"
+            aria-label="Voltar ao início da resposta"
+          >
+            <ArrowUp size={12} weight="bold" />
+            <span>Voltar ao resumo</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
