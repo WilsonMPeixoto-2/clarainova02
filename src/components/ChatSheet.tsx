@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { CircleNotch, DownloadSimple, Printer, PaperPlaneRight, Trash, X, Warning } from "@phosphor-icons/react";
+import { CircleNotch, DownloadSimple, Printer, PaperPlaneRight, Trash, X, Warning, ArrowDown } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
@@ -259,6 +259,7 @@ const ChatSheet = () => {
   const [isPrintingPdf, setIsPrintingPdf] = useState(false);
   const [loadingPhaseIndex, setLoadingPhaseIndex] = useState(0);
   const [isPulsing, setIsPulsing] = useState(false);
+  const [showNewMessageIndicator, setShowNewMessageIndicator] = useState(false);
 
   const exportableMessages = useMemo(
     () => messages.filter((message) => message.content.trim().length > 0 || message.structuredResponse),
@@ -298,9 +299,29 @@ const ChatSheet = () => {
   }, [isOpen, pendingQuestion, sendMessage]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: isStreaming ? 'auto' : 'smooth',
-    });
+    if (messages.length === 0) return;
+
+    const viewport = scrollViewportRef.current;
+    const isNearBottom = viewport ? (viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 250) : true;
+    const lastMessage = messages[messages.length - 1];
+
+    if (isNearBottom || lastMessage.role === 'user') {
+      if (lastMessage.role === 'assistant') {
+        setTimeout(() => {
+          const el = document.getElementById(`msg-${messages.length - 1}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 50);
+      } else {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+      setShowNewMessageIndicator(false);
+    } else {
+      setShowNewMessageIndicator(true);
+    }
   }, [messages, isStreaming]);
 
   useEffect(() => {
@@ -315,7 +336,7 @@ const ChatSheet = () => {
 
     textarea.style.height = '0px';
     const nextHeight = Math.min(textarea.scrollHeight, 192);
-    textarea.style.height = `${Math.max(52, nextHeight)}px`;
+    textarea.style.height = `${Math.max(24, nextHeight)}px`;
   }, [input, isOpen]);
 
   useEffect(() => {
@@ -682,6 +703,12 @@ const ChatSheet = () => {
               data-lenis-prevent
               data-lenis-prevent-wheel
               data-lenis-prevent-touch
+              onScrollCapture={(e) => {
+                const target = e.target as HTMLDivElement;
+                if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
+                  setShowNewMessageIndicator(false);
+                }
+              }}
               onWheelCapture={(event) => event.stopPropagation()}
             >
               <div className={`px-4 py-4 md:px-5 ${hasMessages ? 'space-y-3' : 'space-y-5'}`}>
@@ -735,6 +762,7 @@ const ChatSheet = () => {
                 <AnimatePresence mode="popLayout">
                 {messages.map((message, index) => (
                   <motion.div
+                    id={message.role === 'assistant' ? `msg-${index}` : undefined}
                     key={`${message.role}-${index}`}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -811,11 +839,34 @@ const ChatSheet = () => {
             </ScrollArea>
 
             {!isOnline && (
-              <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-950/80 border-t border-yellow-600/50 text-center shadow-[0_-4px_12px_rgba(0,0,0,0.1)]" role="alert">
+              <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-950/80 border-t border-yellow-600/50 text-center shadow-[0_-4px_12px_rgba(0,0,0,0.1)] relative z-20" role="alert">
                 <Warning size={16} className="text-yellow-500" />
                 <p className="text-xs text-yellow-500 font-medium tracking-wide">Sem conexão. Aguardando internet para continuar.</p>
               </div>
             )}
+            
+            {showNewMessageIndicator && (
+              <div className="absolute bottom-full mb-3 left-0 right-0 flex justify-center z-50 pointer-events-none">
+                <button
+                  type="button"
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg text-xs font-medium animate-bounce pointer-events-auto flex items-center gap-1.5 hover:bg-primary/90 transition-colors"
+                  onClick={() => {
+                    const lastIndex = messages.length - 1;
+                    const el = document.getElementById(`msg-${lastIndex}`);
+                    if (el && messages[lastIndex].role === 'assistant') {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                    setShowNewMessageIndicator(false);
+                  }}
+                >
+                  <ArrowDown size={14} weight="bold" />
+                  <span>Nova resposta</span>
+                </button>
+              </div>
+            )}
+            
             <form
               onSubmit={handleSubmit}
               className="chat-composer-form px-4 py-3 border-t border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1))]"
@@ -862,8 +913,8 @@ const ChatSheet = () => {
                   placeholder={inputPlaceholder}
                   maxLength={2000}
                   aria-label="Sua pergunta para a CLARA"
-                  rows={2}
-                  className="chat-composer-textarea flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                  rows={1}
+                  className="chat-composer-textarea flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none"
                   disabled={isLoading || !isOnline}
                 />
                 <button
