@@ -2208,11 +2208,313 @@
   }
 
   @media (max-width: 768px) {
+    .chat-shell {
+      height: 100dvh !important;
+      min-height: -webkit-fill-available;
+    }
+
+    .chat-shell::before {
+      height: 96px;
+    }
+
+    .chat-shell[data-chat-stage='active']::before {
+      height: 64px;
+    }
+
+    .chat-header-surface {
+      padding-block: 0.7rem;
+      padding-inline: 0.9rem;
+    }
+
+    .chat-header-surface.is-compact {
+      padding-block: 0.55rem;
+    }
+
+    .chat-header-surface.is-compact .chat-header-context-label {
+      display: none;
+    }
+
+    .chat-header-surface.is-compact .chat-header-support-copy {
+      display: none;
+    }
+
+    .chat-brand-mark {
+      width: 2.2rem;
+      height: 2.2rem;
+    }
+
+    .chat-header-surface.is-compact .chat-brand-mark {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .chat-scroll-region {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .chat-scroll-viewport {
+      scrollbar-gutter: auto;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    .chat-message-assistant {
+      padding-inline: 0.95rem !important;
+      padding-block: 0.85rem 0.75rem !important;
+    }
+
+    .chat-message-assistant[data-response-kind='structured'] {
+      padding-block: 1rem 0.9rem !important;
+    }
+
+    .chat-message-user {
+      max-width: 92% !important;
+      padding: 0.7rem 0.95rem !important;
+    }
+
+    .chat-composer-form {
+      padding: 0.6rem 0.9rem calc(0.55rem + env(safe-area-inset-bottom, 0));
+    }
+
+    .chat-shell[data-chat-stage='active'] .chat-composer-form {
+      padding-top: 0.5rem;
+    }
+
+    .chat-composer-textarea {
+      min-height: 3rem;
+      max-height: 7.5rem;
+      padding-block: 0.65rem;
+      font-size: 0.95rem;
+    }
+
+    .chat-composer-box {
+      padding: 0.3rem 0.55rem !important;
+    }
+
+    .chat-composer-submit {
+      min-width: 2.4rem !important;
+      min-height: 2.4rem !important;
+      margin-bottom: 0.25rem !important;
+    }
+
+    .chat-composer-meta {
+      gap: 0.3rem;
+      margin-top: 0.4rem !important;
+    }
+
+    .chat-composer-footnote {
+      font-size: 9.5px;
+      line-height: 1.35;
+    }
+
     .chat-starter-grid {
       grid-template-columns: minmax(0, 1fr);
+      gap: 0.55rem;
     }
 
     .chat-size-control {
+      display: none;
+    }
+
+    .chat-shell[data-chat-stage='active'] .chat-response-mode-shell {
+      padding: 0.5rem 0.65rem;
+      gap: 0.35rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .chat-shell[data-chat-stage='active'] .chat-response-mode-head {
+      margin-bottom: 0.1rem;
+    }
+
+    .chat-shell[data-chat-stage='active'] .chat-response-mode-kicker {
+      font-size: 0.6rem;
+    }
+
+    .chat-shell[data-chat-stage='active'] .chat-response-mode-option {
+      padding: 0.45rem 0.55rem;
+    }
+
+    .chat-shell[data-chat-stage='active'] .chat-response-mode-option-title {
+      font-size: 0.78rem;
+    }
+
+    .chat-shell[data-chat-stage='active'] .chat-response-mode-option-copy {
+      display: none;
+    }
+
+    .chat-shell[data-chat-stage='active'] .chat-response-mode-toggle {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+
+    .chat-structured-response {
+      gap: 0.85rem;
+    }
+
+    .chat-structured-response[data-response-mode='direto'],
+    .chat-structured-response[data-response-mode='didatico'] {
+      gap: 0.85rem;
+    }
+
+    .chat-response-intro {
+      gap: 0.65rem;
+    }
+
+    .chat-structured-response[data-response-mode='didatico'] .chat-response-intro {
+      gap: 0.75rem;
+    }
+
+    .chat-response-summary {
+      font-size: 0.92rem;
+      line-height: 1.68;
+    }
+
+    .chat-structured-response[data-response-mode='didatico'] .chat-response-summary {
+      line-height: 1.72;
+    }
+
+    .chat-step-section,
+    .chat-highlight-strip {
+      gap: 0.68rem;
+      padding-top: 0.65rem;
+    }
+
+    .chat-structured-response[data-response-mode='direto'] .chat-step-section,
+    .chat-structured-response[data-response-mode='direto'] .chat-highlight-strip {
+      gap: 0.62rem;
+      padding-top: 0.6rem;
+    }
+
+    .chat-step-card {
+      padding: 0.68rem 0.75rem;
+      gap: 0.42rem;
+    }
+
+    .chat-structured-response[data-response-mode='direto'] .chat-step-card {
+      padding: 0.62rem 0.72rem;
+      gap: 0.38rem;
+    }
+
+    .chat-structured-response[data-response-mode='didatico'] .chat-step-card {
+      padding-left: 0.85rem;
+      gap: 0.65rem;
+    }
+
+    .chat-step-header {
+      gap: 0.6rem;
+    }
+
+    .chat-step-number {
+      width: 1.7rem;
+      height: 1.7rem;
+      font-size: 0.72rem;
+    }
+
+    .chat-step-heading h4 {
+      font-size: 0.96rem;
+      line-height: 1.26;
+    }
+
+    .chat-step-body {
+      font-size: 0.9rem;
+      line-height: 1.66;
+    }
+
+    .chat-step-list {
+      font-size: 0.88rem;
+      line-height: 1.62;
+      padding-left: 1rem;
+    }
+
+    .chat-observation-card,
+    .chat-references-card {
+      padding: 0.78rem 0.85rem;
+      gap: 0.6rem;
+    }
+
+    .chat-observation-list {
+      font-size: 0.88rem;
+      line-height: 1.62;
+      padding-left: 0.85rem;
+    }
+
+    .chat-response-kicker {
+      font-size: 0.62rem;
+      padding: 0.26rem 0.52rem;
+      letter-spacing: 0.06em;
+    }
+
+    .chat-response-toolbar {
+      gap: 0.5rem;
+    }
+
+    .chat-process-inline-item {
+      padding: 0.62rem 0.72rem;
+    }
+
+    .chat-process-inline-copy {
+      font-size: 0.82rem;
+      line-height: 1.56;
+    }
+
+    .clara-prose {
+      font-size: 0.9rem;
+      line-height: 1.68;
+    }
+
+    .clara-prose p {
+      line-height: 1.7;
+    }
+
+    .chat-response-title {
+      font-size: 1.08rem;
+      line-height: 1.24;
+    }
+
+    .chat-copy-button {
+      padding: 0.32rem 0.58rem;
+      font-size: 0.68rem;
+    }
+
+    .chat-references-toggle {
+      padding-block: 0.15rem;
+      min-height: 2.4rem;
+    }
+
+    .chat-reference-item {
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      line-height: 1.62;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .chat-header-surface {
+      padding-inline: 0.7rem;
+      gap: 0.5rem;
+    }
+
+    .chat-composer-form {
+      padding-inline: 0.75rem;
+    }
+
+    .chat-shell[data-chat-stage='empty'] .chat-response-mode-copy {
+      display: none;
+    }
+
+    .chat-shell[data-chat-stage='empty'] .chat-response-mode-shell {
+      padding: 0.55rem 0.7rem;
+    }
+
+    .chat-message-user {
+      font-size: 0.88rem;
+    }
+
+    .chat-message-assistant {
+      font-size: 0.9rem;
+    }
+
+    .chat-header-action.is-prominent .chat-header-action-label,
+    .chat-header-action.is-secondary .chat-header-action-label {
       display: none;
     }
   }
@@ -3398,10 +3700,11 @@
    Visual Law / Legal Design / Information Design
    ============================================ */
 .clara-prose {
-  font-size: 0.8125rem;
-  line-height: 1.7;
+  font-size: 0.92rem;
+  line-height: 1.72;
   color: hsl(var(--text-primary));
   word-break: break-word;
+  letter-spacing: 0.005em;
 }
 
 /* Headings */
@@ -3441,7 +3744,11 @@
 
 /* Paragraphs — short blocks with breathing room */
 .clara-prose p {
-  margin-bottom: 0.75em;
+  margin-bottom: 0.85em;
+}
+
+.clara-prose p + p {
+  margin-top: -0.1em;
 }
 
 .clara-prose p:last-child {
