@@ -4,7 +4,11 @@ export const CHAT_RESPONSE_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export type ChatResponseCacheStatus = 'hit' | 'miss' | 'store_failed';
 
-const CHAT_RESPONSE_CACHE_PREFIX = 'chat_response_cache_v1';
+// Bump this when the structured response contract, editorial rules, or
+// retrieval behavior changes enough to invalidate previously stored responses.
+export const CHAT_RESPONSE_CACHE_CONTRACT_VERSION = '2026-04-19-r1-structured-response-v1';
+
+const CHAT_RESPONSE_CACHE_PREFIX = `chat_response_cache:${CHAT_RESPONSE_CACHE_CONTRACT_VERSION}`;
 
 export function normalizeChatResponseCacheText(value: string): string {
   return value
@@ -18,7 +22,9 @@ export async function buildChatResponseCacheKey(
   messages: { role: string; content: string }[],
   responseMode: string,
 ): Promise<{ queryHash: string; normalizedQuery: string }> {
-  const historyString = messages.map(m => `${m.role}:${m.content}`).join('|||');
+  const historyString = messages
+    .map((message) => `${message.role}:${normalizeChatResponseCacheText(message.content)}`)
+    .join('|||');
   const normalizedQuery = normalizeChatResponseCacheText(historyString);
   
   const digest = await crypto.subtle.digest(

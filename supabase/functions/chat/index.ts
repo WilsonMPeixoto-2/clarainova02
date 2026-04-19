@@ -20,9 +20,11 @@ import {
   type QueryEmbeddingCacheStatus,
 } from "./embedding-cache.ts";
 import {
+  CHAT_RESPONSE_CACHE_CONTRACT_VERSION,
   buildChatResponseCacheKey,
   buildChatResponseCacheExpiryIso,
   isChatResponseCacheExpired,
+  type ChatResponseCacheStatus,
 } from "./response-cache.ts";
 import {
   addStageTiming,
@@ -70,6 +72,7 @@ import {
 import {
   buildGroundedReferences,
   claraResponseJsonSchema,
+  claraStructuredResponseSchema,
   parseStructuredResponsePayload,
   responseHasInternalProcessLeakage,
   renderStructuredResponseToPlainText,
@@ -1655,6 +1658,8 @@ interface TelemetryContext {
   streamInitTimeoutMs: number | null;
   leakageRepairTimeoutMs: number | null;
   providerUsage: ChatProviderUsage | null;
+  responseCacheStatus: ChatResponseCacheStatus | null;
+  responseCacheContractVersion: string | null;
 }
 
 function buildTimingBudgetMetadata(ctx: TelemetryContext) {
@@ -1679,10 +1684,13 @@ async function recordTelemetry(
   responseText: string,
   modelName: string,
   citationsCount: number,
-  outputMode: 'structured' | 'stream',
+  outputMode: 'structured' | 'stream' | 'cache',
 ): Promise<void> {
-  const responseStatus = ctx.retrievalMode === 'model_grounded' ? 'answered' : 'partial';
-  const usedRag = ctx.retrievalMode === 'model_grounded';
+  const servedFromResponseCache = ctx.responseCacheStatus === 'hit';
+  const responseStatus = ctx.retrievalMode === 'model_grounded' || servedFromResponseCache
+    ? 'answered'
+    : 'partial';
+  const usedRag = ctx.retrievalMode === 'model_grounded' || servedFromResponseCache;
   const totalLatency = Date.now() - ctx.requestStartedAt;
   const promptEstimate = ctx.promptTelemetry.totalPromptTokens;
   const responseEstimate = estimateTokenCount(responseText);
@@ -1722,6 +1730,8 @@ async function recordTelemetry(
         search_mode: ctx.searchMode,
         query_embedding_cache_status: ctx.queryEmbeddingCacheStatus,
         expanded_query_embedding_cache_status: ctx.expandedQueryEmbeddingCacheStatus,
+        response_cache_status: ctx.responseCacheStatus,
+        response_cache_contract_version: ctx.responseCacheContractVersion,
         rag_quality_score: ctx.ragQualityScore,
         expanded_query: ctx.expandedQuery,
         source_target: ctx.sourceTargetLabel,
@@ -1766,9 +1776,22 @@ async function recordTelemetry(
         response_status: responseStatus,
         output_mode: outputMode,
         response_mode: ctx.responseMode,
+        response_cache_status: ctx.responseCacheStatus,
+        response_cache_contract_version: ctx.responseCacheContractVersion,
       },
     },
   ];
+
+  if (ctx.responseCacheStatus === 'hit') {
+    logEntries.push({
+      event_type: 'response_cache_hit',
+      metadata: {
+        request_id: ctx.requestId,
+        response_mode: ctx.responseMode,
+        response_cache_contract_version: ctx.responseCacheContractVersion,
+      },
+    });
+  }
 
   if (ctx.knowledgeContext) {
     logEntries.push({
@@ -2073,40 +2096,106 @@ Deno.serve(async (req) => {
     }
 
     // --- CACHE DE RESPOSTAS (M2) ---
+    const lastUserMessage = [...chatMessages].reverse().find((m) => m.role === 'user');
+    const normalizedQuery = lastUserMessage ? normalizeQueryText(lastUserMessage.content) : '';
+    const intentLabel = inferIntentLabel(normalizedQuery);
+    const { topicLabel, subtopicLabel } = inferTopicLabels(normalizedQuery);
+    const sourceTarget: SourceTargetRoute | null = lastUserMessage ? detectSourceTarget(lastUserMessage.content) : null;
     const { queryHash, normalizedQuery: cacheNormalizedQuery } = await buildChatResponseCacheKey(chatMessages, responseMode);
     try {
       const { data: cachedResponse, error: cacheLookupError } = await supabase
         .from('chat_response_cache')
         .select('response_payload, hits, expires_at')
         .eq('query_hash', queryHash)
-        .maybeSingle<{ response_payload: any; hits: number; expires_at: string }>();
+        .maybeSingle<{ response_payload: unknown; hits: number; expires_at: string | null }>();
 
       if (!cacheLookupError && cachedResponse && !isChatResponseCacheExpired(cachedResponse.expires_at)) {
-        void supabase.from('chat_response_cache').update({
-          hits: cachedResponse.hits + 1,
-          last_hit_at: new Date().toISOString()
-        }).eq('query_hash', queryHash);
+        const cachedResponseResult = claraStructuredResponseSchema.safeParse(cachedResponse.response_payload);
 
-        return new Response(
-          JSON.stringify({
-            kind: 'clara_structured_response',
-            response: cachedResponse.response_payload,
-            plainText: renderStructuredResponseToPlainText(cachedResponse.response_payload),
-          }),
-          { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
-        );
+        if (!cachedResponseResult.success) {
+          console.warn('Response cache payload invalid; bypassing cached row.', cachedResponseResult.error.flatten());
+        } else {
+          const cachedStructuredResponse = cachedResponseResult.data;
+          const cachedPlainText = renderStructuredResponseToPlainText(cachedStructuredResponse);
+          const cachePromptTelemetry = buildPromptTelemetry({
+            systemPrompt: '',
+            responseModePrompt: '',
+            retrievalQualityPrompt: '',
+            sourceTargetPrompt: '',
+            knowledgeContext: '',
+            messages: chatMessages,
+          });
+
+          const cacheTelemetryCtx: TelemetryContext = {
+            supabase,
+            requestId,
+            requestStartedAt,
+            queryText: lastUserMessage?.content ?? cacheNormalizedQuery,
+            normalizedQuery,
+            intentLabel,
+            topicLabel,
+            subtopicLabel,
+            systemPromptWithContext: '',
+            chatMessages,
+            retrievalMode: 'response_cache_hit',
+            retrievalTopScore: 1,
+            retrievalSources: [],
+            searchResultCount: 0,
+            selectedChunkIds: [],
+            selectedDocumentIds: [],
+            searchMetricId: null,
+            knowledgeContext: '',
+            responseMode,
+            ragQualityScore: cachedStructuredResponse.analiseDaResposta.finalConfidence ?? null,
+            expandedQuery: null,
+            sourceTargetLabel: sourceTarget?.label ?? null,
+            sourceTargetStatus: null,
+            stageTimings: createChatStageTimings(),
+            promptTelemetry: cachePromptTelemetry,
+            providerUsage: null,
+            queryEmbeddingModel: 'not_executed',
+            searchMode: 'response_cache_hit',
+            queryEmbeddingCacheStatus: null,
+            expandedQueryEmbeddingCacheStatus: null,
+            budgetTotalMs: REQUEST_TIME_BUDGET_MS,
+            budgetElapsedMs: timeBudgetTracker.elapsedMs(),
+            budgetRemainingMs: timeBudgetTracker.remainingMs(),
+            structuredSkippedForBudget: false,
+            structuredTimeoutMs: null,
+            streamInitTimeoutMs: null,
+            leakageRepairTimeoutMs: null,
+            responseCacheStatus: 'hit',
+            responseCacheContractVersion: CHAT_RESPONSE_CACHE_CONTRACT_VERSION,
+          };
+
+          void recordTelemetry(
+            cacheTelemetryCtx,
+            cachedPlainText,
+            'response_cache_hit',
+            cachedStructuredResponse.referenciasFinais.length,
+            'cache',
+          ).catch((err) => console.error('Telemetry error (cache hit):', err));
+
+          void supabase.from('chat_response_cache').update({
+            hits: cachedResponse.hits + 1,
+            last_hit_at: new Date().toISOString()
+          }).eq('query_hash', queryHash);
+
+          return new Response(
+            JSON.stringify({
+              kind: 'clara_structured_response',
+              response: cachedStructuredResponse,
+              plainText: cachedPlainText,
+            }),
+            { headers: { ...requestHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
     } catch (err) {
       console.warn('Response cache lookup failed (non-fatal):', err);
     }
 
     // --- GUARDRAILS ---
-    const lastUserMessage = [...chatMessages].reverse().find((m) => m.role === 'user');
-    const normalizedQuery = lastUserMessage ? normalizeQueryText(lastUserMessage.content) : '';
-    const intentLabel = inferIntentLabel(normalizedQuery);
-    const { topicLabel, subtopicLabel } = inferTopicLabels(normalizedQuery);
-    const sourceTarget: SourceTargetRoute | null = lastUserMessage ? detectSourceTarget(lastUserMessage.content) : null;
-
     if (lastUserMessage) {
       const guardrailCheck = checkGuardrails(lastUserMessage.content);
       if (guardrailCheck.blocked) {
@@ -2605,6 +2694,8 @@ REESCRITA OBRIGATORIA:
         structuredTimeoutMs: structuredTimeoutMsUsed,
         streamInitTimeoutMs: streamInitTimeoutMsUsed,
         leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
+        responseCacheStatus: 'miss',
+        responseCacheContractVersion: CHAT_RESPONSE_CACHE_CONTRACT_VERSION,
       };
 
       await recordTelemetry(
@@ -2626,7 +2717,23 @@ REESCRITA OBRIGATORIA:
         hits: 1,
         last_hit_at: new Date().toISOString()
       }, { onConflict: 'query_hash' }).then(({ error }) => {
-        if (error) console.warn('Response cache store error:', error);
+        if (error) {
+          console.warn('Response cache store error:', error);
+          void supabase.from('usage_logs').insert({
+            event_type: 'response_cache_store_failed',
+            metadata: {
+              request_id: requestId,
+              response_mode: responseMode,
+              response_cache_contract_version: CHAT_RESPONSE_CACHE_CONTRACT_VERSION,
+              query_hash: queryHash,
+              message: error.message,
+            },
+          }).then(({ error: usageLogError }) => {
+            if (usageLogError) {
+              console.error('Usage log error (response_cache_store_failed):', usageLogError);
+            }
+          });
+        }
       });
 
       return new Response(
@@ -2751,6 +2858,8 @@ REESCRITA OBRIGATORIA:
             structuredTimeoutMs: structuredTimeoutMsUsed,
             streamInitTimeoutMs: streamInitTimeoutMsUsed,
             leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
+            responseCacheStatus: 'miss',
+            responseCacheContractVersion: CHAT_RESPONSE_CACHE_CONTRACT_VERSION,
           };
 
           await recordTelemetry(
@@ -2808,6 +2917,8 @@ REESCRITA OBRIGATORIA:
           structuredTimeoutMs: structuredTimeoutMsUsed,
           streamInitTimeoutMs: streamInitTimeoutMsUsed,
           leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
+          responseCacheStatus: 'miss',
+          responseCacheContractVersion: CHAT_RESPONSE_CACHE_CONTRACT_VERSION,
         };
 
         await recordTelemetry(
@@ -2928,6 +3039,8 @@ REESCRITA OBRIGATORIA:
         structuredTimeoutMs: structuredTimeoutMsUsed,
         streamInitTimeoutMs: streamInitTimeoutMsUsed,
         leakageRepairTimeoutMs: leakageRepairTimeoutMsUsed,
+        responseCacheStatus: 'miss',
+        responseCacheContractVersion: CHAT_RESPONSE_CACHE_CONTRACT_VERSION,
       };
 
       void readSseText(telemetryStream)
