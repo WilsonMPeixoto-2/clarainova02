@@ -40,8 +40,8 @@
 
 ## Modelos Gemini declarados no codigo
 
-- Geracao principal do chat: `gemini-3.1-flash-lite-preview`
-- Fallback gerativo do chat: `gemini-3.1-pro-preview`
+- Geracao principal do chat: `gemini-3.1-pro-preview`
+- Fallback gerativo do chat: `gemini-3.1-flash-lite-preview`
 - Embedding de consulta e documento: `gemini-embedding-2-preview`
 - Dimensionalidade vetorial atual: `768`
 
