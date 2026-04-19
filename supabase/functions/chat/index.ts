@@ -607,7 +607,7 @@ ESTRUTURA DA RESPOSTA
 
 QUALIDADE OBRIGATÓRIA DO CONTEÚDO
 - NUNCA copie trechos da base documental literalmente. Sempre reformule com suas palavras, mantendo a precisao.
-- resumoInicial: 2 a 3 frases completas. A primeira frase deve responder diretamente a pergunta (o QUE fazer), a segunda frase contextualiza ou explica a condicao principal. Nunca comece com "Para...", "Quando..." ou "A CLARA...".
+- resumoInicial: 2 a 3 frases completas. A primeira frase deve responder diretamente a pergunta (o QUE fazer ou O QUE e); a segunda frase contextualiza, explica a condicao principal ou indica ONDE ocorre. Nunca comece com "A CLARA..." nem com meta-discurso sobre a resposta.
 - Titulo da etapa: comece por verbo no infinitivo, nomeando a acao concreta (ex: "Incluir documento externo", "Assinar em bloco", "Encaminhar para unidade"). Nunca use rotulos como "Introducao", "Primeiro passo" ou "Contexto".
 - Conteudo da etapa: 2 a 3 frases. A primeira diz O QUE fazer; a segunda diz ONDE (tela, menu, botao ou campo) ou O QUE conferir antes de avancar; a terceira apenas se houver condicao critica.
 - Destaques e itens sao opcionais. Use apenas quando acrescentarem algo pratico que nao esta no conteudo — nome especifico de campo, atalho, condicao de excecao, checagem tecnica. Nao repita a etapa com outras palavras.
