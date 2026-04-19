@@ -1824,6 +1824,27 @@
       linear-gradient(180deg, hsl(var(--surface-1) / 0.98), hsl(var(--surface-0) / 0.96));
     box-shadow: -24px 0 64px hsl(var(--shadow) / 0.42);
     overflow: hidden;
+    container-type: inline-size;
+    container-name: chat-shell;
+  }
+
+  @container chat-shell (max-width: 400px) {
+    .chat-message-assistant {
+      font-size: 0.93rem;
+    }
+    .clara-prose {
+      font-size: 0.94rem;
+    }
+    .chat-step-body {
+      font-size: 0.97rem;
+    }
+    .chat-step-list,
+    .chat-observation-list {
+      font-size: 0.95rem;
+    }
+    .chat-response-summary {
+      font-size: 1rem;
+    }
   }
 
 .chat-shell::before {
@@ -2641,6 +2662,8 @@
   .chat-structured-response {
     display: grid;
     gap: 1rem;
+    max-width: 720px;
+    margin-inline: auto;
   }
 
 .chat-structured-response[data-response-mode='direto'] {
@@ -2648,7 +2671,7 @@
 }
 
 .chat-structured-response[data-response-mode='didatico'] {
-  gap: 1.1rem;
+  gap: 1.15rem;
 }
 
   .chat-response-intro {
@@ -3195,7 +3218,7 @@
 
   .chat-step-body {
     font-size: 0.95rem;
-    line-height: 1.72;
+    line-height: 1.78;
     color: hsl(var(--text-secondary));
   }
 
@@ -3223,7 +3246,7 @@
     padding-left: 1.15rem;
     color: hsl(var(--text-secondary));
     font-size: 0.92rem;
-    line-height: 1.68;
+    line-height: 1.74;
   }
 
   .chat-step-list li::marker {
@@ -3272,6 +3295,9 @@
     border: 1px solid hsl(var(--stroke) / 0.75);
     background: hsl(var(--surface-1) / 0.45);
     padding: 0.9rem 1rem;
+    margin-top: 0.35rem;
+    border-top: 1px solid hsl(var(--stroke) / 0.28);
+    padding-top: 1.1rem;
   }
 
   .chat-observation-list {
@@ -3280,7 +3306,7 @@
     padding-left: 1rem;
     color: hsl(var(--text-secondary));
     font-size: 0.92rem;
-    line-height: 1.68;
+    line-height: 1.74;
   }
 
   .chat-decision-card,
