@@ -515,6 +515,9 @@ const ChatSheet = () => {
   const composerSupportCopy = hasMessages
     ? 'Referencias e cautelas aparecem ao final sempre que houver base aplicavel.'
     : 'Voce pode comecar com uma pergunta curta ou colar um contexto maior para eu organizar a orientacao.';
+  const showHeaderActionLabels = !isMobile && resolvedPanelWidth >= 1280;
+  const showSizeControlLabel = !isMobile && resolvedPanelWidth >= 1120;
+  const isDenseDesktopHeader = !isMobile && hasMessages && resolvedPanelWidth < 1120;
   const inputPlaceholder = isPreviewMode
     ? responseMode === 'direto'
       ? 'Pergunte para experimentar uma resposta mais objetiva nesta demonstração da CLARA...'
@@ -592,7 +595,7 @@ const ChatSheet = () => {
               </div>
             )}
 
-            <div className={`chat-header-surface flex items-center justify-between gap-3 px-4 py-4 border-b border-[hsl(var(--border-subtle))] md:px-5 ${hasMessages ? 'is-compact' : ''}`}>
+            <div className={`chat-header-surface flex items-center justify-between gap-3 px-4 py-4 border-b border-[hsl(var(--border-subtle))] md:px-5 ${hasMessages ? 'is-compact' : ''} ${isDenseDesktopHeader ? 'is-condensed' : ''}`.trim()}>
               <div className="flex items-center gap-3 min-w-0">
                 <span className="chat-brand-mark inline-flex items-center justify-center w-10 h-10 rounded-full shrink-0">
                   <ClaraMonogram className="h-6 w-6" title="" />
@@ -609,10 +612,10 @@ const ChatSheet = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className={`chat-header-actions ${isDenseDesktopHeader ? 'is-condensed' : ''}`.trim()}>
                 {!isMobile && (
-                  <div className="chat-size-control" aria-label="Tamanho da janela">
-                    <span className="chat-size-control-label">Tamanho</span>
+                  <div className={`chat-size-control ${showSizeControlLabel ? '' : 'is-condensed'}`.trim()} aria-label="Tamanho da janela">
+                    {showSizeControlLabel && <span className="chat-size-control-label">Tamanho</span>}
                     <div className="chat-size-control-options" role="group" aria-label="Selecionar tamanho da janela">
                       {CHAT_PANEL_PRESETS.map((preset) => {
                         const isActive = panelMode === preset.mode && customWidth === null;
@@ -655,7 +658,7 @@ const ChatSheet = () => {
                       className="is-prominent"
                       label="Exportar conversa em PDF"
                       visibleLabel="PDF"
-                      showLabel={!isMobile}
+                      showLabel={showHeaderActionLabels}
                     >
                       {isExportingPdf ? <CircleNotch size={16} className="animate-spin" /> : <DownloadSimple size={16} />}
                     </ChatHeaderActionButton>
@@ -666,7 +669,7 @@ const ChatSheet = () => {
                       className="is-secondary"
                       label="Imprimir conversa"
                       visibleLabel="Imprimir"
-                      showLabel={!isMobile}
+                      showLabel={showHeaderActionLabels}
                     >
                       {isPrintingPdf ? <CircleNotch size={16} className="animate-spin" /> : <Printer size={16} />}
                     </ChatHeaderActionButton>
@@ -679,7 +682,7 @@ const ChatSheet = () => {
                     className="is-quiet"
                     label="Limpar conversa"
                     visibleLabel="Limpar"
-                    showLabel={!isMobile}
+                    showLabel={showHeaderActionLabels}
                   >
                     <Trash size={16} />
                   </ChatHeaderActionButton>

@@ -10,6 +10,7 @@ import { SITE_CONTACT_EMAIL, SITE_CONTACT_MAILTO, SITE_NAME } from '@/lib/site-i
 
 type NavItem = {
   label: string;
+  desktopLabel?: string;
   note?: string;
   to?: string;
   href?: string;
@@ -31,7 +32,8 @@ const Header = () => {
   });
 
   const navLinks: NavItem[] = [
-    { label: 'Perguntas frequentes', to: '/#faq' },
+    { label: 'Funcionalidades', desktopLabel: 'Funcionalidades', to: '/#features', note: 'Capacidades e casos de uso' },
+    { label: 'Perguntas frequentes', desktopLabel: 'FAQ', to: '/#faq' },
     { label: 'Política de Privacidade', to: '/privacidade', note: 'Uso e proteção de dados' },
     { label: 'Termos de Uso', to: '/termos', note: 'Condições de acesso ao serviço' },
     { label: 'Contato', href: SITE_CONTACT_MAILTO, note: SITE_CONTACT_EMAIL },
@@ -76,14 +78,22 @@ const Header = () => {
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center justify-center">
-              <nav className="flex items-center gap-8">
+              <nav className="header-nav" aria-label="Navegação principal">
                 {navLinks.map((link) => {
-                  const target = link.to ?? link.href ?? '/';
-                  const baseClasses = "text-[13px] uppercase tracking-[0.05em] font-medium text-foreground/75 hover:text-primary transition-colors duration-200";
+                  const isActive = link.to ? isActiveLink(link.to) : false;
+                  const desktopLabel = link.desktopLabel ?? link.label;
+                  const className = `header-nav-link ${isActive ? 'is-active' : ''}`.trim();
                   return link.to ? (
-                    <Link key={link.label} to={link.to} className={baseClasses}>{link.label}</Link>
+                    <Link
+                      key={link.label}
+                      to={link.to}
+                      className={className}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      {desktopLabel}
+                    </Link>
                   ) : (
-                    <a key={link.label} href={link.href} className={baseClasses}>{link.label}</a>
+                    <a key={link.label} href={link.href} className={className}>{desktopLabel}</a>
                   );
                 })}
               </nav>

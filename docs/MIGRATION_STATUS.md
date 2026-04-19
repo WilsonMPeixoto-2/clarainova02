@@ -16,8 +16,8 @@ O estado real auditado em `origin/main @ 6426b33ceaa0d08336a23daad03c0fcba2f2514
 | Corpus remoto | saudável |
 | Caches | implementados e ativos |
 | Continuidade oficial | reconciliada em `2026-04-19`, após drift relevante |
-| Baseline local | `npm test` e `npm run build` green; `npm run validate` ainda falha no lint |
-| Fechamento final | pendente de governança, Supabase remoto e cache |
+| Baseline local | `npm run validate` green, com apenas um warning nao bloqueante |
+| Fechamento final | pendente de limpeza remota final e housekeeping residual |
 
 ## O que está confirmado hoje
 
@@ -25,8 +25,9 @@ O estado real auditado em `origin/main @ 6426b33ceaa0d08336a23daad03c0fcba2f2514
 
 - home pública forte, com identidade visual própria
 - posicionamento transparente: projeto autoral, não canal oficial
-- FAQ, páginas legais e footer coerentes com esse posicionamento
+- FAQ, paginas legais e footer coerentes com esse posicionamento
 - abertura do chat por CTA direto e por query string
+- header desktop agora expõe `Funcionalidades`, reduzindo a dependência exclusiva do scroll
 
 ### Chat
 
@@ -39,6 +40,7 @@ O estado real auditado em `origin/main @ 6426b33ceaa0d08336a23daad03c0fcba2f2514
 - cópia de resposta
 - feedback estruturado com persistência no backend
 - boa adaptação mobile e desktop
+- cabeçalho do chat agora condensa rótulos em larguras intermediárias para reduzir ruído visual
 
 ### Backend do chat
 
@@ -59,6 +61,12 @@ O estado real auditado em `origin/main @ 6426b33ceaa0d08336a23daad03c0fcba2f2514
 ### Query expansion
 
 - **desligada intencionalmente** no runtime atual
+
+### Response cache
+
+- governanca operacional formalizada em `docs/response-cache-governance.md`
+- `cache hit` agora entra na telemetria
+- contrato atual versionado por `CHAT_RESPONSE_CACHE_CONTRACT_VERSION`
 
 ## Estado remoto auditado
 
@@ -97,14 +105,7 @@ Leitura correta desse quadro:
 
 ## Pendências reais ainda abertas
 
-### 1. Baseline local
-
-`npm run validate` ainda falha por:
-
-- `@typescript-eslint/no-explicit-any` em `supabase/functions/chat/index.ts`
-- warning de `react-refresh/only-export-components` em `src/components/providers/SmoothScrollProvider.tsx`
-
-### 2. Supabase remoto
+### 1. Supabase remoto
 
 Ainda existem leftovers de template:
 
@@ -114,15 +115,12 @@ Ainda existem leftovers de template:
 
 Essas estruturas não fazem parte do produto e precisam ser removidas ou explicitamente justificadas.
 
-### 3. Governança do response cache
+### 2. Housekeeping tecnico
 
-O cache de respostas está funcionando, mas ainda faltam:
+- warning nao bloqueante de `react-refresh/only-export-components` em `src/components/providers/SmoothScrollProvider.tsx`
+- eventual comentario mais explicito sobre `service_role` na migration do `chat_response_cache`
 
-- política explícita de invalidação/versionamento
-- telemetria adequada para `cache hit`
-- documentação operacional consolidada
-
-### 4. Blockers externos
+### 3. Blockers externos
 
 - Google OAuth administrativo continua dependente de configuração externa
 - modelos Gemini de geração continuam em `preview`
@@ -139,10 +137,9 @@ Itens que já não descrevem corretamente o projeto atual:
 ## Próxima sequência recomendada
 
 1. fechar documentação pública e operacional restante
-2. corrigir o lint e recuperar `npm run validate`
-3. concluir auditoria/limpeza final do Supabase remoto
-4. formalizar governança do `chat_response_cache`
-5. aplicar ajuste pequeno de arquitetura pública da informação
+2. concluir auditoria/limpeza final do Supabase remoto
+3. decidir o tratamento final do warning residual de frontend
+4. só então abrir nova rodada maior de evolução
 
 ## Critério prático para travar versão
 
