@@ -26,6 +26,7 @@ describe("prepareKnowledgeDecision", () => {
     expect(decision.knowledgeContext).toContain("BASE DE CONHECIMENTO INTERNA");
     expect(decision.sources).toContain("Manual SEI.pdf - Página 12");
     expect(decision.topScore).toBeGreaterThan(0);
+    expect(decision.selectedChunkIds).toEqual([]);
   });
 
   it("returns knowledge context for model when retrieval is relevant", () => {
@@ -39,7 +40,8 @@ describe("prepareKnowledgeDecision", () => {
     ]);
 
     expect(decision.knowledgeContext).toContain("REFERENCIAS AUTORIZADAS");
-    expect(decision.knowledgeContext).toContain("[Referencia 1: Guia Pratico.pdf - Página 22]");
+    expect(decision.knowledgeContext).toContain("[Referencia 1: Guia Pratico.pdf - Página 22 | prioridade=primaria]");
+    expect(decision.knowledgeContext).toContain("prioridade=primaria");
   });
 
   it("prefers explicit section and page metadata when available", () => {
@@ -177,6 +179,38 @@ describe("prepareKnowledgeDecision", () => {
 
     expect(decision.references[0]?.documentName).toBe("Manual SEI-Rio.pdf");
     expect(decision.sources[0]).toContain("Manual SEI-Rio.pdf");
+  });
+
+  it("returns ranked chunk ids in the same order used for the packed context", () => {
+    const decision = prepareKnowledgeDecision("Como incluir documento externo no SEI-Rio?", [
+      {
+        id: "chunk-support",
+        document_id: "doc-support",
+        document_name: "Apoio rapido.pdf",
+        document_kind: "apoio",
+        document_authority_level: "supporting",
+        document_search_weight: 0.8,
+        document_topic_scope: "material_apoio",
+        similarity: 0.017,
+        content:
+          "Material resumido sobre documento externo no sistema, sem detalhamento oficial das etapas obrigatorias.",
+      },
+      {
+        id: "chunk-manual",
+        document_id: "doc-manual",
+        document_name: "Manual SEI-Rio.pdf",
+        document_kind: "manual",
+        document_authority_level: "official",
+        document_search_weight: 1.3,
+        document_topic_scope: "sei_rio_manual",
+        similarity: 0.015,
+        content:
+          "[Fonte: Manual SEI-Rio.pdf | Página: 21]\n\nPara incluir documento externo, abra o processo, acesse Incluir Documento, escolha Documento Externo e preencha os campos obrigatorios antes de confirmar.",
+      },
+    ]);
+
+    expect(decision.selectedChunkIds[0]).toBe("chunk-manual");
+    expect(decision.selectedDocumentIds).toContain("doc-manual");
   });
 
   it("guarantees migration guide and substitution decree coverage for transition coexistence questions", () => {

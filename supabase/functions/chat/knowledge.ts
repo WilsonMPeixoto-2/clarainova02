@@ -1,4 +1,7 @@
 export interface RetrievedChunk {
+  id?: string | null;
+  document_id?: string | null;
+  chunk_index?: number | null;
   content: string;
   similarity: number;
   document_name?: string | null;
@@ -30,12 +33,17 @@ export interface KnowledgeDecision {
   topScore: number;
   sources: string[];
   references: KnowledgeReference[];
+  selectedChunkIds: string[];
+  selectedDocumentIds: string[];
   retrievalQuality: RetrievalQualityInfo;
   sourceTargetLabel: string | null;
   sourceTargetStatus: "confirmed" | "weak" | null;
 }
 
 interface ParsedChunk {
+  id?: string | null;
+  documentId?: string | null;
+  chunkIndex?: number | null;
   content: string;
   similarity: number;
   documentName: string;
@@ -395,6 +403,9 @@ function parseChunk(chunk: RetrievedChunk): ParsedChunk {
   const sourceLabel = pageLabel ? `${sourceBase} - Página ${pageLabel}` : sourceBase;
 
   return {
+    id: chunk.id ?? null,
+    documentId: chunk.document_id ?? null,
+    chunkIndex: chunk.chunk_index ?? null,
     content: cleanContent,
     similarity: chunk.similarity,
     documentName,
@@ -632,14 +643,31 @@ function isRouteBoostEligible(entry: ScoredChunkEntry) {
     );
 }
 
+function resolveContextPriorityLabel(index: number) {
+  if (index === 0) return "primaria";
+  if (index <= 2) return "complementar";
+  return "apoio";
+}
+
 function buildKnowledgeContext(chunks: Array<ParsedChunk & { referenceId: number }>): string {
   const referenceList = chunks
     .map((chunk) => `${chunk.referenceId}. ${chunk.sourceLabel}`)
     .join("\n");
 
   const blocks = chunks.map(
-    (chunk) =>
-      `[Referencia ${chunk.referenceId}: ${chunk.sourceLabel}]\n${chunk.content}`
+    (chunk, index) => {
+      const priority = resolveContextPriorityLabel(index);
+      const metadata = [
+        `prioridade=${priority}`,
+        chunk.documentTopicScope ? `escopo=${chunk.documentTopicScope}` : null,
+        chunk.documentAuthorityLevel ? `autoridade=${chunk.documentAuthorityLevel}` : null,
+        chunk.sectionTitle ? `secao=${chunk.sectionTitle}` : null,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      return `[Referencia ${chunk.referenceId}: ${chunk.sourceLabel}${metadata ? ` | ${metadata}` : ""}]\n${chunk.content}`;
+    }
   );
 
   return `\n\n--- BASE DE CONHECIMENTO INTERNA ---
@@ -653,9 +681,12 @@ INSTRUCOES PARA USO DESTES TRECHOS:
 - Responda a pergunta do usuario sobre o uso do SEI-Rio, nao sobre o funcionamento interno da CLARA.
 - Ignore completamente qualquer trecho tecnico sobre backend, RAG, APIs, embeddings, telemetria ou infraestrutura.
 - Quando multiplos trechos abordam o mesmo procedimento, consolide em um unico passo a passo coerente e completo.
+- Para perguntas operacionais, use o trecho marcado como prioridade=primaria como espinha dorsal da resposta e recorra aos complementares apenas para conferir condicoes, nomes exatos de campos, excecoes ou fechamento.
+- Quando houver norma e manual/guia sobre o mesmo tema, use a norma para definir a regra e o manual/guia para explicar como executar.
 - Priorize o trecho mais especifico e atual quando houver sobreposicao entre fontes.
 - Se dois trechos se contradizem, sinalize a divergencia ao usuario com transparencia e priorize a fonte de maior autoridade.
 - Quando um trecho complementa outro (ex: um da visao geral e outro o detalhe), integre ambos em uma resposta fluida.
+- Nao deixe material de apoio dominar a resposta se houver manual, guia ou norma equivalente mais instrutivo.
 - Cite apenas os numeros das referencias autorizadas quando houver base suficiente.
 - Se os trechos nao sustentarem a resposta, admita a limitacao com transparencia.
 
@@ -833,6 +864,8 @@ export function prepareKnowledgeDecision(
       topScore: 0,
       sources: [],
       references: [],
+      selectedChunkIds: [],
+      selectedDocumentIds: [],
       retrievalQuality: emptyQuality,
       sourceTargetLabel: sourceTarget?.label ?? null,
       sourceTargetStatus: sourceTarget ? "weak" : null,
@@ -892,6 +925,16 @@ export function prepareKnowledgeDecision(
     topScore,
     sources,
     references,
+    selectedChunkIds: chunksWithReferences
+      .map((chunk) => chunk.id)
+      .filter((value): value is string => Boolean(value)),
+    selectedDocumentIds: Array.from(
+      new Set(
+        chunksWithReferences
+          .map((chunk) => chunk.documentId)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ),
     retrievalQuality: {
       confidenceTier,
       topScore,

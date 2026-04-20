@@ -9,6 +9,13 @@ export interface ChatConversationMessage {
   contextSummary?: ChatContextSummary | null;
 }
 
+export interface ContextualizedEmbeddingQuery {
+  queryText: string;
+  keywordQueryText: string;
+  embeddingQueryText: string;
+  isContextualized: boolean;
+}
+
 const MAX_SNIPPET_LENGTH = 280;
 const MAX_TITLE_LENGTH = 120;
 const MAX_SUMMARY_LENGTH = 220;
@@ -124,11 +131,13 @@ export function compactConversationSnippet(messages: ChatConversationMessage[]):
 export function buildContextualizedEmbeddingQuery(
   messages: ChatConversationMessage[],
   userMessage: string,
-) {
+): ContextualizedEmbeddingQuery {
   const normalizedUserMessage = compactWhitespace(userMessage);
   if (!normalizedUserMessage) {
     return {
       queryText: '',
+      keywordQueryText: '',
+      embeddingQueryText: '',
       isContextualized: false,
     };
   }
@@ -136,6 +145,8 @@ export function buildContextualizedEmbeddingQuery(
   if (!isLikelyContextualFollowUp(normalizedUserMessage)) {
     return {
       queryText: normalizedUserMessage,
+      keywordQueryText: normalizedUserMessage,
+      embeddingQueryText: normalizedUserMessage,
       isContextualized: false,
     };
   }
@@ -149,6 +160,8 @@ export function buildContextualizedEmbeddingQuery(
   if (!previousAssistantSummary) {
     return {
       queryText: normalizedUserMessage,
+      keywordQueryText: normalizedUserMessage,
+      embeddingQueryText: normalizedUserMessage,
       isContextualized: false,
     };
   }
@@ -158,14 +171,19 @@ export function buildContextualizedEmbeddingQuery(
     lastUserIndex >= 0 ? lastUserIndex : messages.length,
   );
 
-  const parts = [`pergunta_atual: ${normalizedUserMessage}`];
-  if (previousUserContent) {
-    parts.push(`pergunta_anterior: ${previousUserContent}`);
-  }
-  parts.push(`contexto_clara: ${formatContextSummary(previousAssistantSummary)}`);
+  const embeddingQueryText = [
+    normalizedUserMessage,
+    previousUserContent,
+    formatContextSummary(previousAssistantSummary),
+  ]
+    .filter(Boolean)
+    .map((part) => compactWhitespace(part))
+    .join('. ');
 
   return {
-    queryText: parts.join('\n'),
+    queryText: embeddingQueryText,
+    keywordQueryText: normalizedUserMessage,
+    embeddingQueryText,
     isContextualized: true,
   };
 }

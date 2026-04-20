@@ -1,0 +1,525 @@
+[
+  {
+    "id": "didatico_procedural",
+    "mode": "didatico",
+    "question": "Como incluir um documento externo em um processo no SEI.Rio?",
+    "status": 200,
+    "body": {
+      "kind": "clara_structured_response",
+      "response": {
+        "tituloCurto": "Inclusão de Documento Externo",
+        "resumoInicial": "A inclusão de documentos externos é utilizada quando você precisa inserir no SEI-Rio arquivos produzidos fora do sistema, sejam eles físicos (digitalizados) ou digitais. O formato recomendado para esses arquivos é o PDF, preferencialmente com reconhecimento de texto (OCR) para facilitar a pesquisa.",
+        "resumoCitacoes": [
+          1
+        ],
+        "modoResposta": "passo_a_passo",
+        "etapas": [
+          {
+            "numero": 1,
+            "titulo": "Acessar a inclusão de documentos",
+            "conteudo": "Abra o processo desejado e clique no ícone de incluir documento na barra superior. Na lista de tipos de documentos apresentada, escolha a opção 'Externo'.",
+            "itens": [],
+            "destaques": [
+              "Externo"
+            ],
+            "alerta": null,
+            "citacoes": [
+              1
+            ]
+          },
+          {
+            "numero": 2,
+            "titulo": "Preencher os dados básicos",
+            "conteudo": "Na tela de registro, preencha os campos obrigatórios para identificar o arquivo. É necessário informar o 'Tipo de Documento' e a 'Data do Documento'.",
+            "itens": [],
+            "destaques": [
+              "Tipo de Documento",
+              "Data do Documento"
+            ],
+            "alerta": null,
+            "citacoes": [
+              1
+            ]
+          },
+          {
+            "numero": 3,
+            "titulo": "Definir o formato e a conferência",
+            "conteudo": "No campo 'Formato', indique se o arquivo é 'Nato-digital' ou 'Digitalizado nesta unidade'. Caso seja um documento digitalizado por você, será obrigatório informar o tipo de conferência realizada.",
+            "itens": [
+              "Documento original",
+              "Cópia simples",
+              "Cópia autenticada administrativamente",
+              "Cópia autenticada por cartório"
+            ],
+            "destaques": [
+              "Formato",
+              "Nato-digital",
+              "Digitalizado nesta unidade"
+            ],
+            "alerta": "A escolha correta do tipo de conferência garante a validade administrativa do documento inserido.",
+            "citacoes": [
+              1,
+              3
+            ]
+          },
+          {
+            "numero": 4,
+            "titulo": "Anexar o arquivo e salvar",
+            "conteudo": "Defina o nível de acesso do documento, de acordo com as regras de sigilo da sua unidade. Por fim, clique no botão para anexar o arquivo PDF e salve a operação.",
+            "itens": [],
+            "destaques": [],
+            "alerta": null,
+            "citacoes": [
+              1,
+              3
+            ]
+          }
+        ],
+        "observacoesFinais": [
+          "Sempre prefira arquivos em formato PDF com reconhecimento de texto (OCR) para que o conteúdo possa ser pesquisado dentro do SEI-Rio.",
+          "Certifique-se de que o nível de acesso escolhido está correto antes de salvar, evitando expor dados sensíveis ou restringir indevidamente informações públicas."
+        ],
+        "termosDestacados": [
+          {
+            "texto": "Externo",
+            "tipo": "menu"
+          },
+          {
+            "texto": "Nato-digital",
+            "tipo": "conceito"
+          },
+          {
+            "texto": "Digitalizado nesta unidade",
+            "tipo": "conceito"
+          }
+        ],
+        "referenciasFinais": [
+          {
+            "id": 1,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "20",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 2,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "- Ações disponíveis em um processo 17 · camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "2",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 3,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia de migracao – SEI.Rio",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "5",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 4,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "60",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 5,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "- Relacionamento do Processo 45 · camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "2",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 6,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "30",
+            "url": null,
+            "dataAcesso": null
+          }
+        ],
+        "analiseDaResposta": {
+          "questionUnderstandingConfidence": 1,
+          "finalConfidence": 1,
+          "answerScopeMatch": "exact",
+          "ambiguityInUserQuestion": false,
+          "ambiguityInSources": false,
+          "clarificationRequested": false,
+          "clarificationQuestion": null,
+          "clarificationReason": null,
+          "internalExpansionPerformed": false,
+          "webFallbackUsed": false,
+          "userNotice": null,
+          "cautionNotice": null,
+          "ambiguityReason": null,
+          "comparedSources": [],
+          "prioritizedSources": [],
+          "processStates": []
+        }
+      },
+      "plainText": "Inclusão de Documento Externo\n\nA inclusão de documentos externos é utilizada quando você precisa inserir no SEI-Rio arquivos produzidos fora do sistema, sejam eles físicos (digitalizados) ou digitais. O formato recomendado para esses arquivos é o PDF, preferencialmente com reconhecimento de texto (OCR) para facilitar a pesquisa.\n\nPasso a passo guiado\n1. Acessar a inclusão de documentos\nAbra o processo desejado e clique no ícone de incluir documento na barra superior. Na lista de tipos de documentos apresentada, escolha a opção 'Externo'.\n\n2. Preencher os dados básicos\nNa tela de registro, preencha os campos obrigatórios para identificar o arquivo. É necessário informar o 'Tipo de Documento' e a 'Data do Documento'.\n\n3. Definir o formato e a conferência\nNo campo 'Formato', indique se o arquivo é 'Nato-digital' ou 'Digitalizado nesta unidade'. Caso seja um documento digitalizado por você, será obrigatório informar o tipo de conferência realizada.\n- Documento original\n- Cópia simples\n- Cópia autenticada administrativamente\n- Cópia autenticada por cartório\nObservacao: A escolha correta do tipo de conferência garante a validade administrativa do documento inserido.\n\n4. Anexar o arquivo e salvar\nDefina o nível de acesso do documento, de acordo com as regras de sigilo da sua unidade. Por fim, clique no botão para anexar o arquivo PDF e salve a operação.\n\nObservacoes finais\n- Sempre prefira arquivos em formato PDF com reconhecimento de texto (OCR) para que o conteúdo possa ser pesquisado dentro do SEI-Rio.\n- Certifique-se de que o nível de acesso escolhido está correto antes de salvar, evitando expor dados sensíveis ou restringir indevidamente informações públicas.\n\nTermos importantes\n- Externo\n- Nato-digital\n- Digitalizado nesta unidade\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 20.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Ações disponíveis em um processo 17 · camada núcleo · fonte oficial. p. 2.\n[3] Base documental CLARA. Guia de migracao – SEI.Rio: camada núcleo · fonte oficial. p. 5.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 60.\n[5] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Relacionamento do Processo 45 · camada núcleo · fonte oficial. p. 2.\n[6] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 30."
+    }
+  },
+  {
+    "id": "didatico_conceitual",
+    "mode": "didatico",
+    "question": "O que é um bloco de assinatura no SEI.Rio e quando eu devo usar?",
+    "status": 200,
+    "body": {
+      "kind": "clara_structured_response",
+      "response": {
+        "tituloCurto": "Bloco de Assinatura no SEI-Rio",
+        "resumoInicial": "O Bloco de Assinatura é uma funcionalidade do SEI-Rio criada para agrupar minutas de documentos, facilitando a visualização e a assinatura em lote. Ele deve ser utilizado sempre que você precisar coletar assinaturas de usuários lotados em outras unidades ou quando quiser organizar vários documentos para assinatura conjunta dentro da sua própria equipe. Esse recurso otimiza a rotina administrativa, permitindo que os responsáveis assinem diversos documentos simultaneamente sem precisar abrir um por um.",
+        "resumoCitacoes": [
+          1,
+          4
+        ],
+        "modoResposta": "passo_a_passo",
+        "etapas": [
+          {
+            "numero": 1,
+            "titulo": "Identificar os cenários de uso do Bloco de Assinatura",
+            "conteudo": "Você deve recorrer a essa ferramenta sempre que a instrução processual exigir a validação de autoridades ou colegas que não atuam no mesmo setor que o seu. Na interface do sistema, ao criar o bloco, você definirá se ele será de uso interno ou se será disponibilizado para fora, dependendo do preenchimento do campo de unidades destinatárias. É fundamental ter atenção a esse detalhe, pois ele muda a forma como o sistema encaminha o agrupamento.",
+            "itens": [
+              "Assinatura externa: Quando o documento precisa ser assinado por outra unidade, você deve indicar o setor de destino e usar a opção 'Incluir e Disponibilizar'.",
+              "Assinatura interna: Para assinaturas na própria unidade, não preencha o campo de destino, clique apenas em 'Incluir' e atribua o bloco ao colega responsável.",
+              "Agrupamento estratégico: Você pode usar a função 'Grupos de Blocos' para organizar conjuntos de blocos relacionados, facilitando o acompanhamento no Painel de Controle."
+            ],
+            "destaques": [
+              "Incluir e Disponibilizar",
+              "Incluir",
+              "Grupos de Blocos"
+            ],
+            "alerta": null,
+            "citacoes": [
+              1,
+              3,
+              5
+            ]
+          }
+        ],
+        "observacoesFinais": [
+          "Mesmo que você inclua apenas um documento no bloco, os demais documentos do processo continuarão visíveis para a unidade que o receber.",
+          "Caso o documento precise ser assinado por mais de uma pessoa da sua própria unidade, a recomendação oficial é inserir um comentário no bloco indicando quem mais deve assinar.",
+          "Os blocos podem receber sinalizações (Prioritários, Revisados ou Comentados) para facilitar a comunicação visual, mas lembre-se de que essas marcações só aparecem enquanto o bloco estiver na sua unidade."
+        ],
+        "termosDestacados": [
+          {
+            "texto": "Bloco de Assinatura",
+            "tipo": "conceito"
+          },
+          {
+            "texto": "Incluir e Disponibilizar",
+            "tipo": "botao"
+          },
+          {
+            "texto": "Incluir",
+            "tipo": "botao"
+          }
+        ],
+        "referenciasFinais": [
+          {
+            "id": 1,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "- Incluir em Bloco · camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "47",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 2,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "49",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 3,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "53",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 4,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "52",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 5,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "54",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 6,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "48",
+            "url": null,
+            "dataAcesso": null
+          }
+        ],
+        "analiseDaResposta": {
+          "questionUnderstandingConfidence": 1,
+          "finalConfidence": 1,
+          "answerScopeMatch": "exact",
+          "ambiguityInUserQuestion": false,
+          "ambiguityInSources": false,
+          "clarificationRequested": false,
+          "clarificationQuestion": null,
+          "clarificationReason": null,
+          "internalExpansionPerformed": false,
+          "webFallbackUsed": false,
+          "userNotice": null,
+          "cautionNotice": null,
+          "ambiguityReason": null,
+          "comparedSources": [],
+          "prioritizedSources": [],
+          "processStates": []
+        }
+      },
+      "plainText": "Bloco de Assinatura no SEI-Rio\n\nO Bloco de Assinatura é uma funcionalidade do SEI-Rio criada para agrupar minutas de documentos, facilitando a visualização e a assinatura em lote. Ele deve ser utilizado sempre que você precisar coletar assinaturas de usuários lotados em outras unidades ou quando quiser organizar vários documentos para assinatura conjunta dentro da sua própria equipe. Esse recurso otimiza a rotina administrativa, permitindo que os responsáveis assinem diversos documentos simultaneamente sem precisar abrir um por um.\n\nPasso a passo guiado\n1. Identificar os cenários de uso do Bloco de Assinatura\nVocê deve recorrer a essa ferramenta sempre que a instrução processual exigir a validação de autoridades ou colegas que não atuam no mesmo setor que o seu. Na interface do sistema, ao criar o bloco, você definirá se ele será de uso interno ou se será disponibilizado para fora, dependendo do preenchimento do campo de unidades destinatárias. É fundamental ter atenção a esse detalhe, pois ele muda a forma como o sistema encaminha o agrupamento.\n- Assinatura externa: Quando o documento precisa ser assinado por outra unidade, você deve indicar o setor de destino e usar a opção 'Incluir e Disponibilizar'.\n- Assinatura interna: Para assinaturas na própria unidade, não preencha o campo de destino, clique apenas em 'Incluir' e atribua o bloco ao colega responsável.\n- Agrupamento estratégico: Você pode usar a função 'Grupos de Blocos' para organizar conjuntos de blocos relacionados, facilitando o acompanhamento no Painel de Controle.\n\nObservacoes finais\n- Mesmo que você inclua apenas um documento no bloco, os demais documentos do processo continuarão visíveis para a unidade que o receber.\n- Caso o documento precise ser assinado por mais de uma pessoa da sua própria unidade, a recomendação oficial é inserir um comentário no bloco indicando quem mais deve assinar.\n- Os blocos podem receber sinalizações (Prioritários, Revisados ou Comentados) para facilitar a comunicação visual, mas lembre-se de que essas marcações só aparecem enquanto o bloco estiver na sua unidade.\n\nTermos importantes\n- Bloco de Assinatura\n- Incluir e Disponibilizar\n- Incluir\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Incluir em Bloco · camada núcleo · fonte oficial. p. 47.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 49.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 53.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 52.\n[5] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 54.\n[6] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 48."
+    }
+  },
+  {
+    "id": "direto_procedural",
+    "mode": "direto",
+    "question": "Como enviar um processo para outra unidade no SEI.Rio?",
+    "status": 200,
+    "body": {
+      "kind": "clara_structured_response",
+      "response": {
+        "tituloCurto": "Enviar Processo para Outra Unidade",
+        "resumoInicial": "No SEI-Rio, o envio de processos ocorre exclusivamente entre unidades, e não para usuários individuais. Ao enviar, o processo sai da sua tela de controle, a menos que você opte por mantê-lo aberto na sua unidade atual.",
+        "resumoCitacoes": [
+          1
+        ],
+        "modoResposta": "checklist",
+        "etapas": [
+          {
+            "numero": 1,
+            "titulo": "Informar a unidade de destino",
+            "conteudo": "Na tela de envio, adicione o setor desejado no campo Unidades. Caso precise acelerar o andamento, você pode fazer um envio simultâneo inserindo várias unidades, uma de cada vez.",
+            "itens": [
+              "O envio é feito apenas para unidades, nunca para logins individuais."
+            ],
+            "destaques": [],
+            "alerta": null,
+            "citacoes": [
+              1,
+              3
+            ]
+          },
+          {
+            "numero": 2,
+            "titulo": "Definir a permanência do processo",
+            "conteudo": "Decida se o processo deve continuar aberto na sua unidade após o envio. Essa funcionalidade permite que diferentes unidades exerçam atividades paralelamente, desde que as tarefas não dependam umas das outras.",
+            "itens": [],
+            "destaques": [],
+            "alerta": null,
+            "citacoes": [
+              1
+            ]
+          },
+          {
+            "numero": 3,
+            "titulo": "Confirmar o envio",
+            "conteudo": "Após a inclusão de todas as unidades de destino e a definição das opções de envio, clique no botão correspondente para concluir a tramitação.",
+            "itens": [],
+            "destaques": [],
+            "alerta": null,
+            "citacoes": [
+              3
+            ]
+          }
+        ],
+        "observacoesFinais": [
+          "Um processo enviado deixa de aparecer na tela 'Controle de Processos' da unidade remetente, mas ainda pode ser acessado por meio da Pesquisa ou do Acompanhamento Especial.",
+          "Os documentos inseridos pelas unidades de destino serão apresentados na árvore do processo em ordem cronológica, permitindo o acompanhamento da instrução."
+        ],
+        "termosDestacados": [
+          {
+            "texto": "Unidades",
+            "tipo": "menu"
+          },
+          {
+            "texto": "Controle de Processos",
+            "tipo": "menu"
+          }
+        ],
+        "referenciasFinais": [
+          {
+            "id": 1,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "34",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 2,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "18",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 3,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "35",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 4,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "- Enviar Processo 34 · camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "2",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 5,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+            "subtitulo": "camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "44",
+            "url": null,
+            "dataAcesso": null
+          },
+          {
+            "id": 6,
+            "tipo": "guia",
+            "autorEntidade": "Base documental CLARA",
+            "titulo": "Guia de migracao – SEI.Rio",
+            "subtitulo": "Selecione expedientes e processos para a migração em lote · camada núcleo · fonte oficial",
+            "local": null,
+            "editoraOuOrgao": null,
+            "ano": null,
+            "paginas": "2",
+            "url": null,
+            "dataAcesso": null
+          }
+        ],
+        "analiseDaResposta": {
+          "questionUnderstandingConfidence": 1,
+          "finalConfidence": 0.95,
+          "answerScopeMatch": "exact",
+          "ambiguityInUserQuestion": false,
+          "ambiguityInSources": false,
+          "clarificationRequested": false,
+          "clarificationQuestion": null,
+          "clarificationReason": null,
+          "internalExpansionPerformed": false,
+          "webFallbackUsed": false,
+          "userNotice": null,
+          "cautionNotice": null,
+          "ambiguityReason": null,
+          "comparedSources": [],
+          "prioritizedSources": [],
+          "processStates": []
+        }
+      },
+      "plainText": "Enviar Processo para Outra Unidade\n\nNo SEI-Rio, o envio de processos ocorre exclusivamente entre unidades, e não para usuários individuais. Ao enviar, o processo sai da sua tela de controle, a menos que você opte por mantê-lo aberto na sua unidade atual.\n\nChecklist rapido\n1. Informar a unidade de destino\nNa tela de envio, adicione o setor desejado no campo Unidades. Caso precise acelerar o andamento, você pode fazer um envio simultâneo inserindo várias unidades, uma de cada vez.\n- O envio é feito apenas para unidades, nunca para logins individuais.\n\n2. Definir a permanência do processo\nDecida se o processo deve continuar aberto na sua unidade após o envio. Essa funcionalidade permite que diferentes unidades exerçam atividades paralelamente, desde que as tarefas não dependam umas das outras.\n\n3. Confirmar o envio\nApós a inclusão de todas as unidades de destino e a definição das opções de envio, clique no botão correspondente para concluir a tramitação.\n\nConferencia final\n- Um processo enviado deixa de aparecer na tela 'Controle de Processos' da unidade remetente, mas ainda pode ser acessado por meio da Pesquisa ou do Acompanhamento Especial.\n- Os documentos inseridos pelas unidades de destino serão apresentados na árvore do processo em ordem cronológica, permitindo o acompanhamento da instrução.\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 34.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 18.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 35.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Enviar Processo 34 · camada núcleo · fonte oficial. p. 2.\n[5] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 44.\n[6] Base documental CLARA. Guia de migracao – SEI.Rio: Selecione expedientes e processos para a migração em lote · camada núcleo · fonte oficial. p. 2."
+    }
+  }
+]

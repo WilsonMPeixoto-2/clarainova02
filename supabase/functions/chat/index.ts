@@ -70,6 +70,7 @@ import {
   type SourceTargetRoute,
 } from "./knowledge.ts";
 import {
+  assessStructuredResponseQuality,
   buildGroundedReferences,
   claraResponseJsonSchema,
   claraStructuredResponseSchema,
@@ -119,6 +120,8 @@ const REQUEST_TIME_BUDGET_MS = 50_000;
 const MIN_STRUCTURED_REMAINING_MS = 20_000;
 const STREAM_FALLBACK_RESERVE_MS = 8_000;
 const STREAM_INIT_TIMEOUT_MS = 20_000;
+const MIN_EDITORIAL_REPAIR_REMAINING_MS = 8_000;
+const EDITORIAL_REPAIR_TIMEOUT_MS = 10_000;
 const MIN_LEAKAGE_REPAIR_REMAINING_MS = 8_000;
 const LEAKAGE_REPAIR_TIMEOUT_MS = 12_000;
 const MIN_GROUNDED_REPAIR_REMAINING_MS = 6_000;
@@ -406,10 +409,12 @@ function buildResponseModePrompt(responseMode: ChatResponseMode) {
 
 PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIRETO
 - Entregue a resposta de forma objetiva, indo direto ao ponto que resolve a duvida, sem perder a humanidade institucional.
+- Pense no modo direto como uma resposta rapida de alta precisao: pouco texto, mas nenhuma parte essencial pode ficar faltando.
 - resumoInicial: 2 frases. A primeira responde a pergunta; a segunda traz a condicao ou ressalva principal (somente se houver).
 - Quando houver procedimento: 2 a 4 etapas, nunca menos de 2 se envolver mais de um clique; nunca mais de 4 no modo direto (se precisar de mais, reagrupe em blocos logicos).
 - Conteudo da etapa: 1 a 2 frases. A primeira diz O QUE fazer; a segunda diz ONDE clicar/conferir quando for relevante. Evite explicar o "porque" exceto em cautela critica.
 - Itens e destaques: use apenas quando houver valor operacional concreto (nome de campo, atalho, condicao de excecao). Maximo 2 itens por etapa.
+- Feche com 1 ou 2 observacoes finais apenas quando funcionarem como conferencia final ou risco operacional real.
 - Quando a pergunta for conceitual, sem procedimento, omita etapas e responda apenas com resumoInicial (2-3 frases) e modoResposta="explicacao".
 - modoResposta="checklist" quando for sequencia operacional; "explicacao" para duvida conceitual; evite "passo_a_passo" e "combinado".
 - userNotice apenas quando alterar a decisao do usuario. cautionNotice apenas para risco real.
@@ -419,13 +424,15 @@ PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIRETO
   return `
 
 PREFERENCIA DE RESPOSTA DO USUARIO: MODO DIDATICO
-- Oriente o usuario como quem acompanha o caminho ao lado, explicando nao so o que fazer mas tambem o que conferir e por que aquilo importa.
+- Oriente o usuario como quem acompanha o caminho ao lado, com pensamento mais desenvolvido, explicando nao so o que fazer mas tambem o que conferir, por que aquilo importa e onde costumam surgir erros.
+- Pense no modo didatico como uma resposta estendida e conversacional, feita para ensinar um humano com segurança, nao como um checklist apenas um pouco maior.
 - Linguagem humana, acolhedora e institucional; nunca formato de relatorio. Evite rotulos como "veredito inicial", "explicacao principal", "detalhamento", "contexto util", "sintese".
 - resumoInicial: 2 a 3 frases completas. A primeira responde diretamente a pergunta; a segunda contextualiza o caminho principal; a terceira (opcional) sinaliza a condicao mais importante a observar.
 - Quando houver procedimento: 3 a 5 etapas em ordem de execucao. Se a sequencia real for maior, agrupe acoes correlatas em uma unica etapa, nunca invente etapas para "encher".
 - Conteudo da etapa: 2 a 3 frases. A primeira frase diz O QUE fazer na interface do SEI-Rio; a segunda diz ONDE (menu/botao/tela) ou O QUE conferir antes de avancar; a terceira apenas se houver cautela critica ou ponto que costuma gerar erro.
-- Destaques e itens: use so quando acrescentarem algo pratico que a etapa principal nao cobre (nome exato de campo, atalho, condicao de excecao). Maximo 3 itens por etapa.
+- Destaques e itens: use so quando acrescentarem algo pratico que a etapa principal nao cobre. Priorize checkpoints, obrigatorio vs recomendavel, erros comuns, nomes exatos de campo e condicoes de excecao. Maximo 3 itens por etapa.
 - Termos tecnicos: explique em 1 frase dentro do fluxo, sem criar blocos decorativos, glossarios ou cabecalhos laterais.
+- Observacoes finais: use 1 a 3 observacoes uteis como fechamento pedagógico, conferencia final ou alerta de erro frequente. Evite observacoes cosmeticas.
 - modoResposta="passo_a_passo" quando houver sequencia real; "explicacao" para duvida conceitual; "combinado" apenas quando for preciso separar um alerta final significativo.
 - Quando a pergunta for conceitual (ex: "o que e bloco de assinatura"), nao force etapas. Responda com resumoInicial expandido (3 frases) e modoResposta="explicacao". Se houver contexto operacional util, acrescente 1 unica etapa de esclarecimento.
 - userNotice e cautionNotice apenas quando mudarem a decisao do usuario ou houver risco operacional real.`;
@@ -446,6 +453,40 @@ function buildGenerationStrategy(options: {
     streamTemperature: options.responseMode === 'didatico' ? 0.45 : 0.3,
     streamTopP: options.responseMode === 'didatico' ? 0.95 : 0.88,
   };
+}
+
+function buildEditorialRepairPrompt(options: {
+  responseMode: ChatResponseMode;
+  intentLabel: string;
+  issues: string[];
+}) {
+  const issueBullets = options.issues.map((issue) => `- ${issue}`).join('\n');
+  const modeSpecificRules = options.responseMode === 'didatico'
+    ? `- Reescreva em MODO DIDATICO como uma orientacao conversacional, acolhedora e pedagogica, como se voce estivesse acompanhando a pessoa durante a execucao.
+- O resumo inicial precisa responder a pergunta, contextualizar o fluxo e explicar por que aquele caminho e o mais seguro.
+- Se houver procedimento real, entregue 2 a 4 etapas substantivas. Cada etapa precisa ter 2 ou 3 frases completas: acao, local/conferencia e, quando couber, erro comum ou criterio de decisao.
+- Use itens apenas para checkpoints operacionais, obrigatorio vs recomendavel, nomes exatos de campo ou excecoes relevantes.
+- Feche com 1 a 3 observacoes finais concretas, funcionando como conferencia final, risco comum ou criterio de validacao.
+- Se a pergunta for conceitual, nao fragmente sem necessidade: prefira explicacao corrida com no maximo 1 etapa opcional de aplicacao.`
+    : `- Reescreva em MODO DIRETO como uma resposta rapida de alta precisao: curta, clara e completa.
+- O resumo inicial precisa ter 2 frases completas: a primeira responde; a segunda traz a condicao, ressalva ou conferência principal.
+- Quando houver procedimento, use 2 ou 3 etapas curtas, mas cada etapa precisa fechar a ideia sem cortes nem reticencias.
+- Preserve objetividade, mas nao reduza a resposta a frases mecanicas ou checklists telegráficos.
+- Feche com 1 ou 2 observacoes finais apenas se ajudarem na decisao operacional.`;
+
+  const conceptualRule = options.intentLabel === 'conceito'
+    ? '\n- Esta pergunta e conceitual: explique o conceito de forma humana antes de falar de uso pratico.\n- Se nao existir uma sequencia real de execucao, use modoResposta="explicacao" e nao invente passo a passo.'
+    : '\n- Esta pergunta e operacional: priorize o passo a passo acionavel, nao definicoes abstratas.';
+
+  return `
+
+REESCRITA EDITORIAL OBRIGATORIA:
+- A resposta anterior ficou abaixo do padrao editorial esperado nestes pontos:
+${issueBullets}
+- Mantenha exatamente a mesma base factual e documental, mas aumente a qualidade cognitiva e pedagógica da resposta final.
+${modeSpecificRules}${conceptualRule}
+- Nao aumente texto por enfeite. Cada frase precisa ajudar o usuario a entender, decidir ou executar melhor.
+- Nao use meta-discurso sobre a propria resposta.`;
 }
 
 async function fetchKeywordSearchMatches(
@@ -617,11 +658,15 @@ ESTRUTURA DA RESPOSTA
 QUALIDADE OBRIGATÓRIA DO CONTEÚDO
 - NUNCA copie trechos da base documental literalmente. Sempre reformule com suas palavras, mantendo a precisao.
 - resumoInicial: 2 a 3 frases completas. A primeira frase deve responder diretamente a pergunta (o QUE fazer ou O QUE e); a segunda frase contextualiza, explica a condicao principal ou indica ONDE ocorre. Nunca comece com "A CLARA..." nem com meta-discurso sobre a resposta.
+- O usuario deve sentir que esta sendo orientado por alguem que entende o procedimento e quer ajuda-lo a executar com seguranca. Priorize clareza cognitiva, nao apenas conformidade estrutural.
 - Titulo da etapa: comece por verbo no infinitivo, nomeando a acao concreta (ex: "Incluir documento externo", "Assinar em bloco", "Encaminhar para unidade"). Nunca use rotulos como "Introducao", "Primeiro passo" ou "Contexto".
 - Conteudo da etapa: 2 a 3 frases. A primeira diz O QUE fazer; a segunda diz ONDE (tela, menu, botao ou campo) ou O QUE conferir antes de avancar; a terceira apenas se houver condicao critica.
+- Se a etapa ficar util demais apenas com "o que fazer", acrescente o POR QUE ou o QUE conferir antes de seguir. O objetivo e ensinar com seguranca, nao apenas enumerar cliques.
 - Destaques e itens sao opcionais. Use apenas quando acrescentarem algo pratico que nao esta no conteudo — nome especifico de campo, atalho, condicao de excecao, checagem tecnica. Nao repita a etapa com outras palavras.
+- Quando usar itens, prefira checkpoints operacionais, obrigatorio vs recomendavel, erros comuns e confirmacoes finais.
 - Prefira menos etapas com conteudo substancial a muitas etapas com uma unica frase cada. Se a sequencia for longa, divida em blocos logicos; nao transforme cada clique em uma etapa separada.
 - Se a pergunta for conceitual (ex: "o que e bloco de assinatura"), nao force etapas — use resumoInicial completo e, se houver, uma unica etapa de explicacao com modoResposta="explicacao".
+- No modo didatico, a resposta precisa soar dialogica, acolhedora e verdadeiramente explicativa, como uma orientacao com pensamento mais desenvolvido. No modo direto, a resposta precisa soar como consulta rapida de alta precisao: enxuta, mas completa.
 - Se a base documental mencionar telas, botoes ou menus especificos do SEI, inclua esses nomes exatos — sem inventar variacoes.
 - Citacoes: posicione a referencia logo apos a afirmacao que a fonte sustenta (resumoCitacoes para resumoInicial, citacoes da etapa para afirmacoes daquela etapa). Nunca deixe todas as citacoes apenas no bloco final.
 
@@ -764,12 +809,14 @@ function normalizeQueryText(value: string): string {
     .trim();
 }
 
-function inferIntentLabel(normalizedQuery: string): string {
+function inferIntentLabel(
+  normalizedQuery: string,
+): 'como_fazer' | 'onde_encontrar' | 'erro_sistema' | 'conceito' | 'rotina_operacional' | 'indefinido' {
   if (!normalizedQuery) return 'indefinido';
+  if (/(^|\b)(o que e|o que significa|conceito|diferenca|para que serve)\b/.test(normalizedQuery)) return 'conceito';
   if (/(como|passo a passo|etapas|procedimento|fazer|usar)/.test(normalizedQuery)) return 'como_fazer';
   if (/(onde|localizar|encontrar)/.test(normalizedQuery)) return 'onde_encontrar';
   if (/(erro|falha|mensagem|problema|nao consigo)/.test(normalizedQuery)) return 'erro_sistema';
-  if (/(o que e|o que significa|conceito|diferenca)/.test(normalizedQuery)) return 'conceito';
   return 'rotina_operacional';
 }
 
@@ -2283,7 +2330,8 @@ Deno.serve(async (req) => {
       try {
         let queryEmbeddingPayload: string | null = null;
         const contextualizedQuery = buildContextualizedEmbeddingQuery(chatMessages, lastUserMessage.content);
-        keywordQueryText = contextualizedQuery.queryText || lastUserMessage.content;
+        const embeddingQueryText = contextualizedQuery.embeddingQueryText || lastUserMessage.content;
+        keywordQueryText = contextualizedQuery.keywordQueryText || lastUserMessage.content;
 
         try {
           const embeddingStartedAt = Date.now();
@@ -2292,7 +2340,7 @@ Deno.serve(async (req) => {
             fetchOrCreateQueryEmbedding(
               supabase,
               ai,
-              keywordQueryText,
+              embeddingQueryText,
             ).finally(() => {
               addStageTiming(stageTimings, 'embeddingMs', Date.now() - embeddingStartedAt);
             }),
@@ -2310,7 +2358,7 @@ Deno.serve(async (req) => {
             if (expandedQueryText) {
               if (
                 normalizeQueryEmbeddingCacheText(expandedQueryText) ===
-                normalizeQueryEmbeddingCacheText(keywordQueryText)
+                normalizeQueryEmbeddingCacheText(embeddingQueryText)
               ) {
                 expandedQueryEmbeddingCacheStatus = queryEmbeddingCacheStatus;
               } else {
@@ -2463,14 +2511,14 @@ Deno.serve(async (req) => {
 
             matchedChunks = chunks;
             searchResultCount = chunks.length;
-            selectedChunkIds = chunks.map((chunk) => chunk.id);
-            selectedDocumentIds = Array.from(new Set(chunks.map((chunk) => chunk.document_id)));
             const decision = prepareKnowledgeDecision(
               lastUserMessage.content,
               chunks as RetrievedChunk[],
               sourceTarget,
             );
 
+            selectedChunkIds = decision.selectedChunkIds;
+            selectedDocumentIds = decision.selectedDocumentIds;
             retrievalSources = decision.sources;
             retrievalTopScore = decision.topScore;
             retrievalQuality = decision.retrievalQuality;
@@ -2490,8 +2538,18 @@ Deno.serve(async (req) => {
                     .in('id', selectedChunkIds.slice(0, 3));
 
                   if (chunkMeta && chunkMeta.length > 0) {
-                    const topChunk = chunkMeta.sort((a: { chunk_index: number }, b: { chunk_index: number }) => a.chunk_index - b.chunk_index)[0];
-                    const adjacentIndexes = [topChunk.chunk_index - 1, topChunk.chunk_index + 1].filter((i: number) => i >= 0);
+                    const metaById = new Map(
+                      chunkMeta.map((meta: { id: string; document_id: string; chunk_index: number }) => [meta.id, meta]),
+                    );
+                    const anchorChunk = selectedChunkIds
+                      .map((chunkId) => metaById.get(chunkId))
+                      .find((meta): meta is { id: string; document_id: string; chunk_index: number } => Boolean(meta));
+
+                    if (!anchorChunk) {
+                      throw new Error('No ranked chunk metadata found for adjacent enrichment.');
+                    }
+
+                    const adjacentIndexes = [anchorChunk.chunk_index - 1, anchorChunk.chunk_index + 1].filter((i: number) => i >= 0);
                     const existingIndexes = new Set(chunkMeta.map((c: { chunk_index: number }) => c.chunk_index));
                     const needed = adjacentIndexes.filter((i: number) => !existingIndexes.has(i));
 
@@ -2499,13 +2557,13 @@ Deno.serve(async (req) => {
                       const { data: adjacentChunks } = await supabase
                         .from('document_chunks')
                         .select('content, page_start, section_title, document_id')
-                        .eq('document_id', topChunk.document_id)
+                        .eq('document_id', anchorChunk.document_id)
                         .in('chunk_index', needed)
                         .eq('is_active', true)
                         .limit(2);
 
                       if (adjacentChunks && adjacentChunks.length > 0) {
-                        const docName = chunks?.find((c: HybridSearchChunk) => c.document_id === topChunk.document_id)?.document_name;
+                        const docName = chunks?.find((c: HybridSearchChunk) => c.document_id === anchorChunk.document_id)?.document_name;
                         const enrichedAdjacent = adjacentChunks.map((ac: { content: string; page_start?: number; section_title?: string }) => ({
                           content: ac.content,
                           document_name: docName || undefined,
@@ -2613,9 +2671,55 @@ Deno.serve(async (req) => {
         groundedReferenceProfile,
         usedRag: retrievalMode === "model_grounded",
         responseMode,
+        intentLabel,
       });
-      const hasInternalLeakage = responseHasInternalProcessLeakage(structuredResponse);
       addStageTiming(stageTimings, 'sanitizationMs', Date.now() - initialSanitizationStartedAt);
+
+      const initialQualityAssessment = assessStructuredResponseQuality(structuredResponse, {
+        responseMode,
+        intentLabel,
+      });
+
+      const editorialRepairRemainingMs = timeBudgetTracker.remainingMs() - STREAM_FALLBACK_RESERVE_MS;
+      if (
+        initialQualityAssessment.needsRepair &&
+        editorialRepairRemainingMs >= MIN_EDITORIAL_REPAIR_REMAINING_MS
+      ) {
+        const editorialRepairStartedAt = Date.now();
+        const editorialRepairPrompt = buildEditorialRepairPrompt({
+          responseMode,
+          intentLabel,
+          issues: initialQualityAssessment.issues,
+        });
+
+        const editorialRepairResult = await withTimeout(
+          generateStructuredWithFallback(
+            ai,
+            `${systemPromptWithContext}${editorialRepairPrompt}`,
+            chatMessages,
+            generationStrategy,
+          ),
+          Math.min(EDITORIAL_REPAIR_TIMEOUT_MS, editorialRepairRemainingMs),
+          'editorial_repair',
+        ).catch(() => null).finally(() => {
+          addStageTiming(stageTimings, 'generationMs', Date.now() - editorialRepairStartedAt);
+        });
+
+        if (editorialRepairResult) {
+          const editorialRepairSanitizationStartedAt = Date.now();
+          resolvedStructuredResult = editorialRepairResult;
+          structuredResponse = sanitizeStructuredResponse(editorialRepairResult.response, {
+            groundedReferences,
+            groundedReferenceProfile,
+            usedRag: retrievalMode === "model_grounded",
+            responseMode,
+            intentLabel,
+          });
+          addStageTiming(stageTimings, 'sanitizationMs', Date.now() - editorialRepairSanitizationStartedAt);
+        }
+      }
+
+      const hasInternalLeakage = responseHasInternalProcessLeakage(structuredResponse);
 
       if (hasInternalLeakage) {
         leakageRepairTimeoutMsUsed = timeBudgetTracker.leakageRepairTimeoutMs();
@@ -2654,6 +2758,7 @@ REESCRITA OBRIGATORIA:
             groundedReferenceProfile,
             usedRag: retrievalMode === "model_grounded",
             responseMode,
+            intentLabel,
           });
           addStageTiming(stageTimings, 'sanitizationMs', Date.now() - repairedSanitizationStartedAt);
         }
@@ -2828,6 +2933,7 @@ REESCRITA OBRIGATORIA:
             groundedReferenceProfile,
             usedRag: true,
             responseMode,
+            intentLabel,
           });
           const groundedRepairPlainText = renderStructuredResponseToPlainText(groundedRepairResponse);
           addStageTiming(stageTimings, 'sanitizationMs', Date.now() - groundedRepairSanitizationStartedAt);

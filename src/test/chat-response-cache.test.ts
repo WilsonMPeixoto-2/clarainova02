@@ -42,7 +42,7 @@ describe('chat response cache helpers', () => {
   it('tracks expiry and exposes the active contract version', () => {
     const expiresAt = buildChatResponseCacheExpiryIso(Date.UTC(2026, 3, 19, 12, 0, 0));
 
-    expect(CHAT_RESPONSE_CACHE_CONTRACT_VERSION).toBe('2026-04-19-r1-structured-response-v1');
+    expect(CHAT_RESPONSE_CACHE_CONTRACT_VERSION).toBe('2026-04-20-r4-editorial-quality-v3');
     expect(isChatResponseCacheExpired(expiresAt, Date.UTC(2026, 3, 19, 12, 0, 1))).toBe(false);
     expect(isChatResponseCacheExpired(expiresAt, Date.UTC(2026, 3, 20, 12, 0, 1))).toBe(true);
   });

@@ -25,9 +25,10 @@ describe('chat conversation context', () => {
     );
 
     expect(result.isContextualized).toBe(true);
-    expect(result.queryText).toContain('pergunta_atual: E se for para outra unidade?');
-    expect(result.queryText).toContain('pergunta_anterior: Como montar um bloco de assinatura no SEI-Rio?');
-    expect(result.queryText).toContain('contexto_clara: Bloco de assinatura no SEI-Rio:');
+    expect(result.keywordQueryText).toBe('E se for para outra unidade?');
+    expect(result.embeddingQueryText).toContain('E se for para outra unidade?');
+    expect(result.embeddingQueryText).toContain('Como montar um bloco de assinatura no SEI-Rio?');
+    expect(result.embeddingQueryText).toContain('Bloco de assinatura no SEI-Rio: Você pode montar o bloco');
   });
 
   it('keeps standalone procedural questions untouched', () => {
@@ -48,6 +49,8 @@ describe('chat conversation context', () => {
 
     expect(result.isContextualized).toBe(false);
     expect(result.queryText).toBe('Como incluir documento externo no SEI-Rio?');
+    expect(result.keywordQueryText).toBe('Como incluir documento externo no SEI-Rio?');
+    expect(result.embeddingQueryText).toBe('Como incluir documento externo no SEI-Rio?');
   });
 
   it('uses the structured summary in conversation snippets for expansion', () => {

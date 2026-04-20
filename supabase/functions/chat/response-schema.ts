@@ -5,6 +5,14 @@ import {
   buildEditorialSubtitle,
   type EditorialProfile,
 } from "./editorial.ts";
+export {
+  assessStructuredResponseQuality,
+  type ChatIntentLabel,
+  type ChatResponseMode,
+  type StructuredResponseQualityAssessment,
+  type StructuredResponseQualityIssue,
+} from "./response-quality.ts";
+import { assessStructuredResponseQuality, type ChatIntentLabel } from "./response-quality.ts";
 
 export const claraReferenceSchema = z.object({
   id: z.number().int().positive(),
@@ -300,27 +308,60 @@ function dedupeStrings(values: string[], limit: number) {
 function adaptStructuredResponseForMode(
   response: ClaraStructuredResponse,
   responseMode: ChatResponseMode,
+  intentLabel?: ChatIntentLabel,
 ): ClaraStructuredResponse {
   if (responseMode === "didatico") {
     const keepContextNotice = response.analiseDaResposta.clarificationRequested ||
       response.analiseDaResposta.answerScopeMatch === "weak" ||
       response.analiseDaResposta.answerScopeMatch === "insufficient" ||
       response.analiseDaResposta.webFallbackUsed;
-    const didacticMode = response.etapas.length > 0 ? "passo_a_passo" : "explicacao";
+    const isConceptualExplanatoryFlow =
+      intentLabel === "conceito" &&
+      response.etapas.length === 1 &&
+      response.modoResposta === "passo_a_passo";
+    const conceptualStep = isConceptualExplanatoryFlow ? response.etapas[0] : null;
+    const didacticMode = isConceptualExplanatoryFlow || response.etapas.length === 0
+      ? "explicacao"
+      : "passo_a_passo";
+    const didacticObservations = isConceptualExplanatoryFlow && conceptualStep
+      ? dedupeStrings(
+          [
+            conceptualStep.conteudo,
+            ...conceptualStep.itens.map((item) => takeSentences(item, 1, 220)),
+            conceptualStep.alerta ? takeFirstSentence(conceptualStep.alerta) : "",
+            ...response.observacoesFinais,
+          ].filter(Boolean),
+          3,
+        )
+      : dedupeStrings(response.observacoesFinais, 3);
+    const didacticSummary = isConceptualExplanatoryFlow && conceptualStep
+      ? takeSentences(
+          `${response.resumoInicial.trim()} ${conceptualStep.conteudo.trim()}`,
+          4,
+          720,
+        )
+      : response.resumoInicial;
+    const didacticSummaryCitations = isConceptualExplanatoryFlow && conceptualStep
+      ? filterCitationIds([...response.resumoCitacoes, ...conceptualStep.citacoes], new Set(response.referenciasFinais.map((reference) => reference.id)))
+      : response.resumoCitacoes;
 
     return {
       ...response,
+      resumoInicial: didacticSummary,
+      resumoCitacoes: didacticSummaryCitations,
       modoResposta: didacticMode,
-      etapas: renumberSteps(
-        response.etapas.slice(0, 4).map((step) => ({
-          ...step,
-          conteudo: step.conteudo.trim(),
-          itens: dedupeStrings(step.itens, 3),
-          destaques: dedupeStrings(step.destaques, 2),
-          alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
-        })),
-      ),
-      observacoesFinais: dedupeStrings(response.observacoesFinais, 2),
+      etapas: isConceptualExplanatoryFlow
+        ? []
+        : renumberSteps(
+            response.etapas.slice(0, 4).map((step) => ({
+              ...step,
+              conteudo: step.conteudo.trim(),
+              itens: dedupeStrings(step.itens, 4),
+              destaques: dedupeStrings(step.destaques, 3),
+              alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
+            })),
+          ),
+      observacoesFinais: didacticObservations,
       termosDestacados: response.termosDestacados
         .filter((highlight, index, all) => {
           const normalized = normalizeComparableText(highlight.texto);
@@ -352,20 +393,20 @@ function adaptStructuredResponseForMode(
 
   return {
     ...response,
-    resumoInicial: takeSentences(response.resumoInicial, 2, 280),
+    resumoInicial: takeSentences(response.resumoInicial, 2, 360),
     modoResposta: response.etapas.length > 0 ? "checklist" : "explicacao",
     etapas: renumberSteps(
       response.etapas.slice(0, 3).map((step) => ({
         ...step,
-        conteudo: takeSentences(step.conteudo, 2, 240),
+        conteudo: takeSentences(step.conteudo, 2, 320),
         itens: dedupeStrings(step.itens, 2),
         destaques: dedupeStrings(step.destaques, 2),
         alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
       })),
     ),
     observacoesFinais: dedupeStrings(
-      response.observacoesFinais.map((obs) => takeSentences(obs, 1, 160)),
-      1,
+      response.observacoesFinais.map((obs) => takeSentences(obs, 1, 220)),
+      2,
     ),
     termosDestacados: response.termosDestacados
       .filter((highlight, index, all) => {
@@ -576,6 +617,7 @@ export function sanitizeStructuredResponse(
     groundedReferenceProfile?: EditorialProfile | null;
     usedRag: boolean;
     responseMode: ChatResponseMode;
+    intentLabel?: ChatIntentLabel;
   },
 ): ClaraStructuredResponse {
   const validIds = new Set(options.groundedReferences.map((reference) => reference.id));
@@ -619,7 +661,7 @@ export function sanitizeStructuredResponse(
     },
   };
 
-  return adaptStructuredResponseForMode(sanitized, options.responseMode);
+  return adaptStructuredResponseForMode(sanitized, options.responseMode, options.intentLabel);
 }
 
 export function responseHasInternalProcessLeakage(response: ClaraStructuredResponse) {

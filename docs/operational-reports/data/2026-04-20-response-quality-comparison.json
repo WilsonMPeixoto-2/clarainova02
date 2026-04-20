@@ -1,0 +1,46 @@
+{
+  "before": {
+    "total": 3,
+    "didatico": {
+      "total": 2,
+      "richSummaries": 2,
+      "substantiveProcedural": 1,
+      "conceptualExplained": 1
+    },
+    "direto": {
+      "total": 1,
+      "conciseButComplete": 0
+    },
+    "truncatedSteps": 1,
+    "avgSummaryChars": 285.67,
+    "avgSummarySentences": 2.0,
+    "avgStepChars": 212.62
+  },
+  "after": {
+    "total": 3,
+    "didatico": {
+      "total": 2,
+      "richSummaries": 2,
+      "substantiveProcedural": 1,
+      "conceptualExplained": 1
+    },
+    "direto": {
+      "total": 1,
+      "conciseButComplete": 1
+    },
+    "truncatedSteps": 0,
+    "avgSummaryChars": 340.67,
+    "avgSummarySentences": 2.33,
+    "avgStepChars": 203.5
+  },
+  "delta": {
+    "avgSummaryChars": 55.0,
+    "avgSummarySentences": 0.33,
+    "avgStepChars": -9.12,
+    "truncatedSteps": -1,
+    "didaticoRichSummaries": 0,
+    "didaticoSubstantiveProcedural": 0,
+    "didaticoConceptualExplained": 0,
+    "diretoConciseButComplete": 1
+  }
+}

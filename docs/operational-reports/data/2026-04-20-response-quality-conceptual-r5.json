@@ -1,0 +1,161 @@
+{
+  "kind": "clara_structured_response",
+  "response": {
+    "tituloCurto": "Bloco de Assinatura: Conceito e Uso",
+    "resumoInicial": "O Bloco de Assinatura é um recurso do SEI-Rio que permite agrupar documentos para que sejam assinados em lote ou disponibilizados para pessoas de outras unidades. Você deve utilizá-lo sempre que precisar coletar assinaturas de autoridades externas à sua lotação ou quando quiser facilitar a assinatura simultânea de vários documentos pela sua própria equipe.",
+    "resumoCitacoes": [
+      1
+    ],
+    "modoResposta": "passo_a_passo",
+    "etapas": [
+      {
+        "numero": 1,
+        "titulo": "Coletar assinaturas em outras unidades",
+        "conteudo": "Utilize o bloco quando um documento criado na sua unidade precisar ser assinado por alguém de fora. Ao incluir o documento e disponibilizar o bloco para a unidade de destino, os usuários de lá poderão visualizar, editar e assinar a minuta.",
+        "itens": [
+          "Evita a necessidade de tramitar o processo inteiro apenas para colher uma assinatura.",
+          "A unidade externa visualiza apenas os documentos incluídos no bloco, e não o processo todo."
+        ],
+        "destaques": [],
+        "alerta": null,
+        "citacoes": [
+          1,
+          5
+        ]
+      },
+      {
+        "numero": 2,
+        "titulo": "Agrupar assinaturas na própria unidade",
+        "conteudo": "O bloco também é ideal para organizar o fluxo de trabalho interno, permitindo que um usuário assine vários documentos de uma só vez. Para isso, basta criar o bloco sem indicar unidades externas e utilizar a opção de atribuir o bloco ao colega ou à chefia responsável.",
+        "itens": [
+          "Permite a assinatura em lote, otimizando o tempo de quem precisa assinar grandes volumes.",
+          "Você pode inserir comentários no documento para indicar quem mais deve assinar na sua unidade."
+        ],
+        "destaques": [],
+        "alerta": null,
+        "citacoes": [
+          1,
+          3,
+          4
+        ]
+      }
+    ],
+    "observacoesFinais": [
+      "Para facilitar a organização visual na sua unidade, você pode utilizar sinalizações nos blocos, como 'Prioritários' ou 'Revisados'.",
+      "Após a assinatura por usuários de outras unidades, o bloco de assinatura deve ser devolvido para a unidade geradora."
+    ],
+    "termosDestacados": [
+      {
+        "texto": "Bloco de Assinatura",
+        "tipo": "conceito"
+      },
+      {
+        "texto": "Assinar Documentos do Bloco",
+        "tipo": "acao"
+      },
+      {
+        "texto": "Atribuir Bloco",
+        "tipo": "acao"
+      }
+    ],
+    "referenciasFinais": [
+      {
+        "id": 1,
+        "tipo": "guia",
+        "autorEntidade": "Base documental CLARA",
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "- Incluir em Bloco · camada núcleo · fonte oficial",
+        "local": null,
+        "editoraOuOrgao": null,
+        "ano": null,
+        "paginas": "47",
+        "url": null,
+        "dataAcesso": null
+      },
+      {
+        "id": 2,
+        "tipo": "guia",
+        "autorEntidade": "Base documental CLARA",
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "camada núcleo · fonte oficial",
+        "local": null,
+        "editoraOuOrgao": null,
+        "ano": null,
+        "paginas": "49",
+        "url": null,
+        "dataAcesso": null
+      },
+      {
+        "id": 3,
+        "tipo": "guia",
+        "autorEntidade": "Base documental CLARA",
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "camada núcleo · fonte oficial",
+        "local": null,
+        "editoraOuOrgao": null,
+        "ano": null,
+        "paginas": "53",
+        "url": null,
+        "dataAcesso": null
+      },
+      {
+        "id": 4,
+        "tipo": "guia",
+        "autorEntidade": "Base documental CLARA",
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "camada núcleo · fonte oficial",
+        "local": null,
+        "editoraOuOrgao": null,
+        "ano": null,
+        "paginas": "52",
+        "url": null,
+        "dataAcesso": null
+      },
+      {
+        "id": 5,
+        "tipo": "guia",
+        "autorEntidade": "Base documental CLARA",
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "camada núcleo · fonte oficial",
+        "local": null,
+        "editoraOuOrgao": null,
+        "ano": null,
+        "paginas": "54",
+        "url": null,
+        "dataAcesso": null
+      },
+      {
+        "id": 6,
+        "tipo": "guia",
+        "autorEntidade": "Base documental CLARA",
+        "titulo": "Guia do usuário interno – SEI.Rio (versão final consolidada)",
+        "subtitulo": "camada núcleo · fonte oficial",
+        "local": null,
+        "editoraOuOrgao": null,
+        "ano": null,
+        "paginas": "48",
+        "url": null,
+        "dataAcesso": null
+      }
+    ],
+    "analiseDaResposta": {
+      "questionUnderstandingConfidence": 1,
+      "finalConfidence": 1,
+      "answerScopeMatch": "exact",
+      "ambiguityInUserQuestion": false,
+      "ambiguityInSources": false,
+      "clarificationRequested": false,
+      "clarificationQuestion": null,
+      "clarificationReason": null,
+      "internalExpansionPerformed": false,
+      "webFallbackUsed": false,
+      "userNotice": null,
+      "cautionNotice": null,
+      "ambiguityReason": null,
+      "comparedSources": [],
+      "prioritizedSources": [],
+      "processStates": []
+    }
+  },
+  "plainText": "Bloco de Assinatura: Conceito e Uso\n\nO Bloco de Assinatura é um recurso do SEI-Rio que permite agrupar documentos para que sejam assinados em lote ou disponibilizados para pessoas de outras unidades. Você deve utilizá-lo sempre que precisar coletar assinaturas de autoridades externas à sua lotação ou quando quiser facilitar a assinatura simultânea de vários documentos pela sua própria equipe.\n\nPasso a passo guiado\n1. Coletar assinaturas em outras unidades\nUtilize o bloco quando um documento criado na sua unidade precisar ser assinado por alguém de fora. Ao incluir o documento e disponibilizar o bloco para a unidade de destino, os usuários de lá poderão visualizar, editar e assinar a minuta.\n- Evita a necessidade de tramitar o processo inteiro apenas para colher uma assinatura.\n- A unidade externa visualiza apenas os documentos incluídos no bloco, e não o processo todo.\n\n2. Agrupar assinaturas na própria unidade\nO bloco também é ideal para organizar o fluxo de trabalho interno, permitindo que um usuário assine vários documentos de uma só vez. Para isso, basta criar o bloco sem indicar unidades externas e utilizar a opção de atribuir o bloco ao colega ou à chefia responsável.\n- Permite a assinatura em lote, otimizando o tempo de quem precisa assinar grandes volumes.\n- Você pode inserir comentários no documento para indicar quem mais deve assinar na sua unidade.\n\nObservacoes finais\n- Para facilitar a organização visual na sua unidade, você pode utilizar sinalizações nos blocos, como 'Prioritários' ou 'Revisados'.\n- Após a assinatura por usuários de outras unidades, o bloco de assinatura deve ser devolvido para a unidade geradora.\n\nTermos importantes\n- Bloco de Assinatura\n- Assinar Documentos do Bloco\n- Atribuir Bloco\n\nReferencias\n[1] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): - Incluir em Bloco · camada núcleo · fonte oficial. p. 47.\n[2] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 49.\n[3] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 53.\n[4] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 52.\n[5] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 54.\n[6] Base documental CLARA. Guia do usuário interno – SEI.Rio (versão final consolidada): camada núcleo · fonte oficial. p. 48."
+}
