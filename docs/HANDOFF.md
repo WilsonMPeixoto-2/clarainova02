@@ -3,10 +3,10 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: `2026-04-20T05:40:18.8200759Z`
+- Data/hora: `2026-04-20T05:41:32.5243880Z`
 - Atualizado por: `CODEX @ WILSON-MP`
-- Branch de trabalho: `session/2026-04-19/HOME/CODEX/V1-AUDIT-CLOSURE`
-- `origin/main` atual: `b7d2db4acb76cb9a4e2d2b6e4b67b154ece94774`
+- Branch de trabalho: `main`
+- `origin/main` atual: `c83ccdc391a4ebcd846249ffc0586c5184544bec`
 - Último relatório: `docs/operational-reports/2026-04-20-response-quality-rag-improvement.md`
 
 ## Estado atual resumido
@@ -21,7 +21,7 @@
 - `npm run validate` passou após as mudanças desta rodada.
 
 ## Pendências reais
-1. Promover o commit `2caa74b245b8724ad97fa8596719dedb212cb4a6` para `main` e publicar produção a partir da linha oficial.
+1. Confirmar o deploy de produção disparado a partir de `main`.
 2. Abrir um bloco curto para elevar o `didatico` conceitual ao teto editorial esperado.
 3. Refinar a higiene de referências finais mais visíveis ao usuário.
 
@@ -31,8 +31,8 @@
 - Leaked Password Protection do Supabase Auth segue desabilitado no ambiente remoto.
 
 ## Próxima ação recomendada
-1. Commitar e promover a rodada para `main`.
-2. Fazer push para acionar o deploy de produção do projeto ligado à Vercel.
+1. Fazer push de `main` para acionar o deploy de produção do projeto ligado à Vercel.
+2. Confirmar a URL final publicada.
 3. Em seguida, abrir a próxima frente focada em `didatico` conceitual + acabamento de referências.
 
 ## Preambulo obrigatório para qualquer IA

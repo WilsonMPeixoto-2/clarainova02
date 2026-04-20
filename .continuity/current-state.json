@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 2,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "b7d2db4acb76cb9a4e2d2b6e4b67b154ece94774",
-  "current_phase": "Rodada de melhoria da qualidade da resposta RAG concluida em branch de sessao; pronta para promocao",
-  "active_block": "Promocao para main e publicacao em producao",
-  "active_branch": "session/2026-04-19/HOME/CODEX/V1-AUDIT-CLOSURE",
+  "last_integrated_main_sha": "c83ccdc391a4ebcd846249ffc0586c5184544bec",
+  "current_phase": "Rodada de melhoria da qualidade da resposta RAG promovida para main; publicacao em producao em andamento",
+  "active_block": "Verificacao final do deploy de producao",
+  "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-20T05:40:18.8200759Z",
+  "last_update_utc": "2026-04-20T05:41:32.5243880Z",
   "completed_items": [
     "A linha oficial `origin/main` atual e `b7d2db4acb76cb9a4e2d2b6e4b67b154ece94774`, sem divergencia nova antes desta rodada.",
     "O frontend publico e o chat permanecem maduros: home forte, resposta estruturada, exportacao em PDF, impressao, copia, feedback e boa responsividade.",
@@ -21,7 +21,7 @@
     "A validacao local ficou verde apos a rodada: `npm run validate` passou com `32` suites e `129` testes."
   ],
   "pending_items": [
-    "Promover esta rodada para `main` e publicar producao a partir da linha oficial.",
+    "Confirmar o deploy de producao disparado a partir de `main`.",
     "Abrir um bloco curto para elevar o modo `didatico` conceitual ao nivel editorial ideal.",
     "Refinar a higiene visual e documental das referencias finais mais visiveis ao usuario."
   ],
@@ -30,13 +30,13 @@
     "Os modelos Gemini de geracao ainda estao em `preview`, com risco externo de disponibilidade e mudanca de identificadores.",
     "Leaked Password Protection do Supabase Auth segue desabilitado e depende de ajuste externo de configuracao."
   ],
-  "next_action": "Commitar, promover para `main`, fazer push para acionar a producao e abrir a proxima rodada focada em `didatico` conceitual + referencias.",
+  "next_action": "Fazer push de `main`, confirmar a URL de producao publicada e abrir a proxima rodada focada em `didatico` conceitual + referencias.",
   "notes": [
     "O foco desta rodada foi explicitamente a excelencia da resposta gerada, nao redesign amplo de frontend.",
     "A verificacao remota final mostrou melhora real no caso conceitual, mas ainda nao resolveu por completo a preferencia do modo `didatico` por estrutura em blocos de uso.",
     "O build continua emitindo warnings de chunks grandes, sobretudo nos bundles de PDF/admin; isso e otimizacao futura, nao bloqueio de release."
   ],
-  "session_status": "ready_for_promotion",
+  "session_status": "production_deploy_pending",
   "last_report": "docs/operational-reports/2026-04-20-response-quality-rag-improvement.md",
-  "last_session_head_sha": "2caa74b245b8724ad97fa8596719dedb212cb4a6"
+  "last_session_head_sha": "c83ccdc391a4ebcd846249ffc0586c5184544bec"
 }
