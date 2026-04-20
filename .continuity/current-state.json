@@ -2,13 +2,13 @@
   "source_of_truth": "origin/main",
   "protocol_version": 2,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "c83ccdc391a4ebcd846249ffc0586c5184544bec",
-  "current_phase": "Rodada de melhoria da qualidade da resposta RAG promovida para main; publicacao em producao em andamento",
-  "active_block": "Verificacao final do deploy de producao",
+  "last_integrated_main_sha": "b85bad4724ee58b56d598da1d6780e746a90f177",
+  "current_phase": "Rodada de melhoria da qualidade da resposta RAG promovida para main e publicada em producao",
+  "active_block": "Preparacao da proxima rodada de qualidade",
   "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-20T05:41:32.5243880Z",
+  "last_update_utc": "2026-04-20T05:43:12.0000000Z",
   "completed_items": [
     "A linha oficial `origin/main` atual e `b7d2db4acb76cb9a4e2d2b6e4b67b154ece94774`, sem divergencia nova antes desta rodada.",
     "O frontend publico e o chat permanecem maduros: home forte, resposta estruturada, exportacao em PDF, impressao, copia, feedback e boa responsividade.",
@@ -18,25 +18,26 @@
     "A rodada atual melhorou a qualidade intrinseca da resposta: follow-up lexical e embedding foram separados, o packing ganhou prioridade explicita e o quality gate editorial passou a reparar respostas rasas, truncadas ou genericas.",
     "O contrato de resposta foi reforcado para diferenciar melhor `direto` e `didatico`, com menos compressao no `direto` e mais densidade explicativa no `didatico`.",
     "O benchmark controlado confirmou melhora objetiva: `truncatedSteps` caiu de `1` para `0`, `direto.conciseButComplete` subiu de `0` para `1` e `avgSummaryChars` subiu de `285.67` para `340.67`.",
-    "A validacao local ficou verde apos a rodada: `npm run validate` passou com `32` suites e `129` testes."
+    "A validacao local ficou verde apos a rodada: `npm run validate` passou com `32` suites e `129` testes.",
+    "O push em `main` disparou deploy de producao `READY` na Vercel, associado ao commit `b85bad4724ee58b56d598da1d6780e746a90f177`."
   ],
   "pending_items": [
-    "Confirmar o deploy de producao disparado a partir de `main`.",
     "Abrir um bloco curto para elevar o modo `didatico` conceitual ao nivel editorial ideal.",
-    "Refinar a higiene visual e documental das referencias finais mais visiveis ao usuario."
+    "Refinar a higiene visual e documental das referencias finais mais visiveis ao usuario.",
+    "Retomar o polimento editorial/visual da aba do chat sobre a versao ja publicada."
   ],
   "external_blockers": [
     "Google OAuth administrativo continua dependente de configuracao externa no Supabase/Google.",
     "Os modelos Gemini de geracao ainda estao em `preview`, com risco externo de disponibilidade e mudanca de identificadores.",
     "Leaked Password Protection do Supabase Auth segue desabilitado e depende de ajuste externo de configuracao."
   ],
-  "next_action": "Fazer push de `main`, confirmar a URL de producao publicada e abrir a proxima rodada focada em `didatico` conceitual + referencias.",
+  "next_action": "Abrir a proxima rodada focada em `didatico` conceitual + referencias, e depois retomar o polimento editorial/visual da aba do chat.",
   "notes": [
     "O foco desta rodada foi explicitamente a excelencia da resposta gerada, nao redesign amplo de frontend.",
     "A verificacao remota final mostrou melhora real no caso conceitual, mas ainda nao resolveu por completo a preferencia do modo `didatico` por estrutura em blocos de uso.",
     "O build continua emitindo warnings de chunks grandes, sobretudo nos bundles de PDF/admin; isso e otimizacao futura, nao bloqueio de release."
   ],
-  "session_status": "production_deploy_pending",
+  "session_status": "deployed_to_production",
   "last_report": "docs/operational-reports/2026-04-20-response-quality-rag-improvement.md",
-  "last_session_head_sha": "c83ccdc391a4ebcd846249ffc0586c5184544bec"
+  "last_session_head_sha": "b85bad4724ee58b56d598da1d6780e746a90f177"
 }

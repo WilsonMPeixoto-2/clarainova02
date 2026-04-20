@@ -3,10 +3,10 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: `2026-04-20T05:41:32.5243880Z`
+- Data/hora: `2026-04-20T05:43:12.0000000Z`
 - Atualizado por: `CODEX @ WILSON-MP`
 - Branch de trabalho: `main`
-- `origin/main` atual: `c83ccdc391a4ebcd846249ffc0586c5184544bec`
+- `origin/main` atual: `b85bad4724ee58b56d598da1d6780e746a90f177`
 - Último relatório: `docs/operational-reports/2026-04-20-response-quality-rag-improvement.md`
 
 ## Estado atual resumido
@@ -19,11 +19,12 @@
 - O benchmark controlado confirmou melhora objetiva: `truncatedSteps` caiu de `1` para `0`, `direto.conciseButComplete` subiu de `0` para `1`, `avgSummaryChars` subiu de `285.67` para `340.67`.
 - A verificação remota focada em pergunta conceitual mostrou progresso real, mas o modo `didatico` conceitual ainda pode responder em blocos estruturados de uso, e não em explicação totalmente corrida.
 - `npm run validate` passou após as mudanças desta rodada.
+- O push em `main` disparou deploy de produção `READY` na Vercel para `clarainova02.vercel.app`, com build associado ao commit `b85bad4724ee58b56d598da1d6780e746a90f177`.
 
 ## Pendências reais
-1. Confirmar o deploy de produção disparado a partir de `main`.
-2. Abrir um bloco curto para elevar o `didatico` conceitual ao teto editorial esperado.
-3. Refinar a higiene de referências finais mais visíveis ao usuário.
+1. Abrir um bloco curto para elevar o `didatico` conceitual ao teto editorial esperado.
+2. Refinar a higiene de referências finais mais visíveis ao usuário.
+3. Se desejado, iniciar a rodada de polimento editorial/visual da aba do chat em cima deste baseline já publicado.
 
 ## Bloqueios externos
 - Google OAuth administrativo continua dependente de configuração externa.
@@ -31,9 +32,8 @@
 - Leaked Password Protection do Supabase Auth segue desabilitado no ambiente remoto.
 
 ## Próxima ação recomendada
-1. Fazer push de `main` para acionar o deploy de produção do projeto ligado à Vercel.
-2. Confirmar a URL final publicada.
-3. Em seguida, abrir a próxima frente focada em `didatico` conceitual + acabamento de referências.
+1. Abrir a próxima frente focada em `didatico` conceitual + acabamento de referências.
+2. Em seguida, retomar o polimento editorial/visual da aba do chat sobre a versão já publicada.
 
 ## Preambulo obrigatório para qualquer IA
 1. Tratar `origin/main` como única fonte oficial de verdade.
