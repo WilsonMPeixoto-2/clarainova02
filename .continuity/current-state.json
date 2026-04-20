@@ -2,39 +2,41 @@
   "source_of_truth": "origin/main",
   "protocol_version": 2,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "f062d256a58c31c024b20ba9d505bf21ddf9ef84",
-  "current_phase": "Integracao final com origin/main em branch de sessao; release gate quase fechado",
-  "active_block": "Decisao de promocao para producao",
+  "last_integrated_main_sha": "b7d2db4acb76cb9a4e2d2b6e4b67b154ece94774",
+  "current_phase": "Rodada de melhoria da qualidade da resposta RAG concluida em branch de sessao; pronta para promocao",
+  "active_block": "Promocao para main e publicacao em producao",
   "active_branch": "session/2026-04-19/HOME/CODEX/V1-AUDIT-CLOSURE",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-20T04:37:29.8608749Z",
+  "last_update_utc": "2026-04-20T05:40:18.8200759Z",
   "completed_items": [
-    "A linha oficial `origin/main` avancou para `f062d256a58c31c024b20ba9d505bf21ddf9ef84` e foi integrada nesta rodada de fechamento.",
+    "A linha oficial `origin/main` atual e `b7d2db4acb76cb9a4e2d2b6e4b67b154ece94774`, sem divergencia nova antes desta rodada.",
     "O frontend publico e o chat permanecem maduros: home forte, resposta estruturada, exportacao em PDF, impressao, copia, feedback e boa responsividade.",
     "O backend RAG segue robusto com `gemini-3.1-pro-preview` como primario, `gemini-3.1-flash-lite-preview` como fallback, retrieval governado, repair chain e caches ativos.",
     "O corpus remoto auditado segue operacionalmente saudavel: `23` documentos totais, `17` ativos, `23` processados e `289/289` chunks ativos com embedding.",
     "O housekeeping remoto foi concluido no projeto vinculado: `public.users`, `public.posts` e `public.comments` foram removidas; `public.set_updated_at` recebeu `search_path` explicito; os caches receberam comentario operacional sobre `service_role`.",
-    "O warning residual de `SmoothScrollProvider.tsx` foi removido e `npm run validate` voltou ao estado green.",
-    "Apos a limpeza remota, `supabase db advisors --linked --level warn` passou a retornar apenas `auth_leaked_password_protection`, que pertence a configuracao externa do Supabase Auth."
+    "A rodada atual melhorou a qualidade intrinseca da resposta: follow-up lexical e embedding foram separados, o packing ganhou prioridade explicita e o quality gate editorial passou a reparar respostas rasas, truncadas ou genericas.",
+    "O contrato de resposta foi reforcado para diferenciar melhor `direto` e `didatico`, com menos compressao no `direto` e mais densidade explicativa no `didatico`.",
+    "O benchmark controlado confirmou melhora objetiva: `truncatedSteps` caiu de `1` para `0`, `direto.conciseButComplete` subiu de `0` para `1` e `avgSummaryChars` subiu de `285.67` para `340.67`.",
+    "A validacao local ficou verde apos a rodada: `npm run validate` passou com `32` suites e `129` testes."
   ],
   "pending_items": [
-    "Decidir se o warning externo `auth_leaked_password_protection` sera tratado antes da promocao.",
-    "Decidir quando esta branch sera promovida para `origin/main`.",
-    "Decidir o momento do deploy de producao a partir de `main`."
+    "Promover esta rodada para `main` e publicar producao a partir da linha oficial.",
+    "Abrir um bloco curto para elevar o modo `didatico` conceitual ao nivel editorial ideal.",
+    "Refinar a higiene visual e documental das referencias finais mais visiveis ao usuario."
   ],
   "external_blockers": [
     "Google OAuth administrativo continua dependente de configuracao externa no Supabase/Google.",
     "Os modelos Gemini de geracao ainda estao em `preview`, com risco externo de disponibilidade e mudanca de identificadores.",
     "Leaked Password Protection do Supabase Auth segue desabilitado e depende de ajuste externo de configuracao."
   ],
-  "next_action": "Concluir o merge de integracao com origin/main, rerodar a baseline local e decidir a promocao para producao.",
+  "next_action": "Commitar, promover para `main`, fazer push para acionar a producao e abrir a proxima rodada focada em `didatico` conceitual + referencias.",
   "notes": [
-    "O foco desta rodada permaneceu em produto, schema e usabilidade; a documentacao foi reduzida ao minimo necessario para continuidade correta.",
-    "A branch de sessao ficou tecnicamente pronta para promocao, mas producao so deve sair de `main` para manter coerencia com a fonte oficial de verdade.",
-    "O build continua emitindo warnings de chunks grandes, sobretudo nos bundles de PDF/admin; isso e otimização futura, nao bloqueio de release."
+    "O foco desta rodada foi explicitamente a excelencia da resposta gerada, nao redesign amplo de frontend.",
+    "A verificacao remota final mostrou melhora real no caso conceitual, mas ainda nao resolveu por completo a preferencia do modo `didatico` por estrutura em blocos de uso.",
+    "O build continua emitindo warnings de chunks grandes, sobretudo nos bundles de PDF/admin; isso e otimizacao futura, nao bloqueio de release."
   ],
-  "session_status": "merge_in_progress",
-  "last_report": "docs/operational-reports/2026-04-20-final-housekeeping-and-release-gate.md",
-  "last_session_head_sha": "e172750243386a96a38bb5912a3da94d93922112"
+  "session_status": "ready_for_promotion",
+  "last_report": "docs/operational-reports/2026-04-20-response-quality-rag-improvement.md",
+  "last_session_head_sha": "2caa74b245b8724ad97fa8596719dedb212cb4a6"
 }

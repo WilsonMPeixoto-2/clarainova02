@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: `2026-04-20T04:37:29.8608749Z`
+- Data/hora: `2026-04-20T05:40:18.8200759Z`
 - Atualizado por: `CODEX @ WILSON-MP`
 - Branch de trabalho: `session/2026-04-19/HOME/CODEX/V1-AUDIT-CLOSURE`
-- `origin/main` atual: `f062d256a58c31c024b20ba9d505bf21ddf9ef84`
-- Último relatório: `docs/operational-reports/2026-04-20-final-housekeeping-and-release-gate.md`
+- `origin/main` atual: `b7d2db4acb76cb9a4e2d2b6e4b67b154ece94774`
+- Último relatório: `docs/operational-reports/2026-04-20-response-quality-rag-improvement.md`
 
 ## Estado atual resumido
 - O produto está tecnicamente forte, com frontend público e chat maduros.
@@ -15,13 +15,15 @@
 - A query expansion segue desligada intencionalmente no runtime atual.
 - O corpus remoto auditado está saudável: `23` documentos totais, `17` ativos, `23` processados e `289/289` chunks ativos com embedding.
 - O housekeeping final remoto foi concluído no projeto vinculado: leftovers removidos, `set_updated_at` endurecida e comentários operacionais adicionados aos caches.
-- `npm run validate`, `npm test`, `npm run build` e `npm run continuity:check` passaram nesta rodada.
-- O único advisor relevante remanescente no Supabase é `auth_leaked_password_protection`, classificado como configuração externa do Supabase Auth.
+- Nesta rodada, a qualidade da resposta melhorou no backend: follow-up lexical/semântico foi separado, o packing ficou mais hierarquizado, o modo `direto` ficou menos truncado e foi introduzido um quality gate textual/editorial com repair.
+- O benchmark controlado confirmou melhora objetiva: `truncatedSteps` caiu de `1` para `0`, `direto.conciseButComplete` subiu de `0` para `1`, `avgSummaryChars` subiu de `285.67` para `340.67`.
+- A verificação remota focada em pergunta conceitual mostrou progresso real, mas o modo `didatico` conceitual ainda pode responder em blocos estruturados de uso, e não em explicação totalmente corrida.
+- `npm run validate` passou após as mudanças desta rodada.
 
 ## Pendências reais
-1. Concluir a integração desta branch com `origin/main` sem perder coerência com a fonte oficial.
-2. Decidir se `auth_leaked_password_protection` será tratado antes da promoção.
-3. Decidir o momento do deploy de produção a partir de `main`.
+1. Promover o commit `2caa74b245b8724ad97fa8596719dedb212cb4a6` para `main` e publicar produção a partir da linha oficial.
+2. Abrir um bloco curto para elevar o `didatico` conceitual ao teto editorial esperado.
+3. Refinar a higiene de referências finais mais visíveis ao usuário.
 
 ## Bloqueios externos
 - Google OAuth administrativo continua dependente de configuração externa.
@@ -29,9 +31,9 @@
 - Leaked Password Protection do Supabase Auth segue desabilitado no ambiente remoto.
 
 ## Próxima ação recomendada
-1. Fechar o merge de integração com `origin/main`.
-2. Rerodar a baseline local após o merge.
-3. Se tudo permanecer verde, decidir promoção para `main` e deploy de produção.
+1. Commitar e promover a rodada para `main`.
+2. Fazer push para acionar o deploy de produção do projeto ligado à Vercel.
+3. Em seguida, abrir a próxima frente focada em `didatico` conceitual + acabamento de referências.
 
 ## Preambulo obrigatório para qualquer IA
 1. Tratar `origin/main` como única fonte oficial de verdade.
