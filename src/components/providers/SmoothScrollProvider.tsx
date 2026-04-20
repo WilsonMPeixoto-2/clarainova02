@@ -1,11 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import Lenis from "lenis";
 
 const LenisContext = createContext<Lenis | null>(null);
-
-export function useLenis() {
-  return useContext(LenisContext);
-}
 
 const SmoothScrollProvider = ({ children }: { children: React.ReactNode }) => {
   const [lenisInstance] = useState<Lenis | null>(() => {

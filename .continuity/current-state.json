@@ -3,12 +3,12 @@
   "protocol_version": 1,
   "project": "CLARAINOVA02",
   "last_integrated_main_sha": "6426b33ceaa0d08336a23daad03c0fcba2f2514a",
-  "current_phase": "Auditoria, governanca e UX publica fechadas; produto forte e em consolidacao final pre-v1.0",
-  "active_block": "Limpeza estrutural remota e housekeeping final",
+  "current_phase": "Housekeeping final concluido na branch de sessao; release gate praticamente fechado",
+  "active_block": "Decisao de promocao para main/producao",
   "active_branch": "session/2026-04-19/HOME/CODEX/V1-AUDIT-CLOSURE",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-19T22:54:24.0805648Z",
+  "last_update_utc": "2026-04-20T04:33:30.0093592Z",
   "completed_items": [
     "A linha oficial auditada e `origin/main @ 6426b33ceaa0d08336a23daad03c0fcba2f2514a`.",
     "A arquitetura publica da SPA foi confirmada como solida, com `ErrorBoundary`, `QueryClientProvider`, `SmoothScrollProvider`, `ChatProvider`, roteamento claro e `ChatSheetHost` global.",
@@ -28,32 +28,40 @@
     "O helper de chave do response cache foi estabilizado contra variacoes cosmeticas de espacos no conteudo das mensagens.",
     "`npm run validate` voltou ao estado green; o lint deixou de falhar e restou apenas um warning nao bloqueante em `SmoothScrollProvider.tsx`.",
     "O bloco pequeno de UX publica foi concluido: o header desktop agora expõe `Funcionalidades` e o cabecalho do chat condensa rotulos em larguras intermediarias.",
-    "A verificacao visual local de home + chat foi concluida com `Playwright`, em desktop e mobile, sem erros de console."
+    "A verificacao visual local de home + chat foi concluida com `Playwright`, em desktop e mobile, sem erros de console.",
+    "A migration `20260420001500_finalize_remote_housekeeping.sql` foi aplicada no Supabase remoto.",
+    "As tabelas leftover `public.users`, `public.posts` e `public.comments` foram removidas do schema remoto.",
+    "`public.set_updated_at` agora tem `search_path = public, pg_catalog`, eliminando o advisor de funcao mutable search_path.",
+    "`embedding_cache` e `chat_response_cache` agora possuem comentario operacional explicito no banco, reforcando o modelo de acesso via `service_role`.",
+    "O warning residual de `SmoothScrollProvider.tsx` foi removido; `npm run validate` fecha integralmente green.",
+    "Apos o housekeeping final, `supabase db advisors --linked --level warn` passou a retornar apenas `auth_leaked_password_protection`, classificado como configuracao externa do Supabase Auth."
   ],
   "pending_items": [
-    "Decidir o destino das tabelas leftover `public.users`, `public.posts` e `public.comments` no Supabase remoto.",
-    "Decidir se a migration do `chat_response_cache` recebera comentario operacional mais explicito sobre o modelo `service_role`.",
-    "Decidir se o warning remanescente de `SmoothScrollProvider.tsx` sera removido ou apenas aceito conscientemente."
+    "Decidir se o warning externo `auth_leaked_password_protection` sera tratado antes da promocao.",
+    "Decidir quando esta branch sera integrada em `origin/main`.",
+    "Decidir o momento do deploy de producao a partir de `main`."
   ],
   "external_blockers": [
     "Google OAuth administrativo continua dependente de configuracao externa no Supabase/Google.",
-    "Os modelos Gemini de geracao ainda estao em `preview`, portanto ha risco externo de disponibilidade e mudanca de identificadores."
+    "Os modelos Gemini de geracao ainda estao em `preview`, portanto ha risco externo de disponibilidade e mudanca de identificadores.",
+    "Leaked Password Protection do Supabase Auth segue desabilitado e depende de ajuste externo de configuracao."
   ],
-  "next_action": "Retomar a limpeza final do Supabase remoto e remover a ambiguidade residual do ambiente de producao.",
+  "next_action": "Decidir promocao desta branch para origin/main e, em paralelo, avaliar se o warning externo do Supabase Auth sera tratado antes da ida para producao.",
   "notes": [
     "A continuidade oficial anterior estava materialmente defasada: ainda fixava `main` em `6770c85`, descrevia branch antiga e preservava narrativas que ja nao batiam com o codigo real.",
     "O README publico foi reconciliado nesta rodada e agora reflete `pro` como primario e `flash-lite` como fallback.",
     "A auditoria remota reduziu a incerteza sobre o corpus: os documentos ativos estao processados e os chunks ativos estao completamente embedados.",
     "A telemetria recente ainda nao permite declarar dominio inequivoco da camada semantica, porque os modos lexicais seguem representando fatia relevante do trafego, mas isso ja nao impede considerar o corpus operacionalmente fechado.",
-    "Os caches usam modelo de acesso via `service_role`; isso esta mais explicitado na migration do `embedding_cache` do que na do `chat_response_cache`.",
+    "Os caches usam modelo de acesso via `service_role`; a assimetria documental entre `embedding_cache` e `chat_response_cache` foi eliminada nesta rodada.",
     "O caminho de cache hit do `chat_response_cache` deixou de ser invisivel: agora ele registra telemetria e `usage_logs` especificos.",
     "Falhas de persistencia em `chat_response_cache` agora geram `usage_logs` com `event_type = response_cache_store_failed`.",
     "As tabelas `public.users`, `public.posts` e `public.comments` foram confirmadas como leftovers de template no ambiente remoto: carregam dados de exemplo e nao possuem uso real no codigo do produto.",
     "O site publicado esta operacional e sem erros de console na navegacao auditada; os warnings observados foram de preload de fontes nao aproveitadas rapidamente.",
     "O header publico agora oferece descoberta direta de `Funcionalidades`, sem abrir nova frente de redesign.",
-    "O build atual fecha, mas ainda emite warnings de chunks grandes, especialmente nos bundles de PDF/admin."
+    "O build atual fecha, mas ainda emite warnings de chunks grandes, especialmente nos bundles de PDF/admin.",
+    "A branch de sessao ficou tecnicamente pronta para promocao; o principal cuidado remanescente eh manter coerencia entre deploy de producao e a regra de que `origin/main` e a fonte oficial de verdade."
   ],
-  "session_status": "session_in_progress",
-  "last_report": "docs/operational-reports/2026-04-19-public-ux-refinement.md",
-  "last_session_head_sha": "6426b33ceaa0d08336a23daad03c0fcba2f2514a"
+  "session_status": "ready_for_merge",
+  "last_report": "docs/operational-reports/2026-04-20-final-housekeeping-and-release-gate.md",
+  "last_session_head_sha": "94783f353abf57bba80d5d066acb084ea20325d3"
 }

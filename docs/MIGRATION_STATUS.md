@@ -16,8 +16,8 @@ O estado real auditado em `origin/main @ 6426b33ceaa0d08336a23daad03c0fcba2f2514
 | Corpus remoto | saudável |
 | Caches | implementados e ativos |
 | Continuidade oficial | reconciliada em `2026-04-19`, após drift relevante |
-| Baseline local | `npm run validate` green, com apenas um warning nao bloqueante |
-| Fechamento final | pendente de limpeza remota final e housekeeping residual |
+| Baseline local | `npm run validate` green |
+| Fechamento final | housekeeping tecnico concluido na branch de sessao |
 
 ## O que está confirmado hoje
 
@@ -67,6 +67,7 @@ O estado real auditado em `origin/main @ 6426b33ceaa0d08336a23daad03c0fcba2f2514
 - governanca operacional formalizada em `docs/response-cache-governance.md`
 - `cache hit` agora entra na telemetria
 - contrato atual versionado por `CHAT_RESPONSE_CACHE_CONTRACT_VERSION`
+- comentario operacional no banco para `embedding_cache` e `chat_response_cache`
 
 ## Estado remoto auditado
 
@@ -105,20 +106,19 @@ Leitura correta desse quadro:
 
 ## Pendências reais ainda abertas
 
-### 1. Supabase remoto
+### 1. Configuracao externa do Supabase Auth
 
-Ainda existem leftovers de template:
+Advisor remanescente:
 
-- `public.users`
-- `public.posts`
-- `public.comments`
+- `auth_leaked_password_protection`
 
-Essas estruturas não fazem parte do produto e precisam ser removidas ou explicitamente justificadas.
+Esse item nao vem do codigo nem do schema versionado. Ele depende de ajuste externo no Supabase Auth.
 
-### 2. Housekeeping tecnico
+### 2. Promocao para producao
 
-- warning nao bloqueante de `react-refresh/only-export-components` em `src/components/providers/SmoothScrollProvider.tsx`
-- eventual comentario mais explicito sobre `service_role` na migration do `chat_response_cache`
+- a branch de sessao esta tecnicamente pronta
+- `origin/main` continua como fonte oficial de verdade
+- promover producao com coerencia exige integracao em `main`
 
 ### 3. Blockers externos
 
@@ -133,13 +133,16 @@ Itens que já não descrevem corretamente o projeto atual:
 - README antigo com `flash-lite` como modelo primário
 - continuidade antiga que tratava query expansion como parte ativa do runtime
 - incerteza antiga sobre saúde do corpus remoto ativo
+- leftovers de template no Supabase remoto
+- warning residual de `SmoothScrollProvider.tsx`
+- advisor de `function_search_path_mutable` em `public.set_updated_at`
 
 ## Próxima sequência recomendada
 
-1. fechar documentação pública e operacional restante
-2. concluir auditoria/limpeza final do Supabase remoto
-3. decidir o tratamento final do warning residual de frontend
-4. só então abrir nova rodada maior de evolução
+1. decidir a promocao desta branch para `origin/main`
+2. decidir se `auth_leaked_password_protection` sera tratado antes da promocao
+3. publicar producao de forma alinhada com `main`
+4. so entao abrir nova rodada maior de evolucao
 
 ## Critério prático para travar versão
 
