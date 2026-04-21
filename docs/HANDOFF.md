@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: `2026-04-20T05:43:12.0000000Z`
+- Data/hora: `2026-04-21T03:53:39.0809145Z`
 - Atualizado por: `CODEX @ WILSON-MP`
 - Branch de trabalho: `main`
-- `origin/main` atual: `b85bad4724ee58b56d598da1d6780e746a90f177`
-- Último relatório: `docs/operational-reports/2026-04-20-response-quality-rag-improvement.md`
+- `origin/main` atual: `55c563e0e72e664b49b3e21aa0ebe6c5b1f1f3d1`
+- Último relatório: `docs/operational-reports/2026-04-20-conceptual-didatic-and-reference-cleanup.md`
 
 ## Estado atual resumido
 - O produto está tecnicamente forte, com frontend público e chat maduros.
@@ -15,16 +15,16 @@
 - A query expansion segue desligada intencionalmente no runtime atual.
 - O corpus remoto auditado está saudável: `23` documentos totais, `17` ativos, `23` processados e `289/289` chunks ativos com embedding.
 - O housekeeping final remoto foi concluído no projeto vinculado: leftovers removidos, `set_updated_at` endurecida e comentários operacionais adicionados aos caches.
-- Nesta rodada, a qualidade da resposta melhorou no backend: follow-up lexical/semântico foi separado, o packing ficou mais hierarquizado, o modo `direto` ficou menos truncado e foi introduzido um quality gate textual/editorial com repair.
-- O benchmark controlado confirmou melhora objetiva: `truncatedSteps` caiu de `1` para `0`, `direto.conciseButComplete` subiu de `0` para `1`, `avgSummaryChars` subiu de `285.67` para `340.67`.
-- A verificação remota focada em pergunta conceitual mostrou progresso real, mas o modo `didatico` conceitual ainda pode responder em blocos estruturados de uso, e não em explicação totalmente corrida.
+- A rodada anterior já havia melhorado o backend: follow-up lexical/semântico separado, packing mais hierarquizado, `direto` menos truncado e quality gate textual/editorial com repair.
+- Nesta rodada curta, o defeito residual do `didatico` conceitual foi corrigido no fallback: perguntas conceituais passaram a sair como `explicacao`, sem etapas artificiais, com resumo limpo e sem observações procedimentais indevidas.
+- A verificação remota final do caso `bloco de assinatura` confirmou `modoResposta: "explicacao"`, `stepCount: 0`, `observacoes: []` e subtítulos de referência limpos.
 - `npm run validate` passou após as mudanças desta rodada.
-- O push em `main` disparou deploy de produção `READY` na Vercel para `clarainova02.vercel.app`, com build associado ao commit `b85bad4724ee58b56d598da1d6780e746a90f177`.
+- O próximo bloco correto passou a ser o polimento editorial/visual da aba do chat, agora sobre um backend conceitual mais estável.
 
 ## Pendências reais
-1. Abrir um bloco curto para elevar o `didatico` conceitual ao teto editorial esperado.
-2. Refinar a higiene de referências finais mais visíveis ao usuário.
-3. Se desejado, iniciar a rodada de polimento editorial/visual da aba do chat em cima deste baseline já publicado.
+1. Iniciar a rodada de polimento editorial/visual da aba do chat em cima deste baseline já consolidado.
+2. Revisar composer, tipografia, hierarquia, destaque de modos e navegação de respostas longas.
+3. Ampliar, quando fizer sentido, a bateria de perguntas conceituais reais para confirmar o novo padrão em mais casos.
 
 ## Bloqueios externos
 - Google OAuth administrativo continua dependente de configuração externa.
@@ -32,8 +32,8 @@
 - Leaked Password Protection do Supabase Auth segue desabilitado no ambiente remoto.
 
 ## Próxima ação recomendada
-1. Abrir a próxima frente focada em `didatico` conceitual + acabamento de referências.
-2. Em seguida, retomar o polimento editorial/visual da aba do chat sobre a versão já publicada.
+1. Abrir a frente de polimento editorial/visual da aba do chat.
+2. Priorizar composer, legibilidade, contraste, hierarquia de resposta e revisão dos accordions/etapas.
 
 ## Preambulo obrigatório para qualquer IA
 1. Tratar `origin/main` como única fonte oficial de verdade.
