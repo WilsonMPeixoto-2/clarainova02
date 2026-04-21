@@ -3,11 +3,11 @@
 > Fonte oficial de verdade: `origin/main`
 
 ## Última atualização
-- Data/hora: `2026-04-21T03:53:39.0809145Z`
+- Data/hora: `2026-04-21T05:41:58.7776840Z`
 - Atualizado por: `CODEX @ WILSON-MP`
 - Branch de trabalho: `main`
-- `origin/main` atual: `55c563e0e72e664b49b3e21aa0ebe6c5b1f1f3d1`
-- Último relatório: `docs/operational-reports/2026-04-20-conceptual-didatic-and-reference-cleanup.md`
+- `origin/main` atual: `7ea1c76a0a8d7b928e430d7f437961b74457049d`
+- Último relatório: `docs/operational-reports/2026-04-21-chat-editorial-polish.md`
 
 ## Estado atual resumido
 - O produto está tecnicamente forte, com frontend público e chat maduros.
@@ -18,13 +18,16 @@
 - A rodada anterior já havia melhorado o backend: follow-up lexical/semântico separado, packing mais hierarquizado, `direto` menos truncado e quality gate textual/editorial com repair.
 - Nesta rodada curta, o defeito residual do `didatico` conceitual foi corrigido no fallback: perguntas conceituais passaram a sair como `explicacao`, sem etapas artificiais, com resumo limpo e sem observações procedimentais indevidas.
 - A verificação remota final do caso `bloco de assinatura` confirmou `modoResposta: "explicacao"`, `stepCount: 0`, `observacoes: []` e subtítulos de referência limpos.
-- `npm run validate` passou após as mudanças desta rodada.
-- O próximo bloco correto passou a ser o polimento editorial/visual da aba do chat, agora sobre um backend conceitual mais estável.
+- Nesta nova rodada, o polimento editorial/visual da aba do chat foi aplicado com foco em composer, tipografia, hierarquia, modos de resposta, navegação interna e clareza de etapas/citações.
+- O frontend agora dialoga melhor com respostas `direto` vs `didatico` e com layouts `checklist` vs `passo_a_passo`, usando labels e seções mais semânticas.
+- O composer ficou maior, a tipografia cresceu, as etapas deixaram de nascer escondidas em cenários comuns e os números passaram a ter significado explícito (`Passo 1`, `Etapa 1`, `Fonte 1`).
+- `npm run validate` passou após as mudanças desta rodada, agora com `33` suites e `132` testes.
+- Foi adicionada a dependência de desenvolvimento `playwright` para suporte a validação visual local sem consumir a API.
 
 ## Pendências reais
-1. Iniciar a rodada de polimento editorial/visual da aba do chat em cima deste baseline já consolidado.
-2. Revisar composer, tipografia, hierarquia, destaque de modos e navegação de respostas longas.
-3. Ampliar, quando fizer sentido, a bateria de perguntas conceituais reais para confirmar o novo padrão em mais casos.
+1. Publicar este bloco em produção a partir de `main`.
+2. Decidir se a próxima rodada volta ao backend para qualidade textual/editorial da resposta ou se entra em microajustes finais de UI.
+3. Se houver nova rodada de frontend, revisar finamente a toolbar superior e a experiência de referências longas.
 
 ## Bloqueios externos
 - Google OAuth administrativo continua dependente de configuração externa.
@@ -32,8 +35,10 @@
 - Leaked Password Protection do Supabase Auth segue desabilitado no ambiente remoto.
 
 ## Próxima ação recomendada
-1. Abrir a frente de polimento editorial/visual da aba do chat.
-2. Priorizar composer, legibilidade, contraste, hierarquia de resposta e revisão dos accordions/etapas.
+1. Fazer commit, push e deploy deste bloco em `main`.
+2. Depois da publicação, escolher entre:
+   - retomar backend/qualidade da resposta;
+   - ou fazer apenas acabamento fino de UI residual.
 
 ## Preambulo obrigatório para qualquer IA
 1. Tratar `origin/main` como única fonte oficial de verdade.

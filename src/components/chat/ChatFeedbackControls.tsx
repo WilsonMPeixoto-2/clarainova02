@@ -70,22 +70,22 @@ export function ChatFeedbackControls({ requestId }: { requestId?: string | null 
 
   return (
     <section
-      className="mt-4 rounded-2xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-2)/0.42)] px-3 py-3"
+      className="chat-feedback-strip"
       aria-label="Avaliar resposta"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
+      <div className="chat-feedback-head">
+        <div className="chat-feedback-copy">
+          <p className="chat-feedback-kicker">
             Feedback rápido
           </p>
-          <p className="mt-1 text-sm text-foreground/88">
+          <p className="chat-feedback-question">
             Essa resposta te ajudou a avançar?
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="chat-feedback-actions">
           <button
             type="button"
-            className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-100 transition hover:bg-emerald-500/18 disabled:cursor-not-allowed disabled:opacity-60"
+            className="chat-feedback-button is-positive"
             onClick={submitHelpful}
             disabled={isDisabled}
           >
@@ -93,7 +93,7 @@ export function ChatFeedbackControls({ requestId }: { requestId?: string | null 
           </button>
           <button
             type="button"
-            className="rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:bg-amber-400/18 disabled:cursor-not-allowed disabled:opacity-60"
+            className="chat-feedback-button is-negative"
             onClick={() => {
               if (isDisabled) return;
               setIsNegativeFlowOpen(true);
@@ -108,19 +108,15 @@ export function ChatFeedbackControls({ requestId }: { requestId?: string | null 
       </div>
 
       {isNegativeFlowOpen && feedbackState !== 'submitted' && (
-        <div className="mt-3 space-y-3">
-          <div className="flex flex-wrap gap-2">
+        <div className="chat-feedback-detail">
+          <div className="chat-feedback-reason-list">
             {NEGATIVE_FEEDBACK_REASONS.map((reason) => {
               const isActive = selectedReason === reason.value;
               return (
                 <button
                   key={reason.value}
                   type="button"
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    isActive
-                      ? 'border border-primary/50 bg-primary/15 text-primary'
-                      : 'border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1))] text-foreground/78 hover:border-primary/30'
-                  }`}
+                  className={`chat-feedback-reason ${isActive ? 'is-active' : ''}`.trim()}
                   onClick={() => setSelectedReason(reason.value)}
                   disabled={feedbackState === 'submitting'}
                 >
@@ -130,8 +126,8 @@ export function ChatFeedbackControls({ requestId }: { requestId?: string | null 
             })}
           </div>
 
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-muted-foreground/80">
+          <label className="chat-feedback-field">
+            <span className="chat-feedback-field-label">
               O que faltou? (opcional)
             </span>
             <textarea
@@ -139,19 +135,19 @@ export function ChatFeedbackControls({ requestId }: { requestId?: string | null 
               onChange={(event) => setComment(event.target.value)}
               maxLength={500}
               rows={3}
-              className="w-full resize-y rounded-xl border border-[hsl(var(--border-subtle))] bg-[hsl(var(--surface-1))] px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary/40"
+              className="chat-feedback-textarea"
               placeholder="Se quiser, descreva rapidamente o que faltou ou o que ficou errado."
               disabled={feedbackState === 'submitting'}
             />
           </label>
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[11px] text-muted-foreground/70">
+          <div className="chat-feedback-detail-footer">
+            <p className="chat-feedback-footnote">
               Motivo opcional. O feedback ja pode ser enviado sem preencher tudo.
             </p>
             <button
               type="button"
-              className="rounded-full border border-primary/35 bg-primary/12 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/18 disabled:cursor-not-allowed disabled:opacity-60"
+              className="chat-feedback-submit"
               onClick={submitNegative}
               disabled={feedbackState === 'submitting'}
             >
@@ -163,9 +159,7 @@ export function ChatFeedbackControls({ requestId }: { requestId?: string | null 
 
       {statusMessage && (
         <p
-          className={`mt-3 text-xs ${
-            feedbackState === 'error' ? 'text-amber-200' : 'text-emerald-100'
-          }`}
+          className={`chat-feedback-status ${feedbackState === 'error' ? 'is-error' : 'is-success'}`}
           role={feedbackState === 'error' ? 'alert' : 'status'}
         >
           {statusMessage}

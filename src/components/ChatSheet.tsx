@@ -46,6 +46,8 @@ const PANEL_VIEWPORT_MARGIN = 20;
 const PANEL_RESIZE_STEP = 72;
 const CHAT_PANEL_STORAGE_KEY = 'clara-chat-panel-preference';
 const CHAT_PANEL_STORAGE_VERSION = 1;
+const CHAT_TEXTAREA_MIN_HEIGHT = 92;
+const CHAT_TEXTAREA_MAX_HEIGHT = 248;
 
 const LOADING_PHASES = [
   {
@@ -335,8 +337,8 @@ const ChatSheet = () => {
     if (!textarea) return;
 
     textarea.style.height = '0px';
-    const nextHeight = Math.min(textarea.scrollHeight, 192);
-    textarea.style.height = `${Math.max(24, nextHeight)}px`;
+    const nextHeight = Math.min(textarea.scrollHeight, CHAT_TEXTAREA_MAX_HEIGHT);
+    textarea.style.height = `${Math.max(CHAT_TEXTAREA_MIN_HEIGHT, nextHeight)}px`;
   }, [input, isOpen]);
 
   useEffect(() => {
@@ -515,8 +517,9 @@ const ChatSheet = () => {
   const composerSupportCopy = hasMessages
     ? 'Referencias e cautelas aparecem ao final sempre que houver base aplicavel.'
     : 'Voce pode comecar com uma pergunta curta ou colar um contexto maior para eu organizar a orientacao.';
-  const showHeaderActionLabels = !isMobile && resolvedPanelWidth >= 1280;
-  const showSizeControlLabel = !isMobile && resolvedPanelWidth >= 1120;
+  const showHeaderActionLabels = !isMobile && resolvedPanelWidth >= 1180;
+  const showSizeControlLabel = !isMobile && resolvedPanelWidth >= 1280;
+  const showPanelSizeControl = !isMobile && (!hasMessages || resolvedPanelWidth >= 1220);
   const isDenseDesktopHeader = !isMobile && hasMessages && resolvedPanelWidth < 1120;
   const inputPlaceholder = isPreviewMode
     ? responseMode === 'direto'
@@ -613,7 +616,7 @@ const ChatSheet = () => {
               </div>
 
               <div className={`chat-header-actions ${isDenseDesktopHeader ? 'is-condensed' : ''}`.trim()}>
-                {!isMobile && (
+                {showPanelSizeControl && (
                   <div className={`chat-size-control ${showSizeControlLabel ? '' : 'is-condensed'}`.trim()} aria-label="Tamanho da janela">
                     {showSizeControlLabel && <span className="chat-size-control-label">Tamanho</span>}
                     <div className="chat-size-control-options" role="group" aria-label="Selecionar tamanho da janela">
@@ -792,12 +795,18 @@ const ChatSheet = () => {
                             requestId={message.requestId}
                           />
                         ) : (
-                          <div className="clara-prose">
-                            <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
+                          <div className="chat-plain-response">
+                            <p className="chat-message-eyebrow">Resposta da CLARA</p>
+                            <div className="clara-prose">
+                              <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{message.content}</ReactMarkdown>
+                            </div>
                           </div>
                         )
                       ) : (
-                        message.content
+                        <div className="chat-user-message-shell">
+                          <p className="chat-message-eyebrow">Sua pergunta</p>
+                          <p className="chat-user-message-copy">{message.content}</p>
+                        </div>
                       )}
                     </div>
                   </motion.div>
@@ -901,7 +910,9 @@ const ChatSheet = () => {
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       >
                         <span className="chat-response-mode-option-title">{optionPresentation.label}</span>
-                        <span className="chat-response-mode-option-copy">{optionPresentation.description}</span>
+                        <span className="chat-response-mode-option-copy">
+                          {hasMessages ? optionPresentation.selectionHint : optionPresentation.description}
+                        </span>
                       </motion.button>
                     );
                   })}
@@ -916,7 +927,7 @@ const ChatSheet = () => {
                   placeholder={inputPlaceholder}
                   maxLength={2000}
                   aria-label="Sua pergunta para a CLARA"
-                  rows={1}
+                  rows={2}
                   className="chat-composer-textarea flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none"
                   disabled={isLoading || !isOnline}
                 />

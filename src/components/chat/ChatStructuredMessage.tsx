@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { Warning, CheckCircle, CircleDashed, CaretDown, CaretUp, CopySimple, FileText, Globe, Question, ShieldWarning, ArrowUp } from "@phosphor-icons/react";
 
 import {
@@ -77,6 +77,54 @@ function resolveStructuredResponseMode(
   return 'didatico';
 }
 
+function getResponseEditorialFrame(
+  response: ClaraStructuredResponse,
+  resolvedMode: ChatResponseMode,
+) {
+  const analysis = response.analiseDaResposta;
+  const isDirect = resolvedMode === 'direto';
+  const hasSteps = response.etapas.length > 0;
+  const isExplanationOnly = response.modoResposta === 'explicacao' || !hasSteps;
+
+  return {
+    modeKicker: analysis.clarificationRequested
+      ? 'Preciso de um detalhe'
+      : isDirect
+        ? 'Resposta rápida'
+        : 'Resposta guiada',
+    modeNote: analysis.clarificationRequested
+      ? 'Com mais contexto eu consigo fechar a orientação com segurança.'
+      : isDirect
+        ? 'Foco no essencial para agir agora.'
+        : 'Mais contexto, explicação e conferência ao longo do caminho.',
+    summaryLabel: analysis.clarificationRequested
+      ? 'O que já posso te orientar'
+      : isDirect
+        ? hasSteps
+          ? 'Rota principal'
+          : 'Síntese objetiva'
+        : isExplanationOnly
+          ? 'Entenda primeiro'
+          : 'Panorama do caso',
+    stepsLabel: isDirect ? 'Etapas essenciais' : 'Guia detalhado',
+    stepsCaption: isDirect
+      ? `${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''} para destravar sua próxima ação`
+      : `${response.etapas.length} etapa${response.etapas.length > 1 ? 's' : ''} com execução, contexto e conferência`,
+    observationsLabel: isDirect ? 'Conferências finais' : 'Pontos de atenção',
+    observationsCaption: isDirect
+      ? 'Use esta checagem antes de concluir a ação.'
+      : 'Use estes pontos para evitar erro, retrabalho ou interpretação apressada.',
+    referencesLabel: 'Fontes citadas',
+    referencesCaption: isDirect
+      ? 'As marcações de fonte abrem a base usada nesta resposta.'
+      : 'As marcações de fonte permitem revisar a base usada ao longo da orientação.',
+    stepLabelPrefix: isDirect ? 'Passo' : 'Etapa',
+    stepProgressLabel: isDirect
+      ? `${response.etapas.length} etapas essenciais`
+      : `${response.etapas.length} etapas do guia`,
+  };
+}
+
 function ConfidenceBadge({ scopeMatch, confidence }: { scopeMatch: string; confidence: number | null }) {
   const tier = scopeMatch === 'exact'
     ? { label: 'Resposta fundamentada', className: 'chat-confidence-high' }
@@ -97,12 +145,18 @@ function ConfidenceBadge({ scopeMatch, confidence }: { scopeMatch: string; confi
   );
 }
 
-const COLLAPSED_ITEM_LIMIT = 3;
-
-function ExpandableItemList({ items, stepNumber }: { items: string[]; stepNumber: number }) {
+function ExpandableItemList({
+  items,
+  stepNumber,
+  visibleCount,
+}: {
+  items: string[];
+  stepNumber: number;
+  visibleCount: number;
+}) {
   const [expanded, setExpanded] = useState(false);
-  const shouldCollapse = items.length > COLLAPSED_ITEM_LIMIT;
-  const visibleItems = shouldCollapse && !expanded ? items.slice(0, COLLAPSED_ITEM_LIMIT) : items;
+  const shouldCollapse = items.length > visibleCount;
+  const visibleItems = shouldCollapse && !expanded ? items.slice(0, visibleCount) : items;
 
   return (
     <>
@@ -120,7 +174,7 @@ function ExpandableItemList({ items, stepNumber }: { items: string[]; stepNumber
         >
           {expanded
             ? 'Recolher'
-            : `Mais ${items.length - COLLAPSED_ITEM_LIMIT} iten${items.length - COLLAPSED_ITEM_LIMIT > 1 ? 's' : ''}`}
+            : `Mais ${items.length - visibleCount} iten${items.length - visibleCount > 1 ? 's' : ''}`}
           {expanded ? <CaretUp size={12} /> : <CaretDown size={12} />}
         </button>
       )}
@@ -154,17 +208,28 @@ function CitationList({ citations }: { citations: number[] }) {
   return (
     <span className="chat-citation-inline" aria-label={`Referencias ${citations.join(', ')}`}>
       {citations.map((citation, index) => (
-        <sup
+        <button
           key={citation}
+          type="button"
           id={index === 0 ? `clara-cite-${citation}` : undefined}
           className="chat-citation-badge chat-citation-clickable"
-          role="button"
-          tabIndex={0}
-          onClick={() => scrollToReference(citation)}
-          onKeyDown={(e) => e.key === 'Enter' && scrollToReference(citation)}
+          onClick={(event) => {
+            event.stopPropagation();
+            scrollToReference(citation);
+          }}
+          onKeyDown={(event) => {
+            event.stopPropagation();
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              scrollToReference(citation);
+            }
+          }}
+          aria-label={`Abrir fonte ${citation}`}
+          title={`Abrir fonte ${citation}`}
         >
-          {citation}
-        </sup>
+          <span className="chat-citation-badge-label">Fonte</span>
+          <span>{citation}</span>
+        </button>
       ))}
     </span>
   );
@@ -173,7 +238,7 @@ function CitationList({ citations }: { citations: number[] }) {
 function ReferenceItem({ reference }: { reference: ClaraReference }) {
   return (
     <li id={`clara-ref-${reference.id}`} className="chat-reference-item">
-      <span className="chat-reference-index">{reference.id}</span>
+      <span className="chat-reference-index">{`Fonte ${reference.id}`}</span>
       <span>{formatReferenceAbnt(reference)}</span>
       <button
         type="button"
@@ -192,28 +257,45 @@ function CollapsibleStepCard({
   step,
   isCollapsible,
   defaultExpanded,
+  stepLabelPrefix,
+  visibleItemCount,
 }: {
   step: ClaraStructuredResponse['etapas'][0];
   isCollapsible: boolean;
   defaultExpanded: boolean;
+  stepLabelPrefix: string;
+  visibleItemCount: number;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const stepLabel = `${stepLabelPrefix} ${step.numero}`;
 
   return (
     <article className="chat-step-card" role="listitem">
       <div 
-        className={`chat-step-header ${isCollapsible ? 'cursor-pointer select-none' : ''}`}
-        onClick={isCollapsible ? () => setExpanded(v => !v) : undefined}
+        className={`chat-step-header ${isCollapsible ? 'cursor-pointer select-none is-collapsible' : ''}`}
+        onClick={isCollapsible ? () => setExpanded((v) => !v) : undefined}
+        onKeyDown={isCollapsible ? (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            setExpanded((v) => !v);
+          }
+        } : undefined}
+        role={isCollapsible ? 'button' : undefined}
+        tabIndex={isCollapsible ? 0 : undefined}
+        aria-expanded={isCollapsible ? expanded : undefined}
       >
-        <span className="chat-step-number">{String(step.numero).padStart(2, '0')}</span>
+        <span className="chat-step-number">{stepLabel}</span>
         <div className="chat-step-heading" style={{ flex: 1 }}>
           <h4>{step.titulo}</h4>
           {step.citacoes.length > 0 && <CitationList citations={step.citacoes} />}
         </div>
         {isCollapsible && (
-          <button type="button" className="chat-expand-toggle-icon ml-auto p-1 rounded-full hover:bg-[hsl(var(--surface-3))] transition-colors text-[hsl(var(--muted-foreground))]">
+          <span className="chat-expand-toggle-icon ml-auto p-1 rounded-full hover:bg-[hsl(var(--surface-3))] transition-colors text-[hsl(var(--muted-foreground))]">
+            <span className="sr-only">
+              {expanded ? `Recolher ${stepLabel.toLowerCase()}` : `Expandir ${stepLabel.toLowerCase()}`}
+            </span>
             {expanded ? <CaretUp size={16} /> : <CaretDown size={16} />}
-          </button>
+          </span>
         )}
       </div>
 
@@ -232,7 +314,11 @@ function CollapsibleStepCard({
           )}
 
           {step.itens.length > 0 && (
-            <ExpandableItemList items={step.itens} stepNumber={step.numero} />
+            <ExpandableItemList
+              items={step.itens}
+              stepNumber={step.numero}
+              visibleCount={visibleItemCount}
+            />
           )}
 
           {step.alerta && (
@@ -259,8 +345,17 @@ export function ChatStructuredMessage({
   const [showReferences, setShowReferences] = useState(true);
   const [copied, setCopied] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const baseId = useId().replace(/:/g, '');
   const analysis = response.analiseDaResposta;
   const resolvedMode = resolveStructuredResponseMode(response, responseMode);
+  const editorialFrame = useMemo(
+    () => getResponseEditorialFrame(response, resolvedMode),
+    [resolvedMode, response],
+  );
+  const summarySectionId = `${baseId}-summary`;
+  const stepsSectionId = `${baseId}-steps`;
+  const observationsSectionId = `${baseId}-observations`;
+  const referencesSectionId = `${baseId}-references`;
 
   const scrollToTop = useCallback(() => {
     if (containerRef.current) {
@@ -285,6 +380,7 @@ export function ChatStructuredMessage({
     () => analysis.processStates.filter((state) => state.status !== 'concluido').slice(0, 1),
     [analysis.processStates],
   );
+  const visibleItemCount = resolvedMode === 'didatico' ? 5 : 4;
   const confidenceTier = analysis.answerScopeMatch === 'exact' ? 'high'
     : analysis.answerScopeMatch === 'probable' ? 'good'
     : analysis.answerScopeMatch === 'weak' ? 'moderate' : 'low';
@@ -294,8 +390,46 @@ export function ChatStructuredMessage({
     || analysis.answerScopeMatch === 'insufficient';
   const showHighlightCloud = resolvedMode === 'direto' && groupedHighlights.length > 0;
   const compactSourceCount = response.referenciasFinais.length > 0
-    ? `${response.referenciasFinais.length} fonte${response.referenciasFinais.length > 1 ? 's' : ''}`
+    ? `${response.referenciasFinais.length} fonte${response.referenciasFinais.length > 1 ? 's' : ''} citada${response.referenciasFinais.length > 1 ? 's' : ''}`
     : null;
+  const sectionLinks = useMemo(() => {
+    const links: Array<{ key: string; label: string; targetId: string }> = [
+      { key: 'summary', label: editorialFrame.summaryLabel, targetId: summarySectionId },
+    ];
+
+    if (response.etapas.length > 0) {
+      links.push({ key: 'steps', label: editorialFrame.stepsLabel, targetId: stepsSectionId });
+    }
+
+    if (response.observacoesFinais.length > 0) {
+      links.push({ key: 'observations', label: editorialFrame.observationsLabel, targetId: observationsSectionId });
+    }
+
+    if (response.referenciasFinais.length > 0) {
+      links.push({ key: 'references', label: editorialFrame.referencesLabel, targetId: referencesSectionId });
+    }
+
+    return links;
+  }, [
+    editorialFrame.observationsLabel,
+    editorialFrame.referencesLabel,
+    editorialFrame.stepsLabel,
+    editorialFrame.summaryLabel,
+    observationsSectionId,
+    referencesSectionId,
+    response.etapas.length,
+    response.observacoesFinais.length,
+    response.referenciasFinais.length,
+    stepsSectionId,
+    summarySectionId,
+  ]);
+  const showSectionJumpNav = sectionLinks.length > 2;
+  const jumpToSection = useCallback((targetId: string) => {
+    const element = document.getElementById(targetId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
 
   return (
     <div
@@ -309,21 +443,20 @@ export function ChatStructuredMessage({
       <div className="chat-response-intro">
         <div className="chat-response-toolbar">
           <div className="chat-response-toolbar-status">
-            {(resolvedMode === 'direto' || analysis.clarificationRequested) && (
-              <span className="chat-response-kicker">
-                <span className="chat-response-avatar" aria-hidden="true">
-                  <img
-                    src="/brand/clara-avatar-chat-64.png"
-                    alt=""
-                    className="chat-response-avatar-mark"
-                    decoding="async"
-                    loading="eager"
-                    draggable={false}
-                  />
-                </span>
-                {analysis.clarificationRequested ? 'Preciso de um detalhe' : 'Resposta direta'}
+            <span className="chat-response-kicker">
+              <span className="chat-response-avatar" aria-hidden="true">
+                <img
+                  src="/brand/clara-avatar-chat-64.png"
+                  alt=""
+                  className="chat-response-avatar-mark"
+                  decoding="async"
+                  loading="eager"
+                  draggable={false}
+                />
               </span>
-            )}
+              {editorialFrame.modeKicker}
+            </span>
+            <span className="chat-response-mode-note">{editorialFrame.modeNote}</span>
             {showConfidenceBadge && (
               <ConfidenceBadge
                 scopeMatch={analysis.answerScopeMatch}
@@ -342,12 +475,30 @@ export function ChatStructuredMessage({
           </button>
         </div>
         <h3 className="chat-response-title">{response.tituloCurto}</h3>
-        <div className="chat-response-summary-block">
+        <section id={summarySectionId} className="chat-response-summary-block">
+          <div className="chat-section-heading">
+            <p className="chat-response-section-label">{editorialFrame.summaryLabel}</p>
+          </div>
           <p className="chat-response-summary">
             {response.resumoInicial}
             <CitationList citations={response.resumoCitacoes} />
           </p>
-        </div>
+        </section>
+
+        {showSectionJumpNav && (
+          <nav className="chat-response-jump-nav" aria-label="Navegar pela resposta">
+            {sectionLinks.map((section) => (
+              <button
+                key={section.key}
+                type="button"
+                className="chat-response-jump-chip"
+                onClick={() => jumpToSection(section.targetId)}
+              >
+                {section.label}
+              </button>
+            ))}
+          </nav>
+        )}
 
         {analysis.clarificationRequested && analysis.clarificationQuestion && (
           <section className="chat-clarification-card" aria-label="Pedido de esclarecimento">
@@ -412,10 +563,14 @@ export function ChatStructuredMessage({
 
 
       {response.etapas.length > 0 && (
-        <section className="chat-step-section" aria-label="Etapas sugeridas">
+        <section id={stepsSectionId} className="chat-step-section" aria-label="Etapas sugeridas">
+          <div className="chat-section-heading">
+            <p className="chat-response-section-label">{editorialFrame.stepsLabel}</p>
+            <p className="chat-section-caption">{editorialFrame.stepsCaption}</p>
+          </div>
           {resolvedMode === 'direto' && response.etapas.length > 1 && (
-            <div className="chat-step-progress" aria-label={`${response.etapas.length} etapas`}>
-              <span className="chat-step-progress-label">{response.etapas.length} etapas</span>
+            <div className="chat-step-progress" aria-label={editorialFrame.stepProgressLabel}>
+              <span className="chat-step-progress-label">{editorialFrame.stepProgressLabel}</span>
               <div className="chat-step-progress-dots">
                 {response.etapas.map((step) => (
                   <span
@@ -432,8 +587,10 @@ export function ChatStructuredMessage({
               <CollapsibleStepCard 
                 key={step.numero} 
                 step={step} 
-                isCollapsible={response.etapas.length >= 4}
-                defaultExpanded={response.etapas.length < 4 || step.numero === 1}
+                isCollapsible={response.etapas.length >= 5}
+                defaultExpanded
+                stepLabelPrefix={editorialFrame.stepLabelPrefix}
+                visibleItemCount={visibleItemCount}
               />
             ))}
           </div>
@@ -441,7 +598,11 @@ export function ChatStructuredMessage({
       )}
 
       {response.observacoesFinais.length > 0 && (
-        <section className="chat-observation-card" aria-label="Observacoes finais">
+        <section id={observationsSectionId} className="chat-observation-card" aria-label="Observacoes finais">
+          <div className="chat-section-heading">
+            <p className="chat-response-section-label">{editorialFrame.observationsLabel}</p>
+            <p className="chat-section-caption">{editorialFrame.observationsCaption}</p>
+          </div>
           <ul className="chat-observation-list">
             {response.observacoesFinais.map((observation) => (
               <li key={observation}>{observation}</li>
@@ -452,7 +613,7 @@ export function ChatStructuredMessage({
 
 
       {response.referenciasFinais.length > 0 && (
-        <section className="chat-references-card" aria-label="Referencias">
+        <section id={referencesSectionId} className="chat-references-card" aria-label="Referencias">
           <button
             type="button"
             className="chat-references-toggle"
@@ -461,7 +622,7 @@ export function ChatStructuredMessage({
             <span className="chat-references-toggle-copy">
               <span className="chat-references-title">
                 <FileText size={15} />
-                <span>Fontes</span>
+                <span>{editorialFrame.referencesLabel}</span>
               </span>
               {compactSourceCount && <span className="chat-references-count">{compactSourceCount}</span>}
             </span>
@@ -470,7 +631,7 @@ export function ChatStructuredMessage({
           {showReferences && (
             <>
               <p className="chat-reference-intro">
-                Os trechos com citação remetem às fontes abaixo.
+                {editorialFrame.referencesCaption}
               </p>
               <ol className="chat-reference-list">
                 {response.referenciasFinais.map((reference) => (

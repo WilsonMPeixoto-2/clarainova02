@@ -2,15 +2,15 @@
   "source_of_truth": "origin/main",
   "protocol_version": 2,
   "project": "CLARAINOVA02",
-  "last_integrated_main_sha": "55c563e0e72e664b49b3e21aa0ebe6c5b1f1f3d1",
-  "current_phase": "Rodada curta de limpeza conceitual do modo Didatico concluida em main",
-  "active_block": "Preparacao do polimento editorial/visual da aba do chat",
+  "last_integrated_main_sha": "7ea1c76a0a8d7b928e430d7f437961b74457049d",
+  "current_phase": "Polimento editorial/visual da aba do chat concluido localmente em main",
+  "active_block": "Publicacao do bloco de polimento editorial/visual da aba do chat",
   "active_branch": "main",
   "last_tool": "CODEX",
   "last_machine": "WILSON-MP",
-  "last_update_utc": "2026-04-21T03:53:39.0809145Z",
+  "last_update_utc": "2026-04-21T05:41:58.7776840Z",
   "completed_items": [
-    "A linha oficial `origin/main` local nesta rodada esta em `55c563e0e72e664b49b3e21aa0ebe6c5b1f1f3d1`, com o ajuste conceitual ja consolidado em `main`.",
+    "A linha oficial `origin/main` local nesta rodada esta em `7ea1c76a0a8d7b928e430d7f437961b74457049d`, com o ajuste conceitual ja consolidado em `main`.",
     "O frontend publico e o chat permanecem maduros: home forte, resposta estruturada, exportacao em PDF, impressao, copia, feedback e boa responsividade.",
     "O backend RAG segue robusto com `gemini-3.1-pro-preview` como primario, `gemini-3.1-flash-lite-preview` como fallback, retrieval governado, repair chain e caches ativos.",
     "O corpus remoto auditado segue operacionalmente saudavel: `23` documentos totais, `17` ativos, `23` processados e `289/289` chunks ativos com embedding.",
@@ -19,26 +19,31 @@
     "O contrato de resposta foi reforcado para diferenciar melhor `direto` e `didatico`, com menos compressao no `direto` e mais densidade explicativa no `didatico`.",
     "O benchmark controlado anterior confirmou melhora objetiva: `truncatedSteps` caiu de `1` para `0`, `direto.conciseButComplete` subiu de `0` para `1` e `avgSummaryChars` subiu de `285.67` para `340.67`.",
     "Nesta rodada curta, o defeito residual do `didatico` conceitual foi resolvido no fallback: pergunta conceitual voltou como `explicacao`, sem etapas artificiais, com resumo limpo e sem observacoes procedimentais indevidas.",
-    "A validacao local ficou verde nesta rodada: `npm run validate` passou com `33` suites e `131` testes.",
-    "A verificacao remota final do caso `bloco de assinatura` confirmou `modoResposta: explicacao`, `stepCount: 0`, `observacoes: []` e subtitulos de referencia limpos."
+    "O polimento editorial/visual da aba do chat foi implementado com foco em composer, tipografia, contraste, hierarquia, modos de resposta, etapas e navegacao de respostas longas.",
+    "O frontend agora conversa melhor com o formato real da resposta: `direto` vs `didatico` e `checklist` vs `passo_a_passo` ganharam labels, seções e densidades mais semanticamente coerentes.",
+    "O composer ficou mais alto, o input ganhou mais respiro, as etapas deixaram de nascer escondidas em cenarios comuns e os numeros passaram a aparecer com significado explicito (`Passo 1`, `Etapa 1`, `Fonte 1`).",
+    "A area de feedback ficou menos pesada visualmente e a resposta ganhou navegacao interna por seções quando o volume de conteudo justifica isso.",
+    "A validacao local ficou verde nesta rodada: `npm run validate` passou com `33` suites e `132` testes.",
+    "A verificacao visual local foi feita com Playwright, usando respostas estruturadas simuladas em `localStorage` para evitar consumo da API e confirmar o comportamento em desktop e mobile."
   ],
   "pending_items": [
-    "Abrir a rodada de polimento editorial/visual da aba do chat sobre este baseline mais estavel.",
-    "Revisar composer, tipografia, contraste, hierarquia e destaque dos modos `Direto` e `Didatico`.",
-    "Melhorar a navegacao de respostas longas e revisar o comportamento das etapas/accordions na interface."
+    "Fazer commit, push e deploy deste bloco em producao a partir de `main`.",
+    "Decidir se a proxima rodada volta ao backend para qualidade textual/editorial da resposta ou se fecha apenas microajustes finais da interface.",
+    "Se houver continuidade de frontend, revisar finamente a toolbar superior e a experiencia de referencias muito longas."
   ],
   "external_blockers": [
     "Google OAuth administrativo continua dependente de configuracao externa no Supabase/Google.",
     "Os modelos Gemini de geracao ainda estao em `preview`, com risco externo de disponibilidade e mudanca de identificadores.",
     "Leaked Password Protection do Supabase Auth segue desabilitado e depende de ajuste externo de configuracao."
   ],
-  "next_action": "Abrir a frente de polimento editorial/visual da aba do chat, agora sobre um backend conceitual mais limpo e mais estavel.",
+  "next_action": "Publicar o bloco de polimento editorial/visual da aba do chat em producao e escolher o proximo foco entre backend de resposta e microajustes finais de UI.",
   "notes": [
-    "O foco desta rodada foi explicitamente a excelencia da resposta gerada, nao redesign amplo de frontend.",
+    "O foco desta rodada foi a apresentacao editorial da resposta, nao redesign amplo do produto.",
     "A verificacao remota final mostrou que o caso conceitual residual foi corrigido no fallback estruturado.",
+    "A rodada de UI nao consumiu a API para validacao visual: as capturas locais usaram respostas simuladas persistidas no storage do navegador.",
     "O build continua emitindo warnings de chunks grandes, sobretudo nos bundles de PDF/admin; isso e otimizacao futura, nao bloqueio de release."
   ],
   "session_status": "ready_for_production",
-  "last_report": "docs/operational-reports/2026-04-20-conceptual-didatic-and-reference-cleanup.md",
-  "last_session_head_sha": "55c563e0e72e664b49b3e21aa0ebe6c5b1f1f3d1"
+  "last_report": "docs/operational-reports/2026-04-21-chat-editorial-polish.md",
+  "last_session_head_sha": "7ea1c76a0a8d7b928e430d7f437961b74457049d"
 }
