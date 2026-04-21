@@ -7,20 +7,20 @@ import {
 } from "../../supabase/functions/chat/editorial";
 
 describe("chat editorial helpers", () => {
-  it("builds grounded reference subtitles with editorial transparency", () => {
+  it("keeps only the cleaned section title in grounded reference subtitles", () => {
     expect(buildEditorialSubtitle({
       sectionTitle: "Bloco de assinatura",
       documentAuthorityLevel: "official",
       documentTopicScope: "sei_rio_manual",
-    })).toBe("Bloco de assinatura · camada núcleo · fonte oficial");
+    })).toBe("Bloco de assinatura");
   });
 
-  it("dedupes overlapping support labels in the subtitle", () => {
+  it("strips numbering and bullets from user-facing subtitles", () => {
     expect(buildEditorialSubtitle({
-      sectionTitle: "Atalhos visuais",
+      sectionTitle: "2.3 - Atalhos visuais",
       documentAuthorityLevel: "supporting",
       documentTopicScope: "interface_update",
-    })).toBe("Atalhos visuais · apoio complementar");
+    })).toBe("Atalhos visuais");
   });
 
   it("flags mixed nucleus and support references for user-facing notice", () => {

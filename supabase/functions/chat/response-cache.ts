@@ -6,7 +6,7 @@ export type ChatResponseCacheStatus = 'hit' | 'miss' | 'store_failed';
 
 // Bump this when the structured response contract, editorial rules, or
 // retrieval behavior changes enough to invalidate previously stored responses.
-export const CHAT_RESPONSE_CACHE_CONTRACT_VERSION = '2026-04-20-r4-editorial-quality-v3';
+export const CHAT_RESPONSE_CACHE_CONTRACT_VERSION = '2026-04-20-r17-conceptual-observation-cleanup';
 
 const CHAT_RESPONSE_CACHE_PREFIX = `chat_response_cache:${CHAT_RESPONSE_CACHE_CONTRACT_VERSION}`;
 

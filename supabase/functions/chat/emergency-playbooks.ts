@@ -141,7 +141,12 @@ const PLAYBOOKS: EmergencyGroundedPlaybook[] = [
   },
   {
     id: "q5-bloco-assinatura",
-    patterns: [/bloco de assinatura/, /disponibilizar.*processo.*assinatura/],
+    patterns: [
+      /(?:incluir|inclusao).*bloco de assinatura/,
+      /(?:disponibilizar|disponibilizacao).*bloco de assinatura/,
+      /bloco de assinatura.*(?:incluir|disponibilizar)/,
+      /disponibilizar.*processo.*assinatura/,
+    ],
     title: "Disponibilizar em bloco de assinatura",
     summary: "Para disponibilizar um documento em bloco de assinatura, primeiro crie o bloco, depois inclua o documento e finalize a disponibilizacao para a unidade ou signatario correspondente.",
     mode: "passo_a_passo",

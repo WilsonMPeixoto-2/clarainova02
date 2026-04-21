@@ -305,6 +305,52 @@ function dedupeStrings(values: string[], limit: number) {
   return next;
 }
 
+function shouldFlattenConceptualDidacticResponse(
+  response: ClaraStructuredResponse,
+  intentLabel?: ChatIntentLabel,
+) {
+  return intentLabel === "conceito" &&
+    response.etapas.length > 0 &&
+    response.etapas.length <= 3;
+}
+
+function buildConceptualDidacticObservations(response: ClaraStructuredResponse) {
+  return dedupeStrings(
+    [
+      ...response.etapas.map((step) => `${step.titulo}: ${takeSentences(step.conteudo, 2, 220)}`),
+      ...response.etapas.flatMap((step) =>
+        step.alerta ? [`Ponto de atencao em ${step.titulo.toLowerCase()}: ${takeFirstSentence(step.alerta)}`] : []
+      ),
+      ...response.observacoesFinais,
+    ].filter(Boolean),
+    4,
+  );
+}
+
+function flattenConceptualDidacticResponse(response: ClaraStructuredResponse) {
+  const validIds = new Set(response.referenciasFinais.map((reference) => reference.id));
+  const mergedSummary = takeSentences(
+    [
+      response.resumoInicial,
+      ...response.etapas.map((step) => takeSentences(step.conteudo, 2, 260)),
+    ].join(" "),
+    4,
+    760,
+  );
+
+  return {
+    ...response,
+    resumoInicial: mergedSummary,
+    resumoCitacoes: filterCitationIds(
+      [...response.resumoCitacoes, ...response.etapas.flatMap((step) => step.citacoes)],
+      validIds,
+    ),
+    modoResposta: "explicacao" as const,
+    etapas: [],
+    observacoesFinais: buildConceptualDidacticObservations(response),
+  };
+}
+
 function adaptStructuredResponseForMode(
   response: ClaraStructuredResponse,
   responseMode: ChatResponseMode,
@@ -315,45 +361,19 @@ function adaptStructuredResponseForMode(
       response.analiseDaResposta.answerScopeMatch === "weak" ||
       response.analiseDaResposta.answerScopeMatch === "insufficient" ||
       response.analiseDaResposta.webFallbackUsed;
-    const isConceptualExplanatoryFlow =
-      intentLabel === "conceito" &&
-      response.etapas.length === 1 &&
-      response.modoResposta === "passo_a_passo";
-    const conceptualStep = isConceptualExplanatoryFlow ? response.etapas[0] : null;
-    const didacticMode = isConceptualExplanatoryFlow || response.etapas.length === 0
+    const shouldFlattenConceptual = shouldFlattenConceptualDidacticResponse(response, intentLabel);
+    const didacticBase = shouldFlattenConceptual ? flattenConceptualDidacticResponse(response) : response;
+    const didacticMode = didacticBase.etapas.length === 0
       ? "explicacao"
       : "passo_a_passo";
-    const didacticObservations = isConceptualExplanatoryFlow && conceptualStep
-      ? dedupeStrings(
-          [
-            conceptualStep.conteudo,
-            ...conceptualStep.itens.map((item) => takeSentences(item, 1, 220)),
-            conceptualStep.alerta ? takeFirstSentence(conceptualStep.alerta) : "",
-            ...response.observacoesFinais,
-          ].filter(Boolean),
-          3,
-        )
-      : dedupeStrings(response.observacoesFinais, 3);
-    const didacticSummary = isConceptualExplanatoryFlow && conceptualStep
-      ? takeSentences(
-          `${response.resumoInicial.trim()} ${conceptualStep.conteudo.trim()}`,
-          4,
-          720,
-        )
-      : response.resumoInicial;
-    const didacticSummaryCitations = isConceptualExplanatoryFlow && conceptualStep
-      ? filterCitationIds([...response.resumoCitacoes, ...conceptualStep.citacoes], new Set(response.referenciasFinais.map((reference) => reference.id)))
-      : response.resumoCitacoes;
 
     return {
-      ...response,
-      resumoInicial: didacticSummary,
-      resumoCitacoes: didacticSummaryCitations,
+      ...didacticBase,
       modoResposta: didacticMode,
-      etapas: isConceptualExplanatoryFlow
+      etapas: didacticBase.etapas.length === 0
         ? []
         : renumberSteps(
-            response.etapas.slice(0, 4).map((step) => ({
+            didacticBase.etapas.slice(0, 4).map((step) => ({
               ...step,
               conteudo: step.conteudo.trim(),
               itens: dedupeStrings(step.itens, 4),
@@ -361,26 +381,26 @@ function adaptStructuredResponseForMode(
               alerta: step.alerta ? takeFirstSentence(step.alerta) : step.alerta,
             })),
           ),
-      observacoesFinais: didacticObservations,
-      termosDestacados: response.termosDestacados
+      observacoesFinais: dedupeStrings(didacticBase.observacoesFinais, 4),
+      termosDestacados: didacticBase.termosDestacados
         .filter((highlight, index, all) => {
           const normalized = normalizeComparableText(highlight.texto);
           return all.findIndex((candidate) => normalizeComparableText(candidate.texto) === normalized) === index;
         })
         .slice(0, 3),
       analiseDaResposta: {
-        ...response.analiseDaResposta,
-        userNotice: keepContextNotice ? response.analiseDaResposta.userNotice : null,
-        clarificationReason: response.analiseDaResposta.clarificationReason
-          ? takeFirstSentence(response.analiseDaResposta.clarificationReason)
+        ...didacticBase.analiseDaResposta,
+        userNotice: keepContextNotice ? didacticBase.analiseDaResposta.userNotice : null,
+        clarificationReason: didacticBase.analiseDaResposta.clarificationReason
+          ? takeFirstSentence(didacticBase.analiseDaResposta.clarificationReason)
           : null,
-        ambiguityReason: response.analiseDaResposta.ambiguityReason
-          ? takeFirstSentence(response.analiseDaResposta.ambiguityReason)
+        ambiguityReason: didacticBase.analiseDaResposta.ambiguityReason
+          ? takeFirstSentence(didacticBase.analiseDaResposta.ambiguityReason)
           : null,
-        cautionNotice: response.analiseDaResposta.cautionNotice
-          ? takeFirstSentence(response.analiseDaResposta.cautionNotice)
+        cautionNotice: didacticBase.analiseDaResposta.cautionNotice
+          ? takeFirstSentence(didacticBase.analiseDaResposta.cautionNotice)
           : null,
-        processStates: response.analiseDaResposta.processStates
+        processStates: didacticBase.analiseDaResposta.processStates
           .filter((state) => state.status !== "concluido" && state.status !== "informativo")
           .slice(0, 1),
       },
@@ -569,7 +589,10 @@ function sanitizeText(text: string): string {
   for (const [pattern, replacement] of LEAK_REPLACEMENT_PATTERNS) {
     result = result.replace(pattern, replacement);
   }
-  return result.replace(/\s{2,}/g, " ").trim();
+  return result
+    .replace(/^([A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}\s]{2,80}?)\s+(?=(?:O|A|Os|As|Para)\b)/u, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 }
 
 function inferReferenceType(documentName: string): ClaraStructuredResponse["referenciasFinais"][number]["tipo"] {

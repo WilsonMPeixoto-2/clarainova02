@@ -932,6 +932,28 @@ const FALLBACK_ACTION_PATTERNS = [
   /\bacesse\b/i,
 ];
 
+const FALLBACK_PROCEDURAL_DETAIL_PATTERNS = [
+  /\babr(?:a|ir)\b/i,
+  /\bacess(?:e|ar|ando)\b/i,
+  /\bclic(?:ando|ar|e)\b/i,
+  /\bselecion(?:e|ar)\b/i,
+  /\bpreench(?:a|er)\b/i,
+  /\bconfirm(?:e|ar)\b/i,
+  /\benvi(?:e|ar)\b/i,
+  /\bcria(?:r)?\b/i,
+  /\bdisponibiliza(?:r)?\b/i,
+  /\bnovo\b/i,
+  /\bsalvar\b/i,
+  /\btela\b/i,
+  /\bmenu\b/i,
+  /\bcampo\b/i,
+  /\bbarra\b/i,
+  /\bimagem\b/i,
+  /\bcoluna\b/i,
+  /\ba[cç](?:ao|ões|oes)\b/i,
+  /\bbot[aã]o\b/i,
+];
+
 const FALLBACK_STOP_WORDS = new Set([
   'a', 'ao', 'aos', 'as', 'com', 'como', 'da', 'das', 'de', 'do', 'dos', 'e', 'em', 'na', 'nas', 'no', 'nos',
   'o', 'os', 'ou', 'para', 'por', 'que', 'se', 'um', 'uma', 'mais',
@@ -944,6 +966,7 @@ function sanitizeFallbackEvidenceText(value: string): string {
     .replace(/\bCapturado em:[^\n]+/gi, '')
     .replace(/\bObservacao:[^\n]*/gi, '')
     .replace(/\bProtocolo:\s*\d+[^\n]*/gi, '')
+    .replace(/^([A-ZÁÉÍÓÚÂÊÔÃÕÇ][\p{L}\s]{2,80}?)\s+(?=(?:O|A|Os|As|Para)\b)/u, '')
     .replace(/\s+/g, ' ')
     .replace(/^[\s\-–•●\d.:)]+/, '')
     .trim();
@@ -1045,6 +1068,7 @@ function extractFallbackQuestionTokens(question: string): string[] {
 
 function buildFallbackEvidence(question: string, chunks: HybridSearchChunk[]): string[] {
   const normalizedQuestion = normalizeQueryText(question);
+  const intentLabel = inferIntentLabel(normalizedQuestion);
   const questionTokens = extractFallbackQuestionTokens(question);
   const rankedChunks = [...chunks].sort((left, right) => scoreFallbackChunk(question, right) - scoreFallbackChunk(question, left));
   const candidates: Array<{ text: string; score: number }> = [];
@@ -1067,7 +1091,7 @@ function buildFallbackEvidence(question: string, chunks: HybridSearchChunk[]): s
 
       const overlap = questionTokens.reduce((total, token) => total + (normalizedCandidate.includes(token) ? 1 : 0), 0);
       const hasAction = FALLBACK_ACTION_PATTERNS.some((pattern) => pattern.test(candidate));
-      const proceduralQuestion = /(?:como|passo a passo|etapas|procedimento|fazer|usar|incluir|encaminh|assinatura|documento|processo)/.test(normalizedQuestion);
+      const proceduralQuestion = intentLabel === 'como_fazer' || intentLabel === 'rotina_operacional';
       if (proceduralQuestion && overlap === 0 && !hasAction) continue;
 
       candidates.push({
@@ -1516,6 +1540,7 @@ function buildGroundedFallbackResponse(
   groundedReferences: ClaraStructuredResponse["referenciasFinais"],
   groundedReferenceProfile: EditorialProfile | null,
   responseMode: ChatResponseMode,
+  intentLabel: ChatIntentLabel,
   retrievalQuality: RetrievalQualityInfo | null,
   sourceTarget: SourceTargetRoute | null,
 ): ClaraStructuredResponse {
@@ -1540,6 +1565,17 @@ function buildGroundedFallbackResponse(
   const keyStatements = extractKeyStatements(rankedChunks);
   const fallbackEvidence = buildFallbackEvidence(question, rankedChunks);
   const citations = groundedReferences.map((reference) => reference.id);
+  const isConceptualFallback = intentLabel === 'conceito';
+  const conceptualStatements = (keyStatements.length > 0 ? keyStatements : fallbackEvidence)
+    .map((statement) => sanitizeFallbackEvidenceText(statement))
+    .filter(Boolean);
+  const conceptualNarrativeStatements = conceptualStatements.filter((statement) =>
+    !FALLBACK_PROCEDURAL_DETAIL_PATTERNS.some((pattern) => pattern.test(statement))
+  );
+  const conceptualPool = conceptualNarrativeStatements.length > 0
+    ? conceptualNarrativeStatements
+    : conceptualStatements;
+  const conceptualSummaryParts = conceptualPool.slice(0, responseMode === 'direto' ? 1 : 2);
   const confidenceTier = retrievalQuality?.confidenceTier ?? 'moderada';
   const evidenceQuality = fallbackEvidence.length >= 2 ? 'strong'
     : fallbackEvidence.length === 1 ? 'partial'
@@ -1564,14 +1600,25 @@ function buildGroundedFallbackResponse(
       : null,
   });
   const detailItems = evidenceQuality === 'strong'
-    ? fallbackEvidence.slice(1, responseMode === 'direto' ? 2 : 3)
+    ? (
+      isConceptualFallback
+        ? conceptualPool.slice(
+          conceptualSummaryParts.length,
+          conceptualSummaryParts.length + (responseMode === 'direto' ? 1 : 2),
+        )
+        : fallbackEvidence.slice(1, responseMode === 'direto' ? 2 : 3)
+    )
     : [];
-  const summary = evidenceQuality === 'strong'
+  const summary = isConceptualFallback && evidenceQuality === 'strong'
+    ? (conceptualSummaryParts.join(' ').trim() || fallbackEvidence[0])
+    : isConceptualFallback && evidenceQuality === 'partial'
+    ? `${conceptualPool[0] ?? fallbackEvidence[0]} Confira as referências finais para validar o contexto completo antes de seguir.`
+    : evidenceQuality === 'strong'
     ? fallbackEvidence[0]
     : evidenceQuality === 'partial'
       ? `${fallbackEvidence[0]} Confira as referências finais para validar o contexto completo antes de seguir.`
       : `As referências recuperadas não sustentam um passo a passo confiável para responder com segurança à sua pergunta sobre "${question}".`;
-  const fallbackStep = evidenceQuality === 'weak'
+  const fallbackStep = evidenceQuality === 'weak' || isConceptualFallback
     ? null
     : {
       numero: 1,
@@ -1584,6 +1631,11 @@ function buildGroundedFallbackResponse(
     };
   const fallbackObservations = [
     supportingNotice,
+    ...(
+      isConceptualFallback
+        ? detailItems.map((item) => sanitizeFallbackEvidenceText(item))
+        : []
+    ),
     evidenceQuality === 'partial'
       ? 'A resposta ficou parcialmente sustentada pelas referências recuperadas. Vale conferir a fonte final antes de executar a rotina.'
       : null,
@@ -2986,15 +3038,23 @@ REESCRITA OBRIGATORIA:
           );
         }
 
-        const fallbackResponse = buildGroundedFallbackResponse(
+        const rawFallbackResponse = buildGroundedFallbackResponse(
           lastUserMessage.content,
           matchedChunks,
           groundedReferences,
           groundedReferenceProfile,
           responseMode,
+          intentLabel,
           retrievalQuality,
           sourceTarget,
         );
+        const fallbackResponse = sanitizeStructuredResponse(rawFallbackResponse, {
+          groundedReferences,
+          groundedReferenceProfile,
+          usedRag: true,
+          responseMode,
+          intentLabel,
+        });
         const fallbackPlainText = renderStructuredResponseToPlainText(fallbackResponse);
 
         const telemetryCtx: TelemetryContext = {

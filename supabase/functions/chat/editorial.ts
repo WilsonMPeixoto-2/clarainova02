@@ -34,22 +34,14 @@ const SUPPORT_TOPIC_SCOPES = new Set([
   "material_apoio",
 ]);
 
-function uniqueLabels(values: Array<string | null | undefined>) {
-  const labels: string[] = [];
-  const seen = new Set<string>();
+function sanitizeSectionTitle(value?: string | null) {
+  const normalized = value
+    ?.replace(/^[\s\-–—•*]+/u, "")
+    .replace(/^\d+(?:\.\d+)*(?:\s*[-–—.:)\]}]\s*)?/u, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  for (const value of values) {
-    const normalized = value?.trim();
-    if (!normalized) continue;
-
-    const key = normalized.toLowerCase();
-    if (seen.has(key)) continue;
-
-    seen.add(key);
-    labels.push(normalized);
-  }
-
-  return labels;
+  return normalized ? normalized : null;
 }
 
 export function inferEditorialLayer(topicScope?: string | null): EditorialLayer {
@@ -92,14 +84,7 @@ export function getAuthorityLabel(authorityLevel?: string | null) {
 }
 
 export function buildEditorialSubtitle(metadata: EditorialReferenceMetadata) {
-  const layer = inferEditorialLayer(metadata.documentTopicScope);
-  const labels = uniqueLabels([
-    metadata.sectionTitle,
-    getEditorialLayerLabel(layer),
-    getAuthorityLabel(metadata.documentAuthorityLevel),
-  ]);
-
-  return labels.length > 0 ? labels.join(" · ") : null;
+  return sanitizeSectionTitle(metadata.sectionTitle);
 }
 
 export function summarizeEditorialProfile(
